@@ -20,7 +20,9 @@ def gen_data():
     (nlat, nlon) = (9, 6)
     (lat0, lon0, dlat, dlon) = (-80, 0, 20, 30)
     params = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
-    data = np.array(np.random.rand(nlon, nlat), order='F')
+
+    rng = np.random.default_rng()
+    data = np.array(rng.random((nlon, nlat)), order='F')
 
     return data, params
 
