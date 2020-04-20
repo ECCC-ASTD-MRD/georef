@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
 
-# FIXME Conda requis car Cartopy pas installé sur gpscc2, référence :
-# https://gitlab.science.gc.ca/hpc/support/issues/5
-# export PATH=~kro001/miniconda3/bin:"$PATH"
-# . ssmuse-sh -x comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
-# -x rpn/libs/19.5 \
-# -x rpn/MIG/ENV/rpnpy/2.1.0
-
 'Démonstration de la fonction defGrid_L.'
 
 import cartopy.crs as ccrs
@@ -15,7 +8,7 @@ import matplotlib.pyplot as plt
 import rpnpy.librmn.all as rmn
 
 def gen_data():
-    'Generate random data'
+    'Generate data and parameters'
 
     (nlat, nlon) = (9, 6)
     (lat0, lon0, dlat, dlon) = (-80, 0, 20, 30)
@@ -48,7 +41,7 @@ def plot_grid(params):
     plt.savefig('l_grid.png')
 
 def main():
-    'Demonstrate all functions by calling them in correct order'
+    'Call all functions in order'
 
     data, params = gen_data()
     write_fst(data, params, 'l_grid.fst')
