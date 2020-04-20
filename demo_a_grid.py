@@ -35,9 +35,26 @@ def plot_grid(params):
 
     lalo['lon'] = np.mod((lalo['lon'] + 180), 360) - 180
 
-    plt.plot(lalo['lon'], lalo['lat'], linestyle='None', color='red', marker='.')
+    plt.plot(lalo['lon'], lalo['lat'],
+             linestyle='None', color='red', marker='.')
 
     plt.savefig('a_grid.svg')
+
+def plot_data(params):
+    'Plot data on map'
+
+    gid = rmn.ezqkdef(params)
+    lalo = rmn.gdll(gid)
+    lalo['lon'] = np.mod((lalo['lon'] + 180), 360) - 180
+
+    axes = plt.axes(projection=ccrs.PlateCarree())
+    axes.coastlines()
+    axes.gridlines(xlocs=(-180, 0, 180), ylocs=(-90, 0, 90))
+    axes.set_global()
+    axes.contourf(lalo['lon'], lalo['lat'], \
+                  np.sin(np.pi*lalo['lon']/180)*np.sin(np.pi*lalo['lat']/90))
+
+    plt.savefig('a_data.svg')
 
 def main():
     'Call all functions in order'
@@ -47,6 +64,7 @@ def main():
     hemisphere = 'global'
     params = gen_params(nlon, nlat, hemisphere)
     plot_grid(params)
+    plot_data(params)
 
 if __name__ == "__main__":
     main()
