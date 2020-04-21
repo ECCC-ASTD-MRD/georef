@@ -46,7 +46,6 @@ def plot_data(params):
 
     gid = rmn.ezqkdef(params)
     lalo = rmn.gdll(gid)
-    lalo['lon'] = np.mod((lalo['lon'] + 180), 360) - 180
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
