@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import rpnpy.librmn.all as rmn
 from mpl_toolkits.mplot3d import Axes3D
+import stage_2020
 
 def gen_params(nlon, nlat, hemisphere):
     'Generate grid parameters'
@@ -41,22 +42,36 @@ def plot_grid(params):
 
     plt.savefig('a_grid.png')
 
-def plot_data(params):
+def plot_data(params, data):
     'Plot data on map'
 
     gid = rmn.ezqkdef(params)
     lalo = rmn.gdll(gid)
 
     fig = plt.figure()
-    ax = fig.gca(projection='3d')
+    axes = fig.gca(projection='3d')
 
     lon = lalo['lon'].flatten()
     lat = lalo['lat'].flatten()
-    z = np.sin(np.pi*lon/180)*np.sin(np.pi*lat/90)
 
-    ax.plot(lon, lat, z, linestyle='None', marker='.')
+    axes.plot(lon, lat, data.flatten(), linestyle='None', marker='.')
 
     plt.savefig('a_data.png')
+
+def error(params, data):
+    'Calculate error with respect to analytical truth'
+
+    gid = rmn.ezqkdef(params)
+
+    nlat, nlon = (9, 6)
+    lat0, lon0, dlat, dlon = (-80, 0, 20, 30)
+    out_gid = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
+    out_lalo = rmn.gdll(out_gid)
+
+    out_data = rmn.ezsint(out_gid, gid, data)
+    true_data = np.sin(np.pi*out_lalo['lon']/180)\
+        *np.sin(np.pi*out_lalo['lat']/90)
+    return np.linalg.norm(out_data - true_data)
 
 def main():
     'Call all functions in order'
@@ -67,11 +82,19 @@ def main():
     params = gen_params(nlon, nlat, hemisphere)
     plot_grid(params)
 
-    # Fine mesh required for 3-D surface
+    # Fine mesh required to recognize analytic 3-D surface
     nlon = 360//5
     nlat = 180//5
     params = gen_params(nlon, nlat, hemisphere)
-    plot_data(params)
+
+    gid = rmn.ezqkdef(params)
+    lalo = rmn.gdll(gid)
+    data = np.sin(np.pi*lalo['lon']/180)*np.sin(np.pi*lalo['lat']/90)
+
+    plot_data(params, data)
+
+    stage_2020.write_fst(data, params, 'a_grid.fst')
+    print(error(params, data))
 
 if __name__ == "__main__":
     main()
