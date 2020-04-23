@@ -54,6 +54,6 @@ Cette séquence devrait produire les fichiers `l_grid.fst` et `l_grid.png`.
 
 # Références
 
-- [Grid Types Supported by RPN Standard Files](https://collaboration.cmc.ec.gc.ca/science/si/eng/si/misc/grilles.html)
+- [Grid Types Supported by RPN Standard Files](https://science:science@collaboration.cmc.ec.gc.ca/science/si/eng/si/misc/grilles.html)
 - [Python-RPN/grids](https://wiki.cmc.ec.gc.ca/wiki/Python-RPN/grids)
 - [fst_missing](http://armnlib.uqam.ca/armnlib/Docs/fst_missing.html)
