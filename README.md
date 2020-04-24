@@ -26,9 +26,9 @@ déjà en usage dans des modèles opérationnels, mais sont traitées avec
 des utilitaires spéciaux, par exemple cstintrp pour les grilles ORCA.
 Ce stage vise à rapatrier les fonctionnalités éparpillées dans des
 utilitaires spéciaux aux principales programmathèques du CPMEC,
-notamment rmnlib et libeerUtils. Il est prévu que cette
-standardisation réduira l'effort pour l'ensemble du CPMEC dans le
-traitement de ses modèles de PNT.
+notamment [rmnlib](https://github.com/armnlib/librmn) et libeerUtils.
+Il est prévu que cette standardisation réduira l'effort pour
+l'ensemble du CPMEC dans le traitement de ses modèles de PNT.
 
 Figure 1 : Grille globale cartésienne. La résolution de la grille est de , une résolution grossière pour des fins d'illustration.
 
