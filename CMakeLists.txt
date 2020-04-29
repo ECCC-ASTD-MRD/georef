@@ -11,6 +11,9 @@ message(STATUS "Build architecture ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
+set(CMAKE_BUILD_TYPE "Release")
+include("$ENV{EC_CMAKE_MODULE_PATH}/CMake_compiler.txt")
+
 find_package(RMN 19.6 REQUIRED)
 if (RMN_FOUND) 
    add_compile_definitions(HAVE_RMN)
@@ -23,9 +26,6 @@ endif()
 
 find_package(OpenMP REQUIRED) 
 add_compile_options(${OpenMP_C_FLAGS})
-
-set(CMAKE_BUILD_TYPE "Release")
-include("$ENV{EC_CMAKE_MODULE_PATH}/CMake_compiler.txt")
 
 add_compile_definitions(VERSION=\"$ENV{VERSION}-r$ENV{BUILDINFO}\" _${CMAKE_SYSTEM_NAME}_ TCL_THREADS _GNU_SOURCE)
 add_subdirectory(src src)
