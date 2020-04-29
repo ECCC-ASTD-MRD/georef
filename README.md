@@ -40,17 +40,27 @@ Figure 4 : Grille MESH d'éléments finis
 
 # Exemples
 
+## Python-RPN
 Conda requis car Cartopy pas installé sur gpscc2.collab.science.gc.ca,
 référence : https://gitlab.science.gc.ca/hpc/support/issues/5
 ```shell
 export PATH=~kro001/miniconda3/bin:"$PATH"
-. ssmuse-sh -x comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
--x rpn/libs/19.5 \
--x rpn/MIG/ENV/rpnpy/2.1.0
-./demo_defGrid_L.py
+. r.load.dot comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
+  rpn/libs/19.5 \
+  rpn/MIG/ENV/rpnpy/2.1.0
+cd test
 ./demo_a_grid.py
+./demo_defGrid_L.py
 ```
-Cette séquence devrait produire les fichiers `l_grid.fst` et `l_grid.png`.
+Cette séquence devrait produire les fichiers `a_data.png`,
+`a_grid.fst`, `a_grid.png`, `l_grid.fst` et `l_grid.png`.
+
+## libgeoref
+
+```shell
+. r.load.dot main/opt/cmake/cmake-3.16.4
+./makeit.sh
+```
 
 # Références
 
