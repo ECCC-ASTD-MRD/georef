@@ -5,7 +5,6 @@ ec_parse_version()
 ec_build_include()
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 
-message(STATUS "Build architecture ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 enable_language(Fortran)
 
 include("$ENV{EC_CMAKE_MODULE_PATH}/compiler_rules.cmake")
@@ -17,10 +16,6 @@ if (RMN_FOUND)
    include_directories(${RMN_INCLUDE_DIR})
 endif()
 #check_version(RMN) 
-
-if(${CMAKE_SYSTEM_PROCESSOR} EQUAL x86_64)
-   add_compile_options(-fPIC -DSTDC_HEADERS)
-endif()
 
 find_package(OpenMP REQUIRED) 
 add_compile_options(${OpenMP_C_FLAGS})
