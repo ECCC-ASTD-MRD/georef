@@ -1,0 +1,9 @@
+NAME       : libgeoeer
+VERSION    : 0.1.0
+BUILD      : Debug
+DESCRIPTION: Geo reference manipulation library
+SUMMARY    : This library allows for reprojection, coordinate transform and interpolation in between various type of geo reference (RPN,WTK,meshes,...)
+MAINTAINER : Kristjan Onu Kristjan.Onu@canada.ca 
+
+rmn       >= 19.6.0
+vgrid     ~ 6.5.0
