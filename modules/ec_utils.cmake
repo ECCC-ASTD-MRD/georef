@@ -9,9 +9,6 @@ if(DEFINED ENV{CRAYPE_VERSION})
    set(CMAKE_SYSTEM_NAME CrayLinuxEnvironment)
 endif()
 
-#----- Append EC specific module path
-list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH})
-
 #----- Prepare some variables
 string(REPLACE " " ";" ECCC_INCLUDE_PATH $ENV{EC_INCLUDE_PATH})
 string(REPLACE " " ";" ECCC_LD_LIBRARY_PATH $ENV{EC_LD_LIBRARY_PATH})

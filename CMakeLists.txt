@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
-include($ENV{EC_CMAKE_MODULE_PATH}/utils.cmake)
+
+#----- Append EC specific module path
+list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH})
+include(ec_utils)
 
 ec_parse_version()
 ec_build_include()
@@ -7,7 +10,7 @@ project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 
 enable_language(Fortran)
 
-include("$ENV{EC_CMAKE_MODULE_PATH}/compiler_rules.cmake")
+include(compiler_rules)
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 find_package(RMN 19.6 REQUIRED)
