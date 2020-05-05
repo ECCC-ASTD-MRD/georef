@@ -9,7 +9,7 @@ set_target_properties(georef PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(georef PROPERTIES PUBLIC_HEADER "${PROJECT_INCLUDE_FILES}")
 target_link_libraries(georef ${RMN_LIBRARIES})
 
-add_dependencies(georef timestamp)
+add_dependencies(georef build_info)
 
 install(TARGETS georef
    LIBRARY DESTINATION lib

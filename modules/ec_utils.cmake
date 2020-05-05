@@ -16,29 +16,29 @@ string(REPLACE " " ";" ECCC_LD_LIBRARY_PATH $ENV{EC_LD_LIBRARY_PATH})
 #----- Build ISO 8601 build timestamp target
 # How to use:
 #   - add as a target to a build
-#   - add_dependencies(eerUtils$ENV{OMPI} timestamp)
-#   - and include the file timestamp. to have the BUILD_TIMESTAMP variable #defined
+#   - add_dependencies(eerUtils$ENV{OMPI} build)
+#   - and include the file build.h to have the BUILD_TIMESTAMP variable #defined
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-function(ec_build_include)
+function(ec_build_info)
    if(DEFINED ENV{ORDENV_SETUP})
       execute_process(COMMAND git describe --always
          OUTPUT_VARIABLE BUILD_INFO)
       string(STRIP ${BUILD_INFO} BUILD_INFO)
    endif()
 
-   FILE (WRITE ${CMAKE_BINARY_DIR}/timestamp.cmake "string(TIMESTAMP BUILD_TIMESTAMP UTC)\n")
-   FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "file(WRITE build.h \"#ifndef _BUILD_H\\n\")\n")
-   FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "file(APPEND build.h \"#define _BUILD_H\\n\\n\")\n")
-   FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "file(APPEND build.h \"#define BUILD_TIMESTAMP \\\"\${BUILD_TIMESTAMP}\\\"\\n\")\n")
-   FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "file(APPEND build.h \"#define BUILD_INFO      \\\"${BUILD_INFO}\\\"\\n\\n\")\n")
-   FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "file(APPEND build.h \"#define VERSION         \\\"${VERSION}\\\"\\n\")\n")
-   FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "file(APPEND build.h \"#define DESCRIPTION     \\\"${DESCRIPTION}\\\"\\n\\n\")\n")
-   FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "file(APPEND build.h \"#endif // _BUILD_H\\n\")\n")
+   FILE (WRITE ${CMAKE_BINARY_DIR}/build_info.cmake "string(TIMESTAMP BUILD_TIMESTAMP UTC)\n")
+   FILE (APPEND ${CMAKE_BINARY_DIR}/build_info.cmake "file(WRITE build_info.h \"#ifndef _BUILD_INFO_H\\n\")\n")
+   FILE (APPEND ${CMAKE_BINARY_DIR}/build_info.cmake "file(APPEND build_info.h \"#define _BUILD_INFO_H\\n\\n\")\n")
+   FILE (APPEND ${CMAKE_BINARY_DIR}/build_info.cmake "file(APPEND build_info.h \"#define BUILD_TIMESTAMP \\\"\${BUILD_TIMESTAMP}\\\"\\n\")\n")
+   FILE (APPEND ${CMAKE_BINARY_DIR}/build_info.cmake "file(APPEND build_info.h \"#define BUILD_INFO      \\\"${BUILD_INFO}\\\"\\n\\n\")\n")
+   FILE (APPEND ${CMAKE_BINARY_DIR}/build_info.cmake "file(APPEND build_info.h \"#define VERSION         \\\"${VERSION}\\\"\\n\")\n")
+   FILE (APPEND ${CMAKE_BINARY_DIR}/build_info.cmake "file(APPEND build_info.h \"#define DESCRIPTION     \\\"${DESCRIPTION}\\\"\\n\\n\")\n")
+   FILE (APPEND ${CMAKE_BINARY_DIR}/build_info.cmake "file(APPEND build_info.h \"#endif // _BUILD_INFO_H\\n\")\n")
    ADD_CUSTOM_TARGET (
-      timestamp
-      COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/timestamp.cmake
-      ADD_DEPENDENCIES ${CMAKE_BINARY_DIR}/timestamp.cmake)
+      build_info
+      COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/build_info.cmake
+      ADD_DEPENDENCIES ${CMAKE_BINARY_DIR}/build_info.cmake)
    include_directories(${CMAKE_BINARY_DIR})
 endfunction()
 
@@ -99,3 +99,16 @@ function(ec_check_version DEPENDENCY)
       endif()
    endif()
 endfunction()
+
+macro(ec-config CONFIG_FILE)
+   message("Generating config command: ${CMAKE_INSTALL_PREFIX}/bin/${CONFIG_FILE}")
+   execute_process(COMMAND sed -e '/sCMAKE_CC/${CMAKE_C_COMPILER}/g'-e '/sCMAKE_FTN/${CMAKE_Fortran_COMPILER}/g' 
+   -e '/sCMAKE_VERSION/${VERSION}/g' -e '/sCMAKE_RMN/${RMN_VERSION}/g' -e '/sCMAKE_GDAL/${GDAL_VERSION}/g' -e '/sCMAKE_VGRID/${VGRID_VERSION}/g'
+   ${CONFIG_FILE} > ${CMAKE_INSTALL_PREFIX}/bin/${CONFIG_FILE})
+
+#cflags=CMAKE_CFLAGS
+#libs=CMAKE_LIBS
+#libdir=CMAKE_LIBDIR
+#includedir=CMAKE_INCLUDEDIR
+
+endmacro()

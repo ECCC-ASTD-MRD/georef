@@ -1,4 +1,4 @@
-NAME       : libgeoeer
+NAME       : libgeoref
 VERSION    : 0.1.0
 BUILD      : Debug
 DESCRIPTION: Geo reference manipulation library
