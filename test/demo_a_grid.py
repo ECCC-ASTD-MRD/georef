@@ -5,8 +5,8 @@
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
-import rpnpy.librmn.all as rmn
 from mpl_toolkits.mplot3d import Axes3D
+import rpnpy.librmn.all as rmn
 import stage_2020
 
 def gen_params(nlon, nlat, hemisphere):

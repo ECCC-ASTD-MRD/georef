@@ -7,7 +7,7 @@
 
 # Semaine 2
 
-- production de graphiques Python sur grille ORCA : [graphique de grille](https://hpfx.collab.science.gc.ca/~kro001/stage_2020/o_grid.png) et graphique de données analytiques sinus
+- production de graphiques Python sur grille ORCA : [graphique de grille](https://hpfx.collab.science.gc.ca/~map007/o_grid.png) et [graphique de données analytiques sinus](https://hpfx.collab.science.gc.ca/~map007/o_data.png)
 - interpoler de grille ORCA à [RPN L](https://science:science@collaboration.cmc.ec.gc.ca/science/si/eng/si/misc/grilles.html#LatLon) avec [API de SPI](https://wiki.cmc.ec.gc.ca/wiki/SPI/Documentation#Developer_documentation)
 - interpoler de grille ORCA à L avec [cstintrp](https://wiki.cmc.ec.gc.ca/wiki/Cstintrp_V3)
 - vérifier égalité des résultats de cstintrp et API SPI

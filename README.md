@@ -32,7 +32,7 @@ l'ensemble du CPMEC dans le traitement de ses modèles de PNT.
 
 Figure 1 : Grille globale cartésienne. La résolution de la grille est de , une résolution grossière pour des fins d'illustration.
 
-![Grille océanique ORCA](https://hpfx.collab.science.gc.ca/~kro001/stage_2020/o_grid.png)
+![Grille océanique ORCA](https://hpfx.collab.science.gc.ca/~map007/o_grid.png)
 Figure 2 : Grille océanique ORCA avec résolution moyenne de 10°
 
 Figure 3 : Grille icosaédrique
