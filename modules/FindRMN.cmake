@@ -4,38 +4,49 @@
 # https://cmake.org/cmake/help/v3.0/command/find_package.html
 
 # [[DOC]] https://cmake.org/cmake/help/v3.14/manual/cmake-developer.7.html
-set(RMN_VERSION ${RMN_FIND_VERSION})
 
 #find_path(RMN_INCLUDE_DIR
 #   NAMES rpnmacros.h
 #   PATHS ENV CPATH NO_DEFAULT_PATH)
 find_path(RMN_INCLUDE_DIR
    NAMES rpn_macros_arch.h
-   PATHS ${ECCC_INCLUDE_PATH} NO_DEFAULT_PATH)
+   PATHS ${EC_INCLUDE_PATH} NO_DEFAULT_PATH)
 
 # [[DOC]] for find_library https://cmake.org/cmake/help/latest/command/find_library.html
 if("shared" IN_LIST RMN_FIND_COMPONENTS)
     if("threaded" IN_LIST RMN_FIND_COMPONENTS)
         find_library(RMN_LIBRARY
            NAMES rmnsharedPTHRD
-           PATHS ${ECCC_LD_LIBRARY_PATH} NO_DEFAULT_PATH)
+           PATHS ${EC_LD_LIBRARY_PATH} NO_DEFAULT_PATH)
     else()
        find_library(RMN_LIBRARY
            NAMES rmnshared
-           PATHS ${ECCC_LD_LIBRARY_PATH} NO_DEFAULT_PATH)
+           PATHS ${EC_LD_LIBRARY_PATH} NO_DEFAULT_PATH)
     endif()
 else()
     find_library(RMN_LIBRARY
         NAMES rmn
-        PATHS ${ECCC_LD_LIBRARY_PATH} NO_DEFAULT_PATH)
+        PATHS ${EC_LD_LIBRARY_PATH} NO_DEFAULT_PATH)
 endif()
 
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(RMN DEFAULT_MSG RMN_LIBRARY RMN_INCLUDE_DIR)
-mark_as_advanced(RMN_INCLUDE_DIR RMN_LIBRARY)
+string(REGEX MATCH ".*/libs/([0-9]+\\.[0-9]+)(\\.[0-9])?(-[a,b][0-9]*)?.*/" null ${RMN_LIBRARY})
+set(RMN_VERSION ${CMAKE_MATCH_1}${CMAKE_MATCH_2})
+set(RMN_STATE   ${CMAKE_MATCH_3})
 
-set(RMN_INCLUDE_DIRS ${RMN_INCLUDE_DIR})
-set(RMN_LIBRARIES ${RMN_LIBRARY})
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(RMN
+   FOUND_VAR RMN_FOUND
+   REQUIRED_VARS
+      RMN_LIBRARY
+      RMN_INCLUDE_DIR
+   VERSION_VAR RMN_VERSION)
+   
+if(RMN_FOUND)
+   set(RMN_INCLUDE_DIRS ${RMN_INCLUDE_DIR})
+   set(RMN_LIBRARIES ${RMN_LIBRARY})
+
+   mark_as_advanced(RMN_INCLUDE_DIR RMN_LIBRARY)
+endif()
 
 if("rpnpy" IN_LIST RMN_FIND_COMPONENTS)
     message("Component rpnpy requested")
