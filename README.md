@@ -32,7 +32,8 @@ l'ensemble du CPMEC dans le traitement de ses modèles de PNT.
 
 Figure 1 : Grille globale cartésienne. La résolution de la grille est de , une résolution grossière pour des fins d'illustration.
 
-Figure 2 : Grille océanique ORCA
+![Grille océanique ORCA](https://hpfx.collab.science.gc.ca/~map007/o_grid.png)
+Figure 2 : Grille océanique ORCA avec résolution moyenne de 10°
 
 Figure 3 : Grille icosaédrique
 
@@ -51,6 +52,7 @@ export PATH=~kro001/miniconda3/bin:"$PATH"
 cd test
 ./demo_a_grid.py
 ./demo_defGrid_L.py
+./demo_o_grid.py
 ```
 Cette séquence devrait produire les fichiers `a_data.png`,
 `a_grid.fst`, `a_grid.png`, `l_grid.fst` et `l_grid.png`.
@@ -59,6 +61,7 @@ Cette séquence devrait produire les fichiers `a_data.png`,
 
 ```shell
 . r.load.dot main/opt/cmake/cmake-3.16.4
+export SSM_DEV=$(mktemp --directory)
 ./makeit.sh
 ```
 
