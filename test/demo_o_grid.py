@@ -35,24 +35,41 @@ def plot_data(lat, lon, data):
 
     plt.savefig('o_data.png')
 
+def write_fst(lat_record, lon_record, data):
+    'Write data to RPN Standard file'
+
+    funit_out = rmn.fstopenall('O_sinus.fst', rmn.FST_RW)
+    rmn.fstecr(funit_out, lat_record)
+    rmn.fstecr(funit_out, lon_record)
+    params = rmn.FST_RDE_META_DEFAULT
+    params['nomvar'] = 'XX'
+    params['grtyp'] = 'O'
+    params['ni'] = data.shape[0]
+    params['nj'] = data.shape[1]
+    params['ig1'] = lat_record['ip1']
+    params['ig2'] = lat_record['ip2']
+    params['ig3'] = lat_record['ip3']
+    rmn.fstecr(funit_out, data, params)
+    rmn.fstcloseall(funit_out)
+
 def main():
     'Call all functions in order'
 
     # Read lat-lon points
-    #funit = rmn.fstopenall(os.path.join('..', 'GRIDS', 'O.fstd'))
-    funit = rmn.fstopenall(os.path.join('..', '..', 'O.fstd'))
-    lat = rmn.fstlir(funit, nomvar='^^', dtype=np.float32)['d']
-    lon = rmn.fstlir(funit, nomvar='>>', dtype=np.float32)['d']
+    funit = rmn.fstopenall(os.path.join('..', '..', 'GRIDS', 'O.fstd'))
+    lat_record = rmn.fstlir(funit, nomvar='^^', dtype=np.float32)
+    lon_record = rmn.fstlir(funit, nomvar='>>', dtype=np.float32)
+    lat = lat_record['d']
+    lon = lon_record['d']
     rmn.fstcloseall(funit)
 
     plot_grid(lat, lon)
 
     step = 35
-    lon = lon[::step, ::step]
-    lat = lat[::step, ::step]
     data = np.sin(np.pi*lon/180)*np.sin(np.pi*lat/90)
+    plot_data(lat[::step, ::step], lon[::step, ::step], data[::step, ::step])
 
-    plot_data(lat, lon, data)
+    write_fst(lat_record, lon_record, data)
 
 if __name__ == "__main__":
     main()
