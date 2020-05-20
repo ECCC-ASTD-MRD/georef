@@ -10,12 +10,12 @@ def main():
     'Call all functions in order'
 
     # Read TM field
-    funit = rmn.fstopenall(os.path.join('..', '..', 'GRIDS', 'out', 'out.spi'))
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.spi'))
     tm_spi = rmn.fstlir(funit, nomvar='TM', typvar='P@')['d']
     tm_mask_spi = rmn.fstlir(funit, nomvar='TM', typvar='@@')['d']
     rmn.fstcloseall(funit)
 
-    funit = rmn.fstopenall(os.path.join('..', '..', 'GRIDS', 'out', 'out.csintrp'))
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.csintrp'))
     tm_cs = rmn.fstlir(funit, nomvar='TM', typvar='P@')['d']
     tm_mask_cs = rmn.fstlir(funit, nomvar='TM', typvar='@@')['d']
     rmn.fstcloseall(funit)

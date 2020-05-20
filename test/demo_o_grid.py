@@ -55,7 +55,7 @@ def write_fst(lat_record, lon_record, data):
 def error_cstintrp():
     'Calculate error with respect to analytical truth'
 
-    funit = rmn.fstopenall(os.path.join('..', '..', 'GRIDS', 'out', 'L_sinus'))
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'L_sinus'))
     out_data = rmn.fstlir(funit, nomvar='XX', typvar='P@')['d']
     rmn.fstcloseall(funit)
 
