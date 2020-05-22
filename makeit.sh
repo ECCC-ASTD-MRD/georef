@@ -32,6 +32,6 @@ export DESTDIR=${SSM_DEV}/workspace/${SSM_NAME}
 
 \rm -f -r build; mkdir build; cd build
 cmake $CMAKE_COMP_FLAGS -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
-exit
+#exit
 make -j
 make install
