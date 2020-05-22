@@ -43,7 +43,7 @@ def write_fst(lat_record, lon_record, data):
     rmn.fstecr(funit_out, lon_record)
     params = rmn.FST_RDE_META_DEFAULT
     params['nomvar'] = 'XX'
-    params['grtyp'] = 'O'
+    params['grtyp'] = 'X'
     params['ni'] = data.shape[0]
     params['nj'] = data.shape[1]
     params['ig1'] = lat_record['ip1']
@@ -67,7 +67,26 @@ def error_cstintrp():
     true_data = np.sin(np.pi*out_lalo['lon']/180)\
         *np.sin(np.pi*out_lalo['lat']/90)
     difference = out_data - true_data
-    np.savetxt('dif.txt', difference)
+    np.savetxt('cstintrp.txt', out_data)
+    return np.linalg.norm(difference)
+
+def error_spi():
+    'Calculate error with respect to analytical truth'
+
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.spi'))
+    out_data = rmn.fstlir(funit, nomvar='XX')['d']
+    rmn.fstcloseall(funit)
+
+    nlat, nlon = (9, 6)
+    lat0, lon0, dlat, dlon = (-80, 0, 20, 30)
+    out_gid = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
+    out_lalo = rmn.gdll(out_gid)
+
+    true_data = np.sin(np.pi*out_lalo['lon']/180)\
+        *np.sin(np.pi*out_lalo['lat']/90)
+    difference = out_data - true_data
+    np.savetxt('true.txt', true_data)
+    np.savetxt('spi.txt', out_data)
     return np.linalg.norm(difference)
 
 def main():
@@ -81,15 +100,16 @@ def main():
     lon = lon_record['d']
     rmn.fstcloseall(funit)
 
-    plot_grid(lat, lon)
+    #plot_grid(lat, lon)
 
     step = 35
     data = np.sin(np.pi*lon/180)*np.sin(np.pi*lat/90)
-    plot_data(lat[::step, ::step], lon[::step, ::step], data[::step, ::step])
+    #plot_data(lat[::step, ::step], lon[::step, ::step], data[::step, ::step])
 
-    write_fst(lat_record, lon_record, data)
+    #write_fst(lat_record, lon_record, data)
 
     print(error_cstintrp())
+    print(error_spi())
 
 if __name__ == "__main__":
     main()
