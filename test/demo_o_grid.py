@@ -3,6 +3,7 @@
 'Démonstration pour grille de type Orca'
 
 import os
+from pathlib import Path
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -20,7 +21,7 @@ def plot_grid(lat, lon):
     step = 40
 
     plt.plot(lon[::step, ::step], lat[::step, ::step], linestyle='None', color='black', marker='.')
-    plt.savefig('o_grid.png')
+    plt.savefig(os.path.join('out', 'o_grid.png'))
 
 def plot_data(lat, lon, data):
     'Plot data on map'
@@ -33,12 +34,12 @@ def plot_data(lat, lon, data):
 
     axes.plot(lon, lat, data.flatten(), linestyle='None', marker='.')
 
-    plt.savefig('o_data.png')
+    plt.savefig(os.path.join('out', 'o_data.png'))
 
 def write_fst(lat_record, lon_record, data):
     'Write data to RPN Standard file'
 
-    funit_out = rmn.fstopenall('O_sinus.fst', rmn.FST_RW)
+    funit_out = rmn.fstopenall(os.path.join('out', 'O_sinus.fst'), rmn.FST_RW)
     rmn.fstecr(funit_out, lat_record)
     rmn.fstecr(funit_out, lon_record)
     params = rmn.FST_RDE_META_DEFAULT
@@ -67,7 +68,7 @@ def error_cstintrp():
     true_data = np.sin(np.pi*out_lalo['lon']/180)\
         *np.sin(np.pi*out_lalo['lat']/90)
     difference = out_data - true_data
-    np.savetxt('cstintrp.txt', out_data)
+    np.savetxt(os.path.join('out', 'cstintrp.txt'), out_data)
     return np.linalg.norm(difference)
 
 def error_spi():
@@ -85,8 +86,8 @@ def error_spi():
     true_data = np.sin(np.pi*out_lalo['lon']/180)\
         *np.sin(np.pi*out_lalo['lat']/90)
     difference = out_data - true_data
-    np.savetxt('true.txt', true_data)
-    np.savetxt('spi.txt', out_data)
+    np.savetxt(os.path.join('out', 'true.txt'), true_data)
+    np.savetxt(os.path.join('out', 'spi.txt'), out_data)
     return np.linalg.norm(difference)
 
 def main():
@@ -100,13 +101,15 @@ def main():
     lon = lon_record['d']
     rmn.fstcloseall(funit)
 
-    #plot_grid(lat, lon)
+    Path("out").mkdir(parents=True, exist_ok=True)
+
+    plot_grid(lat, lon)
 
     step = 35
     data = np.sin(np.pi*lon/180)*np.sin(np.pi*lat/90)
-    #plot_data(lat[::step, ::step], lon[::step, ::step], data[::step, ::step])
+    plot_data(lat[::step, ::step], lon[::step, ::step], data[::step, ::step])
 
-    #write_fst(lat_record, lon_record, data)
+    write_fst(lat_record, lon_record, data)
 
     print(error_cstintrp())
     print(error_spi())

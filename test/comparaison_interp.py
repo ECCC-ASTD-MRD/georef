@@ -3,6 +3,7 @@
 'Comparaison entre différentes interpolations de la grille ORCA vers la grille L'
 
 import os
+from pathlib import Path
 import numpy as np
 import rpnpy.librmn.all as rmn
 
@@ -32,14 +33,17 @@ def main():
     xx_cs_bilin = np.ma.array(xx_cs_bilin, mask=np.logical_not(xx_mask_cs_bilin))
     xx_cs_bilin = xx_cs_bilin.filled(fill_value=0)
 
+    Path("out").mkdir(parents=True, exist_ok=True)
+
     difference = xx_spi - xx_cs
     error = np.linalg.norm(difference)
-    np.savetxt('xx_cs.txt', xx_cs)
+    np.savetxt(os.path.join('out', 'xx_cs.txt'), xx_cs)
+    np.savetxt(os.path.join('out', 'dif.txt'), difference)
     print(error)
 
     difference = xx_spi - xx_cs_bilin
     error = np.linalg.norm(difference)
-    #np.savetxt('dif2.txt', difference)
+    np.savetxt(os.path.join('out', 'dif_bilin.txt'), difference)
     print(error)
 
 if __name__ == "__main__":

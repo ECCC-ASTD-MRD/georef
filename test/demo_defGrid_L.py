@@ -2,6 +2,8 @@
 
 'Démonstration de la fonction defGrid_L.'
 
+import os
+from pathlib import Path
 import cartopy.crs as ccrs
 import numpy as np
 import matplotlib.pyplot as plt
@@ -34,13 +36,14 @@ def plot_grid(params):
     lats, lons = np.meshgrid(lats, lons)
     plt.plot(lons, lats, linestyle='None', color='black', marker='.')
 
-    plt.savefig('l_grid.png')
+    plt.savefig(os.path.join('out', 'l_grid.png'))
 
 def main():
     'Call all functions in order'
 
+    Path("out").mkdir(parents=True, exist_ok=True)
     data, params = gen_data()
-    stage_2020.write_fst(data, params, 'l_grid.fst')
+    stage_2020.write_fst(data, params, os.path.join('out', 'l_grid.fst'))
     plot_grid(params)
 
 if __name__ == "__main__":

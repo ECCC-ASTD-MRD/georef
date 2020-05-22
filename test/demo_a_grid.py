@@ -2,6 +2,8 @@
 
 'Démonstration pour grille de type A'
 
+import os
+from pathlib import Path
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,7 +42,7 @@ def plot_grid(params):
     plt.plot(lalo['lon'], lalo['lat'],
              linestyle='None', color='red', marker='.')
 
-    plt.savefig('a_grid.png')
+    plt.savefig(os.path.join('out', 'a_grid.png'))
 
 def plot_data(params, data):
     'Plot data on map'
@@ -56,7 +58,7 @@ def plot_data(params, data):
 
     axes.plot(lon, lat, data.flatten(), linestyle='None', marker='.')
 
-    plt.savefig('a_data.png')
+    plt.savefig(os.path.join('out', 'a_data.png'))
 
 def error(params, data):
     'Calculate error with respect to analytical truth'
@@ -76,6 +78,8 @@ def error(params, data):
 def main():
     'Call all functions in order'
 
+    Path("out").mkdir(parents=True, exist_ok=True)
+
     nlon = 360//45
     nlat = 180//30
     hemisphere = 'global'
@@ -93,7 +97,7 @@ def main():
 
     plot_data(params, data)
 
-    stage_2020.write_fst(data, params, 'a_grid.fst')
+    stage_2020.write_fst(data, params, os.path.join('out', 'a_grid.fst'))
     print(error(params, data))
 
 if __name__ == "__main__":
