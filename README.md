@@ -53,9 +53,14 @@ cd test
 ./demo_a_grid.py
 ./demo_defGrid_L.py
 ./demo_o_grid.py
+. r.load.dot rpn/OCEAN/cstint-3.2.8 \
+  cmd/cmds/apps/SPI/beta
+./NEMOInterp_sinus.tcl out/O_sinus.fst out/l_grid.fst
 ```
 Cette séquence devrait produire les fichiers `a_data.png`,
-`a_grid.fst`, `a_grid.png`, `l_grid.fst` et `l_grid.png`.
+`a_grid.fst`, `a_grid.png`, `l_grid.fst`, `l_grid.png`, `o_data.png`, `o_grid.png`, `O_sinus.fst`, `spi.txt` et `true.txt` dans le dossier `out`.
+
+La dernière commande produit les fichiers `out.csintrp`, `out.csintrp.avg` et `out.spi`.
 
 ## libgeoref
 
