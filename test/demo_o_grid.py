@@ -101,7 +101,7 @@ def main():
     lon = lon_record['d']
     rmn.fstcloseall(funit)
 
-    Path("out").mkdir(parents=True, exist_ok=True)
+    Path('out').mkdir(exist_ok=True)
 
     plot_grid(lat, lon)
 

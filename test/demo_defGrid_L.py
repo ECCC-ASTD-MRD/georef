@@ -41,7 +41,7 @@ def plot_grid(params):
 def main():
     'Call all functions in order'
 
-    Path("out").mkdir(parents=True, exist_ok=True)
+    Path('out').mkdir(exist_ok=True)
     data, params = gen_data()
     stage_2020.write_fst(data, params, os.path.join('out', 'l_grid.fst'))
     plot_grid(params)

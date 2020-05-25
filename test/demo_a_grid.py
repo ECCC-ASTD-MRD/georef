@@ -80,13 +80,13 @@ def error(params, data):
 def main():
     'Call all functions in order'
 
-    Path("out").mkdir(parents=True, exist_ok=True)
+    Path('out').mkdir(exist_ok=True)
 
     nlon = 360//45
     nlat = 180//30
     hemisphere = 'global'
     params = gen_params(nlon, nlat, hemisphere)
-    #plot_grid(params)
+    plot_grid(params)
 
     # Fine mesh required to recognize analytic 3-D surface
     nlon = 360//5
@@ -97,10 +97,9 @@ def main():
     lalo = rmn.gdll(gid)
     data = np.sin(np.pi*lalo['lon']/180)*np.sin(np.pi*lalo['lat']/90)
 
-    #plot_data(params, data)
+    plot_data(params, data)
 
-    #stage_2020.write_fst(data, params, os.path.join('out', 'a_grid.fst'))
-    #print(error(params, data))
+    stage_2020.write_fst(data, params, os.path.join('out', 'a_grid.fst'))
     error(params, data)
 
 if __name__ == "__main__":
