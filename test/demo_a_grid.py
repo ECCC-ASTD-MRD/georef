@@ -62,10 +62,12 @@ def plot_data(params, data):
 def error(params, data):
     'Calculate error with respect to analytical truth'
 
+    #gid = libgeoref.wrapper_ezqkdef(params)
     gid = rmn.ezqkdef(params)
 
     nlat, nlon = (9, 6)
     lat0, lon0, dlat, dlon = (-80, 0, 20, 30)
+    #out_gid = libgeoref.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
     out_gid = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
     out_lalo = rmn.gdll(out_gid)
 
