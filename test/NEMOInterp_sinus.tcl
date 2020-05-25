@@ -30,7 +30,7 @@ set latlon [lindex $argv 1]
 
 file delete -force ./out.csintrp.avg
 puts [time {
-exec cstintrp -ns XX -fs ${orca} -fstype custom -fr ${latlon} -nr XX -fdtype rpn -fd ./out.csintrp.avg -uwgdir /tmp/.cstintrp.avg 2>@1  
+exec cstintrp -ns XX -fs ${orca} -fstype custom -fr ${latlon} -nr " " -fdtype rpn -fd ./out.csintrp.avg -uwgdir /tmp/.cstintrp.avg 2>@1  
 #exec cstintrp -ns UU -fs ${orca} -fstype custom -fr ${latlon} -nr GRID -fdtype rpn -fd ./out.csintrp.avg -uwgdir /tmp/.cstintrp.avg 2>@1 
 }]
 
@@ -38,7 +38,7 @@ file delete -force ./out.csintrp
 
 puts [time {
 #exec cstintrp -ns TM -fs ${orca} -fstype custom -intyp bilin -fr ${latlon} -nr GRID -fdtype rpn -fd ./out.csintrp -uwgdir /tmp/.cstintrp 2>@1  
-exec cstintrp -ns XX -fs ${orca} -fstype custom -intyp bilin -fr ${latlon} -nr XX -fdtype rpn -fd ./out.csintrp -uwgdir /tmp/.cstintrp 2>@1 
+exec cstintrp -ns XX -fs ${orca} -fstype custom -intyp bilin -fr ${latlon} -nr " " -fdtype rpn -fd ./out.csintrp -uwgdir /tmp/.cstintrp 2>@1 
 }]
 
 file delete -force ./out.spi 

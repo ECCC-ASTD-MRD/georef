@@ -56,8 +56,12 @@ def write_fst(lat_record, lon_record, data):
 def error_cstintrp():
     'Calculate error with respect to analytical truth'
 
-    funit = rmn.fstopenall(os.path.join('GRIDS', 'L_sinus'))
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.csintrp.avg'))
     out_data = rmn.fstlir(funit, nomvar='XX', typvar='P@')['d']
+    rmn.fstcloseall(funit)
+
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.csintrp'))
+    out_data_bilin = rmn.fstlir(funit, nomvar='XX', typvar='P@')['d']
     rmn.fstcloseall(funit)
 
     nlat, nlon = (9, 6)
@@ -68,8 +72,8 @@ def error_cstintrp():
     true_data = np.sin(np.pi*out_lalo['lon']/180)\
         *np.sin(np.pi*out_lalo['lat']/90)
     difference = out_data - true_data
-    np.savetxt(os.path.join('out', 'cstintrp.txt'), out_data)
-    return np.linalg.norm(difference)
+    difference_bilin = out_data_bilin - true_data
+    return (np.linalg.norm(difference), np.linalg.norm(difference_bilin))
 
 def error_spi():
     'Calculate error with respect to analytical truth'
