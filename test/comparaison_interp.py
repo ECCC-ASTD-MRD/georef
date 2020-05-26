@@ -29,15 +29,15 @@ def main():
     'Call all functions in order'
 
     # Read XX field
-    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.spi'))
+    funit = rmn.fstopenall(os.path.join('out', 'out.spi'))
     xx_spi = rmn.fstlir(funit, nomvar='XX', typvar='P')['d']
     rmn.fstcloseall(funit)
 
-    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.csintrp.avg'))
+    funit = rmn.fstopenall(os.path.join('out', 'out.csintrp.avg'))
     xx_cs = rmn.fstlir(funit, nomvar='XX', typvar='P@')['d']
     rmn.fstcloseall(funit)
 
-    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.csintrp'))
+    funit = rmn.fstopenall(os.path.join('out', 'out.csintrp'))
     xx_cs_bilin = rmn.fstlir(funit, nomvar='XX', typvar='P@')['d']
     rmn.fstcloseall(funit)
 

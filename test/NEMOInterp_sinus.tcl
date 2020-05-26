@@ -30,13 +30,13 @@ set latlon [lindex $argv 1]
 
 file delete -force ./out.csintrp.avg
 puts [time {
-exec cstintrp -ns XX -fs ${orca} -fstype custom -fr ${latlon} -nr " " -fdtype rpn -fd ./out.csintrp.avg -uwgdir /tmp/.cstintrp.avg 2>@1   
+exec cstintrp -ns XX -fs ${orca} -fstype custom -fr ${latlon} -nr " " -fdtype rpn -fd ./out/out.csintrp.avg -uwgdir /tmp/.cstintrp.avg 2>@1   
 }]
 
 file delete -force ./out.csintrp
 
 puts [time {  
-exec cstintrp -ns XX -fs ${orca} -fstype custom -intyp bilin -fr ${latlon} -nr " " -fdtype rpn -fd ./out.csintrp -uwgdir /tmp/.cstintrp 2>@1 
+exec cstintrp -ns XX -fs ${orca} -fstype custom -intyp bilin -fr ${latlon} -nr " " -fdtype rpn -fd ./out/out.csintrp -uwgdir /tmp/.cstintrp 2>@1 
 }]
 
 file delete -force ./out.spi 
@@ -44,7 +44,7 @@ file delete -force ./out.spi
 puts [time {
 fstdfile open NEMO read ${orca}
 fstdfile open GRID read ${latlon}
-fstdfile open OUT write ./out.spi
+fstdfile open OUT write ./out/out.spi
 
 fstdfield read LLGRID GRID -1 "" -1 -1 -1 "" " "
 fstdfield stats LLGRID -nodata 0.0
