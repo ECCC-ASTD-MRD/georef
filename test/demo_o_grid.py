@@ -3,6 +3,7 @@
 'Démonstration pour grille de type Orca'
 
 import os
+from pathlib import Path
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -20,7 +21,7 @@ def plot_grid(lat, lon):
     step = 40
 
     plt.plot(lon[::step, ::step], lat[::step, ::step], linestyle='None', color='black', marker='.')
-    plt.savefig('o_grid.png')
+    plt.savefig(os.path.join('out', 'o_grid.png'))
 
 def plot_data(lat, lon, data):
     'Plot data on map'
@@ -33,26 +34,87 @@ def plot_data(lat, lon, data):
 
     axes.plot(lon, lat, data.flatten(), linestyle='None', marker='.')
 
-    plt.savefig('o_data.png')
+    plt.savefig(os.path.join('out', 'o_data.png'))
+
+def write_fst(lat_record, lon_record, data):
+    'Write data to RPN Standard file'
+
+    funit_out = rmn.fstopenall(os.path.join('out', 'O_sinus.fst'), rmn.FST_RW)
+    rmn.fstecr(funit_out, lat_record)
+    rmn.fstecr(funit_out, lon_record)
+    params = rmn.FST_RDE_META_DEFAULT
+    params['nomvar'] = 'XX'
+    params['grtyp'] = 'X'
+    params['ni'] = data.shape[0]
+    params['nj'] = data.shape[1]
+    params['ig1'] = lat_record['ip1']
+    params['ig2'] = lat_record['ip2']
+    params['ig3'] = lat_record['ip3']
+    rmn.fstecr(funit_out, data, params)
+    rmn.fstcloseall(funit_out)
+
+def error_cstintrp():
+    'Calculate error with respect to analytical truth'
+
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.csintrp.avg'))
+    out_data = rmn.fstlir(funit, nomvar='XX', typvar='P@')['d']
+    rmn.fstcloseall(funit)
+
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.csintrp'))
+    out_data_bilin = rmn.fstlir(funit, nomvar='XX', typvar='P@')['d']
+    rmn.fstcloseall(funit)
+
+    nlat, nlon = (9, 6)
+    lat0, lon0, dlat, dlon = (-80, 0, 20, 30)
+    out_gid = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
+    out_lalo = rmn.gdll(out_gid)
+
+    true_data = np.sin(np.pi*out_lalo['lon']/180)\
+        *np.sin(np.pi*out_lalo['lat']/90)
+    difference = out_data - true_data
+    difference_bilin = out_data_bilin - true_data
+    return (np.linalg.norm(difference), np.linalg.norm(difference_bilin))
+
+def error_spi():
+    'Calculate error with respect to analytical truth'
+
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.spi'))
+    out_data = rmn.fstlir(funit, nomvar='XX')['d']
+    rmn.fstcloseall(funit)
+
+    nlat, nlon = (9, 6)
+    lat0, lon0, dlat, dlon = (-80, 0, 20, 30)
+    out_gid = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
+    out_lalo = rmn.gdll(out_gid)
+
+    true_data = np.sin(np.pi*out_lalo['lon']/180)\
+        *np.sin(np.pi*out_lalo['lat']/90)
+    difference = out_data - true_data
+    return np.linalg.norm(difference)
 
 def main():
     'Call all functions in order'
 
     # Read lat-lon points
-    #funit = rmn.fstopenall(os.path.join('..', 'GRIDS', 'O.fstd'))
-    funit = rmn.fstopenall(os.path.join('..', '..', 'O.fstd'))
-    lat = rmn.fstlir(funit, nomvar='^^', dtype=np.float32)['d']
-    lon = rmn.fstlir(funit, nomvar='>>', dtype=np.float32)['d']
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'O.fstd'))
+    lat_record = rmn.fstlir(funit, nomvar='^^', dtype=np.float32)
+    lon_record = rmn.fstlir(funit, nomvar='>>', dtype=np.float32)
+    lat = lat_record['d']
+    lon = lon_record['d']
     rmn.fstcloseall(funit)
+
+    Path('out').mkdir(exist_ok=True)
 
     plot_grid(lat, lon)
 
     step = 35
-    lon = lon[::step, ::step]
-    lat = lat[::step, ::step]
     data = np.sin(np.pi*lon/180)*np.sin(np.pi*lat/90)
+    plot_data(lat[::step, ::step], lon[::step, ::step], data[::step, ::step])
 
-    plot_data(lat, lon, data)
+    write_fst(lat_record, lon_record, data)
+
+    print(error_cstintrp())
+    print(error_spi())
 
 if __name__ == "__main__":
     main()
