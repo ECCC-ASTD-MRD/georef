@@ -41,6 +41,14 @@ Figure 4 : Grille MESH d'éléments finis
 
 # Exemples
 
+## libgeoref
+
+```shell
+. r.load.dot main/opt/cmake/cmake-3.16.4
+export SSM_DEV=$(mktemp --directory)
+./makeit.sh
+```
+
 ## Python-RPN
 Conda requis car Cartopy pas installé sur gpscc2.collab.science.gc.ca,
 référence : https://gitlab.science.gc.ca/hpc/support/issues/5
@@ -53,17 +61,16 @@ cd test
 ./demo_a_grid.py
 ./demo_defGrid_L.py
 ./demo_o_grid.py
+. r.load.dot rpn/OCEAN/cstint-3.2.8 \
+  cmd/cmds/apps/SPI/beta
+./NEMOInterp_sinus.tcl out/O_sinus.fst out/l_grid.fst
 ```
 Cette séquence devrait produire les fichiers `a_data.png`,
-`a_grid.fst`, `a_grid.png`, `l_grid.fst` et `l_grid.png`.
+`a_grid.fst`, `a_grid.png`, `l_grid.fst`, `l_grid.png`, `o_data.png`, `o_grid.png` et `O_sinus.fst` dans le dossier `out`.
 
-## libgeoref
+La dernière commande produit les fichiers `out.csintrp`, `out.csintrp.avg` et `out.spi`.
 
-```shell
-. r.load.dot main/opt/cmake/cmake-3.16.4
-export SSM_DEV=$(mktemp --directory)
-./makeit.sh
-```
+Le dossier `GRIDS` contient des fichiers standard RPN utilisés par les scripts python. Le fichier `O.fstd` contient les positions des points de grille de la grille ORCA. Les fichiers `out.*` sont utilisés pour calculer l'erreur de l'interpolation.
 
 # Références
 

@@ -3,7 +3,6 @@
 'Comparaison entre différentes interpolations de la grille ORCA vers la grille L'
 
 import os
-from pathlib import Path
 import numpy as np
 import rpnpy.librmn.all as rmn
 
@@ -15,12 +14,12 @@ def main():
     xx_spi = rmn.fstlir(funit, nomvar='XX', typvar='P')['d']
     rmn.fstcloseall(funit)
 
-    funit = rmn.fstopenall(os.path.join('GRIDS', 'L_sinus'))
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.csintrp.avg'))
     xx_cs = rmn.fstlir(funit, nomvar='XX', typvar='P@')['d']
     xx_mask_cs = rmn.fstlir(funit, nomvar='XX', typvar='@@')['d']
     rmn.fstcloseall(funit)
 
-    funit = rmn.fstopenall(os.path.join('GRIDS', 'L_sinus_bilin'))
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.csintrp'))
     xx_cs_bilin = rmn.fstlir(funit, nomvar='XX', typvar='P@')['d']
     xx_mask_cs_bilin = rmn.fstlir(funit, nomvar='XX', typvar='@@')['d']
     rmn.fstcloseall(funit)
@@ -30,18 +29,11 @@ def main():
     xx_cs_bilin = np.ma.array(xx_cs_bilin, mask=np.logical_not(xx_mask_cs_bilin))
     xx_cs_bilin = xx_cs_bilin.filled(fill_value=0)
 
-    Path('out').mkdir(exist_ok=True)
-
     difference = xx_spi - xx_cs
-    error = np.linalg.norm(difference)
-    np.savetxt(os.path.join('out', 'xx_cs.txt'), xx_cs)
-    np.savetxt(os.path.join('out', 'dif.txt'), difference)
-    print(error)
+    print(np.linalg.norm(difference))
 
     difference = xx_spi - xx_cs_bilin
-    error = np.linalg.norm(difference)
-    np.savetxt(os.path.join('out', 'dif_bilin.txt'), difference)
-    print(error)
+    print(np.linalg.norm(difference))
 
 if __name__ == "__main__":
     main()
