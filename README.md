@@ -41,6 +41,14 @@ Figure 4 : Grille MESH d'éléments finis
 
 # Exemples
 
+## libgeoref
+
+```shell
+. r.load.dot main/opt/cmake/cmake-3.16.4
+export SSM_DEV=$(mktemp --directory)
+./makeit.sh
+```
+
 ## Python-RPN
 Conda requis car Cartopy pas installé sur gpscc2.collab.science.gc.ca,
 référence : https://gitlab.science.gc.ca/hpc/support/issues/5
@@ -61,14 +69,6 @@ Cette séquence devrait produire les fichiers `a_data.png`,
 `a_grid.fst`, `a_grid.png`, `l_grid.fst`, `l_grid.png`, `o_data.png`, `o_grid.png`, `O_sinus.fst`, `spi.txt` et `true.txt` dans le dossier `out`.
 
 La dernière commande produit les fichiers `out.csintrp`, `out.csintrp.avg` et `out.spi`.
-
-## libgeoref
-
-```shell
-. r.load.dot main/opt/cmake/cmake-3.16.4
-export SSM_DEV=$(mktemp --directory)
-./makeit.sh
-```
 
 # Références
 
