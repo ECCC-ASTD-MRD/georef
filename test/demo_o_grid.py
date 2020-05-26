@@ -90,15 +90,13 @@ def error_spi():
     true_data = np.sin(np.pi*out_lalo['lon']/180)\
         *np.sin(np.pi*out_lalo['lat']/90)
     difference = out_data - true_data
-    np.savetxt(os.path.join('out', 'true.txt'), true_data)
-    np.savetxt(os.path.join('out', 'spi.txt'), out_data)
     return np.linalg.norm(difference)
 
 def main():
     'Call all functions in order'
 
     # Read lat-lon points
-    funit = rmn.fstopenall(os.path.join('..', '..', 'GRIDS', 'O.fstd'))
+    funit = rmn.fstopenall(os.path.join('GRIDS', 'O.fstd'))
     lat_record = rmn.fstlir(funit, nomvar='^^', dtype=np.float32)
     lon_record = rmn.fstlir(funit, nomvar='>>', dtype=np.float32)
     lat = lat_record['d']
