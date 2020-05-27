@@ -71,7 +71,7 @@ Cette séquence devrait produire les fichiers `a_data.png`,
 
 La dernière commande utilise les fichiers `out.*` produits par le script `NEMOInterp_sinus.tcl`.
 
-Le dossier `GRIDS` le fichier `O.fstd` qui contient les positions des points de grille de la grille ORCA.
+Le dossier `GRIDS` contient le fichier `O.fstd` qui donne les positions des points de grille de la grille ORCA.
 
 # Références
 
