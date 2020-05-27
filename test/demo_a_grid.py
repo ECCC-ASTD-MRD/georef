@@ -98,7 +98,7 @@ def main():
     plot_data(params, data)
 
     stage_2020.write_fst(data, params, os.path.join('out', 'a_grid.fst'))
-    error(params, data)
+    print(error(params, data))
 
 if __name__ == "__main__":
     main()
