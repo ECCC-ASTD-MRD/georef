@@ -50,10 +50,9 @@ export SSM_DEV=$(mktemp --directory)
 ```
 
 ## Python-RPN
-Conda requis car Cartopy pas installé sur gpscc2.collab.science.gc.ca,
-référence : https://gitlab.science.gc.ca/hpc/support/issues/5
+
 ```shell
-export PATH=~kro001/miniconda3/bin:"$PATH"
+ssh eccc-ppp4.science.gc.ca
 . r.load.dot comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
   rpn/libs/19.5 \
   rpn/MIG/ENV/rpnpy/2.1.0
