@@ -34,7 +34,6 @@ def plot_grid(params):
 
     axes = plt.axes(projection=ccrs.PlateCarree())
     axes.coastlines()
-    axes.gridlines(xlocs=(-180, 0, 180), ylocs=(-90, 0, 90))
     axes.set_global()
 
     lalo['lon'] = np.mod((lalo['lon'] + 180), 360) - 180
@@ -98,7 +97,7 @@ def main():
     plot_data(params, data)
 
     stage_2020.write_fst(data, params, os.path.join('out', 'a_grid.fst'))
-    print(error(params, data))
+    print('Interpolation error: {:g}'.format(error(params, data)))
 
 if __name__ == "__main__":
     main()

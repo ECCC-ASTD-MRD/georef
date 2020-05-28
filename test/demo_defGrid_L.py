@@ -17,8 +17,8 @@ def gen_data():
     (lat0, lon0, dlat, dlon) = (-80, 0, 20, 30)
     params = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
 
-    rng = np.random.default_rng()
-    data = np.array(rng.random((nlon, nlat)), order='F')
+    lalo = rmn.gdll(params['id'])
+    data = np.sin(np.pi*lalo['lon']/180)*np.sin(np.pi*lalo['lat']/90)
 
     return data, params
 
