@@ -1,5 +1,6 @@
 message(STATUS "Generating test binaries")
 
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
 add_link_options(-Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib)
 
 IF(DEFINED ENV{INTELCOMP_HOME})
@@ -9,11 +10,7 @@ IF(DEFINED ENV{INTELCOMP_HOME})
 endif()
 
 add_executable(interpolate interpolate.c)
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
-
-target_link_libraries(interpolate -lm ${RMN_LIBRARIES} ${VGRID_LIBRARIES})
+target_link_libraries(interpolate georef -lm ${RMN_LIBRARIES} ${VGRID_LIBRARIES})
 set_target_properties(interpolate PROPERTIES VERSION ${PROJECT_VERSION})
 
 install(TARGETS interpolate

@@ -6,6 +6,7 @@
 #include <math.h>
 #include <string.h>
 #include <pthread.h>
+#include <malloc.h>
 #include "rpnmacros.h"
 
 #define NMAXGRIDS 32
@@ -246,8 +247,27 @@ typedef struct
   ftnfloat valeur_extrap;
 }_groptions;
 
+ extern _Grille** Grille;
+ extern _Grille** gr_list;
+ extern wordint nGrilles;
+ extern wordint nGrillesMax;
+ extern wordint cur_log_chunk;
+
+// These declarations used to have the __thread storage class, but threads
+// aren't actually used.  Furthemore, the PGI compiler does not support that
+// storage class
+ extern wordint iset;
+ extern wordint iset_gdin;
+ extern wordint iset_gdout;
+ extern _gridset* gridset;
+ extern _groptions groptions;
+
+ extern wordint log_chunks[];
+ extern wordint primes[];
+ extern wordint chunks[];
+ extern wordint primes_sq[];
+ extern wordint chunks_sq[];
 
 #endif
-
 
 #define _EZSCINT

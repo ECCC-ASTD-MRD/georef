@@ -14,16 +14,17 @@ project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 enable_language(C)
 enable_language(Fortran)
 
-include(compiler_presets)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
+#include(compiler_presets)
 
 set(CMAKE_Fortran_FLAGS         "${CMAKE_Fortran_FLAGS} -cpp")
 
-find_package(RMN ${RMN_REQ_VERSION} REQUIRED)
+find_package(RMN ${RMN_REQ_VERSION} COMPONENTS shared REQUIRED)
 if (RMN_FOUND) 
    add_compile_definitions(HAVE_RMN)
    include_directories(${RMN_INCLUDE_DIR})
 endif()
+
+set(RMN_LIBRARIES /users/dor/afsr/005/Projects/RPN/librmn/libs/Linux_x86-64--/lib/librmn.a)
 #check_version(RMN) 
 
 find_package(OpenMP REQUIRED) 
