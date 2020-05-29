@@ -16,7 +16,7 @@ while IFS= read -r line; do
       val=$(echo ${line#*:} | xargs)
       eval $var=\""$val"\"
    fi
-done < VERSION
+done < MANIFEST
 
 #----- SSM packaging stuff
 if [[ -n $COMP_ARCH ]]; then
@@ -31,7 +31,6 @@ export EC_CMAKE_MODULE_PATH="`pwd`/modules;$EC_CMAKE_MODULE_PATH"
 export DESTDIR=${SSM_DEV}/workspace/${SSM_NAME}
 
 \rm -f -r build; mkdir build; cd build
-cmake $CMAKE_COMP_FLAGS -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
-#exit
+cmake $CMAKE_COMP_FLAGS -DEC_COMPILER_SUITE=intel -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
 make -j
 make install
