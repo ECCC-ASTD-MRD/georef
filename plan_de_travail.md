@@ -21,8 +21,10 @@
 
 # Semaine 4
 
+- [correction d'une erreur dans `NEMOInterp_sinus.tcl`](https://github.com/jeixav/stage_2020/pull/8)
 - vérifier égalité des résultats de cstintrp et API SPI
   - https://github.com/jeixav/stage_2020/issues/5
+  - [refactoring du code de vérification des résultats](https://github.com/jeixav/stage_2020/pull/9)
 - tester programme C `interpolate.c`
 - [relecture de la demande de fusion de la branche feat/move_to_ppp3_4](https://github.com/jeixav/stage_2020/pull/10)
 - remplacer appel à `rmn.ezsint` par `libgeoref.c_ezsint`
