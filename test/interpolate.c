@@ -40,9 +40,9 @@ typedef struct FSTD_Head {
 main(int argc,char *argv[]) {
 
    char *in,*out,*grid,*var;
-   int id[3],gid_out,gid_in,err,key,ni,nj,nk;
+   int id[3],gid_out,gid_in,err,key,ni,nj,nk,ig;
    float *p[3];
-   FSTD_Head h;
+   FSTD_Head h,hg;
 
    in=argv[1];   // Input data to interpolate
    out=argv[2];  // Output result of interpolation
@@ -72,19 +72,19 @@ main(int argc,char *argv[]) {
 
    h.IP1=h.IP2=h.IP3=-1;
    h.DEET=h.NPAS=h.DATEO=0,h.DATEV=-1;
-   strcpy(h.NOMVAR,"    ");
-   strcpy(h.TYPVAR,"  ");
-   strcpy(h.ETIKET,"            ");
-   strcpy(h.GRTYP,"  ");
+   strcpy(hg.NOMVAR,"    ");
+   strcpy(hg.TYPVAR,"  ");
+   strcpy(hg.ETIKET,"            ");
+   strcpy(hg.GRTYP,"  ");
 
    // Read destination grid
    key=c_fstinf(id[2],&ni,&nj,&nk,-1,"",-1,-1,-1,"","GRID");
-   c_fstprm(key,&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,
-               &h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG1,
-               &h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
-   p[2]=(float*)calloc(h.NI*h.NJ,sizeof(float));
-   gid_out=c_ezqkdef(h.NI,h.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,id[2]);
-
+   c_fstprm(key,&hg.DATEO,&hg.DEET,&hg.NPAS,&hg.NI,&hg.NJ,&hg.NK,&hg.NBITS,&hg.DATYP,
+               &hg.IP1,&hg.IP2,&hg.IP3,hg.TYPVAR,hg.NOMVAR,hg.ETIKET,hg.GRTYP,&hg.IG1,
+               &hg.IG2,&hg.IG3,&hg.IG4,&hg.SWA,&hg.LNG,&hg.DLTF,&hg.UBC,&hg.EX1,&hg.EX2,&hg.EX3);
+   p[2]=(float*)calloc(hg.NI*hg.NJ,sizeof(float));
+   gid_out=c_ezqkdef(hg.NI,hg.NJ,hg.GRTYP,hg.IG1,hg.IG2,hg.IG3,hg.IG4,id[2]);
+   
    // Copy grid descriptor to output file      
    key=c_fstlir(p[2],id[2],&ni,&nj,&nk,-1,"",-1,-1,-1,"",">>");
    strcpy(h.NOMVAR,"    ");
@@ -112,9 +112,9 @@ main(int argc,char *argv[]) {
                   &h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG1,
                   &h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
    p[0]=(float*)calloc(ni*nj*nk,sizeof(float));
-   gid_out=c_ezqkdef(ni,nj,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,id[0]);
+   gid_in=c_ezqkdef(ni,nj,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,id[0]);
 
-   err=c_ezdefset(gid_in,gid_out);
+   err=c_ezdefset(gid_out,gid_in);
 
    // Loop on all fields
    while(key>=0) {
@@ -128,7 +128,7 @@ main(int argc,char *argv[]) {
                   &h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
       c_fstluk(p[0],key,&ni,&nj,&nk);
       err=c_ezsint(p[2],p[0]);
-      err=c_fstecr(p[2],NULL,-h.NBITS,id[1],h.DATEO,h.DEET,h.NPAS,h.NI,h.NJ,h.NK,h.IP1,h.IP2,h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,h.DATYP,0);
+      err=c_fstecr(p[2],NULL,-h.NBITS,id[1],h.DATEO,h.DEET,h.NPAS,hg.NI,hg.NJ,hg.NK,h.IP1,h.IP2,h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,hg.IG1,hg.IG2,hg.IG3,hg.IG4,h.DATYP,0);
    
       key=c_fstsui(id[0],&ni,&nj,&nk);
    }
