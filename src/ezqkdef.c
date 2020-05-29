@@ -17,10 +17,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
-#include "ezscint.h"
 #include "ez_funcdef.h"
-
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(ezqkdef)(wordint *ni, wordint *nj, char *grtyp, 
@@ -39,7 +36,7 @@ wordint c_ezqkdef(wordint ni, wordint nj, char *grtyp,
              wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit)
 {
   wordint icode;
-
+   fprintf(stderr,"GOOD LIB");
   icode = c_ezgdef_ffile(ni, nj, grtyp, ig1, ig2, ig3, ig4, iunit);
   
   return icode;
