@@ -20,7 +20,7 @@
 
 - vérifier égalité des résultats de cstintrp et API SPI
   - https://github.com/jeixav/stage_2020/issues/5
-- tester programme C [`interpolate.c`]
+- tester programme C `interpolate.c`
 - [relecture de la demande de fusion de la branche feat/move_to_ppp3_4](https://github.com/jeixav/stage_2020/pull/10)
 - remplacer appel à `rmn.ezsint` par `libgeoref.c_ezsint`
   - [diagnostic d'erreur de segmentation](https://github.com/jeixav/stage_2020/issues/6)
