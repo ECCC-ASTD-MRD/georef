@@ -15,6 +15,9 @@
 
 - interpoler de grille ORCA à [RPN L](https://science:science@collaboration.cmc.ec.gc.ca/science/si/eng/si/misc/grilles.html#LatLon) avec [API de SPI](https://wiki.cmc.ec.gc.ca/wiki/SPI/Documentation#Developer_documentation) (suite)
 - [configurer ThinLinc pour travail à distance](https://1drv.ms/w/s!AmH_Shsw9Hrnvyo9b08sRvWJyE7v)
+- remplacer [appel à `rmn.ezsint`](https://github.com/jeixav/stage_2020/blob/5c2c86459d920a2866b46d8af58fd886be200ac3/test/demo_a_grid.py#L71) par [`libgeoref.c_ezsint`](https://github.com/jeixav/stage_2020/blob/5c2c86459d920a2866b46d8af58fd886be200ac3/src/ezsint.c#L33-L145)
+  - utilise [Python ctypes](https://docs.python.org/3/library/ctypes.html)
+  - référence: [librmn avec python-RPN](https://github.com/meteokid/python-rpn/tree/master/lib/rpnpy/librmn)
 
 # Semaine 4
 
