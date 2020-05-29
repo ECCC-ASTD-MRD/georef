@@ -23,8 +23,6 @@ if (RMN_FOUND)
    add_compile_definitions(HAVE_RMN)
    include_directories(${RMN_INCLUDE_DIR})
 endif()
-
-set(RMN_LIBRARIES /users/dor/afsr/005/Projects/RPN/librmn/libs/Linux_x86-64--/lib/librmn.a)
 #check_version(RMN) 
 
 find_package(OpenMP REQUIRED) 
