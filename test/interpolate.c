@@ -84,27 +84,6 @@ main(int argc,char *argv[]) {
                &hg.IG2,&hg.IG3,&hg.IG4,&hg.SWA,&hg.LNG,&hg.DLTF,&hg.UBC,&hg.EX1,&hg.EX2,&hg.EX3);
    p[2]=(float*)calloc(hg.NI*hg.NJ,sizeof(float));
    gid_out=c_ezqkdef(hg.NI,hg.NJ,hg.GRTYP,hg.IG1,hg.IG2,hg.IG3,hg.IG4,id[2]);
-   
-   // Copy grid descriptor to output file      
-   key=c_fstlir(p[2],id[2],&ni,&nj,&nk,-1,"",-1,-1,-1,"",">>");
-   strcpy(h.NOMVAR,"    ");
-   strcpy(h.TYPVAR,"  ");
-   strcpy(h.ETIKET,"            ");
-   strcpy(h.GRTYP,"  ");
-   c_fstprm(key,&h.DATEO,&h.DEET,&h.NPAS,&ni,&nj,&nk,&h.NBITS,&h.DATYP,
-               &h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG1,
-               &h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
-   err=c_fstecr(p[2],NULL,-h.NBITS,id[1],h.DATEO,h.DEET,h.NPAS,ni,nj,nk,h.IP1,h.IP2,h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,h.DATYP,0);
- 
-   key=c_fstlir(p[2],id[2],&ni,&nj,&nk,-1,"",-1,-1,-1,"","^^");
-   strcpy(h.NOMVAR,"    ");
-   strcpy(h.TYPVAR,"  ");
-   strcpy(h.ETIKET,"            ");
-   strcpy(h.GRTYP,"  ");
-   c_fstprm(key,&h.DATEO,&h.DEET,&h.NPAS,&ni,&nj,&nk,&h.NBITS,&h.DATYP,
-               &h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG1,
-               &h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
-   err=c_fstecr(p[2],NULL,-h.NBITS,id[1],h.DATEO,h.DEET,h.NPAS,ni,nj,nk,h.IP1,h.IP2,h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,h.DATYP,0);
 
    // Look for first corresponding field
    key=c_fstinf(id[0],&ni,&nj,&nk,-1,"",-1,-1,-1,"",var);

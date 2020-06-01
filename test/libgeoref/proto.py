@@ -5,13 +5,6 @@ import numpy  as np
 import numpy.ctypeslib as npc
 from . import libgeoref
 
-libgeoref.c_ezsint.argtypes = (
-    npc.ndpointer(dtype=np.float32),
-    npc.ndpointer(dtype=np.float32)
-    )
-libgeoref.c_ezsint.restype = ct.c_int
-c_ezsint = libgeoref.c_ezsint
-
 libgeoref.c_ezdefset.argtypes = (ct.c_int, ct.c_int)
 libgeoref.c_ezdefset.restype = ct.c_int
 c_ezdefset = libgeoref.c_ezdefset
@@ -41,3 +34,10 @@ libgeoref.c_ezqkdef.argtypes = (
     )
 libgeoref.c_ezqkdef.restype = ct.c_int
 c_ezqkdef = libgeoref.c_ezqkdef
+
+libgeoref.c_ezsint.argtypes = (
+    npc.ndpointer(dtype=np.float32),
+    npc.ndpointer(dtype=np.float32)
+    )
+libgeoref.c_ezsint.restype = ct.c_int
+c_ezsint = libgeoref.c_ezsint

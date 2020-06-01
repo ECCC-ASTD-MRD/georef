@@ -7,6 +7,7 @@ import numpy  as _np
 import rpnpy.librmn.base as rb
 import rpnpy.librmn.interp as inter
 from rpnpy.librmn  import const as rc
+from rpnpy.librmn  import RMNError
 from rpnpy import C_WCHAR2CHAR as _C_WCHAR2CHAR
 from rpnpy import C_CHAR2WCHAR as _C_CHAR2WCHAR
 from rpnpy import C_MKSTR as _C_MKSTR
@@ -20,23 +21,35 @@ _ftnf32 = lambda x: _ftn(x, _np.float32)
 _ftnOrEmpty = lambda x, s, t: \
     _np.empty(s, dtype=t, order='F') if x is None else _ftn(x, t)
 
+class EzscintError(RMNError):
+    pass
+
+def _getCheckArg(okTypes, value, valueDict, key):
+    if isinstance(valueDict, dict) and (value is None or value is valueDict):
+        if key in valueDict.keys():
+            value = valueDict[key]
+    if (okTypes is not None) and not isinstance(value, okTypes):
+        raise EzscintError('For {0} type, Expecting {1}, Got {2}'.
+                           format(key, repr(okTypes), type(value)))
+    return value
+
 def wrapper_ezdefset(gdidout, gdidin):
-    gdidout = inter._getCheckArg(int, gdidout, gdidout, 'id')
-    gdidin = inter._getCheckArg(int, gdidin, gdidin, 'id')
+    gdidout = _getCheckArg(int, gdidout, gdidout, 'id')
+    gdidin = _getCheckArg(int, gdidin, gdidin, 'id')
     istat = rp.c_ezdefset(gdidout, gdidin)
     if istat < 0:
-        raise inter.EzscintError()
+        raise EzscintError()
     return istat
 
 def wrapper_ezgprm(gdid, doSubGrid=False):
-    gdid = inter._getCheckArg(int, gdid, gdid, 'id')
+    gdid = _getCheckArg(int, gdid, gdid, 'id')
     (cni, cnj) = (ct.c_int(), ct.c_int())
     (cgrtyp, cig1, cig2, cig3, cig4) = (_C_MKSTR(' '*rc.FST_GRTYP_LEN),
                                         ct.c_int(), ct.c_int(), ct.c_int(),
                                         ct.c_int())
     istat = rp.c_ezgprm(gdid, cgrtyp, cni, cnj, cig1, cig2, cig3, cig4)
     if istat < 0:
-        raise inter.EzscintError()
+        raise EzscintError()
     params = {
         'id'    : gdid,
         'shape' : (max(1, cni.value), max(1, cnj.value)),
@@ -58,7 +71,7 @@ def wrapper_ezgprm(gdid, doSubGrid=False):
     return params
 
 def wrapper_ezgxprm(gdid, doSubGrid=False):
-    gdid = inter._getCheckArg(int, gdid, gdid, 'id')
+    gdid = _getCheckArg(int, gdid, gdid, 'id')
     (cni, cnj) = (ct.c_int(), ct.c_int())
     cgrtyp = _C_MKSTR(' '*rc.FST_GRTYP_LEN)
     (cig1, cig2, cig3, cig4) = (ct.c_int(), ct.c_int(),
@@ -69,7 +82,7 @@ def wrapper_ezgxprm(gdid, doSubGrid=False):
     istat = rp.c_ezgxprm(gdid, cni, cnj, cgrtyp, cig1, cig2, cig3, cig4,
                          cgrref, cig1ref, cig2ref, cig3ref, cig4ref)
     if istat < 0:
-        raise inter.EzscintError()
+        raise EzscintError()
     params = {
         'id'    : gdid,
         'shape' : (max(1, cni.value), max(1, cnj.value)),
@@ -123,19 +136,20 @@ def wrapper_ezqkdef(ni, nj=None, grtyp=None, ig1=None, ig2=None, ig3=None, ig4=N
             type(ig4), type(iunit)) != (int, int, str, int, int, int, int, int):
         raise TypeError('ezqkdef: wrong input data type')
     if grtyp.strip() in ('', 'X'):
-        raise inter.EzscintError('ezqkdef: Grid type {0} Not supported'.format(grtyp))
+        raise EzscintError('ezqkdef: Grid type {0} Not supported'.format(grtyp))
     if iunit <= 0 and grtyp.strip() in ('Z', '#', 'Y', 'U'):
-        raise inter.EzscintError('ezqkdef: A valid opened file unit ({0}) is needed for Grid type {1}'.format(iunit, grtyp))
+        raise EzscintError('ezqkdef: A valid opened file unit ({0}) is needed for Grid type {1}'.format(iunit, grtyp))
     gdid = rp.c_ezqkdef(ni, nj, _C_WCHAR2CHAR(grtyp), ig1, ig2, ig3, ig4, iunit)
     if gdid >= 0:
         return gdid
-    raise inter.EzscintError()
+    raise EzscintError()
 
 def wrapper_ezsint(gdidout, gdidin, zin, zout=None):
-    gdidout = inter._getCheckArg(int, gdidout, gdidout, 'id')
-    gdidin  = inter._getCheckArg(int, gdidin, gdidin, 'id')
-    zin     = inter._getCheckArg(_np.ndarray, zin, zin, 'd')
-    zout    = inter._getCheckArg(None, zout, zout, 'd')
+    gdidout = _getCheckArg(int, gdidout, gdidout, 'id')
+    gdidin  = _getCheckArg(int, gdidin, gdidin, 'id')
+    zin     = _getCheckArg(_np.ndarray, zin, zin, 'd')
+    zout    = _getCheckArg(None, zout, zout, 'd')
+    #gridsetid = inter.ezdefset(gdidout, gdidin)
     gridsetid = wrapper_ezdefset(gdidout, gdidin)
     gridParams = inter.ezgxprm(gdidin)
     zin  = _ftnf32(zin)
@@ -150,7 +164,7 @@ def wrapper_ezsint(gdidout, gdidin, zin, zout=None):
     istat = rp.c_ezsint(zout, zin)
     if istat >= 0:
         return zout
-    raise inter.EzscintError()
+    raise EzscintError()
 
 def defGrid_L(ni, nj=None, lat0=None, lon0=None, dlat=None, dlon=None,
               setGridId=True):
