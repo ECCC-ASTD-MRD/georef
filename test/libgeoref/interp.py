@@ -32,7 +32,7 @@ def _getCheckArg(okTypes, value, valueDict, key):
                            format(key, repr(okTypes), type(value)))
     return value
 
-def wrapper_ezdefset(gdidout, gdidin):
+def ezdefset(gdidout, gdidin):
     gdidout = _getCheckArg(int, gdidout, gdidout, 'id')
     gdidin = _getCheckArg(int, gdidin, gdidin, 'id')
     istat = rp.c_ezdefset(gdidout, gdidin)
@@ -40,7 +40,23 @@ def wrapper_ezdefset(gdidout, gdidin):
         raise EzscintError()
     return istat
 
-def wrapper_ezgprm(gdid, doSubGrid=False):
+def ezget_nsubgrids(super_gdid):
+    super_gdid = _getCheckArg(int, super_gdid, super_gdid, 'id')
+    nsubgrids = rp.c_ezget_nsubgrids(super_gdid)
+    if nsubgrids >= 0:
+        return nsubgrids
+    raise EzscintError()
+
+def ezget_subgridids(super_gdid):
+    super_gdid = _getCheckArg(int, super_gdid, super_gdid, 'id')
+    nsubgrids  = ezget_nsubgrids(super_gdid)
+    cgridlist  = _np.empty(nsubgrids, dtype=_np.intc, order='F')
+    istat = rp.c_ezget_subgridids(super_gdid, cgridlist)
+    if istat >= 0:
+        return cgridlist.tolist()
+    raise EzscintError()
+
+def ezgprm(gdid, doSubGrid=False):
     gdid = _getCheckArg(int, gdid, gdid, 'id')
     (cni, cnj) = (ct.c_int(), ct.c_int())
     (cgrtyp, cig1, cig2, cig3, cig4) = (_C_MKSTR(' '*rc.FST_GRTYP_LEN),
@@ -61,15 +77,15 @@ def wrapper_ezgprm(gdid, doSubGrid=False):
         'ig4'   : cig4.value
             }
     if doSubGrid:
-        params['nsubgrids'] = inter.ezget_nsubgrids(gdid)
-        params['subgridid'] = inter.ezget_subgridids(gdid)
+        params['nsubgrids'] = ezget_nsubgrids(gdid)
+        params['subgridid'] = ezget_subgridids(gdid)
         params['subgrid'] = []
         if params['nsubgrids'] > 0:
             for gid2 in params['subgridid']:
-                params['subgrid'].append(wrapper_ezgprm(gid2))
+                params['subgrid'].append(ezgprm(gid2))
     return params
 
-def wrapper_ezgxprm(gdid, doSubGrid=False):
+def ezgxprm(gdid, doSubGrid=False):
     gdid = _getCheckArg(int, gdid, gdid, 'id')
     (cni, cnj) = (ct.c_int(), ct.c_int())
     cgrtyp = _C_MKSTR(' '*rc.FST_GRTYP_LEN)
@@ -99,15 +115,15 @@ def wrapper_ezgxprm(gdid, doSubGrid=False):
         'ig4ref'   : cig4ref.value
             }
     if doSubGrid:
-        params['nsubgrids'] = inter.ezget_nsubgrids(gdid)
-        params['subgridid'] = inter.ezget_subgridids(gdid)
+        params['nsubgrids'] = ezget_nsubgrids(gdid)
+        params['subgridid'] = ezget_subgridids(gdid)
         params['subgrid'] = []
         if params['nsubgrids'] > 0:
             for gid2 in params['subgridid']:
-                params['subgrid'].append(wrapper_ezgxprm(gid2))
+                params['subgrid'].append(ezgxprm(gid2))
     return params
 
-def wrapper_ezqkdef(ni, nj=None, grtyp=None, ig1=None, ig2=None, ig3=None, ig4=None,
+def ezqkdef(ni, nj=None, grtyp=None, ig1=None, ig2=None, ig3=None, ig4=None,
                     iunit=0):
     if isinstance(ni, dict):
         gridParams = ni
@@ -143,17 +159,17 @@ def wrapper_ezqkdef(ni, nj=None, grtyp=None, ig1=None, ig2=None, ig3=None, ig4=N
         return gdid
     raise EzscintError()
 
-def wrapper_ezsint(gdidout, gdidin, zin, zout=None):
+def ezsint(gdidout, gdidin, zin, zout=None):
     gdidout = _getCheckArg(int, gdidout, gdidout, 'id')
     gdidin  = _getCheckArg(int, gdidin, gdidin, 'id')
     zin     = _getCheckArg(_np.ndarray, zin, zin, 'd')
     zout    = _getCheckArg(None, zout, zout, 'd')
-    gridsetid = wrapper_ezdefset(gdidout, gdidin)
-    gridParams = wrapper_ezgxprm(gdidin)
+    gridsetid = ezdefset(gdidout, gdidin)
+    gridParams = ezgxprm(gdidin)
     zin  = _ftnf32(zin)
     if zin.shape != gridParams['shape']:
         raise TypeError("zin array has inconsistent shape compared to input grid\ngdidin shape: {}, zin shape: {}".format(gridParams['shape'], zin.shape))
-    dshape = wrapper_ezgprm(gdidout)['shape']
+    dshape = ezgprm(gdidout)['shape']
     zout = _ftnOrEmpty(zout, dshape, zin.dtype)
     if not (isinstance(zout, _np.ndarray) and zout.shape == dshape):
         raise TypeError("Wrong type,shape for zout: {0}, {1}"\
@@ -161,6 +177,54 @@ def wrapper_ezsint(gdidout, gdidin, zin, zout=None):
     istat = rp.c_ezsint(zout, zin)
     if istat >= 0:
         return zout
+    raise EzscintError()
+
+
+def gdll(gdid, lat=None, lon=None):
+    lat = _getCheckArg(None, lat, gdid, 'lat')
+    lon = _getCheckArg(None, lon, gdid, 'lon')
+    lon = _getCheckArg(None, lon, lat, 'lon')
+    lat = _getCheckArg(None, lat, lat, 'lat')
+    gdid = _getCheckArg(int, gdid, gdid, 'id')
+    nsubgrids = ezget_nsubgrids(gdid)
+    if nsubgrids > 1:
+        latlon = []
+        subgridid = ezget_subgridids(gdid)
+        for id in subgridid:
+            latlon.append(gdll(id, lat, lon))
+            lat, lon = None, None
+        if not len(latlon):
+            raise EzscintError()
+        return {
+                'id' : gdid,
+                'lat' : latlon[0]['lat'],
+                'lon' : latlon[0]['lon'],
+                'nsubgrids' : nsubgrids,
+                'subgridid' : subgridid,
+                'subgrid'   : latlon
+                }
+    gridParams = ezgxprm(gdid)
+    lat = _ftnOrEmpty(lat, gridParams['shape'], _np.float32)
+    lon = _ftnOrEmpty(lon, gridParams['shape'], _np.float32)
+    if not (isinstance(lat, _np.ndarray) and isinstance(lon, _np.ndarray)):
+        raise TypeError("gdll: Expecting lat, lon as 2 numpy.ndarray," +
+                        "Got {0}, {1}".format(type(lat), type(lon)))
+    if lat.shape != gridParams['shape'] or lon.shape != gridParams['shape']:
+        raise TypeError("gdll: provided lat, lon have the wrong shape")
+    istat = rp.c_gdll(gdid, lat, lon)
+    if istat >= 0:
+        return {
+            'id'  : gdid,
+            'lat' : lat,
+            'lon' : lon,
+            'nsubgrids' : 0,
+            'subgridid' : [gdid],
+            'subgrid'   : [{
+                'id'  : gdid,
+                'lat' : lat,
+                'lon' : lon,
+                }]
+            }
     raise EzscintError()
 
 def defGrid_L(ni, nj=None, lat0=None, lon0=None, dlat=None, dlon=None,
@@ -201,6 +265,6 @@ def defGrid_L(ni, nj=None, lat0=None, lon0=None, dlat=None, dlon=None,
     params['ig2'] = ig1234[1]
     params['ig3'] = ig1234[2]
     params['ig4'] = ig1234[3]
-    params['id'] = wrapper_ezqkdef(params) if setGridId else -1
+    params['id'] = ezqkdef(params) if setGridId else -1
     params['shape'] = (params['ni'], params['nj'])
     return params

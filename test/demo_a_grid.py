@@ -85,15 +85,15 @@ def error(params, data, georef=False):
     lat0, lon0, dlat, dlon = (-80, 0, 20, 30)
 
     if georef:
-        gid = libgeoref.wrapper_ezqkdef(params)
+        gid = libgeoref.ezqkdef(params)
         out_gid = libgeoref.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
-        out_data = libgeoref.wrapper_ezsint(out_gid, gid, data)
+        out_data = libgeoref.ezsint(out_gid, gid, data)
+        out_lalo = libgeoref.gdll(out_gid)
     else:
         gid = rmn.ezqkdef(params)
         out_gid = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
         out_data = rmn.ezsint(out_gid, gid, data)
-
-    out_lalo = rmn.gdll(out_gid)
+        out_lalo = rmn.gdll(out_gid)
 
     true_data = np.sin(np.pi*out_lalo['lon']/180)\
         *np.sin(np.pi*out_lalo['lat']/90)
