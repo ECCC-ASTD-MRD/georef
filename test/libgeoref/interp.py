@@ -5,7 +5,6 @@
 import ctypes as ct
 import numpy  as _np
 import rpnpy.librmn.base as rb
-import rpnpy.librmn.interp as inter
 from rpnpy.librmn  import const as rc
 from rpnpy.librmn  import RMNError
 from rpnpy import C_WCHAR2CHAR as _C_WCHAR2CHAR
@@ -149,14 +148,12 @@ def wrapper_ezsint(gdidout, gdidin, zin, zout=None):
     gdidin  = _getCheckArg(int, gdidin, gdidin, 'id')
     zin     = _getCheckArg(_np.ndarray, zin, zin, 'd')
     zout    = _getCheckArg(None, zout, zout, 'd')
-    #gridsetid = inter.ezdefset(gdidout, gdidin)
     gridsetid = wrapper_ezdefset(gdidout, gdidin)
-    gridParams = inter.ezgxprm(gdidin)
+    gridParams = wrapper_ezgxprm(gdidin)
     zin  = _ftnf32(zin)
     if zin.shape != gridParams['shape']:
-        raise TypeError("Provided zin array have inconsistent " +
-                        "shape compared to the input grid")
-    dshape = inter.ezgprm(gdidout)['shape']
+        raise TypeError("zin array has inconsistent shape compared to input grid\ngdidin shape: {}, zin shape: {}".format(gridParams['shape'], zin.shape))
+    dshape = wrapper_ezgprm(gdidout)['shape']
     zout = _ftnOrEmpty(zout, dshape, zin.dtype)
     if not (isinstance(zout, _np.ndarray) and zout.shape == dshape):
         raise TypeError("Wrong type,shape for zout: {0}, {1}"\
