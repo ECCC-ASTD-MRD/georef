@@ -18,8 +18,28 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "ezscint.h"
 #include "ez_funcdef.h"
+
+_Grille** Grille  = NULL;
+_Grille** gr_list = NULL;
+wordint nGrilles = 0;
+wordint nGrillesMax = CHUNK*CHUNK;
+wordint cur_log_chunk = 7;
+
+// These declarations used to have the __thread storage class, but threads
+// aren't actually used.  Furthemore, the PGI compiler does not support that
+// storage class
+wordint iset     = -1;
+wordint iset_gdin = -1;
+wordint iset_gdout = -1;
+_gridset* gridset = NULL;
+_groptions groptions = { OUI, CUBIQUE,  MAXIMUM, NON, -1, SYM, SCALAIRE, NON, NON, OUI, 16, 0, DISTANCE, NEAREST, 0.5, 3.0, 0.0  };
+
+wordint log_chunks[]= {0, 1, 2, 3,   4,    5,   6,      7,     8,      9,      10,     11,        12};
+wordint primes[]    = {0, 0, 3, 7,  13,   31,   61,   127,   251,    509,    1021,   2039,      4093};
+wordint chunks[]    = {0, 0, 4, 8,  16,   32,   64,   128,   256,    512,    1024,   2048,      4096};
+wordint primes_sq[] = {0, 0, 3, 61, 251, 1021, 4093, 16381, 65521, 262139, 1048573, 4194301, 16777213};
+wordint chunks_sq[] = {0, 0, 16, 64, 256, 1024, 4096, 16384, 65536, 262144, 1048576, 4194304, 16777216};
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

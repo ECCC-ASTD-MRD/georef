@@ -60,7 +60,6 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
     strcpy(grref, " ");
     return c_ezgdef_fmem(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, bidon, bidon);
     }
-
   if (nGrilles == 0)
     {
     gr_list = calloc(chunks_sq[cur_log_chunk], sizeof(_Grille *));

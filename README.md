@@ -58,6 +58,8 @@ ssh eccc-ppp4.science.gc.ca
   rpn/MIG/ENV/rpnpy/2.1.0
 cd test
 ./demo_a_grid.py
+# Test libgeoref interpolation
+./demo_a_grid.py --georef
 ./demo_defGrid_L.py
 ./demo_o_grid.py
 . r.load.dot rpn/OCEAN/cstint-3.2.8 \
