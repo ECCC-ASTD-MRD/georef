@@ -44,7 +44,6 @@ Figure 4 : Grille MESH d'éléments finis
 ## libgeoref
 
 ```shell
-. r.load.dot main/opt/cmake/cmake-3.16.4
 export SSM_DEV=$(mktemp --directory)
 ./makeit.sh
 ```
