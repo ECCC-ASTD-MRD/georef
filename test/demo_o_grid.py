@@ -75,4 +75,7 @@ def main():
     write_fst(lat_record, lon_record, data)
 
 if __name__ == "__main__":
+    if 'DISPLAY' not in os.environ:
+        plt.switch_backend('agg')
+
     main()

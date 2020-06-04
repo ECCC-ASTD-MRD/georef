@@ -48,4 +48,7 @@ def main():
     plot_grid(params)
 
 if __name__ == "__main__":
+    if 'DISPLAY' not in os.environ:
+        plt.switch_backend('agg')
+
     main()
