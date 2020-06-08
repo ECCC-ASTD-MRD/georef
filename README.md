@@ -73,6 +73,18 @@ La dernière commande utilise les fichiers `out.*` produits par le script `NEMOI
 
 Le dossier `GRIDS` contient le fichier `O.fstd` qui donne les positions des points de grille de la grille ORCA.
 
+# [Documentation](https://hpfx.collab.science.gc.ca/~map007/html/index.html)
+
+``` shell
+doxygen
+```
+
+ou
+
+``` shell
+doxywizard Doxyfile
+```
+
 # Références
 
 - [Grid Types Supported by RPN Standard Files](https://science:science@collaboration.cmc.ec.gc.ca/science/si/eng/si/misc/grilles.html)
