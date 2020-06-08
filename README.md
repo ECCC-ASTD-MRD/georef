@@ -75,24 +75,15 @@ Le dossier `GRIDS` contient le fichier `O.fstd` qui donne les positions des poin
 
 # [Documentation](https://hpfx.collab.science.gc.ca/~map007/html/index.html)
 
-Pour générer soi-même les graphes
-
-- En ligne de commande
-
 ``` shell
-doxygen Doxyfile
+doxygen
 ```
 
-- Utilisation d'un GUI
+ou
 
 ``` shell
 doxywizard Doxyfile
 ```
-Dans l'onglet "Run", appuyez sur "Run doxygen".
-
-Une fois le traitement terminé, vous pouvez utiliser le bouton "Open HTML output" en bas pour ouvrir votre navigateur par défaut sur le résultat. 
-
-Pour plus d'informations, voir [Doxygen/Générer un graphe d'appels de fonctions](https://wiki.cmc.ec.gc.ca/wiki/Doxygen/G%C3%A9n%C3%A9rer_un_graphe_d%27appels_de_fonctions)
 
 # Références
 
