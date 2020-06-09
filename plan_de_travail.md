@@ -33,7 +33,7 @@
 # Semaine 5
 
 - remplacer appel à `rmn.ezsint` par `libgeoref.c_ezsint` (suite)
-- générer automatique de la documentation avec Doxygen
+- générer automatiquement de la documentation avec Doxygen
 - adapter `c_ezsint` pour grille ORCA
   - identifier où `c_ezsint` échoue avec grille ORCA
   - utilisation du débogueur [TotalView](https://portal.science.gc.ca/confluence/x/14Lr)
