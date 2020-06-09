@@ -27,14 +27,16 @@
   - [refactoring du code de vérification des résultats](https://github.com/jeixav/stage_2020/pull/9)
 - tester programme C `interpolate.c`
 - [relecture de la demande de fusion de la branche feat/move_to_ppp3_4](https://github.com/jeixav/stage_2020/pull/10)
-- remplacer appel à `rmn.ezsint` par `libgeoref.c_ezsint`
+- remplacer appel à `rmn.ezsint` par `libgeoref.c_ezsint` (suite)
   - [diagnostic d'erreur de segmentation](https://github.com/jeixav/stage_2020/issues/6)
 
 # Semaine 5
 
-- remplacer appel à `rmn.ezsint` par `libgeoref.c_ezsint`
+- remplacer appel à `rmn.ezsint` par `libgeoref.c_ezsint` (suite)
+- générer automatiquement de la documentation avec Doxygen
 - adapter `c_ezsint` pour grille ORCA
   - identifier où `c_ezsint` échoue avec grille ORCA
+  - utilisation du débogueur [TotalView](https://portal.science.gc.ca/confluence/x/14Lr)
 
 # Semaines 6 & 7
 
