@@ -14,23 +14,58 @@ project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 enable_language(C)
 enable_language(Fortran)
 
+include(compiler_rules)
 #include(compiler_presets)
 
 set(CMAKE_Fortran_FLAGS         "${CMAKE_Fortran_FLAGS} -cpp")
 
-find_package(RMN ${RMN_REQ_VERSION} COMPONENTS shared REQUIRED)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
+add_compile_definitions(HAVE_GPC)
+
+#TODO --- COMPONENTS shared threaded
+find_package(RMN ${RMN_REQ_VERSION} COMPONENTS beta shared OPTIONAL)
 if (RMN_FOUND) 
    add_compile_definitions(HAVE_RMN)
    include_directories(${RMN_INCLUDE_DIR})
 endif()
-#check_version(RMN) 
 
-find_package(OpenMP REQUIRED) 
-add_compile_options(${OpenMP_C_FLAGS})
+#find_package(VGRID ${VGRID_REQ_VERSION} COMPONENTS shared OPTIONAL)
+#if(VGRID_FOUND)
+#  add_compile_definitions(HAVE_VGRID)
+#   include_directories(${VGRID_INCLUDE_DIR})
+#endif()
+
+#find_package(LibXml2 REQUIRED)
+#include_directories(${LIBXML2_INCLUDE_DIR})
+
+find_package(GDAL)
+if(GDAL_FOUND)
+   add_compile_definitions(HAVE_GDAL)
+   include_directories(${GDAL_INCLUDE_DIR})
+endif()
+
+if(${CMAKE_SYSTEM_PROCESSOR} EQUAL x86_64)
+   add_compile_options(-fPIC -DSTDC_HEADERS)
+endif()
+
+if(DEFINED ENV{OMPI})
+   message(STATUS "OMPI build enabled")
+
+   find_package(MPI REQUIRED)
+   include_directories(${MPI_INCLUDE_PATH})
+   add_compile_definitions(_MPI)
+
+   find_package(OpenMP REQUIRED) 
+   add_compile_options(${OpenMP_C_FLAGS})
+endif()
 
 add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ _GNU_SOURCE)
+
 add_subdirectory(src src)
-add_subdirectory(test test)
+if(NOT DEFINED ENV{OMPI})
+   add_subdirectory(util util)
+   add_subdirectory(test test)
+endif()
 
 include(ec_bin_config)
 
