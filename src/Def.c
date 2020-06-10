@@ -1545,9 +1545,10 @@ int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
 
 int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char *Interp,char *Extrap,char Mask,float *Index) {
 
-   double val;
-   int    ezto=1,ezfrom=1,idx,c;
+   double val,lat,lon,di,dj;
+   int    ezto=1,ezfrom=1,idx,c,i,j,k,gotidx;
    char  *interp;
+   float *ip=NULL;
 
    if (!ToRef || !ToDef) {
       App_Log(ERROR,"%s: Invalid destination\n",__func__);
@@ -1584,7 +1585,7 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,cha
          
       // Use ezscint
       if (ezto && ezfrom) {
-	if (!Def_EZInterp(ToRef,ToDef,FromRef,FromDef,Interp,Extrap,Mask,Index)) {
+	      if (!Def_EZInterp(ToRef,ToDef,FromRef,FromDef,Interp,Extrap,Mask,Index)) {
             App_Log(ERROR,"%s: EZSCINT interpolation problem",__func__);
             return(FALSE);
          }
@@ -1594,6 +1595,32 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,cha
             return(FALSE);
          }
       }
+   }
+
+   // Interpolate mask if needed
+   if (FromDef->Mask && ToDef->Mask) {
+            
+      idx=0;  
+      for(k=0;k<ToDef->NK;k++) {
+         ip=Index;
+         gotidx=(Index && Index[0]!=DEF_INDEX_EMPTY);
+
+         for(j=0;j<ToDef->NJ;j++) {
+            for(i=0;i<ToDef->NI;i++,idx++) {
+
+               if (gotidx) {
+                  // Got the index, use coordinates from it
+                  di=*(ip++);
+                  dj=*(ip++);
+               } else {
+                  // No index, project coordinate
+                  ToRef->Project(ToRef,i,j,&lat,&lon,0,1);
+                  FromRef->UnProject(FromRef,&di,&dj,lat,lon,0,1);
+               }
+               ToDef->Mask[idx]=(di>=0.0)?FromDef->Mask[k*FromDef->NIJ+ROUND(dj)*FromDef->NI+ROUND(di)]:0;
+            }
+         }
+      }     
    }
 
    return(TRUE);
