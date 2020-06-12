@@ -134,7 +134,7 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,char *Type) {
 int main(int argc, char *argv[]) {
 
    int      ok=0,code=EXIT_FAILURE;
-   char     *in=NULL,*out=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX];
+   char     *in=NULL,*out=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
 
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,   1,             "i", "input",  "Input file" },
@@ -168,6 +168,9 @@ int main(int argc, char *argv[]) {
    if (!vars[0]) {
       App_Log(ERROR,"No variable specified\n");
       exit(EXIT_FAILURE);
+   }
+   if (!type) {
+      type=dtype;
    }
 
    /*Launch the app*/

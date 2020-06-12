@@ -1497,7 +1497,9 @@ int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
          idx=j*ToDef->NI;
          ip=Index?Index+idx*2:NULL;
          idx+=k*ToDef->NIJ;
+         
          for(i=0;i<ToDef->NI;i++,idx++) {
+            
             if (gotidx) {
                // Got the index, use coordinates from it
                di=*(ip++);
@@ -1539,7 +1541,6 @@ int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
       // Mark end of index
 //         if (!gotidx && ip) *(ip++)=DEF_INDEX_END;
    }
-   
    return(TRUE);
 }
 
