@@ -43,8 +43,8 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,char *Type) {
    TRPNField *in,*grid,*idx;
    int  fin,fout,fgrid;
    float *index=NULL;
-   
-  if ((fin=cs_fstouv(In,"STD+RND+R/O"))<0) {
+
+   if ((fin=cs_fstouv(In,"STD+RND+R/O"))<0) {
       App_Log(ERROR,"Problems opening input file %s\n",In);
       return(0);
    }
@@ -64,20 +64,20 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,char *Type) {
       return(0);    
    }
    RPN_FieldReadGrid(grid);
-   
+
    if (!(in=RPN_FieldRead(fin,-1,"",-1,-1,-1,"",Vars[0]))) {
       App_Log(ERROR,"Problems reading input field\n");
       return(0);  
    }
    RPN_FieldReadGrid(in);
-   
+
    // Create index field
    if (!(idx=RPN_FieldNew(in->Def->NIJ*100,1,1,1,TD_Float32))) {
       return(0);       
    }
 
    RPN_CopyDesc(fout,&grid->Head);
-   
+  
    memcpy(&idx->Head,&grid->Head,sizeof(TRPNHeader));
    strcpy(idx->Head.NOMVAR,"#%");
    idx->Head.NJ=1;
@@ -162,6 +162,11 @@ int main(int argc, char *argv[]) {
    }
    if (!grid) {
       App_Log(ERROR,"No grid standard file specified\n");
+      exit(EXIT_FAILURE);
+   }
+
+   if (!vars[0]) {
+      App_Log(ERROR,"No variable specified\n");
       exit(EXIT_FAILURE);
    }
 
