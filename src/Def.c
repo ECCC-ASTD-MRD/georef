@@ -1551,6 +1551,14 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,cha
    char  *interp;
    float *ip=NULL;
 
+   if (!Interp) {
+      App_Log(ERROR,"%s: Invalid interpolation mode\n",__func__);
+      return(0);  
+   }
+   if (!Extrap) {
+      App_Log(ERROR,"%s: Invalid extrapolation mode\n",__func__);
+      return(0);  
+   }
    if (!ToRef || !ToDef) {
       App_Log(ERROR,"%s: Invalid destination\n",__func__);
       return(0);
