@@ -1497,9 +1497,7 @@ int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
          idx=j*ToDef->NI;
          ip=Index?Index+idx*2:NULL;
          idx+=k*ToDef->NIJ;
-         
          for(i=0;i<ToDef->NI;i++,idx++) {
-            
             if (gotidx) {
                // Got the index, use coordinates from it
                di=*(ip++);
@@ -1541,6 +1539,7 @@ int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
       // Mark end of index
 //         if (!gotidx && ip) *(ip++)=DEF_INDEX_END;
    }
+   
    return(TRUE);
 }
 
@@ -1551,14 +1550,6 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,cha
    char  *interp;
    float *ip=NULL;
 
-   if (!Interp) {
-      App_Log(ERROR,"%s: Invalid interpolation mode\n",__func__);
-      return(0);  
-   }
-   if (!Extrap) {
-      App_Log(ERROR,"%s: Invalid extrapolation mode\n",__func__);
-      return(0);  
-   }
    if (!ToRef || !ToDef) {
       App_Log(ERROR,"%s: Invalid destination\n",__func__);
       return(0);

@@ -23,9 +23,6 @@
 #define SINLATLON_OK             1024
 #define ZONES                    2048
 
-#define GRID_GRAPE               1024
-#define GRID_CHUNK               1024
-
 #define GRID                      0
 #define CLOUD                     1
 
@@ -110,6 +107,7 @@
 #define XLAT2           2
 #define XLON2           3
 
+// TODO: Moved to Hash.h
 #define CHUNK           128
 #define LOG2_CHUNK      7
 #define MAX_LOG_CHUNK   12

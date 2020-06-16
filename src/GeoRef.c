@@ -35,6 +35,9 @@
 #include "App.h"
 #include "Def.h"
 #include "RPN.h"
+#include "List.h"
+
+static TList *GeoRef_List=NULL;
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoScan_Clear>
@@ -647,6 +650,9 @@ int GeoRef_Free(TGeoRef *Ref) {
    GeoRef_Clear(Ref,1);
    free(Ref);
 
+   // Remove from Georef list
+   GeoRef_List=(GeoRef_List,(void*)Ref);
+
    return(1);
 }
 
@@ -1037,7 +1043,7 @@ TGeoRef* GeoRef_New() {
 
    GeoRef_Size(ref,0,0,0,0,0);
 
-   /*General*/
+   // General
    ref->Name=NULL;
    ref->NbId=0;
    ref->NId=0;
@@ -1059,11 +1065,11 @@ TGeoRef* GeoRef_New() {
    ref->Grid[2]='\0';
    ref->IG1=ref->IG2=ref->IG3=ref->IG4=0;
 
-   /*WKT Specific*/
+   // WKT Specific
    ref->String=NULL;
    ref->Spatial=NULL;
-   ref->Function=NULL;
-   ref->InvFunction=NULL;
+   ref->Function=(char*)NULL;
+   ref->InvFunction=(char*)NULL;
    ref->Transform=NULL;
    ref->RotTransform=NULL;
    ref->InvTransform=NULL;
@@ -1075,7 +1081,7 @@ TGeoRef* GeoRef_New() {
    ref->LLExtent.MaxX=-1e32;
    ref->LLExtent.MaxY=-1e32;
 
-   /*RDR Specific*/
+   // RDR Specific
    ref->Loc.Lat=-999;
    ref->Loc.Lon=-999;
    ref->Loc.Elev=-999;
@@ -1085,12 +1091,15 @@ TGeoRef* GeoRef_New() {
    ref->ResR=0;
    ref->ResA=0;
 
-   /*General functions*/
+   // General functions
    ref->Project=GeoRef_Project;
    ref->UnProject=GeoRef_UnProject;
    ref->Value=NULL;
    ref->Distance=NULL;
    ref->Height=NULL;
+
+   // Add to Georef list
+   GeoRef_List=TList_Add(GeoRef_List,(void*)ref);
 
    return(ref);
 }
