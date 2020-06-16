@@ -12,8 +12,8 @@ def main():
     'Ajoute champs sinus à fichier Standard RPN'
 
     pathlib.Path('out').mkdir(exist_ok=True)
-    shutil.copyfile(os.path.join('in', 'm.std'), os.path.join('out', 'm.std'))
-    funit = rmn.fstopenall(os.path.join('out', 'm.std'), rmn.FST_RW)
+    shutil.copyfile(os.path.join('in', 'mesh.std'), os.path.join('out', 'mesh.std'))
+    funit = rmn.fstopenall(os.path.join('out', 'mesh.std'), rmn.FST_RW)
     lat = rmn.fstlir(funit, nomvar='^^')['d']
     lon = rmn.fstlir(funit, nomvar='>>')['d'][0]
     hb = rmn.fstlir(funit, nomvar='hb')
