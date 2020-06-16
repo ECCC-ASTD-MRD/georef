@@ -53,45 +53,6 @@ def write_fst(lat_record, lon_record, data):
     rmn.fstecr(funit_out, data, params)
     rmn.fstcloseall(funit_out)
 
-def error_cstintrp():
-    'Calculate error with respect to analytical truth'
-
-    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.csintrp.avg'))
-    out_data = rmn.fstlir(funit, nomvar='XX', typvar='P@')['d']
-    rmn.fstcloseall(funit)
-
-    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.csintrp'))
-    out_data_bilin = rmn.fstlir(funit, nomvar='XX', typvar='P@')['d']
-    rmn.fstcloseall(funit)
-
-    nlat, nlon = (9, 6)
-    lat0, lon0, dlat, dlon = (-80, 0, 20, 30)
-    out_gid = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
-    out_lalo = rmn.gdll(out_gid)
-
-    true_data = np.sin(np.pi*out_lalo['lon']/180)\
-        *np.sin(np.pi*out_lalo['lat']/90)
-    difference = out_data - true_data
-    difference_bilin = out_data_bilin - true_data
-    return (np.linalg.norm(difference), np.linalg.norm(difference_bilin))
-
-def error_spi():
-    'Calculate error with respect to analytical truth'
-
-    funit = rmn.fstopenall(os.path.join('GRIDS', 'out.spi'))
-    out_data = rmn.fstlir(funit, nomvar='XX')['d']
-    rmn.fstcloseall(funit)
-
-    nlat, nlon = (9, 6)
-    lat0, lon0, dlat, dlon = (-80, 0, 20, 30)
-    out_gid = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
-    out_lalo = rmn.gdll(out_gid)
-
-    true_data = np.sin(np.pi*out_lalo['lon']/180)\
-        *np.sin(np.pi*out_lalo['lat']/90)
-    difference = out_data - true_data
-    return np.linalg.norm(difference)
-
 def main():
     'Call all functions in order'
 
@@ -113,8 +74,8 @@ def main():
 
     write_fst(lat_record, lon_record, data)
 
-    print(error_cstintrp())
-    print(error_spi())
-
 if __name__ == "__main__":
+    if 'DISPLAY' not in os.environ:
+        plt.switch_backend('agg')
+
     main()

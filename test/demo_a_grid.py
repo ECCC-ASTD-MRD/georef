@@ -2,6 +2,7 @@
 
 'Démonstration pour grille de type A'
 
+import argparse
 import os
 from pathlib import Path
 import cartopy.crs as ccrs
@@ -9,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import rpnpy.librmn.all as rmn
+import libgeoref.interp as libgeoref
 import stage_2020
 
 def gen_params(nlon, nlat, hemisphere):
@@ -16,6 +18,7 @@ def gen_params(nlon, nlat, hemisphere):
 
     params = rmn.FST_RDE_META_DEFAULT
 
+    params['nomvar'] = 'TT'
     params['grtyp'] = 'A'
     params['ni'] = nlon
     params['nj'] = nlat
@@ -34,7 +37,6 @@ def plot_grid(params):
 
     axes = plt.axes(projection=ccrs.PlateCarree())
     axes.coastlines()
-    axes.gridlines(xlocs=(-180, 0, 180), ylocs=(-90, 0, 90))
     axes.set_global()
 
     lalo['lon'] = np.mod((lalo['lon'] + 180), 360) - 180
@@ -60,23 +62,52 @@ def plot_data(params, data):
 
     plt.savefig(os.path.join('out', 'a_data.png'))
 
-def error(params, data):
-    'Calculate error with respect to analytical truth'
+def error(params, data, georef=False):
+    """Calculate error with respect to analytical truth.
 
-    gid = rmn.ezqkdef(params)
+    Parameters
+    ----------
+    params : dict
+        Produce with gen_data
+    data : array_like
+        Data on source grid
+    georef : bool, optional
+        Use georef for interpolation. librmn used otherwise.
+
+    Returns
+    -------
+    int
+        norm of difference between interpolated and true data
+
+    """
 
     nlat, nlon = (9, 6)
     lat0, lon0, dlat, dlon = (-80, 0, 20, 30)
-    out_gid = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
-    out_lalo = rmn.gdll(out_gid)
 
-    out_data = rmn.ezsint(out_gid, gid, data)
+    if georef:
+        gid = libgeoref.ezqkdef(params)
+        out_gid = libgeoref.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
+        out_data = libgeoref.ezsint(out_gid, gid, data)
+        out_lalo = libgeoref.gdll(out_gid)
+    else:
+        gid = rmn.ezqkdef(params)
+        out_gid = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
+        out_data = rmn.ezsint(out_gid, gid, data)
+        out_lalo = rmn.gdll(out_gid)
+
     true_data = np.sin(np.pi*out_lalo['lon']/180)\
         *np.sin(np.pi*out_lalo['lat']/90)
     return np.linalg.norm(out_data - true_data)
 
-def main():
-    'Call all functions in order'
+def main(georef=False):
+    """Call all functions in order.
+
+    Parameter
+    ---------
+    georef : bool, optional
+        Use georef for interpolation. librmn used otherwise.
+
+    """
 
     Path('out').mkdir(exist_ok=True)
 
@@ -86,11 +117,6 @@ def main():
     params = gen_params(nlon, nlat, hemisphere)
     plot_grid(params)
 
-    # Fine mesh required to recognize analytic 3-D surface
-    nlon = 360//5
-    nlat = 180//5
-    params = gen_params(nlon, nlat, hemisphere)
-
     gid = rmn.ezqkdef(params)
     lalo = rmn.gdll(gid)
     data = np.sin(np.pi*lalo['lon']/180)*np.sin(np.pi*lalo['lat']/90)
@@ -98,7 +124,16 @@ def main():
     plot_data(params, data)
 
     stage_2020.write_fst(data, params, os.path.join('out', 'a_grid.fst'))
-    error(params, data)
+    print('Interpolation error: {:g}'.format(error(params, data, georef)))
 
 if __name__ == "__main__":
-    main()
+
+    PARSER = argparse.ArgumentParser()
+    PARSER.add_argument('-g', '--georef', action='store_true',
+                        help='use libgeoref')
+    ARGS = PARSER.parse_args()
+
+    if 'DISPLAY' not in os.environ:
+        plt.switch_backend('agg')
+
+    main(ARGS.georef)

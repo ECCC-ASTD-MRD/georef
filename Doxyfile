@@ -1,0 +1,101 @@
+# Reference: https://gitlab.com/eccc/gem/gem/-/blob/dev/Doxyfile
+
+# Doxyfile 1.8.13
+
+# This file describes the settings to be used by the documentation system
+# doxygen (www.doxygen.org) for a project.
+
+#---------------------------------------------------------------------------
+# Project related configuration options
+#---------------------------------------------------------------------------
+
+PROJECT_NAME           = LIBGEOREF
+
+PROJECT_BRIEF          = "Librairie de gestion des projections géographiques"
+
+OUTPUT_DIRECTORY       = doc
+
+EXTENSION_MAPPING      = inc=FortranFree \
+                         F90=FortranFree \
+                         F08=FortranFree \
+                         cdk90=FortranFree \
+                         hf=FortranFree \
+                         hc=C
+
+EXTRACT_ALL            = YES
+
+EXTRACT_PRIVATE        = YES
+
+EXTRACT_STATIC         = YES
+
+CASE_SENSE_NAMES       = NO
+
+INPUT                  = src
+
+FILE_PATTERNS          = *.c \
+                         *.cc \
+                         *.cxx \
+                         *.cpp \
+                         *.c++ \
+                         *.java \
+                         *.ii \
+                         *.ixx \
+                         *.ipp \
+                         *.i++ \
+                         *.inl \
+                         *.idl \
+                         *.ddl \
+                         *.odl \
+                         *.h \
+                         *.hh \
+                         *.hxx \
+                         *.hpp \
+                         *.h++ \
+                         *.cs \
+                         *.d \
+                         *.php \
+                         *.php4 \
+                         *.php5 \
+                         *.phtml \
+                         *.inc \
+                         *.m \
+                         *.markdown \
+                         *.md \
+                         *.mm \
+                         *.dox \
+                         *.py \
+                         *.pyw \
+                         *.f90 \
+                         *.f95 \
+                         *.f03 \
+                         *.f08 \
+                         *.f \
+                         *.for \
+                         *.tcl \
+                         *.vhd \
+                         *.vhdl \
+                         *.ucf \
+                         *.qsf \
+                         *.F90 \
+                         *.F \
+                         *.F08 \
+                         *.ftn90 \
+                         *.cdk \
+                         *.cdk90 \
+                         *.hf \
+                         *.hc
+
+RECURSIVE              = YES
+
+EXCLUDE_PATTERNS       = */.git/*
+
+GENERATE_LATEX         = NO
+
+PAPER_TYPE             = letter
+
+CLASS_DIAGRAMS         = NO
+
+CALL_GRAPH             = YES
+
+CALLER_GRAPH           = YES
+

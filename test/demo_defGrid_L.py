@@ -16,9 +16,10 @@ def gen_data():
     (nlat, nlon) = (9, 6)
     (lat0, lon0, dlat, dlon) = (-80, 0, 20, 30)
     params = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
+    params['nomvar'] = 'GRID'
 
-    rng = np.random.default_rng()
-    data = np.array(rng.random((nlon, nlat)), order='F')
+    lalo = rmn.gdll(params['id'])
+    data = np.sin(np.pi*lalo['lon']/180)*np.sin(np.pi*lalo['lat']/90)
 
     return data, params
 
@@ -47,4 +48,7 @@ def main():
     plot_grid(params)
 
 if __name__ == "__main__":
+    if 'DISPLAY' not in os.environ:
+        plt.switch_backend('agg')
+
     main()
