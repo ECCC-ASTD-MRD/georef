@@ -39,7 +39,7 @@ def plot_data(lat, lon, data):
 def write_fst(lat_record, lon_record, data):
     'Write data to RPN Standard file'
 
-    funit_out = rmn.fstopenall(os.path.join('out', 'O_sinus.fst'), rmn.FST_RW)
+    funit_out = rmn.fstopenall(os.path.join('out', 'o_grid.fst'), rmn.FST_RW)
     rmn.fstecr(funit_out, lat_record)
     rmn.fstecr(funit_out, lon_record)
     params = rmn.FST_RDE_META_DEFAULT

@@ -61,17 +61,17 @@ cd test
 ./demo_a_grid.py --georef
 ./demo_defGrid_L.py
 ./demo_o_grid.py
+./demo_m_grid.py
 . r.load.dot rpn/OCEAN/cstint-3.2.8 \
   cmd/cmds/apps/SPI/beta
 ./NEMOInterp_sinus.tcl out/O_sinus.fst out/l_grid.fst
 ./comparaison_interp.py
-./demo_m_grid.py
 ```
 
 Cette séquence devrait produire les fichiers `a_data.png`,
 `a_grid.fst`, `a_grid.png`, `l_grid.fst`, `l_grid.png`, `o_data.png`,
-`o_grid.png`, `O_sinus.fst`, `out.csintrp`, `out.csintrp.avg` et
-`out.spi` dans le dossier `out`.
+`o_grid.png`, `o_grid.fst`, `mesh.std`, `out.csintrp`, `out.csintrp.avg` 
+et `out.spi` dans le dossier `out`.
 
 La dernière commande utilise les fichiers `out.*` produits par le
 script `NEMOInterp_sinus.tcl`.
