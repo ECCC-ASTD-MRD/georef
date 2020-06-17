@@ -612,8 +612,8 @@ double ZRef_K2Pressure(TZRef* restrict const ZRef,double P0,int K) {
  */
 int ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,int NIJ,int Log,float *Pres) {
 
-   unsigned int k,idxk=0,ij;
-   int          *ips;
+   unsigned int k,idxk=0;
+   int          ij,*ips;
    float        pref,ptop,*p0;
 
    if (!P0 && ZRef->Type!=LVL_PRES) {

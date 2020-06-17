@@ -659,7 +659,7 @@ int GeoRef_WKTSet(TGeoRef *GRef,char *String,double *Transform,double *InvTransf
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RPNSetup>
+ * Nom          : <GeoRef_WKTCreate>
  * Creation     : Avril 2005 J.P. Gauthier - CMC/CMOE
  *
  * But          : Definir le referetiel de type RPN
@@ -679,7 +679,7 @@ int GeoRef_WKTSet(TGeoRef *GRef,char *String,double *Transform,double *InvTransf
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-TGeoRef *GeoRef_WKTSetup(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
+TGeoRef *GeoRef_WKTCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
 
    TGeoRef *ref;
 

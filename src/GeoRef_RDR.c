@@ -249,7 +249,7 @@ int GeoRef_RDRUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RDRSetup>
+ * Nom          : <GeoRef_RDRCreate>
  * Creation     : Avril 2006 J.P. Gauthier - CMC/CMOE
  *
  * But          : Definir le referetiel de type Radar
@@ -268,7 +268,7 @@ int GeoRef_RDRUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,double ResA) {
+TGeoRef* GeoRef_RDRCreate(double Lat,double Lon,double Height,int R,double ResR,double ResA) {
 
    TGeoRef *ref;
 

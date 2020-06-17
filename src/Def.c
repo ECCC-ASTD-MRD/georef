@@ -1410,14 +1410,14 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-
+//TODO: Remove lock
 int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char *Interp,char *Extrap,char Mask,float *Index) {
    
 #ifdef HAVE_RMN
    void *pf0,*pt0,*pf1,*pt1;
    int   ok,k;
  
-   RPN_IntLock();
+   GeoRef_Lock();
 
    // Set interpolation and extrapolation mode
    switch(Interp[0]) {
@@ -1462,7 +1462,7 @@ int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
          ok=c_ezsint(pt0,pf0);
       }
    }
-   RPN_IntUnlock();
+   GeoRef_Unlock();
 #else
       App_Log(ERROR,"%s: RMNLIB support not included\n",__func__);
 #endif   

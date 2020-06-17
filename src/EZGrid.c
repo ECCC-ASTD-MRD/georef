@@ -70,7 +70,6 @@ int EZGrid_Wrap(TGrid* restrict const Grid) {
 
    if (Grid->H.GRTYP[0]!='M' && Grid->H.GRTYP[0]!='W' && Grid->H.GRTYP[1]!='W' && Grid->H.GRTYP[0]!='Y') {
    
-   //   RPN_IntLock();
       // Check for south pole coverage
       i=1.0;j=1.0;
       c_gdllfxy(Grid->GID,&lat,&lon,&i,&j,1);
@@ -91,8 +90,6 @@ int EZGrid_Wrap(TGrid* restrict const Grid) {
       j=Grid->H.NJ/2.0f;
       c_gdllfxy(Grid->GID,&lat,&lon,&i,&j,1);
       c_gdxyfll(Grid->GID,&i,&j,&lat,&lon,1);
-
-   //   RPN_IntUnlock();
 
       if (Grid->H.GRTYP[0]=='A' || Grid->H.GRTYP[0]=='B' || Grid->H.GRTYP[0]=='G') {
          Grid->Wrap=1;
@@ -876,7 +873,7 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
 
    switch(Grid->H.GRTYP[0]) {
       case 'M':
-         Grid->GRef=GeoRef_RPNSetup(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,Grid->H.FID);
+         Grid->GRef=GeoRef_RPNCreate(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,Grid->H.FID);
 
          cs_fstinf(Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"","##");
          Grid->GRef->NIdx=ni*nj*nk;
@@ -893,7 +890,7 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
    
       case 'X':
       case 'Y':
-         Grid->GRef=GeoRef_RPNSetup(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,Grid->H.FID);
+         Grid->GRef=GeoRef_RPNCreate(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,Grid->H.FID);
 
          Grid->GRef->AY=(float*)malloc(Grid->H.NIJ*sizeof(float));
          Grid->GRef->AX=(float*)malloc(Grid->H.NIJ*sizeof(float));
@@ -963,7 +960,7 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
                str[ni*nj*nk] = '\0';
 
                // Create the WKT georef
-               Grid->GRef=GeoRef_WKTSetup(Grid->H.NI,Grid->H.NJ,Grid->H.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,str,transform,NULL,NULL);
+               Grid->GRef=GeoRef_WKTCreate(Grid->H.NI,Grid->H.NJ,Grid->H.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,str,transform,NULL,NULL);
 
                // Memory for the descriptors
                if( !(Grid->GRef->AX=malloc(Grid->H.NIJ*sizeof(*Grid->GRef->AX))) ) {
@@ -998,7 +995,7 @@ werr:
          }
 
       default:
-         Grid->GRef=GeoRef_RPNSetup(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,Grid->H.FID);
+         Grid->GRef=GeoRef_RPNCreate(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,Grid->H.FID);
 
          Grid->GID=RPN_IntIdNew(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,Grid->H.FID);
          Grid->Wrap=EZGrid_Wrap(Grid);
@@ -1721,10 +1718,10 @@ int EZGrid_Interp(TGrid* restrict const To, TGrid* restrict const From) {
       return(FALSE);
    }
 
-   RPN_IntLock();
+   GeoRef_Lock();
    ok=c_ezdefset(To->GID,From->GID);
    ok=c_ezsint(to,from);
-   RPN_IntUnlock();
+   GeoRef_Unlock();
    if (ok<0)  {
       App_Log(ERROR,"%s: Unable to do interpolation (c_ezscint (%i))\n",__func__,ok);
       return(FALSE);
@@ -1946,9 +1943,7 @@ int EZGrid_LLGetValue(TGrid* restrict const Grid,TGridInterpMode Mode,float Lat,
 
       default: // This is a regular RPN grid
 
-         // RPN_IntLock();
          c_gdxyfll(Grid->GID,&i,&j,&Lat,&Lon,1);
-         // RPN_IntUnlock();
          return(EZGrid_IJGetValue(Grid,Mode,i-1.0f,j-1.0f,K0,K1,Value));         
    }
    
@@ -2228,9 +2223,7 @@ int EZGrid_LLGetUVValue(TGrid* restrict const GridU,TGrid* restrict const GridV,
                   
       default: // This is a regular RPN grid
          
-         // RPN_IntLock();
          c_gdxyfll(GridU->GID,&i,&j,&Lat,&Lon,1);
-         // RPN_IntUnlock();
 
          return(EZGrid_IJGetUVValue(GridU,GridV,Mode,i-1.0f,j-1.0f,K0,K1,UU,VV,Conv));
    }
@@ -2356,9 +2349,7 @@ int EZGrid_IJGetValue(TGrid* restrict const Grid,TGridInterpMode Mode,float I,fl
       }
 
       ik++;
-//         RPN_IntLock();
 //         c_gdxysval(t->GID,&Value[ik++],t->Data[k],&I,&J,1);
-//         RPN_IntUnlock();
    } while ((K0<=K1?k++:k--)!=K1);
 
    return(TRUE);
@@ -2435,9 +2426,7 @@ int EZGrid_IJGetUVValue(TGrid* restrict const GridU,TGrid* restrict const GridV,
       if (!EZGrid_IsLoaded(tv,k))
          EZGrid_TileGetData(GridV,tv,k);
 
-//      RPN_IntLock();
       c_gdxywdval(tu->GID,&UU[ik],&VV[ik],tu->Data[k],tv->Data[k],&I,&J,1);
-//      RPN_IntUnlock();
 
       d=DEG2RAD(VV[ik]);
       v=UU[ik]*Conv;
@@ -2752,7 +2741,6 @@ int EZGrid_GetLL(TGrid* restrict const Grid,float* Lat,float* Lon,float* I,float
    float fi,fj;
 
    if (Grid && Grid->GID>=0) {
-   //   RPN_IntLock();
       for(i=0;i<Nb;i++) {
          fi=I[i]+1.0;
          fj=J[i]+1.0;
@@ -2760,7 +2748,6 @@ int EZGrid_GetLL(TGrid* restrict const Grid,float* Lat,float* Lon,float* I,float
             break;
          }
       }
-   //   RPN_IntUnlock();
    } else {
       for(i=0;i<Nb;i++) {
          Grid->GRef->Project(Grid->GRef,I[i],J[i],&la,&lo,FALSE,TRUE);   
@@ -2797,11 +2784,9 @@ int EZGrid_GetIJ(TGrid* restrict const Grid,float* Lat,float* Lon,float* I,float
    double x,y;
    
    if (Grid && Grid->GID>=0) {
-  //   RPN_IntLock();
       if (c_gdxyfll(Grid->GID,I,J,Lat,Lon,Nb)!=0) {
          return(FALSE);
       }
-   //   RPN_IntUnlock();
 
       for(i=0;i<Nb;i++) {
          I[i]-=1.0;

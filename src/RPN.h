@@ -81,8 +81,6 @@ void RPN_FileLock(void);
 void RPN_FileUnlock(void);
 void RPN_FieldLock(void);
 void RPN_FieldUnlock(void);
-void RPN_IntLock(void);
-void RPN_IntUnlock(void);
 
 TRPNField* RPN_FieldNew();
 void       RPN_FieldFree(TRPNField *Fld);

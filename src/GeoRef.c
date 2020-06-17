@@ -31,6 +31,7 @@
  *=========================================================
  */
 
+#include <pthread.h>
 #include "GeoRef.h"
 #include "App.h"
 #include "Def.h"
@@ -38,6 +39,14 @@
 #include "List.h"
 
 static TList *GeoRef_List=NULL;
+static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;
+
+void GeoRef_Lock() {
+   pthread_mutex_lock(&GeoRef_Mutex);
+}
+void GeoRef_Unlock() {
+   pthread_mutex_unlock(&GeoRef_Mutex);
+}
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoScan_Clear>
@@ -225,9 +234,7 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
             ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
          }
       }
-//      RPN_IntLock();
       c_gdllfxy(FromRef->Ids[FromRef->NId],(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
-//      RPN_IntUnlock();
 
       d=dd?2:1;
       sz=4;
@@ -354,9 +361,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
          }
       }
-//      RPN_IntLock();
       c_gdllfxy(FromRef->Ids[FromRef->NId],(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
-//      RPN_IntUnlock();
 
       d=dd?2:1;
       sz=4;
@@ -422,9 +427,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
          }
       }
 
-//      RPN_IntLock();
       c_gdxyfll(ToRef->Ids[ToRef->NId],(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
-//      RPN_IntUnlock();
 //EZFIX
       // If we have the data of source and they're float, get it's values right now
       if (ToDef && ToDef->Type==TD_Float32) {
@@ -651,7 +654,9 @@ int GeoRef_Free(TGeoRef *Ref) {
    free(Ref);
 
    // Remove from Georef list
+   GeoRef_Lock();
    GeoRef_List=(GeoRef_List,(void*)Ref);
+   GeoRef_Unlock();
 
    return(1);
 }
@@ -1068,8 +1073,8 @@ TGeoRef* GeoRef_New() {
    // WKT Specific
    ref->String=NULL;
    ref->Spatial=NULL;
-   ref->Function=(char*)NULL;
-   ref->InvFunction=(char*)NULL;
+   ref->Function=NULL;
+   ref->InvFunction=NULL;
    ref->Transform=NULL;
    ref->RotTransform=NULL;
    ref->InvTransform=NULL;
@@ -1099,7 +1104,9 @@ TGeoRef* GeoRef_New() {
    ref->Height=NULL;
 
    // Add to Georef list
+   GeoRef_Lock();
    GeoRef_List=TList_Add(GeoRef_List,(void*)ref);
+   GeoRef_Unlock();
 
    return(ref);
 }
@@ -1963,12 +1970,12 @@ int GeoRef_Coords(TGeoRef *Ref,float *Lat,float *Lon) {
 */
 int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
 
-   unsigned int i,gi,j,gj,nid,pnid,ig,pidx,idx,*tidx;
+   unsigned int i,gi,j,gj,nid,pnid,pidx,idx,*tidx;
+   int          ig;
    float        di[4],dj[4],dlat[4],dlon[4];
    double       fx,fy,fz,dx[4],dy[4],s,a,b,c;
    char         grtyp[2];
 
-//   RPN_IntLock();
    if (!Ref || Ref->Grid[0]=='X' || Ref->Grid[0]=='Y') {
       App_Log(WARNING,"%s: DX, DY and DA cannot be calculated on an X or Y grid\n",__func__);        
       return(FALSE);
@@ -2062,6 +2069,5 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
 #endif
    }
    
-//   RPN_IntUnlock();
    return(TRUE);
 }

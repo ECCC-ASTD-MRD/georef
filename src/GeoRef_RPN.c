@@ -71,9 +71,7 @@ void GeoRef_Expand(TGeoRef *GRef) {
 
       if (GRef->AX && GRef->AY) {
          if (GRef->Grid[0]=='Z') {
-//            RPN_IntLock();
             c_gdgaxes(GRef->Ids[GRef->NId],GRef->AX,GRef->AY);
-//            RPN_IntUnlock();
          } else {
             for(i=0;i<=GRef->X1;i++) {
                GRef->Project(GRef,i,0,&lat,&lon,1,1);
@@ -119,9 +117,7 @@ double GeoRef_RPNDistance(TGeoRef *GRef,double X0,double Y0,double X1, double Y1
       i[1]=X1+1.0;
       j[1]=Y1+1.0;
 
-//      RPN_IntLock();
       c_gdllfxy(GRef->Ids[GRef->NId],lat,lon,i,j,2);
-//      RPN_IntUnlock();
 
       X0=DEG2RAD(lon[0]);
       X1=DEG2RAD(lon[1]);
@@ -401,9 +397,7 @@ int GeoRef_RPNProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
    i=X+1.0;
    j=Y+1.0;
 
-//   RPN_IntLock();
    c_gdllfxy(GRef->Ids[(GRef->NId==0&&GRef->Grid[0]=='U'?1:GRef->NId)],&lat,&lon,&i,&j,1);
-//   RPN_IntUnlock();
 #endif
    
    *Lat=lat;
@@ -573,9 +567,7 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
       lat=Lat;
 
       // Extraire la valeur du point de grille
-//      RPN_IntLock();
       c_gdxyfll(GRef->Ids[GRef->NId],&i,&j,&lat,&lon,1);
-//      RPN_IntUnlock();
 
       *X=i-1.0;
       *Y=j-1.0;
@@ -597,7 +589,7 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RPNSetup>
+ * Nom          : <GeoRef_RPNCreate>
  * Creation     : Avril 2005 J.P. Gauthier - CMC/CMOE
  *
  * But          : Definir le referetiel de type RPN
@@ -618,7 +610,32 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-TGeoRef* GeoRef_RPNSetup(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID) {
+
+//wordint c_ezqkdef(wordint ni, wordint nj, char* grtyp,
+//             wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit);=c_ezgdef_ffile
+//wordint c_ezgdef_ffile(wordint ni, wordint nj, char* grtyp,
+//           wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit);=GeoRef_RPNCreate
+// calls fll and fmem, get rid: wordint c_ezgdef(wordint ni, wordint nj, char* grtyp, char* grref,
+//             wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay);
+
+//wordint c_ezgdef_fll(wordint ni, wordint nj,ftnfloat* lat, ftnfloat* lon);
+//wordint c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
+//             wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay);
+//wordint c_ezgdef_supergrid(wordint ni, wordint nj, char* grtyp, char* grref, wordint vercode, wordint nsubgrids, wordint* subgrid);
+//wordint c_ezgdef_yymask(_Grille* gr);
+
+// Replaces c_ezgdef_ffile and c_ezqkdef
+PTR_AS_INT f77name(georef_rpncreate)(wordint *ni, wordint *nj, char *grtyp, wordint *ig1, wordint *ig2, wordint *ig3, wordint *ig4, wordint *iunit, F2Cl lengrtyp){
+ 
+  char cgrtyp[2];
+
+  cgrtyp[0] = grtyp[0];
+  cgrtyp[1] = '\0';
+
+  return((PTR_AS_INT)GeoRef_RPNCreate(*ni, *nj, cgrtyp, *ig1, *ig2, *ig3, *ig4, *iunit));
+}
+
+TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID) {
 
    TGeoRef *ref;
    int      id;
@@ -639,9 +656,11 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int I
       if (GRTYP[1]=='#') {
          // For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
          id=RPN_IntIdNew(NI,NJ,grtyp,IG1,IG2,0,0,FID);
-      } else {
+//TODO:         id=ezgdef_ffile(NI,NJ,grtyp,IG1,IG2,0,0,FID);
+     } else {
          id=RPN_IntIdNew(NI,NJ,grtyp,IG1,IG2,IG3,IG4,FID);
-      }
+//TODO:         id=ezgdef_ffile(NI,NJ,grtyp,IG1,IG2,IG3,IG4,FID);
+     }
       // Check for sub-grids (U grids can have sub grids)
       ref->NbId=GRTYP[0]=='U'?c_ezget_nsubgrids(id):1;
 //      ref->NbId=1;
@@ -828,9 +847,8 @@ TGeoRef* GeoRef_RPNGridZE(TGeoRef *GRef,int NI,int NJ,float DX,float DY,float La
       return(NULL);
    }
    
-   RPN_IntLock();
+ //TODO: Merge with EZ  
    GRef->Ids[0]=c_ezgdef_fmem(NI,NJ,"Z","E",GRef->IG1,GRef->IG2,GRef->IG3,GRef->IG4,GRef->AX,GRef->AY);
-   RPN_IntUnlock();
    
    GRef->NbId=1;
    GRef->Grid[0]='Z';

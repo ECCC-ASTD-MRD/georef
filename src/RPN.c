@@ -48,7 +48,6 @@ static char FGFDTLock[1000];
 
 static pthread_mutex_t RPNFieldMutex=PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t RPNFileMutex=PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t RPNIntMutex=PTHREAD_MUTEX_INITIALIZER;
 
 void RPN_FileLock() {
    pthread_mutex_lock(&RPNFileMutex);
@@ -62,13 +61,6 @@ void RPN_FieldLock() {
 }
 void RPN_FieldUnlock() {
    pthread_mutex_unlock(&RPNFieldMutex);
-}
-
-void RPN_IntLock() {
-   pthread_mutex_lock(&RPNIntMutex);
-}
-void RPN_IntUnlock() {
-   pthread_mutex_unlock(&RPNIntMutex);
 }
 
 void cs_fstunlockid(int Unit) {
@@ -258,14 +250,15 @@ int cs_fstecr(void *Data,int NPak,int Unit, int DateO,int Deet,int NPas,int NI,i
  * Remarques :
  *----------------------------------------------------------------------------
  */
+//TODO: get rid off
 int RPN_IntIdNew(int NI,int NJ,char* GRTYP,int IG1,int IG2,int IG3, int IG4,int FID) {
 
    int id=-1;
 
    if (GRTYP[0]!='M' && GRTYP[0]!='W' && GRTYP[0]!='V') {
-      RPN_IntLock();
+//      RPN_IntLock();
       id=c_ezqkdef(NI,NJ,GRTYP,IG1,IG2,IG3,IG4,FID);
-      RPN_IntUnlock();
+//      RPN_IntUnlock();
    }
    
    return(id);
@@ -287,6 +280,7 @@ int RPN_IntIdNew(int NI,int NJ,char* GRTYP,int IG1,int IG2,int IG3, int IG4,int 
  * Remarques :
  *----------------------------------------------------------------------------
  */
+//TODO: get rid off
 int RPN_IntIdFree(int Id) {
 
    int n=-1;
@@ -392,7 +386,7 @@ TRPNField* RPN_FieldReadIndex(int FileId,int Index,TRPNField *Fld) {
       type=type==LVL_SIGMA?LVL_ETA:type;
 
       if (h.GRTYP[0]!='W') {
-         fld->GRef=GeoRef_RPNSetup(h.NI,h.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,h.FID);
+         fld->GRef=GeoRef_RPNCreate(h.NI,h.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,h.FID);
       }
       fld->ZRef=ZRef_Define(type,h.NK,&lvl);
    //   if (grtyp[0]=='U') {
