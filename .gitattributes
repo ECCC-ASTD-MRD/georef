@@ -1,0 +1,2 @@
+test/in/orca.std filter=lfs diff=lfs merge=lfs -text
+test/in/mesh.std filter=lfs diff=lfs merge=lfs -text

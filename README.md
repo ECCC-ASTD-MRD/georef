@@ -65,13 +65,20 @@ cd test
   cmd/cmds/apps/SPI/beta
 ./NEMOInterp_sinus.tcl out/O_sinus.fst out/l_grid.fst
 ./comparaison_interp.py
+./demo_m_grid.py
 ```
+
 Cette séquence devrait produire les fichiers `a_data.png`,
-`a_grid.fst`, `a_grid.png`, `l_grid.fst`, `l_grid.png`, `o_data.png`, `o_grid.png`, `O_sinus.fst`, `out.csintrp`, `out.csintrp.avg` et `out.spi` dans le dossier `out`.
+`a_grid.fst`, `a_grid.png`, `l_grid.fst`, `l_grid.png`, `o_data.png`,
+`o_grid.png`, `O_sinus.fst`, `out.csintrp`, `out.csintrp.avg` et
+`out.spi` dans le dossier `out`.
 
-La dernière commande utilise les fichiers `out.*` produits par le script `NEMOInterp_sinus.tcl`.
+La dernière commande utilise les fichiers `out.*` produits par le
+script `NEMOInterp_sinus.tcl`.
 
-Le dossier `GRIDS` contient le fichier `O.fstd` qui donne les positions des points de grille de la grille ORCA.
+Le dossier `in` contient les fichiers `orca.std`, qui donne les
+positions des points de grille de la grille ORCA, et `mesh.std`, qui
+contient un exemple de grille d'éléments finis.
 
 # [Documentation](https://hpfx.collab.science.gc.ca/~map007/html/index.html)
 

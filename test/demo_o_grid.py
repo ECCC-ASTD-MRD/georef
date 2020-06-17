@@ -57,7 +57,7 @@ def main():
     'Call all functions in order'
 
     # Read lat-lon points
-    funit = rmn.fstopenall(os.path.join('GRIDS', 'O.fstd'))
+    funit = rmn.fstopenall(os.path.join('in', 'orca.std'))
     lat_record = rmn.fstlir(funit, nomvar='^^', dtype=np.float32)
     lon_record = rmn.fstlir(funit, nomvar='>>', dtype=np.float32)
     lat = lat_record['d']
