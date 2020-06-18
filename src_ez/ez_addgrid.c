@@ -1,6 +1,7 @@
 #include <rpnmacros.h>
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 
 #ifdef MUTEX
@@ -30,10 +31,10 @@ int c_ez_refgrid(int grid_index)
    return(Grille[gdrow][gdcol].access_count);
    }
 
-int c_ez_addgrid(int grid_index, _Grille *newgr)
+int c_ez_addgrid(int grid_index, TGeoRef *newgr)
   {
   int i, gdrow, gdcol, gdindex, next_index, nxt_row, nxt_col, cur_gdid;
-  _Grille *cur_gr;
+  TGeoRef *cur_gr;
 
 #ifdef MUTEX
 // JP
@@ -65,7 +66,7 @@ int c_ez_addgrid(int grid_index, _Grille *newgr)
     }
     
   c_gdkey2rowcol(nGrilles, &gdrow, &gdcol);
-  memcpy(&(Grille[gdrow][gdcol]), newgr, sizeof(_Grille));
+  memcpy(&(Grille[gdrow][gdcol]), newgr, sizeof(TGeoRef));
   Grille[gdrow][gdcol].index = nGrilles;
   Grille[gdrow][gdcol].next_gd = -1;
   
@@ -81,7 +82,7 @@ int c_ez_addgrid(int grid_index, _Grille *newgr)
   if (0 == (nGrilles % chunks[cur_log_chunk]))
     {
     c_gdkey2rowcol(nGrilles, &gdrow, &gdcol);
-    Grille[gdrow] = (_Grille *) calloc(chunks[cur_log_chunk], sizeof(_Grille));
+    Grille[gdrow] = (TGeoRef *) calloc(chunks[cur_log_chunk], sizeof(TGeoRef));
     for (i=0; i < chunks[cur_log_chunk]; i++)
       {
       Grille[gdrow][i].index = -1;

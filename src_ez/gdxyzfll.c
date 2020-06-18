@@ -20,6 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(gdxyzfll)(wordint *gdid, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfloat *lon, wordint *n)
@@ -33,7 +34,7 @@ wordint c_gdxyzfll(wordint gdid, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnflo
    
    wordint coordonnee;
 
-   _Grille grEntree;
+   TGeoRef grEntree;
    wordint npts;
 
   wordint gdrow_id, gdcol_id;

@@ -1,16 +1,17 @@
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 #ifdef MUTEX
 //JP
 extern pthread_mutex_t EZ_MTX;
 #endif
 
-int c_ez_findgrid(int grid_index, _Grille *gr)
+int c_ez_findgrid(int grid_index, TGeoRef *gr)
   {
   wordint gdrow, gdcol, index_found, gr_size, resax, resay;
   wordint found, end_reached, next_index, i,j;
-  _Grille *refgd;
+  TGeoRef *refgd;
     
   if (grid_index == -1)
     {
@@ -185,7 +186,7 @@ int c_ez_findgrid(int grid_index, _Grille *gr)
 void dump_gr_list()
   {
   int i, gd_row, gd_col;
-  _Grille *gr;
+  TGeoRef *gr;
   
   for (i=0; i < chunks[cur_log_chunk]; i++)
     {

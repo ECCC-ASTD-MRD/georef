@@ -20,7 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
-
+#include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(gdwdfuv)(wordint *gdid, ftnfloat *spd_out, ftnfloat *wd_out, ftnfloat *uuin, ftnfloat *vvin,

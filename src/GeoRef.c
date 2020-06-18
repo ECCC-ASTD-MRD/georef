@@ -214,7 +214,7 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
             if (x<=X1 && y<=Y1) {
                Scan->V[Scan->N++]=idx;
             }
-            ((float*)Scan->X)[n]=FromRef->AX[idx];
+            ((float*)Scan->X)[n]=FromRef->AX_JP[idx];
             ((float*)Scan->Y)[n]=FromRef->AY[idx];
          }
       }
@@ -341,7 +341,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             if (x<=X1 && y<=Y1) {
                Scan->V[Scan->N++]=idx;
             }
-            ((float*)Scan->X)[n]=FromRef->AX[idx];
+            ((float*)Scan->X)[n]=FromRef->AX_JP[idx];
             ((float*)Scan->Y)[n]=FromRef->AY[idx];
          }
       }
@@ -700,7 +700,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       if (Ref->Hgt)          free(Ref->Hgt);          Ref->Hgt=NULL;
       if (Ref->Wght)         free(Ref->Wght);         Ref->Wght=NULL;
       if (Ref->Idx)          free(Ref->Idx);          Ref->Idx=NULL; Ref->NIdx=0;
-      if (Ref->AX)           free(Ref->AX);           Ref->AX=NULL;
+      if (Ref->AX_JP)           free(Ref->AX_JP);           Ref->AX_JP=NULL;
       if (Ref->AY)           free(Ref->AY);           Ref->AY=NULL;
 
       if (Ref->QTree) {
@@ -719,7 +719,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
          Ref->QTree=NULL;
       }
 
-      Ref->IG1=Ref->IG2=Ref->IG3=Ref->IG4=0;
+      Ref->IG1_JP=Ref->IG2_JP=Ref->IG3_JP=Ref->IG4_JP=0;
 
       if (New) {
          if (Ref->Name)      free(Ref->Name);         Ref->Name=NULL;
@@ -844,9 +844,9 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
       }     
    
       // Check for negative longitude (-180 <-> 180, or 0 <-> 360)
-      if (Ref->AX) {
+      if (Ref->AX_JP) {
          for(x=0;x<Ref->NX;x++) { 
-            if (Ref->AX[x]<0) { 
+            if (Ref->AX_JP[x]<0) { 
                Ref->Type|=GRID_NEGLON; 
                break; 
             } 
@@ -864,7 +864,7 @@ int GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) 
    if (Ref0->Grid[0]!=Ref1->Grid[0] || Ref0->Grid[1]!=Ref1->Grid[1])
       return(0);
    
-   if (Ref0->IG1!=Ref1->IG1 || Ref0->IG2!=Ref1->IG2 || Ref0->IG3!=Ref1->IG3 || Ref0->IG4!=Ref1->IG4)
+   if (Ref0->IG1_JP!=Ref1->IG1_JP || Ref0->IG2_JP!=Ref1->IG2_JP || Ref0->IG3_JP!=Ref1->IG3_JP || Ref0->IG4_JP!=Ref1->IG4_JP)
      return(0);
 
    // Cloud point should never be tested as equal
@@ -969,10 +969,10 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       }
 #endif
 
-      ref->IG1=Ref->IG1;
-      ref->IG2=Ref->IG2;
-      ref->IG3=Ref->IG3;
-      ref->IG4=Ref->IG4;
+      ref->IG1_JP=Ref->IG1_JP;
+      ref->IG2_JP=Ref->IG2_JP;
+      ref->IG3_JP=Ref->IG3_JP;
+      ref->IG4_JP=Ref->IG4_JP;
 
       switch(ref->Grid[0]) {
          case 'R' :
@@ -1061,14 +1061,14 @@ TGeoRef* GeoRef_New() {
    ref->Hgt=NULL;
    ref->Wght=NULL;
    ref->Idx=NULL;
-   ref->AX=NULL;
+   ref->AX_JP=NULL;
    ref->AY=NULL;
    ref->RefFrom=NULL;
    ref->QTree=NULL;
    ref->Grid[0]='X';
    ref->Grid[1]='\0';
    ref->Grid[2]='\0';
-   ref->IG1=ref->IG2=ref->IG3=ref->IG4=0;
+   ref->IG1_JP=ref->IG2_JP=ref->IG3_JP=ref->IG4_JP=0;
 
    // WKT Specific
    ref->String=NULL;
@@ -1132,7 +1132,7 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
    double        dx,dy,lat0,lon0,lat1,lon1;
    Vect2d        tr[3],pt;
    
-   if (!Ref->AX || !Ref->AY) {
+   if (!Ref->AX_JP || !Ref->AY) {
       return(NULL);
    }
             
@@ -1142,7 +1142,7 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
    
    for(n=0;n<Ref->NX*Ref->NY;n++) {
       dy=Ref->AY[n];
-      dx=CLAMPLON(Ref->AX[n]);
+      dx=CLAMPLON(Ref->AX_JP[n]);
       lat0=fmin(lat0,dy);
       lon0=fmin(lon0,dx);
       lat1=fmax(lat1,dy);
@@ -1166,9 +1166,9 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
 
       // Loop on triangles
       for(n=0,t=0;n<Ref->NIdx-3;n+=3,t++) {          
-         tr[0][0]=Ref->AX[Ref->Idx[n]];     tr[0][1]=Ref->AY[Ref->Idx[n]];
-         tr[1][0]=Ref->AX[Ref->Idx[n+1]];   tr[1][1]=Ref->AY[Ref->Idx[n+1]];
-         tr[2][0]=Ref->AX[Ref->Idx[n+2]];   tr[2][1]=Ref->AY[Ref->Idx[n+2]];
+         tr[0][0]=Ref->AX_JP[Ref->Idx[n]];     tr[0][1]=Ref->AY[Ref->Idx[n]];
+         tr[1][0]=Ref->AX_JP[Ref->Idx[n+1]];   tr[1][1]=Ref->AY[Ref->Idx[n+1]];
+         tr[2][0]=Ref->AX_JP[Ref->Idx[n+2]];   tr[2][1]=Ref->AY[Ref->Idx[n+2]];
          
          // Calculate barycentric weight
           if (Ref->Wght)
@@ -1205,7 +1205,7 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
       // Loop on points
       for(n=0;n<Ref->NX*Ref->NY;n++) {     
          
-         pt[0]=Ref->AX[n];
+         pt[0]=Ref->AX_JP[n];
          pt[1]=Ref->AY[n];  
          
          x=(pt[0]-lon0)/dx;
@@ -1336,7 +1336,7 @@ int GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,dou
       // Find closest by looping in all points   
       
       for(n=0;n<Ref->NX*Ref->NY;n++) {
-         dx=X-Ref->AX[n];
+         dx=X-Ref->AX_JP[n];
          dy=Y-Ref->AY[n];
          
          if (Ref->Type&GRID_WRAP) {
@@ -1534,8 +1534,8 @@ int GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double
    // Source grid Y
    if (Ref->Grid[0]=='Y' || Ref->Grid[1]=='Y' || Ref->Grid[0]=='X' || Ref->Grid[1]=='X' || Ref->Grid[0]=='O') {
       for(x=0;x<((Ref->X1-Ref->X0)+1)*((Ref->Y1-Ref->Y0)+1);x++) {
-         *Lat0=fmin(*Lat0,Ref->AY[x]); *Lon0=fmin(*Lon0,Ref->AX[x]);
-         *Lat1=fmax(*Lat1,Ref->AY[x]); *Lon1=fmax(*Lon1,Ref->AX[x]);
+         *Lat0=fmin(*Lat0,Ref->AY[x]); *Lon0=fmin(*Lon0,Ref->AX_JP[x]);
+         *Lat1=fmax(*Lat1,Ref->AY[x]); *Lon1=fmax(*Lon1,Ref->AX_JP[x]);
       }
       return(1);
    }
@@ -1692,10 +1692,10 @@ int GeoRef_WithinCell(TGeoRef *GRef,Vect2d Pos,Vect2d Pt[4],int Idx0,int Idx1,in
    
    if (Idx0<sz && Idx1<sz && Idx2<sz && Idx3<sz && Idx0>=0 && Idx1>=0 && Idx2>=0 && Idx3>=0) {
       
-      Pt[0][0]=GRef->AX[Idx0]; Pt[0][1]=GRef->AY[Idx0];
-      Pt[1][0]=GRef->AX[Idx1]; Pt[1][1]=GRef->AY[Idx1];
-      Pt[2][0]=GRef->AX[Idx2]; Pt[2][1]=GRef->AY[Idx2];
-      Pt[3][0]=GRef->AX[Idx3]; Pt[3][1]=GRef->AY[Idx3];
+      Pt[0][0]=GRef->AX_JP[Idx0]; Pt[0][1]=GRef->AY[Idx0];
+      Pt[1][0]=GRef->AX_JP[Idx1]; Pt[1][1]=GRef->AY[Idx1];
+      Pt[2][0]=GRef->AX_JP[Idx2]; Pt[2][1]=GRef->AY[Idx2];
+      Pt[3][0]=GRef->AX_JP[Idx3]; Pt[3][1]=GRef->AY[Idx3];
       
       // Make sure all coordinates are on same side of -180/180
       if (Pos[0]>90) {
@@ -1845,22 +1845,22 @@ int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
    }
 
    /*Clear arrays*/
-   if (Ref->AX) free(Ref->AX);
+   if (Ref->AX_JP) free(Ref->AX_JP);
    if (Ref->AY) free(Ref->AY);
 
-   Ref->AX=(float*)malloc(nx*sizeof(float));
+   Ref->AX_JP=(float*)malloc(nx*sizeof(float));
    Ref->AY=(float*)malloc(ny*sizeof(float));
 
-   if (!Ref->AX || !Ref->AY) {
+   if (!Ref->AX_JP || !Ref->AY) {
       return(0);
    }
 
    /*Assign positionals, if size is float, just memcopy otherwise, assign*/
    if (XDef->Type==TD_Float32) {
-      memcpy(Ref->AX,XDef->Data[0],nx*sizeof(float));
+      memcpy(Ref->AX_JP,XDef->Data[0],nx*sizeof(float));
    } else {
       for(d=0;d<nx;d++) {
-         Def_Get(XDef,0,d,Ref->AX[d]);
+         Def_Get(XDef,0,d,Ref->AX_JP[d]);
       }
    }
 
@@ -1990,9 +1990,9 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
          tidx=Ref->Idx;
          for(idx=0;idx<Ref->NIdx-3;idx+=3) {
             
-            dx[0]=DEG2RAD(Ref->AX[tidx[idx]]);   dy[0]=DEG2RAD(Ref->AY[tidx[idx]]);
-            dx[1]=DEG2RAD(Ref->AX[tidx[idx+1]]); dy[1]=DEG2RAD(Ref->AY[tidx[idx+1]]);
-            dx[2]=DEG2RAD(Ref->AX[tidx[idx+2]]); dy[2]=DEG2RAD(Ref->AY[tidx[idx+2]]);
+            dx[0]=DEG2RAD(Ref->AX_JP[tidx[idx]]);   dy[0]=DEG2RAD(Ref->AY[tidx[idx]]);
+            dx[1]=DEG2RAD(Ref->AX_JP[tidx[idx+1]]); dy[1]=DEG2RAD(Ref->AY[tidx[idx+1]]);
+            dx[2]=DEG2RAD(Ref->AX_JP[tidx[idx+2]]); dy[2]=DEG2RAD(Ref->AY[tidx[idx+2]]);
             
             s =(dx[1]-dx[0])*(2+sin(dy[0])+sin(dy[1]));
             s+=(dx[2]-dx[1])*(2+sin(dy[1])+sin(dy[2]));

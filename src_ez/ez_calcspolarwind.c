@@ -20,6 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint ez_calcspolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat *uuin, ftnfloat *vvin, 
 			  wordint ni, wordint nj, wordint gdin)

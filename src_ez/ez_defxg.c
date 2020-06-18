@@ -20,11 +20,12 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 void c_ezdefxg(wordint gdid)
 {
 
-  _Grille *gr;
+  TGeoRef *gr;
 
   wordint gdrow_id, gdcol_id;
 

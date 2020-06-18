@@ -20,7 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
-
+#include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(ezgdef_ffile)(wordint *ni, wordint *nj, char *grtyp,
@@ -48,7 +48,7 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
   int old_ngrilles, gdid;
   wordint newgrsize, fseed, un, grid_index;
   unsigned int grid_crc;
-  _Grille *gr, newgr;
+  TGeoRef *gr, newgr;
   wordint *subgrid;
   wordint nsubgrids, vercode,read;
 
@@ -62,16 +62,16 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
     }
   if (nGrilles == 0)
     {
-    gr_list = calloc(chunks_sq[cur_log_chunk], sizeof(_Grille *));
-    Grille = (_Grille **) calloc(chunks[cur_log_chunk],sizeof(_Grille *));
-    Grille[0] = (_Grille *) calloc(chunks[cur_log_chunk], sizeof(_Grille));
+    gr_list = calloc(chunks_sq[cur_log_chunk], sizeof(TGeoRef *));
+    Grille = (TGeoRef **) calloc(chunks[cur_log_chunk],sizeof(TGeoRef *));
+    Grille[0] = (TGeoRef *) calloc(chunks[cur_log_chunk], sizeof(TGeoRef));
     for (i=0; i < chunks[cur_log_chunk]; i++)
       {
       Grille[0][i].index = -1;
       }
     }
 
-  memset(&newgr, (int)0, sizeof(_Grille));
+  memset(&newgr, (int)0, sizeof(TGeoRef));
   strcpy(newgr.grtyp, grtyp);
   /* incoming ni,nj specified by the user */
   newgr.ni = ni;
@@ -87,7 +87,7 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
   {
      return found;
   }
-  newgrsize = sizeof(_Grille);
+  newgrsize = sizeof(TGeoRef);
   fseed = 0;
   grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, newgr.ax, newgr.ay, newgr.ni, newgr.nj);
   grid_index = grid_crc % primes_sq[cur_log_chunk];

@@ -20,6 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint c_ezyy_calcxy(wordint gdout,wordint gdin)
@@ -39,7 +40,7 @@ wordint c_ezyy_calcxy(wordint gdout,wordint gdin)
   char interp_degree[32],extrap_degree[32],extrap_value[32],local_val[32];
   char global_interp_degree[32],global_extrap_degree[32];
   
-  _Grille *lgdin, *lgdout;
+  TGeoRef *lgdin, *lgdout;
  /*  need only access to either yin or Yang info for the lat and lon val */
    
   yyin=0; yyout=0;

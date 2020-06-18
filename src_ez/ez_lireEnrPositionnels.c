@@ -1,10 +1,11 @@
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 void RemplirDeBlancs(char str[],wordint longueur);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-void Lire_enrUvercode1(_Grille *gr, ftnfloat *yy, wordint nix)
+void Lire_enrUvercode1(TGeoRef *gr, ftnfloat *yy, wordint nix)
 {
   wordint ig1refyin,ig2refyin,ig3refyin,ig4refyin;
   wordint ig1refyan,ig2refyan,ig3refyan,ig4refyan;
@@ -41,7 +42,7 @@ void Lire_enrUvercode1(_Grille *gr, ftnfloat *yy, wordint nix)
   free(ay);
 }
 
-void Lire_enrTicTac(_Grille *gr, ftnfloat *ax, wordint nixnjx, ftnfloat *ay, wordint niynjy, wordint ip3, wordint ip4)
+void Lire_enrTicTac(TGeoRef *gr, ftnfloat *ax, wordint nixnjx, ftnfloat *ay, wordint niynjy, wordint ip3, wordint ip4)
 {
   wordint i,j,offsetx,offsety;
 
@@ -82,7 +83,7 @@ void Lire_enrTicTac(_Grille *gr, ftnfloat *ax, wordint nixnjx, ftnfloat *ay, wor
           }
       }
 }
-wordint LireEnrPositionnels(_Grille *gr, wordint iunit, wordint ip1, wordint ip2, wordint ip3, wordint ip4, wordint read)
+wordint LireEnrPositionnels(TGeoRef *gr, wordint iunit, wordint ip1, wordint ip2, wordint ip3, wordint ip4, wordint read)
 {
   wordint moins1 = -1;
   wordint cle;

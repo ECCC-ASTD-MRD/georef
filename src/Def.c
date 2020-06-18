@@ -1435,7 +1435,7 @@ int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
 
    if (ok<0) {
       App_Log(ERROR,"%s: EZSCINT internal error, could not define gridset\n",__func__);
-      RPN_IntUnlock();
+      GeoRef_Unlock();
       return(FALSE);
    }
 
@@ -2070,7 +2070,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
       if (ToRef->Grid[0]=='Y') {
          // Point cloud interpolations
          for(idxt=0;idxt<nij;idxt++) {
-            if (FromRef->UnProject(FromRef,&di0,&dj0,ToRef->AY[idxt],ToRef->AX[idxt],0,1)) {
+            if (FromRef->UnProject(FromRef,&di0,&dj0,ToRef->AY[idxt],ToRef->AX_JP[idxt],0,1)) {
                di0=floor(di0);
                dj0=floor(dj0);
                FromRef->Value(FromRef,FromDef,'N',0,di0,dj0,FromDef->Level,&di[0],&vx);

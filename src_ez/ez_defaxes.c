@@ -20,6 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 void c_ezdefaxes(wordint gdid, ftnfloat *ax, ftnfloat *ay)
 {
@@ -27,7 +28,7 @@ void c_ezdefaxes(wordint gdid, ftnfloat *ax, ftnfloat *ay)
   ftnfloat *temp, dlon;
   wordint zero, deuxnj;
 
-  _Grille *gr;
+  TGeoRef *gr;
 
   wordint gdrow_id, gdcol_id;
 

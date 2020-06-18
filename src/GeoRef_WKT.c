@@ -279,11 +279,11 @@ int GeoRef_WKTProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
 
    // In case of non-uniform grid, figure out where in the position vector we are
    if (GRef->Grid[gidx]=='Z') {
-      if (GRef->AX && GRef->AY) {
+      if (GRef->AX_JP && GRef->AY) {
          // X
-         if( X < GRef->X0 )      { sx=GRef->X0; X=GRef->AX[sx]-(GRef->AX[sx]-GRef->AX[sx+1])*(X-sx); }
-         else if( X > GRef->X1 ) { sx=GRef->X1; X=GRef->AX[sx]+(GRef->AX[sx]-GRef->AX[sx-1])*(X-sx); }
-         else                    { sx=floor(X); X=sx==X?GRef->AX[sx]:ILIN(GRef->AX[sx],GRef->AX[sx+1],X-sx); }
+         if( X < GRef->X0 )      { sx=GRef->X0; X=GRef->AX_JP[sx]-(GRef->AX_JP[sx]-GRef->AX_JP[sx+1])*(X-sx); }
+         else if( X > GRef->X1 ) { sx=GRef->X1; X=GRef->AX_JP[sx]+(GRef->AX_JP[sx]-GRef->AX_JP[sx-1])*(X-sx); }
+         else                    { sx=floor(X); X=sx==X?GRef->AX_JP[sx]:ILIN(GRef->AX_JP[sx],GRef->AX_JP[sx+1],X-sx); }
 
          // Y
          s=GRef->NX;
@@ -292,19 +292,19 @@ int GeoRef_WKTProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
          else                    { sy=floor(Y); Y=sy==Y?GRef->AY[sy*s]:ILIN(GRef->AY[sy*s],GRef->AY[(sy+1)*s],Y-sy); }
       }
    } else if (GRef->Grid[gidx]=='X' || GRef->Grid[gidx]=='Y') {
-      if (GRef->AX && GRef->AY) {
+      if (GRef->AX_JP && GRef->AY) {
          sx=floor(X);sx=CLAMP(sx,GRef->X0,GRef->X1);
          sy=floor(Y);sy=CLAMP(sy,GRef->Y0,GRef->Y1);
          dx=X-sx;;
          dy=Y-sy;
 
          s=sy*GRef->NX+sx;
-         X=GRef->AX[s];
+         X=GRef->AX_JP[s];
          Y=GRef->AY[s];
 
          if (++sx<=GRef->X1) {
             s=sy*GRef->NX+sx;
-            X+=(GRef->AX[s]-X)*dx;
+            X+=(GRef->AX_JP[s]-X)*dx;
          }
 
          if (++sy<=GRef->Y1) {
@@ -422,24 +422,24 @@ int GeoRef_WKTUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
 
          // In case of non-uniform grid, figure out where in the position vector we are 
          if (GRef->Grid[gidx]=='Z') {
-            if (GRef->AX && GRef->AY) {
+            if (GRef->AX_JP && GRef->AY) {
                s=GRef->X0;
                // Check if vector is increasing
-               if (GRef->AX[s]<GRef->AX[s+1]) {
-                  while(s<=GRef->X1 && *X>GRef->AX[s]) s++;
+               if (GRef->AX_JP[s]<GRef->AX_JP[s+1]) {
+                  while(s<=GRef->X1 && *X>GRef->AX_JP[s]) s++;
                } else {
-                  while(s<=GRef->X1 && *X<GRef->AX[s]) s++;
+                  while(s<=GRef->X1 && *X<GRef->AX_JP[s]) s++;
                }
                if (s>GRef->X0) {
                   // We're in so interpolate postion
                   if (s<=GRef->X1) {
-                     *X=(*X-GRef->AX[s-1])/(GRef->AX[s]-GRef->AX[s-1])+s-1;
+                     *X=(*X-GRef->AX_JP[s-1])/(GRef->AX_JP[s]-GRef->AX_JP[s-1])+s-1;
                   } else {
-                     *X=(*X-GRef->AX[GRef->X1])/(GRef->AX[GRef->X1]-GRef->AX[GRef->X1-1])+s-1;
+                     *X=(*X-GRef->AX_JP[GRef->X1])/(GRef->AX_JP[GRef->X1]-GRef->AX_JP[GRef->X1-1])+s-1;
                   }
                } else {
                   // We're out so extrapolate position
-                  *X=GRef->X0+(*X-GRef->AX[0])/(GRef->AX[1]-GRef->AX[0]);
+                  *X=GRef->X0+(*X-GRef->AX_JP[0])/(GRef->AX_JP[1]-GRef->AX_JP[0]);
                }
 
                s=GRef->Y0;dx=GRef->NX;
@@ -668,10 +668,10 @@ int GeoRef_WKTSet(TGeoRef *GRef,char *String,double *Transform,double *InvTransf
  *    <NI>      : Dimension en X
  *    <NJ>      : Dimension en Y
  *    <GRTYP>   : Type de grille
- *    <IG1>     : Descripteur IG1
- *    <IG2>     : Descripteur IG2
- *    <IG3>     : Descripteur IG3
- *    <IG4>     : Descripteur IG4
+ *    <IG1_JP>     : Descripteur IG1
+ *    <IG2_JP>     : Descripteur IG2
+ *    <IG3_JP>     : Descripteur IG3
+ *    <IG4_JP>     : Descripteur IG4
  *
  * Retour       :
  *
@@ -679,27 +679,27 @@ int GeoRef_WKTSet(TGeoRef *GRef,char *String,double *Transform,double *InvTransf
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-TGeoRef *GeoRef_WKTCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
+TGeoRef *GeoRef_WKTCreate(int ni,int nj,char *grtyp,int ig1,int ig2,int ig3,int ig4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
 
    TGeoRef *ref;
 
    ref=GeoRef_New();
-   GeoRef_Size(ref,0,0,NI>0?NI-1:0,NJ>0?NJ-1:0,0);
+   GeoRef_Size(ref,0,0,ni>0?ni-1:0,nj>0?nj-1:0,0);
    if (!GeoRef_WKTSet(ref,String,Transform,InvTransform,Spatial)) {
       return(NULL);
    }
    
-   if (GRTYP) {
-      ref->Grid[0]=GRTYP[0];
-      ref->Grid[1]=GRTYP[1];
+   if (grtyp) {
+      ref->Grid[0]=grtyp[0];
+      ref->Grid[1]=grtyp[1];
    } else {
       ref->Grid[0]='W';
       ref->Grid[1]='\0';
    }
-   ref->IG1=IG1;
-   ref->IG2=IG2;
-   ref->IG3=IG3;
-   ref->IG4=IG4;
+   ref->IG1_JP=ig1;
+   ref->IG2_JP=ig2;
+   ref->IG3_JP=ig3;
+   ref->IG4_JP=ig4;
    
    return(ref);
 }

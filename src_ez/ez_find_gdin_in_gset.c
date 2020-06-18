@@ -1,11 +1,12 @@
  #include "ezscint.h"
  #include "ez_funcdef.h"
+ #include "../src/GeoRef.h"
  
  wordint ez_find_gdin_in_gset(wordint gdin, wordint gdout)
   {
   int i, found, idx_gdin; 
   int gdrow_in, gdrow_out, gdcol_in, gdcol_out;
-  _Grille *gr; 
+  TGeoRef *gr; 
    
   c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
   c_gdkey2rowcol(gdout, &gdrow_out, &gdcol_out);

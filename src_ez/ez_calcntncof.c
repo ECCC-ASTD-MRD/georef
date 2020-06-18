@@ -20,7 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
-
+#include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 void ez_calcntncof(wordint gdid)

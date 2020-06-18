@@ -20,7 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
-
+#include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char *grref, wordint *vercode, wordint *nsubgrids, wordint *subgrid, F2Cl lengrtyp, F2Cl lengrref)
@@ -45,7 +45,7 @@ wordint c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wor
   wordint gdrow_in, gdcol_in, grid_index,newgrsize;
   ftnfloat *ax,*ay;
   unsigned int grid_crc;
-   _Grille newgr,*maskgd;
+   TGeoRef newgr,*maskgd;
     
   if (nsubgrids <= 1)
     {
@@ -57,7 +57,7 @@ wordint c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wor
     fprintf(stderr,"<c_ezgdef_supergrid> invalid vercode! Aborting...\n");
     return -1;
     }
-  memset(&newgr, (int)0, sizeof(_Grille));
+  memset(&newgr, (int)0, sizeof(TGeoRef));
   strcpy(newgr.fst.etiketx, "            ");
   strcpy(newgr.fst.etikety, "            ");
   strcpy(newgr.fst.typvarx, "  ");
@@ -107,7 +107,7 @@ add   the rotation of YIN */
     newgr.fst.igref[IG4]=0;
     newgr.nsubgrids= nsubgrids;
      }
-    newgrsize = sizeof(_Grille);
+    newgrsize = sizeof(TGeoRef);
     grid_crc = ez_calc_crc((int *)&newgr,&newgrsize,ax,ay,newgr.ni,newgr.nj);
 
     free(ax); free(ay);

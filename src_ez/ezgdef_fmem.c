@@ -20,7 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
-
+#include "../src/GeoRef.h"
 
 wordint f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
    wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,

@@ -20,6 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat *vvin, wordint gdout,wordint gdin)
@@ -38,7 +39,7 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
   ftnfloat *yin2yan_spdout,*yan2yan_spdout, *yin2yan_wdout,*yan2yan_wdout;
   ftnfloat *spdout,*wdout;
   
-  _Grille *lgdin, *lgdout;
+  TGeoRef *lgdin, *lgdout;
  /*  need only access to either yin or Yang info for the lat and lon val */
    
   yyin=0; yyout=0;

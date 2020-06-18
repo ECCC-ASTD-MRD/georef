@@ -1,4 +1,4 @@
-#include "ezscint.h"
+#include "../src/GeoRef.h"
 
 #ifndef _ezfuncdef
 #include "gd_key2rowcol.c"
@@ -8,7 +8,7 @@ void EliminerGrille(wordint gridid);
 void f77name(ez_avg)(float* zout, float* x, float* y, int* ni_src, int* nj_src,
             float* zin, int* ni_dst, int* nj_dst, int* extension);
 
-wordint LireEnrPositionnels(_Grille* gr, wordint iunit, wordint ip1, wordint ip2, wordint ip3, wordint ip4, wordint read);
+wordint LireEnrPositionnels(TGeoRef* gr, wordint iunit, wordint ip1, wordint ip2, wordint ip3, wordint ip4, wordint read);
 
 void c_llfgr(ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint npts,
         ftnfloat latOrigine, ftnfloat lonOrigine, ftnfloat deltaLat, ftnfloat deltaLon);
@@ -80,7 +80,7 @@ wordint c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
 wordint f77name(ezgdef_supergrid)(wordint* ni, wordint* nj, char* grtyp, char* grref, wordint* vercode, wordint* nsubgrids, wordint* subgrid, F2Cl lengrtyp, F2Cl lengrref);
 
 wordint c_ezgdef_supergrid(wordint ni, wordint nj, char* grtyp, char* grref, wordint vercode, wordint nsubgrids, wordint* subgrid);
-wordint c_ezgdef_yymask(_Grille* gr);
+wordint c_ezgdef_yymask(TGeoRef* gr);
 
 
 wordint f77name(ezgenpole)(ftnfloat* vpolnor, ftnfloat* vpolsud, ftnfloat* fld,

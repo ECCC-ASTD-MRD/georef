@@ -20,6 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 void reallocate_gridset_table(int gdid);
 void   allocate_gridset_table(int gdid);
@@ -43,7 +44,7 @@ wordint c_ezdefset(wordint gdout, wordint gdin)
    static wordint found = -1;
    static wordint ncalls = 0;
    wordint nsets = 0;
-   _Grille *gr;
+   TGeoRef *gr;
 
    if (gdout == UNDEFINED)
    {
@@ -179,7 +180,7 @@ void reallocate_gridset_table(int gdid)
    int cur_chunk;
    static wordint found = -1;
    static wordint ncalls = 0;
-   _Grille *gr;
+   TGeoRef *gr;
    _gridset *gset, *newTable;
 
    c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
@@ -240,7 +241,7 @@ void allocate_gridset_table(int gdid)
    wordint newIndex, inserted, curIndex;
    int lcl_ngdin, chunkSize;
    int cur_chunk;
-   _Grille *gr;
+   TGeoRef *gr;
    _gridset *gset, *newTable;
 
    c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
