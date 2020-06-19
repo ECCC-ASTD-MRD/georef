@@ -11,6 +11,8 @@ ec_build_info()     # Generate build include file
 
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 
+set(CMAKE_INSTALL_PREFIX "" CACHE PATH "..." FORCE)
+
 enable_language(C)
 enable_language(Fortran)
 
