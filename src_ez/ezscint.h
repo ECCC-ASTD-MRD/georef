@@ -16,11 +16,7 @@
 #define LAT                         1
 #define AX                          2
 #define XXX                         4
-#define SYMMETRIQUE                64
-#define TYPE_EXPANSION            128
 #define NEWTON                    256
-#define LATLON_PRIME_OK           512
-#define SINLATLON_OK             1024
 #define ZONES                    2048
 
 #define GRID                      0

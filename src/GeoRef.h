@@ -150,7 +150,7 @@ typedef struct {
   ftnfloat *xx, *yy;
   ftnfloat *lat, *lon;
   ftnfloat *wts;              /* tableau de poids */
-wordint *mask, *idx;          /* indice du point dans le champ de destination */
+   wordint *mask, *idx;       /* indice du point dans le champ de destination */
 } _ygrid;                     /* Grille Y */
 
 typedef struct {
@@ -182,25 +182,12 @@ typedef struct {
 }_gridset;
 
 typedef struct {
-   int child;
-   int childOf;
-   int parent;
-   int niOffset, njOffset;
-   int sister;
-   int assembly;
-   int *parentOf;
-   int *sisterOf;
-}_sousgrille;
-
-typedef struct {
   wordint  ip1, ip2, ip3;
   wordint date;
   wordint npas, deet, nbits;
   wordint hemisphere,axe_y_inverse;
   ftnfloat xg[16], xgref[16];
   wordint  ig[16], igref[16];
-  char fst_grtyp[4],fst_grref[4];
-  wordint key_ax, key_ay;
   char nomvarx[8];
   char nomvary[8];
   char typvarx[4];
@@ -255,15 +242,13 @@ typedef struct TGeoRef {
    wordint flags;
    wordint i1, i2, j1, j2;
    wordint ni,nj;
-   wordint nig, nxg;
    wordint ni_ax, nj_ay;
    wordint extension;
    wordint needs_expansion;
    wordint access_count;
-   wordint structured;
    wordint next_gd;
-   wordint n_gdin, next_gdin, idx_last_gdin, n_gdin_for;
-   wordint log_chunk_gdin, log_chunk_gdin_for;
+   wordint n_gdin, idx_last_gdin, n_gdin_for;
+   wordint log_chunk_gdin;
    wordint *gdin_for, *mask;
    wordint nsubgrids,mymaskgrid;
    wordint mymaskgridi0,mymaskgridi1;
@@ -283,7 +268,6 @@ typedef struct TGeoRef {
 
 extern TGeoRef** Grille;
 extern TGeoRef** gr_list;
-extern _gridset* gridset;
 
 typedef struct TGeoPos {
    TGeoRef *GRef;                                         // Reference horizontale
