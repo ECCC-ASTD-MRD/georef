@@ -1,4 +1,4 @@
-#----- Compiler selection
+ #----- Compiler selection
 if(NOT DEFINED EC_COMPILER_SUITE)
    set(EC_COMPILER_SUITE gnu)
    if(DEFINED ENV{INTEL_LICENSE_FILE})
@@ -47,3 +47,4 @@ macro(ec_getvar)
    execute_process(COMMAND sh "-c" "${CMAKE_CURRENT_SOURCE_DIR}/compiler.sh ${EC_COMPILER_SUITE}" OUTPUT_VARIABLE EC_COMPILER_SUITE_VERSION)
    message(STATUS "Compiler version is: ${EC_COMPILER_SUITE} ${EC_COMPILER_SUITE_VERSION}") 
 endmacro()
+

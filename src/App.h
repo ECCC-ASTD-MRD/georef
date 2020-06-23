@@ -72,17 +72,17 @@
 #define APP_MASTER    0
 #define APP_THREAD    1
 
-#define APP_BUFMAX    32768               // Maximum input buffer length
-#define APP_LISTMAX   4096                // MAximum number of items in a flag list
-#define APP_SEED      1049731793          // Initial FIXED seed
+#define APP_BUFMAX    32768               ///< Maximum input buffer length
+#define APP_LISTMAX   4096                ///< Maximum number of items in a flag list
+#define APP_SEED      1049731793          ///< Initial FIXED seed
 
-#define APP_NOARGSFLAG 0x00               // No flag specified
-#define APP_NOARGSFAIL 0x01               // Fail if no arguments are specified
-#define APP_ARGSLOG    0x02               // Use log flag
-#define APP_ARGSLANG   0x04               // Multilingual app
-#define APP_ARGSSEED   0x08               // Use seed flag
-#define APP_ARGSTHREAD 0x10               // Use thread flag
-#define APP_ARGSTMPDIR 0x20               // Use tmp dir
+#define APP_NOARGSFLAG 0x00               ///< No flag specified
+#define APP_NOARGSFAIL 0x01               ///< Fail if no arguments are specified
+#define APP_ARGSLOG    0x02               ///< Use log flag
+#define APP_ARGSLANG   0x04               ///< Multilingual app
+#define APP_ARGSSEED   0x08               ///< Use seed flag
+#define APP_ARGSTHREAD 0x10               ///< Use thread flag
+#define APP_ARGSTMPDIR 0x20               ///< Use tmp dir
 
 #ifdef __xlC__
 #   define APP_ONCE    ((1)<<3)
@@ -150,40 +150,40 @@ typedef struct TApp_Arg {
 
 // Application controller definition
 typedef struct TApp {
-    char*          Name;                 // Name
-    char*          Version;              // Version
-    char*          Desc;                 // Description
-    char*          TimeStamp;            // Compilation timestamp
-    char*          LogFile;              // Log file
-//    char*          TmpDir;               // Tmp directory
-    char*          Tag;                  // Identificateur
-    FILE*          LogStream;            // Log file associated stream
-    int            LogWarning;           // Number of warnings
-    int            LogError;             // Number of errors
-    int            LogColor;             // Use coloring in the logs
-    TApp_LogLevel  LogLevel;             // Level of log
-    TApp_State     State;                // State of application
-    TApp_Lang      Language;             // Language (default: $CMCLNG or APP_EN)
-    double         Percent;              // Percentage of execution done (0=not started, 100=finished)
-    struct timeval Time;                 // Timer for execution time
-    int            Type;                 // App object type (APP_MASTER,APP_THREAD)
+    char*          Name;                 ///< Name of applicaton
+    char*          Version;              ///< Version of application
+    char*          Desc;                 ///< Description of application
+    char*          TimeStamp;            ///< Compilation timestamp
+    char*          LogFile;              ///< Log file
+//    char*          TmpDir;               ///< Tmp directory
+    char*          Tag;                  ///< Identificateur
+    FILE*          LogStream;            ///< Log file associated stream
+    int            LogWarning;           ///< Number of warnings
+    int            LogError;             ///< Number of errors
+    int            LogColor;             ///< Use coloring in the logs
+    TApp_LogLevel  LogLevel;             ///< Level of log
+    TApp_State     State;                ///< State of application
+    TApp_Lang      Language;             ///< Language (default: $CMCLNG or APP_EN)
+    double         Percent;              ///< Percentage of execution done (0=not started, 100=finished)
+    struct timeval Time;                 ///< Timer for execution time
+    int            Type;                 ///< App object type (APP_MASTER,APP_THREAD)
 
-    int            Seed,*OMPSeed;        // Random number generator seed
-    int           *TotalsMPI;            // MPI total number of items arrays
-    int           *CountsMPI;            // MPI count gathering arrays
-    int           *DisplsMPI;            // MPI displacement gathering arrays
-    int            NbMPI,RankMPI;        // Number of MPI process
-    int            NbThread;             // Number of OpenMP threads
-    int            Signal;               // Trapped signal
-    TApp_Affinity  Affinity;             // Thread placement affinity
-    int            NbNodeMPI,NodeRankMPI;// Number of MPI process on the current node
+    int            Seed,*OMPSeed;        ///< Random number generator seed
+    int           *TotalsMPI;            ///< MPI total number of items arrays
+    int           *CountsMPI;            ///< MPI count gathering arrays
+    int           *DisplsMPI;            ///< MPI displacement gathering arrays
+    int            NbMPI,RankMPI;        ///< Number of MPI process
+    int            NbThread;             ///< Number of OpenMP threads
+    int            Signal;               ///< Trapped signal
+    TApp_Affinity  Affinity;             ///< Thread placement affinity
+    int            NbNodeMPI,NodeRankMPI;///< Number of MPI process on the current node
 #ifdef _MPI
-    MPI_Comm       NodeComm,NodeHeadComm;// Communicator for the current node and the head nodes
+    MPI_Comm       NodeComm,NodeHeadComm;///< Communicator for the current node and the head nodes
 #endif //_MPI
 } TApp;
 
 #ifndef APP_BUILD
-extern __thread TApp *App;               // Per thread App pointer
+extern __thread TApp *App;               ///< Per thread App pointer
 #endif
 
 typedef int (TApp_InputParseProc) (void *Def,char *Token,char *Value,int Index);
@@ -212,5 +212,6 @@ int   App_IsMPI(void);
 int   App_IsOMP(void);
 int   App_IsSingleNode(void);
 int   App_IsAloneNode(void);
+int   App_NodeGroup();
 
 #endif

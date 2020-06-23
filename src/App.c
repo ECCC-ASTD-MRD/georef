@@ -50,15 +50,15 @@
 #include "eerUtils.h"
 #include "RPN.h"
 
-static TApp AppInstance;                         // Static App instance
-__thread TApp *App=&AppInstance;                 // Per thread App pointer
-static __thread char APP_ERROR[APP_ERRORSIZE];   // Last error is accessible through this
+static TApp AppInstance;                         ///< Static App instance
+__thread TApp *App=&AppInstance;                 ///< Per thread App pointer
+static __thread char APP_ERROR[APP_ERRORSIZE];   ///< Last error is accessible through this
 
 char* App_ErrorGet(void) {
    return(APP_ERROR);
 }
 
-unsigned int App_OnceTable[APP_MAXONCE];                // Log once table
+unsigned int App_OnceTable[APP_MAXONCE];         ///< Log once table
 
 int App_IsDone(void)       { return(App->State==DONE); }
 int App_IsMPI(void)        { return(App->NbMPI>1); }
@@ -72,24 +72,17 @@ int App_MPIProcCmp(const void *a,const void *b) {
 }
 #endif
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_Init>
- * Creation : Septembre 2008 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Initialiser la structure App
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2017
+ *    @param[in]  Type     App type (APP_MASTER=single independent process, APP_THREAD=threaded co-process)
+ *    @param[in]  Name     Application name
+ *    @param[in]  Version  Application version
+ *    @param[in]  Desc     Application description
+ *    @param[in]  Stamp    TimeStamp
  *
- * But      : Initialiser la structure App
- *
- * Parametres :
- *    <Type>    : App type (APP_MASTER=single independent process, APP_THREAD=threaded co-process)
- *    <Name>    : Application name
- *    <Version> : Version
- *    <Desc>    : Description
- *    <Stamp>   : TimeStamp
- * 
- * Retour     :
- *  <App>     : Parametres de l'application initialisee
- *
- * Remarques  :
- *----------------------------------------------------------------------------
+ *    @return              Parametres de l'application initialisee
 */
 TApp *App_Init(int Type,char *Name,char *Version,char *Desc,char* Stamp) {
 
@@ -147,18 +140,10 @@ TApp *App_Init(int Type,char *Name,char *Version,char *Desc,char* Stamp) {
    return(App);
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_Free>
- * Creation : Septembre 2008 - J.P. Gauthier
- *
- * But      : Liberer une structure App
- *
- * Parametres :
- *
- * Retour     :
- *
- * Remarques  :
- *----------------------------------------------------------------------------
+/**----------------------------------------------------------------------------
+ * @brief  Liberer une structure App
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2017
 */
 void App_Free(void) {
 
@@ -177,21 +162,15 @@ void App_Free(void) {
    if (App->Type==APP_THREAD) free(App); App=NULL;
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_NodeGroup>
- * Creation : Janvier 2017 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Initialiser les communicateurs intra-node et inter-nodes
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2017
  *
- * But      : Initialiser les communicateurs intra-node et inter-nodes
- *
- * Parametres :
- *
- * Retour     :
- *
- * Remarques  :
+ * @note
  *    - On fait ca ici car quand on combine MPI et OpenMP, les threads se supperpose sur
  *      un meme CPU pour plusieurs job MPI sur un meme "socket@
- *----------------------------------------------------------------------------
-*/
+ **/
 int App_NodeGroup() {
    if( App_IsMPI() ) {
 #ifdef _MPI
@@ -251,20 +230,14 @@ int App_NodeGroup() {
    return APP_OK;
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_ThreadPlace>
- * Creation : Janvier 2017 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Initialiser l'emplacement des threads
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2017
  *
- * But      : Initialiser l'emplacement des threads
- *
- * Parametres :
- *
- * Retour     :
- *
- * Remarques  :
+ * @note
  *    - On fait ca ici car quand on combine MPI et OpenMP, les threads se supperpose sur
  *      un meme CPU pour plusieurs job MPI sur un meme "socket@
- *----------------------------------------------------------------------------
 */
 int App_ThreadPlace(void) {
    
@@ -309,18 +282,10 @@ int App_ThreadPlace(void) {
    return(TRUE);
 }
   
-/*----------------------------------------------------------------------------
- * Nom      : <App_Start>
- * Creation : Septembre 2008 - J.P. Gauthier
- *
- * But      : Initialiser l'execution de l'application et afficher l'entete
- *
- * Parametres :
- *
- * Retour     :
- *
- * Remarques  :
- *----------------------------------------------------------------------------
+/**----------------------------------------------------------------------------
+ * @brief  Initialiser l'execution de l'application et afficher l'entete
+ * @author Jean-Philippe Gauthier
+ * @date   Septembre 2008
 */
 void App_Start(void) {
 
@@ -482,21 +447,15 @@ void App_Start(void) {
 #endif //_MPI
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_End>
- * Creation : Septembre 2008 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Finaliser l'execution du modele et afficher le footer
+ * @author Jean-Philippe Gauthier
+ * @date   Septembre 2008
  *
- * But      : Finaliser l'execution du modele et afficher le footer
- *
- * Parametres  :
- *   <Status>  : User status to use
+ * @param[in] Status  User status to use
  * 
- * Retour      :
- *    <status> : Process exit status to be used
- * 
- * Remarques   :
- *----------------------------------------------------------------------------
-*/
+ * @return Process exit status to be used
+ */
 int App_End(int Status) {
 
    struct timeval end,dif;
@@ -549,19 +508,13 @@ int App_End(int Status) {
    return(App->Signal?128+App->Signal:Status);
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_Trap>
- * Creation : Aout 2016 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Trap les signaux afin de terminer gracieusement
+ * @author Jean-Philippe Gauthier
+ * @date   Aout 2016
  *
- * But      : Trap les signaux afin de terminer gracieusement *
- * Parametres :
- *   <Signal> : Signal to be trapped
- *
- * Retour:
- *
- * Remarques  :
- *----------------------------------------------------------------------------
-*/
+ * @param[in] Signal Signal to be trapped
+ */
 void App_TrapProcess(int Signal) {
 
    App_Log(DEBUG,"Trapped signal %i\n",Signal);
@@ -585,18 +538,10 @@ void App_Trap(int Signal) {
    sigaction(Signal,&new,&old);
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_LogOpen>
- * Creation : Septembre 2014 - J.P. Gauthier
- *
- * But      : Ouvrir le fichier log
- *
- * Parametres :
- *
- * Retour:
- *
- * Remarques  :
- *----------------------------------------------------------------------------
+/**----------------------------------------------------------------------------
+ * @brief  Ouvrir le fichier log
+ * @author Jean-Philippe Gauthier
+ * @date   Septembre 2014
 */
 void App_LogOpen(void) {
    
@@ -619,18 +564,10 @@ void App_LogOpen(void) {
    }
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_LogClose>
- * Creation : Septembre 2014 - J.P. Gauthier
- *
- * But      : Fermer le fichier log
- *
- * Parametres :
- *
- * Retour:
- *
- * Remarques  :
- *----------------------------------------------------------------------------
+/**----------------------------------------------------------------------------
+ * @brief  Fermer le fichier log
+ * @author Jean-Philippe Gauthier
+ * @date   Septembre 2014
 */
 void App_LogClose(void) {
 
@@ -639,25 +576,20 @@ void App_LogClose(void) {
    }
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_Log>
- * Creation : Septembre 2008 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Imprimer un message de maniere standard
+ * @author Jean-Philippe Gauthier
+ * @date   Septembre 2008
  *
- * But      : Imprimer un message de maniÃ¨re standard
+ * @param[in]  Level   Niveau d'importance du message (MUST,ERROR,WARNING,INFO,DEBUG,EXTRA)
+ * @param[in]  Format  Format d'affichage du message
+ * @param[in]  ...     Liste des variables du message
  *
- * Parametres :
- *  <Level>   : Niveau d'importance du message (MUST,ERROR,WARNING,INFO,DEBUG,EXTRA)
- *  <Format>  : Format d'affichage du message
- *  <...>     : Liste des variables du message
- *
- * Retour:
- *
- * Remarques  :
+ * @note
  *   - Cette fonctions s'utilise comme printf sauf qu'il y a un argument de plus,
  *     le niveau d'importance du message.
  *   - le niveau ERROR s'affichera sur de stderr alors que tout les autres seront
  *     sur stdout ou le fichier log
- *----------------------------------------------------------------------------
 */
 void App_Log(TApp_LogLevel Level,const char *Format,...) {
 
@@ -714,23 +646,18 @@ void App_Log(TApp_LogLevel Level,const char *Format,...) {
    }
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_Progress>
- * Creation : Septembre 2014 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Imprimer un message d'indication d'avancement
+ * @author Jean-Philippe Gauthier
+ * @date   Septembre 2014
  *
- * But      : Imprimer un message d'indication d'avancement
+ * @param[in]  Percent   Pourcentage d'avancement
+ * @param[in]  Format    Format d'affichage du message
+ * @param[in]  ...       Liste des variables du message
  *
- * Parametres :
- *  <Percent> : Pourcentage d'avancement
- *  <Format>  : Format d'affichage du message
- *  <...>     : Liste des variables du message
- *
- * Retour:
- *
- * Remarques  :
+ * @note
  *   - Cette fonctions s'utilise comme printf sauf qu'il y a un argument de plus,
  *     le pourcentage d'avancement
- *----------------------------------------------------------------------------
 */
 void App_Progress(float Percent,const char *Format,...) {
 
@@ -752,20 +679,13 @@ void App_Progress(float Percent,const char *Format,...) {
    fflush(App->LogStream);
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_LogLevel>
- * Creation : Septembre 2008 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Definir le niveau de log courant
+ * @author Jean-Philippe Gauthier
+ * @date   Septembre 2008
  *
- * But      : Definir le niveau de log courant
- *
- * Parametres :
- *  <Val>     : Niveau de log a traiter
- *
- * Retour:
- *
- * Remarques  :
- *----------------------------------------------------------------------------
-*/
+ * @param[in]  Val     Niveau de log a traiter
+ */
 int App_LogLevel(char *Val) {
 
    if (Val) {
@@ -786,22 +706,15 @@ int App_LogLevel(char *Val) {
    return(App->LogLevel);
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_PrintArgs>
- * Creation : Mars 2014 - J.P. Gauthier
- *
- * But      : Print arguments information.
- *
- * Parametres  :
- *  <AArgs>   : Arguments definition
- *  <Token>   : Invalid token if any, NULL otherwise
- *  <Flags>    : configuration flags
- *
- * Retour:
- *
- * Remarques :
- *----------------------------------------------------------------------------
-*/
+/**----------------------------------------------------------------------------
+ * @brief  Print arguments information
+ * @author Jean-Philippe Gauthier
+ * @date   Mars 2014
+ * 
+ * @param[in]  AArgs    Arguments definition
+ * @param[in]  Token    Invalid token if any, NULL otherwise
+ * @param[in]  Flags    Configuration flags
+ */
 void App_PrintArgs(TApp_Arg *AArgs,char *Token,int Flags) {
    
    TApp_Arg *aarg=NULL;
@@ -839,20 +752,15 @@ void App_PrintArgs(TApp_Arg *AArgs,char *Token,int Flags) {
    printf("\n");
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_GetArgs>
- * Creation : Mars 2014 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Extract argument value
+ * @author Jean-Philippe Gauthier
+ * @date   Mars 2014
+ * 
+ * @param[in]  AArg      Argument definition
+ * @param[in]  Value     Value to extract
  *
- * But      : Extract argument value
- *
- * Parametres  :
- *  <AArg>     : Argument definition
- *  <Value>    : Value to extract
- *
- * Retour:
- *
- * Remarques :
- *----------------------------------------------------------------------------
+ * @return 1 or 0 if failed
 */
 #define LST_ASSIGN(type,lst,val) *(type)lst=val; lst=(type)lst+1
 static inline int App_GetArgs(TApp_Arg *AArg,char *Value) {
@@ -885,24 +793,18 @@ static inline int App_GetArgs(TApp_Arg *AArg,char *Value) {
    return(!errno);
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_ParseArgs>
- * Creation : Mars 2014 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Parse default arguments
+ * @author Jean-Philippe Gauthier
+ * @date   Mars 2014
+ * 
+ * @param[in]  AArg      Argument definition
+ * @param[in]  argc      Number of argument
+ * @param[in]  argv      Arguments
+ * @param[in]  Flags     Configuration flags
  *
- * But      : Parse default arguments.
- *
- * Parametres  :
- *  <AArgs>    : Arguments definition
- *  <argc>     : Number of argument
- *  <argv>     : Arguments
- *  <Flags>    : configuration flags
- *
- * Retour:
- *  <ok>       : 1 or 0 if failed
- *
- * Remarques :
- *----------------------------------------------------------------------------
-*/
+ * @return 1 or 0 if failed
+ */
 int App_ParseArgs(TApp_Arg *AArgs,int argc,char *argv[],int Flags) {
 
    int       i=-1,ok=TRUE,ner=TRUE;
@@ -1031,25 +933,21 @@ int App_ParseArgs(TApp_Arg *AArgs,int argc,char *argv[],int Flags) {
    return(ok);
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_ParseInput>
- * Creation : Avril 2010 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Parse an input file
+ * @author Jean-Philippe Gauthier
+ * @date   Avril 2010
+ * 
+ * @param[in]  Def       Model definitions
+ * @param[in]  File      Input file to parse
+ * @param[in]  ParseProc Model specific token parsing proc
  *
- * But      : Parse an imput file.
+ * @return Number of token parsed or 0 if failed
  *
- * Parametres  :
- *  <Def>      : Model definitions
- *  <File>     : Input file to parse
- *  <ParseProc>: Model specific token parsing proc
- *
- * Retour:
- *  <nbtoken>  : Number of token parsed or 0 if failed
- *
- * Remarques :
+ * @note
  *   - This proc will parse an input file with the format TOKEN=VALUE
  *   - It will skip any comment and blank lines
  *   - It also allows for multiline definitions
- *----------------------------------------------------------------------------
 */
 int App_ParseInput(void *Def,char *File,TApp_InputParseProc *ParseProc) {
 
@@ -1119,23 +1017,17 @@ int App_ParseInput(void *Def,char *File,TApp_InputParseProc *ParseProc) {
    return(n);
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_ParseBool>
- * Creation : Fevrier 2013 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Parse a boolean valu
+ * @author Jean-Philippe Gauthier
+ * @date   Fevrier 2013
+ * 
+ * @param[in]  Param   Nom du parametre
+ * @param[in]  Value   Value to parse
+ * @param[out] Var     Variable to put result into
  *
- * But      : Parse a boolean value.
- *
- * Parametres :
- *  <Param>   : Nom du parametre
- *  <Value>   : Value to parse
- *  <Var>     : Variable to put result into
- *
- * Retour:
- *  <ok>     : 1 = ok or 0 = failed
- *
- * Remarques :
- *----------------------------------------------------------------------------
-*/
+ * @return  1 = ok or 0 = failed
+ */
 int App_ParseBool(char *Param,char *Value,char *Var) {
    
   if (strcasecmp(Value,"true")==0 || strcmp(Value,"1")==0) {
@@ -1149,22 +1041,16 @@ int App_ParseBool(char *Param,char *Value,char *Var) {
    return(1);
 }   
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_ParseDate>
- * Creation : Fevrier 2013 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Parse a date value (YYYMMDDhhmm)
+ * @author Jean-Philippe Gauthier
+ * @date   Fevrier 2013
+ * 
+ * @param[in]  Param    Nom du parametre
+ * @param[in]  Value    Value to parse
+ * @param[out] Var      Variable to put result into
  *
- * But      : Parse a date value (YYYMMDDhhmm.
- *
- * Parametres :
- *  <Param>   : Nom du parametre
- *  <Value>   : Value to parse
- *  <Var>     : Variable to put result into
- *
- * Retour:
- *  <ok>     : 1 = ok or 0 = failed
- *
- * Remarques :
- *----------------------------------------------------------------------------
+* @return  1 = ok or 0 = failed
 */
 int App_ParseDate(char *Param,char *Value,time_t *Var) {
    
@@ -1190,6 +1076,21 @@ int App_ParseDate(char *Param,char *Value,time_t *Var) {
    return(1);
 }   
 
+/**----------------------------------------------------------------------------
+ * @brief  Parse a date value and return the split values
+ * @author Jean-Philippe Gauthier
+ * @date   Fevrier 2013
+ * 
+ * @param[in]  Param    Nom du parametre
+ * @param[in]  Value    Value to parse
+ * @param[out] Year     Variable to put result into
+ * @param[out] Month    Variable to put result into
+ * @param[out] Day      Variable to put result into
+ * @param[out] Hour     Variable to put result into
+ * @param[out] Min      Variable to put result into
+ *
+ * @return  1 = ok or 0 = failed
+*/
 int App_ParseDateSplit(char *Param,char *Value,int *Year,int *Month,int *Day,int *Hour,int *Min) {
    
    long long t;
@@ -1208,25 +1109,19 @@ int App_ParseDateSplit(char *Param,char *Value,int *Year,int *Month,int *Day,int
    return(1);
 }   
 
-/*----------------------------------------------------------------------------
- * Nom      : <App_ParseCoord>
- * Creation : Aout 2013 - J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Parse a coordinate  value
+ * @author Jean-Philippe Gauthier
+ * @date   Aout 2013
+ * 
+ * @param[in]  Param    Nom du parametre
+ * @param[in]  Value    Value to parse
+ * @param[out] Var      Variable to put result into
+ * @param[in]  Index    Coordinate index (0:Lat, 1:Lon, 2:Height, 3:Speed)
  *
- * But      : Parse a coordinate  value.
- *
- * Parametres :
- *  <Param>   : Nom du parametre
- *  <Value>   : Value to parse
- *  <Var>     : Variable to put result into
- *  <Index>   : Coordinate index (0:Lat, 1:Lon, 2:Height, 3:Speed)
- *
- * Retour:
- *  <ok>     : 1 = ok or 0 = failed
- *
- * Remarques :
- *----------------------------------------------------------------------------
-*/
-int App_ParseCoords(char *Param,char *Value,double *Lat,double *Lon,int Index) {
+ * @return  1 = ok or 0 = failed
+ */ 
+ int App_ParseCoords(char *Param,char *Value,double *Lat,double *Lon,int Index) {
    
    double coord;
    char *ptr;
@@ -1254,18 +1149,10 @@ int App_ParseCoords(char *Param,char *Value,double *Lat,double *Lon,int Index) {
    return(1);
 }
       
-/*----------------------------------------------------------------------------
- * Nom      : <App_SeedInit>
- * Creation : Aout 2011 - J.P. Gauthier
- *
- * But      : Initialise seeds for MPI/OpenMP.
- *
- * Parametres  :
- *
- * Retour:
- *
- * Remarques :
- *----------------------------------------------------------------------------
+/**----------------------------------------------------------------------------
+ * @brief  Initialise seeds for MPI/OpenMP
+ * @author Jean-Philippe Gauthier
+ * @date   Aout 2011
  */
 void App_SeedInit() {
 

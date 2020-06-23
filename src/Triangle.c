@@ -4,7 +4,7 @@
  * 2100 Trans-Canadienne
  * Dorval, Quebec
  *
- * Projet       : Librairie Tcl de fichiers standards.
+ * Projet       : Fonctions relatives a la gestion des triangles.
  * Fichier      : Triangle.c
  * Creation     : Aout 2002 - J.P. Gauthier - CMC/CMOE
  *

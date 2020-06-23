@@ -4,7 +4,7 @@
  * 2100 Trans-Canadienne
  * Dorval, Quebec
  *
- * Projet       : Projection diverses de la carte vectorielle.
+ * Projet       : Fonctions relatives aux listes chainees.
  * Fichier      : List.h
  * Creation     : Janvier 2011 - J.P. Gauthier
  *

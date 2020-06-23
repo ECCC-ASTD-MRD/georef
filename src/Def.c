@@ -1435,7 +1435,7 @@ int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
 
    if (ok<0) {
       App_Log(ERROR,"%s: EZSCINT internal error, could not define gridset\n",__func__);
-      RPN_IntUnlock();
+      GeoRef_Unlock();
       return(FALSE);
    }
 
