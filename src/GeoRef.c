@@ -655,7 +655,7 @@ int GeoRef_Free(TGeoRef *Ref) {
 
    // Remove from Georef list
    GeoRef_Lock();
-   GeoRef_List=(GeoRef_List,(void*)Ref);
+   GeoRef_List=TList_Del(GeoRef_List,(void*)Ref);
    GeoRef_Unlock();
 
    return(1);
