@@ -112,7 +112,9 @@ add   the rotation of YIN */
 
     free(ax); free(ay);
     grid_index = grid_crc % primes_sq[cur_log_chunk];
-    if (gr_list[grid_index] == NULL)
+
+    gdid = c_ez_addgrid(&newgr);
+/*     if (gr_list[grid_index] == NULL)
       {
       gdid = c_ez_addgrid(grid_index, &newgr);
       }
@@ -127,7 +129,7 @@ add   the rotation of YIN */
         {
         return gdid;
         }
-      }
+      } */
     c_gdkey2rowcol(gdid, &gdrow_in, &gdcol_in);
     strcpy(Grille[gdrow_in][gdcol_in].fst.nomvarx,newgr.fst.nomvarx);
     strcpy(Grille[gdrow_in][gdcol_in].grtyp,newgr.grtyp);

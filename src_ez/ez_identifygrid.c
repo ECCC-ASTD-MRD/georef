@@ -49,7 +49,6 @@ wordint c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, wordint ig1, 
    typeGrille = grtyp[0];
 
    if (nGrilles == 0) {
-      gr_list = calloc(chunks_sq[cur_log_chunk], sizeof(TGeoRef *));
       Grille = (TGeoRef **) calloc(chunks[cur_log_chunk], sizeof(TGeoRef *));
       Grille[0] = (TGeoRef *) calloc(chunks[cur_log_chunk], sizeof(TGeoRef));
       for (i=0; i < chunks[cur_log_chunk]; i++) {
@@ -75,7 +74,9 @@ wordint c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, wordint ig1, 
    newgrsize = sizeof(TGeoRef);
    grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, NULL, NULL, 0, 0);
    grid_index = grid_crc % primes_sq[cur_log_chunk];
-   if (gr_list[grid_index] == NULL) {
+
+   gdid = c_ez_addgrid(&newgr);
+/*    if (gr_list[grid_index] == NULL) {
       gdid = c_ez_addgrid(grid_index, &newgr);
       return gdid;
    } else {
@@ -86,7 +87,7 @@ wordint c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, wordint ig1, 
       } else {
          return gdid;
       }
-   }
+   } */
 }
 
 wordint c_ezidentify_irreg_grid(
@@ -106,7 +107,6 @@ wordint c_ezidentify_irreg_grid(
    typeGrille = grtyp[0];
 
    if (nGrilles == 0) {
-      gr_list = calloc(chunks_sq[cur_log_chunk], sizeof(TGeoRef *));
       Grille = (TGeoRef **) calloc(chunks[cur_log_chunk],sizeof(TGeoRef *));
       Grille[0] = (TGeoRef *) calloc(chunks[cur_log_chunk], sizeof(TGeoRef));
       for (i = 0; i < chunks[cur_log_chunk]; i++) {
@@ -188,7 +188,8 @@ wordint c_ezidentify_irreg_grid(
 
    grid_index = grid_crc % primes_sq[cur_log_chunk];
 
-   if (gr_list[grid_index] == NULL) {
+   gdid = c_ez_addgrid(&newgr);
+/*    if (gr_list[grid_index] == NULL) {
       gdid = c_ez_addgrid(grid_index, &newgr);
       return gdid;
    } else {
@@ -199,5 +200,5 @@ wordint c_ezidentify_irreg_grid(
       } else {
          return gdid;
       }
-   }
+   } */
 }

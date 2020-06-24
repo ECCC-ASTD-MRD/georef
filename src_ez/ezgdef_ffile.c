@@ -62,7 +62,6 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
     }
   if (nGrilles == 0)
     {
-    gr_list = calloc(chunks_sq[cur_log_chunk], sizeof(TGeoRef *));
     Grille = (TGeoRef **) calloc(chunks[cur_log_chunk],sizeof(TGeoRef *));
     Grille[0] = (TGeoRef *) calloc(chunks[cur_log_chunk], sizeof(TGeoRef));
     for (i=0; i < chunks[cur_log_chunk]; i++)
@@ -92,7 +91,8 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
   grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, newgr.ax, newgr.ay, newgr.ni, newgr.nj);
   grid_index = grid_crc % primes_sq[cur_log_chunk];
 
-  if (gr_list[grid_index] == NULL)
+  gdid = c_ez_addgrid(&newgr);
+/*   if (gr_list[grid_index] == NULL)
     {
     gdid = c_ez_addgrid(grid_index, &newgr);
     }
@@ -107,7 +107,7 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
       {
       return gdid;
       }
-    }
+    } */
 
     /* define new grid */
     c_gdkey2rowcol(gdid, &gdrow_in, &gdcol_in);

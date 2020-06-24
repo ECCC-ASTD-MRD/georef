@@ -31,7 +31,7 @@ int c_ez_refgrid(int grid_index)
    return(Grille[gdrow][gdcol].access_count);
    }
 
-int c_ez_addgrid(int grid_index, TGeoRef *newgr)
+int c_ez_addgrid(TGeoRef *newgr)
   {
   int i, gdrow, gdcol, gdindex, next_index, nxt_row, nxt_col, cur_gdid;
   TGeoRef *cur_gr;
@@ -43,11 +43,9 @@ int c_ez_addgrid(int grid_index, TGeoRef *newgr)
 // JP
   newgr->access_count++;
   
-  cur_gr = gr_list[grid_index];
+/*   cur_gr = gr_list[grid_index];
   if (cur_gr == NULL)
     {
-    gdindex = nGrilles;
-    c_gdkey2rowcol(gdindex, &gdrow, &gdcol);
     gr_list[grid_index] = &Grille[gdrow][gdcol];
     }
   else
@@ -63,7 +61,7 @@ int c_ez_addgrid(int grid_index, TGeoRef *newgr)
       next_index = Grille[nxt_row][nxt_col].next_gd;      
       }
     Grille[nxt_row][nxt_col].next_gd = nGrilles; 
-    }
+    } */
     
   c_gdkey2rowcol(nGrilles, &gdrow, &gdcol);
   memcpy(&(Grille[gdrow][gdcol]), newgr, sizeof(TGeoRef));
