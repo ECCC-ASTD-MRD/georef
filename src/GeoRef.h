@@ -267,7 +267,6 @@ typedef struct TGeoRef {
 } TGeoRef;
 
 extern TGeoRef** Grille;
-extern TGeoRef** gr_list;
 
 typedef struct TGeoPos {
    TGeoRef *GRef;                                         // Reference horizontale

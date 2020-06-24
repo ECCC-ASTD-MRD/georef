@@ -22,7 +22,6 @@
 // Need #include "../src/GeoRef.h" ?
 
 TGeoRef** Grille  = NULL;
-TGeoRef** gr_list = NULL;
 wordint nGrilles = 0;
 wordint nGrillesMax = CHUNK*CHUNK;
 wordint cur_log_chunk = 7;

@@ -79,7 +79,6 @@ wordint c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, wordint ig1, 
       gdid = c_ez_addgrid(grid_index, &newgr);
       return gdid;
    } else {
-      gr = gr_list[grid_index];
       gdid = c_ez_findgrid(grid_index, &newgr);
       if (gdid == -1) {
          gdid = c_ez_addgrid(grid_index, &newgr);
