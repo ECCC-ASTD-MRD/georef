@@ -25,7 +25,7 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(ezgdef)(wordint *ni, wordint *nj, char *grtyp, char *grref, 
 			wordint *ig1, wordint *ig2, wordint *ig3, wordint *ig4, 
-			ftnfloat *ax, ftnfloat *ay, F2Cl lengrtyp, F2Cl lengrref)
+			ftnfloat *ax, ftnfloat *ay, F2Cl lengrtyp, F2Cl lengrref, PTR_AS_INT GRef)
 {
   wordint icode;
   char lgrtyp[2],lgrref[2];
@@ -36,12 +36,12 @@ wordint f77name(ezgdef)(wordint *ni, wordint *nj, char *grtyp, char *grref,
   lgrref[0] = grref[0];
   lgrref[1] = '\0';
   
-  icode = c_ezgdef(*ni, *nj, lgrtyp, lgrref, *ig1, *ig2, *ig3, *ig4, ax, ay);
+  icode = c_ezgdef(*ni, *nj, lgrtyp, lgrref, *ig1, *ig2, *ig3, *ig4, ax, ay, (TGeoRef*)GRef);
   return icode;
 }
 
 wordint c_ezgdef(wordint ni, wordint nj, char *grtyp, char *grref,
-		 wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat *ax, ftnfloat *ay)
+		 wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat *ax, ftnfloat *ay, TGeoRef* GRef)
 {
   wordint found,source;
   char typeGrille;

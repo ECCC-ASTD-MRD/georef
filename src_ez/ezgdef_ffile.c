@@ -25,7 +25,7 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(ezgdef_ffile)(wordint *ni, wordint *nj, char *grtyp,
             wordint *ig1, wordint *ig2, wordint *ig3, wordint *ig4,
-            wordint *iunit, F2Cl lengrtyp)
+            wordint *iunit, F2Cl lengrtyp, PTR_AS_INT GRef)
 {
   wordint icode;
   char lgrtyp[2];
@@ -33,12 +33,12 @@ wordint f77name(ezgdef_ffile)(wordint *ni, wordint *nj, char *grtyp,
   lgrtyp[0] = grtyp[0];
   lgrtyp[1] = '\0';
 
-  icode = c_ezgdef_ffile(*ni, *nj, lgrtyp, *ig1, *ig2, *ig3, *ig4, *iunit);
+  icode = c_ezgdef_ffile(*ni, *nj, lgrtyp, *ig1, *ig2, *ig3, *ig4, *iunit, (TGeoRef*)GRef);
   return icode;
 }
 
 wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
-          wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit)
+          wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit, TGeoRef* GRef)
 {
   wordint i;
   wordint found, gdrow_in, gdcol_in;

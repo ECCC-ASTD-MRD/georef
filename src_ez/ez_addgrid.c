@@ -46,6 +46,7 @@ int c_ez_addgrid(TGeoRef *newgr)
 /*   cur_gr = gr_list[grid_index];
   if (cur_gr == NULL)
     {
+    c_gdkey2rowcol(nGrilles, &gdrow, &gdcol);
     gr_list[grid_index] = &Grille[gdrow][gdcol];
     }
   else

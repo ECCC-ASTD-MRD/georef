@@ -93,7 +93,7 @@ int        RPN_FieldWrite(int FileId,TRPNField *Field);
 void       RPN_CopyHead(TRPNHeader *To,TRPNHeader *From);
 int        RPN_FieldTile(int FID,struct TDef *Def,TRPNHeader *Head,struct TGeoRef *GRef,struct TZRef *ZRef,int Comp,int NI,int NJ,int Halo,int DATYP,int NPack,int Rewrite,int Compress);
 
-int RPN_IntIdNew(int NI,int NJ,char* GRTYP,int IG1_JP,int IG2_JP,int IG3_JP, int IG4_JP,int FID);
+int RPN_IntIdNew(int NI,int NJ,char* GRTYP,int IG1_JP,int IG2_JP,int IG3_JP, int IG4_JP,int FID, struct TGeoRef *GRef);
 int RPN_IntIdFree(int Id);
 int RPN_IntIdIncr(int Id);
 

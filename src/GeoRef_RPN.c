@@ -655,10 +655,10 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int 
       // Create master gridid
       if (GRTYP[1]=='#') {
          // For tiled grids (#) we have to fudge the ig3 ang ig4 to 0 since they're used for tile limit
-         id=RPN_IntIdNew(NI,NJ,grtyp,ig1,ig2,0,0,FID);
+         id=RPN_IntIdNew(NI,NJ,grtyp,ig1,ig2,0,0,FID,ref);
 //TODO:         id=ezgdef_ffile(NI,NJ,grtyp,ig1,ig2,0,0,FID);
      } else {
-         id=RPN_IntIdNew(NI,NJ,grtyp,ig1,ig2,ig3,ig4,FID);
+         id=RPN_IntIdNew(NI,NJ,grtyp,ig1,ig2,ig3,ig4,FID,ref);
 //TODO:         id=ezgdef_ffile(NI,NJ,grtyp,ig1,ig2,ig3,ig4,FID);
      }
       // Check for sub-grids (U grids can have sub grids)

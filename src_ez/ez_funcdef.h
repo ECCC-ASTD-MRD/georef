@@ -56,15 +56,15 @@ wordint c_ezdefset(wordint gdout, wordint gdin);
 
 wordint f77name(ezgdef)(wordint* ni, wordint* nj, char* grtyp, char* grref,
                     wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
-                    ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref);
+                    ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref, PTR_AS_INT GRef);
 wordint c_ezgdef(wordint ni, wordint nj, char* grtyp, char* grref,
-             wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay);
+             wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay, TGeoRef* GRef);
 
 wordint f77name(ezgdef_ffile)(wordint* ni, wordint* nj, char* grtyp,
             wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
-            wordint* iunit, F2Cl lengrtyp);
+            wordint* iunit, F2Cl lengrtyp, PTR_AS_INT GRef);
 wordint c_ezgdef_ffile(wordint ni, wordint nj, char* grtyp,
-           wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit);
+           wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit, TGeoRef* GRef);
 
 wordint f77name(ezgdef_fll)(wordint* ni, wordint* nj, ftnfloat* lat, ftnfloat* lon);
 wordint c_ezgdef_fll(wordint ni, wordint nj,ftnfloat* lat, ftnfloat* lon);
@@ -130,6 +130,8 @@ wordint f77name(ezqkdef)(wordint* ni, wordint* nj, char* grtyp,
                     wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4, wordint* iunit, F2Cl lengrtyp);
 wordint c_ezqkdef(wordint ni, wordint nj, char* grtyp,
              wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit);
+wordint c_ezqkdef_new(wordint ni, wordint nj, char* grtyp,
+             wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit, TGeoRef* GRef);
 
 wordint f77name(ezquickdef)(wordint* ni, wordint* nj, char* grtyp,
           wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4, wordint* iunit, F2Cl lengrtyp);
