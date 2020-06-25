@@ -165,7 +165,6 @@ typedef struct {
   wordint flags,yyflags;
   wordint use_sincos_cache;
   wordint gdin;
-  wordint next_gdin;
   ftnfloat valpolesud, valpolenord;
   ftnfloat *x, *y;
   wordint *mask_in, *mask_out;
@@ -265,8 +264,6 @@ typedef struct TGeoRef {
    int NC_Id,NC_NXDimId,NC_NYDimId;                       // netCDF identifiers
 #endif
 } TGeoRef;
-
-extern TGeoRef** Grille;
 
 typedef struct TGeoPos {
    TGeoRef *GRef;                                         // Reference horizontale

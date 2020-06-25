@@ -21,7 +21,6 @@
 #include "ez_funcdef.h"
 // Need #include "../src/GeoRef.h" ?
 
-TGeoRef** Grille  = NULL;
 wordint nGrilles = 0;
 wordint nGrillesMax = CHUNK*CHUNK;
 wordint cur_log_chunk = 7;
@@ -32,7 +31,6 @@ wordint cur_log_chunk = 7;
 wordint iset     = -1;
 wordint iset_gdin = -1;
 wordint iset_gdout = -1;
-_gridset* gridset = NULL;
 _groptions groptions = { OUI, CUBIQUE,  MAXIMUM, NON, -1, SYM, SCALAIRE, NON, NON, OUI, 16, 0, DISTANCE, NEAREST, 0.5, 3.0, 0.0  };
 
 wordint log_chunks[]= {0, 1, 2, 3,   4,    5,   6,      7,     8,      9,      10,     11,        12};
