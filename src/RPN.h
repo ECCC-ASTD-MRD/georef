@@ -191,7 +191,7 @@ extern int  c_gdll(int gdid, ftnfloat *lat, ftnfloat *lon);
 extern int  c_ezqkdef(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit);
 extern int  c_ezqkdef_new(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit, struct TGeoRef* GRef);
 extern int  c_ezquickdef(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit);
-extern int  c_gdrls(int gdin);
+extern int  c_gdrls(struct TGeoRef* GRef);
 extern int  c_ezsetopt(char *option, char *value);
 extern int  c_ezsetval(char *option, ftnfloat fvalue);
 extern int  c_ezsint(ftnfloat *zout, ftnfloat *zin);

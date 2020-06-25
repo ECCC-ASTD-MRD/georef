@@ -23,17 +23,17 @@
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdrls)(wordint *gdin)
+wordint f77name(gdrls)(PTR_AS_INT GRef)
 {
    wordint icode;
    
-   icode = c_gdrls(*gdin);
+   icode = c_gdrls((TGeoRef*)GRef);
    return icode;
 }
 
-wordint c_gdrls(wordint gdin)
+wordint c_gdrls(TGeoRef* GRef)
 {
-   EliminerGrille(gdin);
+   EliminerGrille(GRef);
 
    return 0;
 }

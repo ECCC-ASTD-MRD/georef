@@ -27,7 +27,7 @@
 extern pthread_mutex_t EZ_MTX;
 #endif
 
-void EliminerGrille(wordint gdid)
+void EliminerGrille(TGeoRef* GRef)
 {
   wordint i, index;
   wordint gdrow_id, gdcol_id;
@@ -36,47 +36,45 @@ void EliminerGrille(wordint gdid)
 // JP
    pthread_mutex_lock(&EZ_MTX);
 #endif
-
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
   
-   if (Grille[gdrow_id][gdcol_id].access_count > 0)
+   if (GRef->access_count > 0)
     {
-    Grille[gdrow_id][gdcol_id].access_count--;
+    GRef->access_count--;
     }
    
-   if (Grille[gdrow_id][gdcol_id].access_count == 0)
+   if (GRef->access_count == 0)
     {
-    if (Grille[gdrow_id][gdcol_id].flags & LAT)
+    if (GRef->flags & LAT)
         {
-        free(Grille[gdrow_id][gdcol_id].lat);
-        free(Grille[gdrow_id][gdcol_id].lon);
-        Grille[gdrow_id][gdcol_id].lat = NULL;
-        Grille[gdrow_id][gdcol_id].lon = NULL;
+        free(GRef->lat);
+        free(GRef->lon);
+        GRef->lat = NULL;
+        GRef->lon = NULL;
         }
 
-    if (Grille[gdrow_id][gdcol_id].flags & AX)
+    if (GRef->flags & AX)
         {
-        free(Grille[gdrow_id][gdcol_id].ax);
-        free(Grille[gdrow_id][gdcol_id].ay);
-        Grille[gdrow_id][gdcol_id].ax = NULL;
-        Grille[gdrow_id][gdcol_id].ay = NULL;
+        free(GRef->ax);
+        free(GRef->ay);
+        GRef->ax = NULL;
+        GRef->ay = NULL;
         }
 
-    if (Grille[gdrow_id][gdcol_id].ncx != NULL)
+    if (GRef->ncx != NULL)
         {
-        free(Grille[gdrow_id][gdcol_id].ncx);
-        free(Grille[gdrow_id][gdcol_id].ncy);
-        Grille[gdrow_id][gdcol_id].ncx = NULL;
-        Grille[gdrow_id][gdcol_id].ncy = NULL;
+        free(GRef->ncx);
+        free(GRef->ncy);
+        GRef->ncx = NULL;
+        GRef->ncy = NULL;
         }
-    Grille[gdrow_id][gdcol_id].flags = (int)0;
+    GRef->flags = (int)0;
     }
    
-
-   for (i=0; i < Grille[gdrow_id][gdcol_id].n_gdin_for; i++)
+    /* TODO: GRef->gdin_for[i] devrait etre de type TGeoRef* */
+   for (i=0; i < GRef->n_gdin_for; i++)
       {
-      index = ez_find_gdin_in_gset(gdid, Grille[gdrow_id][gdcol_id].gdin_for[i]);
-      c_ezfreegridset(Grille[gdrow_id][gdcol_id].gdin_for[i], index);
+      index = ez_find_gdin_in_gset(GRef, GRef->gdin_for[i]);
+      c_ezfreegridset(GRef->gdin_for[i], index);
       }
       nGrilles--;
 #ifdef MUTEX

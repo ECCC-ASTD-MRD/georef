@@ -3,7 +3,7 @@
 #ifndef _ezfuncdef
 #include "gd_key2rowcol.c"
 
-void EliminerGrille(wordint gridid);
+void EliminerGrille(TGeoRef* GRef);
 
 void f77name(ez_avg)(float* zout, float* x, float* y, int* ni_src, int* nj_src,
             float* zin, int* ni_dst, int* nj_dst, int* extension);
@@ -139,8 +139,8 @@ wordint f77name(ezquickdef)(wordint* ni, wordint* nj, char* grtyp,
 wordint c_ezquickdef(wordint ni, wordint nj, char* grtyp,
          wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit);
 
-wordint f77name(gdrls)(wordint* gdin);
-wordint c_gdrls(wordint gdin);
+wordint f77name(gdrls)(PTR_AS_INT GRef);
+wordint c_gdrls(TGeoRef* GRef);
 
 wordint f77name(ezsetopt)(char* option, char* value, F2Cl lenoption, F2Cl lenvalue);
 wordint c_ezsetopt(char* option, char* value);
