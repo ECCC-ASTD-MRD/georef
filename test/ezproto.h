@@ -3,12 +3,13 @@
 
 #include "rpnmacros.h"
 #include "rpn_macros_arch.h"
+#include "../src/GeoRef.h"
 
 // RPN external EZscint functions
 extern int  c_ezfreegridset(int gdid, int index);
 extern int  c_ezdefset(int gdout, int gdin);
-extern int  c_ezgdef(int ni, int nj, char *grtyp, char *grref,int ig1, int ig2, int ig3, int ig4, ftnfloat *ax, ftnfloat *ay);
-extern int  c_ezgdef_ffile(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit);
+extern int  c_ezgdef(int ni, int nj, char *grtyp, char *grref,int ig1, int ig2, int ig3, int ig4, ftnfloat *ax, ftnfloat *ay, TGeoRef* GRef);
+extern int  c_ezgdef_ffile(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit, TGeoRef* GRef);
 extern int  c_ezgdef_fll(int ni, int nj,ftnfloat *lat, ftnfloat *lon);
 extern int  c_ezgdef_fmem(int ni, int nj, char *grtyp, char *grref,int ig1, int ig2, int ig3, int ig4, ftnfloat *ax, ftnfloat *ay);
 extern int  c_ezgprm(int gdid, char *grtyp, int *ni, int *nj, int *ig1, int *ig2, int *ig3, int *ig4);
@@ -19,6 +20,7 @@ extern int  c_ezget_nsubgrids(int id);
 extern int  c_ezget_subgridids(int id,int *subid);
 extern int  c_gdll(int gdid, ftnfloat *lat, ftnfloat *lon);
 extern int  c_ezqkdef(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit);
+extern int  c_ezqkdef_new(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit, TGeoRef* GRef);
              
 extern int  c_ezquickdef(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit);
 extern int  c_gdrls(int gdin);

@@ -83,7 +83,7 @@ wordint c_ezgdef(wordint ni, wordint nj, char *grtyp, char *grref,
       break;
       
     case FICHIER:
-      found = c_ezgdef_ffile(ni, nj, grtyp, ig1, ig2, ig3, ig4, ig4);
+      found = c_ezgdef_ffile(ni, nj, grtyp, ig1, ig2, ig3, ig4, ig4, GRef);
       break;
     }
   

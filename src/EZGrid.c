@@ -822,7 +822,7 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
       tile->KBurn = -1;
       tile->Side  = EZGRID_CENTER;
       pthread_mutex_init(&tile->Mutex,NULL);
-      tile->GID =RPN_IntIdNew(h.NI,h.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
+      tile->GID =RPN_IntIdNew(h.NI,h.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID,Grid->GRef);
 
       // Check for tiled data or not
       if (Grid->H.GRTYP[0]=='#') {
@@ -997,7 +997,7 @@ werr:
       default:
          Grid->GRef=GeoRef_RPNCreate(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
 
-         Grid->GID=RPN_IntIdNew(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
+         Grid->GID=RPN_IntIdNew(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID,Grid->GRef);
          Grid->Wrap=EZGrid_Wrap(Grid);
    }
    GeoRef_Qualify(Grid->GRef);

@@ -21,6 +21,7 @@
 #include "ez_funcdef.h"
 // Need #include "../src/GeoRef.h" ?
 
+TGeoRef** Grille  = NULL;
 wordint nGrilles = 0;
 wordint nGrillesMax = CHUNK*CHUNK;
 wordint cur_log_chunk = 7;
