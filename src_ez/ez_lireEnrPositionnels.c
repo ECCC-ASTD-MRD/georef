@@ -344,7 +344,7 @@ wordint LireEnrPositionnels(TGeoRef *gr, wordint iunit, wordint ip1, wordint ip2
      {
      gr->flags  |= AX;
      }
-   return 0;
+  return 0;
 }
 
 void RemplirDeBlancs(char str[],wordint longueur)

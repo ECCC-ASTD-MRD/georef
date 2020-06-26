@@ -62,15 +62,17 @@ int c_ez_addgrid(TGeoRef *newgr)
       next_index = Grille[nxt_row][nxt_col].next_gd;      
       }
     Grille[nxt_row][nxt_col].next_gd = nGrilles; 
-    } */
+    }
     
   c_gdkey2rowcol(nGrilles, &gdrow, &gdcol);
   memcpy(&(Grille[gdrow][gdcol]), newgr, sizeof(TGeoRef));
   Grille[gdrow][gdcol].index = nGrilles;
-  Grille[gdrow][gdcol].next_gd = -1;
+  Grille[gdrow][gdcol].next_gd = -1; */
+  newgr->index = nGrilles;
+  newgr->next_gd = -1;
   
   nGrilles++;
-  if (nGrilles >= chunks_sq[cur_log_chunk])
+/*   if (nGrilles >= chunks_sq[cur_log_chunk])
     {
     fprintf(stderr, "<c_ez_addgrid> : Message from the EZSCINT package\n");
     fprintf(stderr, "<c_ez_addgrid> : Maximum number of definable grids attained : %d\n", nGrilles);
@@ -86,7 +88,7 @@ int c_ez_addgrid(TGeoRef *newgr)
       {
       Grille[gdrow][i].index = -1;
       }
-    }
+    } */
 #ifdef MUTEX
 // JP
 
