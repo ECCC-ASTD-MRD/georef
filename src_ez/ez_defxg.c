@@ -22,40 +22,38 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
-void c_ezdefxg(wordint gdid)
+void c_ezdefxg(TGeoRef* GRef)
 {
 
-  TGeoRef *gr;
-
+/*   TGeoRef *gr;
   wordint gdrow_id, gdcol_id;
 
   c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
+  gr = &Grille[gdrow_id][gdcol_id]; */
 
-  gr = &Grille[gdrow_id][gdcol_id];
-
-  switch (gr->grtyp[0])
+  switch (GRef->grtyp[0])
     {
     case 'A':
     case 'G':
-      gr->fst.xg[DLON]  = 360. /gr->ni;
-      gr->fst.xg[SWLON] = 0.0;
-      switch (gr->fst.ig[IG1])
+      GRef->fst.xg[DLON]  = 360. /GRef->ni;
+      GRef->fst.xg[SWLON] = 0.0;
+      switch (GRef->fst.ig[IG1])
 	{
 	case 0:
-	  gr->fst.xg[DLAT] = 180./gr->nj;
-	  gr->fst.xg[SWLAT] = -90. + 0.5*gr->fst.xg[DLAT];
+	  GRef->fst.xg[DLAT] = 180./GRef->nj;
+	  GRef->fst.xg[SWLAT] = -90. + 0.5*GRef->fst.xg[DLAT];
 	  break;
 
 	case 1:
-	  gr->fst.xg[DLAT] = 90./gr->nj;
-	  gr->fst.xg[SWLAT] = 0.5*gr->fst.xg[DLAT];
-	  gr->needs_expansion = OUI;
+	  GRef->fst.xg[DLAT] = 90./GRef->nj;
+	  GRef->fst.xg[SWLAT] = 0.5*GRef->fst.xg[DLAT];
+	  GRef->needs_expansion = OUI;
 	  break;
 
 	case 2:
-	  gr->fst.xg[DLAT] = 90./gr->nj;
-	  gr->fst.xg[SWLAT] = -90. + 0.5*gr->fst.xg[DLAT];
-	  gr->needs_expansion = OUI;
+	  GRef->fst.xg[DLAT] = 90./GRef->nj;
+	  GRef->fst.xg[SWLAT] = -90. + 0.5*GRef->fst.xg[DLAT];
+	  GRef->needs_expansion = OUI;
 	  break;
 
 	default:
@@ -63,10 +61,10 @@ void c_ezdefxg(wordint gdid)
 	  break;
 	}
 
-   switch(gr->fst.ig[IG2])
+   switch(GRef->fst.ig[IG2])
 	   {
 	   case 1:
-	     gr->fst.axe_y_inverse = OUI;
+	     GRef->fst.axe_y_inverse = OUI;
 	     break;
 
 	   default:
@@ -76,25 +74,25 @@ void c_ezdefxg(wordint gdid)
       break;
 
     case 'B':
-      gr->fst.xg[DLON] = 360. /(gr->ni-1);
-      gr->fst.xg[SWLON] = 0.0;
-      switch (gr->fst.ig[IG1])
+      GRef->fst.xg[DLON] = 360. /(GRef->ni-1);
+      GRef->fst.xg[SWLON] = 0.0;
+      switch (GRef->fst.ig[IG1])
 	      {
 	      case 0:
-	        gr->fst.xg[DLAT] = 180./(gr->nj-1);
-	        gr->fst.xg[SWLAT] = -90.;
+	        GRef->fst.xg[DLAT] = 180./(GRef->nj-1);
+	        GRef->fst.xg[SWLAT] = -90.;
 	        break;
 
 	      case 1:
-	        gr->fst.xg[DLAT] = 90./(gr->nj-1);
-	        gr->fst.xg[SWLAT] = 0.;
-	        gr->needs_expansion = OUI;
+	        GRef->fst.xg[DLAT] = 90./(GRef->nj-1);
+	        GRef->fst.xg[SWLAT] = 0.;
+	        GRef->needs_expansion = OUI;
 	        break;
 
 	      case 2:
-	        gr->fst.xg[DLAT] = 90./(gr->nj-1);
-	        gr->fst.xg[SWLAT] = -90.;
-	        gr->needs_expansion = OUI;
+	        GRef->fst.xg[DLAT] = 90./(GRef->nj-1);
+	        GRef->fst.xg[SWLAT] = -90.;
+	        GRef->needs_expansion = OUI;
 	        break;
 
 	      default:
@@ -102,10 +100,10 @@ void c_ezdefxg(wordint gdid)
 	        break;
 	      }
 
-      switch(gr->fst.ig[IG2])
+      switch(GRef->fst.ig[IG2])
 	      {
 	      case 1:
-	        gr->fst.axe_y_inverse = OUI;
+	        GRef->fst.axe_y_inverse = OUI;
 	        break;
 
 	      default:
@@ -114,12 +112,12 @@ void c_ezdefxg(wordint gdid)
       break;
 
     case 'E':
-      f77name(cigaxg)(&gr->grtyp,&gr->fst.xg[XLAT1],&gr->fst.xg[XLON1],&gr->fst.xg[XLAT2],&gr->fst.xg[XLON2],
-		      &gr->fst.ig[IG1],&gr->fst.ig[IG2],&gr->fst.ig[IG3],&gr->fst.ig[IG4],1);
-      /*      gr->fst.xg[DLAT] = 180./gr->nj;
-	      gr->fst.xg[DLON] = 360./(gr->ni-1);
-	      gr->fst.xg[SWLON] = 0.0;
-	      gr->fst.xg[SWLAT] = -90. + 0.5*gr->fst.xg[DLAT];
+      f77name(cigaxg)(&GRef->grtyp,&GRef->fst.xg[XLAT1],&GRef->fst.xg[XLON1],&GRef->fst.xg[XLAT2],&GRef->fst.xg[XLON2],
+		      &GRef->fst.ig[IG1],&GRef->fst.ig[IG2],&GRef->fst.ig[IG3],&GRef->fst.ig[IG4],1);
+      /*      GRef->fst.xg[DLAT] = 180./GRef->nj;
+	      GRef->fst.xg[DLON] = 360./(GRef->ni-1);
+	      GRef->fst.xg[SWLON] = 0.0;
+	      GRef->fst.xg[SWLAT] = -90. + 0.5*GRef->fst.xg[DLAT];
       */
       break;
 
@@ -130,36 +128,36 @@ void c_ezdefxg(wordint gdid)
 
     case '#':
     case 'Z':
-      if (gr->grref[0] == 'N') gr->fst.hemisphere = 1;
-      if (gr->grref[0] == 'S') gr->fst.hemisphere = 2;
-      if (gr->grref[0] == 'E')
+      if (GRef->grref[0] == 'N') GRef->fst.hemisphere = 1;
+      if (GRef->grref[0] == 'S') GRef->fst.hemisphere = 2;
+      if (GRef->grref[0] == 'E')
          {
-         f77name(cigaxg)(&gr->grref,&gr->fst.xgref[XLAT1], &gr->fst.xgref[XLON1], &gr->fst.xgref[XLAT2], &gr->fst.xgref[XLON2],
-            &gr->fst.igref[IG1], &gr->fst.igref[IG2], &gr->fst.igref[IG3], &gr->fst.igref[IG4],1);
+         f77name(cigaxg)(&GRef->grref,&GRef->fst.xgref[XLAT1], &GRef->fst.xgref[XLON1], &GRef->fst.xgref[XLAT2], &GRef->fst.xgref[XLON2],
+            &GRef->fst.igref[IG1], &GRef->fst.igref[IG2], &GRef->fst.igref[IG3], &GRef->fst.igref[IG4],1);
          }
 
     break;
 
     case 'L':
-      f77name(cigaxg)(&gr->grtyp,&gr->fst.xg[SWLAT], &gr->fst.xg[SWLON], &gr->fst.xg[DLAT], &gr->fst.xg[DLON],
-		      &gr->fst.ig[IG1], &gr->fst.ig[IG2], &gr->fst.ig[IG3], &gr->fst.ig[IG4],1);
+      f77name(cigaxg)(&GRef->grtyp,&GRef->fst.xg[SWLAT], &GRef->fst.xg[SWLON], &GRef->fst.xg[DLAT], &GRef->fst.xg[DLON],
+		      &GRef->fst.ig[IG1], &GRef->fst.ig[IG2], &GRef->fst.ig[IG3], &GRef->fst.ig[IG4],1);
       break;
 
     case 'N':
-      f77name(cigaxg)(&gr->grtyp,&gr->fst.xg[PI], &gr->fst.xg[PJ], &gr->fst.xg[D60], &gr->fst.xg[DGRW],
-		      &gr->fst.ig[IG1], &gr->fst.ig[IG2], &gr->fst.ig[IG3], &gr->fst.ig[IG4],1);
-      gr->fst.hemisphere = 1;
+      f77name(cigaxg)(&GRef->grtyp,&GRef->fst.xg[PI], &GRef->fst.xg[PJ], &GRef->fst.xg[D60], &GRef->fst.xg[DGRW],
+		      &GRef->fst.ig[IG1], &GRef->fst.ig[IG2], &GRef->fst.ig[IG3], &GRef->fst.ig[IG4],1);
+      GRef->fst.hemisphere = 1;
       break;
 
     case 'S':
-      f77name(cigaxg)(&gr->grtyp,&gr->fst.xg[PI], &gr->fst.xg[PJ], &gr->fst.xg[D60], &gr->fst.xg[DGRW],
-		      &gr->fst.ig[IG1], &gr->fst.ig[IG2], &gr->fst.ig[IG3], &gr->fst.ig[IG4],1);
-      gr->fst.hemisphere = 2;
+      f77name(cigaxg)(&GRef->grtyp,&GRef->fst.xg[PI], &GRef->fst.xg[PJ], &GRef->fst.xg[D60], &GRef->fst.xg[DGRW],
+		      &GRef->fst.ig[IG1], &GRef->fst.ig[IG2], &GRef->fst.ig[IG3], &GRef->fst.ig[IG4],1);
+      GRef->fst.hemisphere = 2;
       break;
 
     case 'T':
-      f77name(cigaxg)(&gr->grtyp,&gr->fst.xg[TD60], &gr->fst.xg[TDGRW], &gr->fst.xg[CLAT], &gr->fst.xg[CLON],
-		      &gr->fst.ig[IG1], &gr->fst.ig[IG2], &gr->fst.ig[IG3], &gr->fst.ig[IG4],1);
+      f77name(cigaxg)(&GRef->grtyp,&GRef->fst.xg[TD60], &GRef->fst.xg[TDGRW], &GRef->fst.xg[CLAT], &GRef->fst.xg[CLON],
+		      &GRef->fst.ig[IG1], &GRef->fst.ig[IG2], &GRef->fst.ig[IG3], &GRef->fst.ig[IG4],1);
       break;
 
     case 'X':

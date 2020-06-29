@@ -58,7 +58,7 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
   if (typeGrille != '#' && typeGrille != 'Y' && typeGrille != 'Z' && typeGrille != 'U' && typeGrille != ' ')
     { /* no need to look for grid descriptors */
     strcpy(grref, " ");
-    return c_ezgdef_fmem(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, bidon, bidon);
+    return c_ezgdef_fmem(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, bidon, bidon, GRef);
     }
 /*   if (nGrilles == 0)
     {
@@ -73,13 +73,13 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
 /*   memset(&newgr, (int)0, sizeof(TGeoRef));
   strcpy(newgr.grtyp, grtyp); */
   /* incoming ni,nj specified by the user */
-  GRef.ni = ni;
-  GRef.nj = nj;
-  GRef.fst.ig[IG1] = ig1;
-  GRef.fst.ig[IG2] = ig2;
-  GRef.fst.ig[IG3] = ig3;
-  GRef.fst.ig[IG4] = ig4;
-  GRef.idx_last_gdin = -1;
+  GRef->ni = ni;
+  GRef->nj = nj;
+  GRef->fst.ig[IG1] = ig1;
+  GRef->fst.ig[IG2] = ig2;
+  GRef->fst.ig[IG3] = ig3;
+  GRef->fst.ig[IG4] = ig4;
+  GRef->idx_last_gdin = -1;
   read=0;
   found=LireEnrPositionnels(GRef, iunit, ig1, ig2, ig3, ig4, read);
   if (found < 0) /* problems with finding grid descriptors */
@@ -140,7 +140,7 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
   GRef->j2 = GRef->nj;
   if (*grtyp != 'Y')
     {
-    c_ezdefxg(gdid);
+    c_ezdefxg(GRef);
     ez_calcntncof(gdid);
     }
   else

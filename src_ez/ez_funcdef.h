@@ -71,9 +71,9 @@ wordint c_ezgdef_fll(wordint ni, wordint nj,ftnfloat* lat, ftnfloat* lon);
 
 wordint f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
                     wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
-                    ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref);
+                    ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref, PTR_AS_INT GRef);
 wordint c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
-             wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay);
+             wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay, TGeoRef* GRef);
 
 
 
@@ -256,7 +256,7 @@ int c_ez_refgrid(int grid_index);
 
 
 
-void c_ezdefxg(wordint gdid);
+void c_ezdefxg(TGeoRef* GRef);
 void c_ezdefaxes(wordint gdid, ftnfloat* ax, ftnfloat* ay);
 wordint c_gdinterp(ftnfloat* zout, ftnfloat* zin, wordint gdin, ftnfloat* x, ftnfloat* y, wordint npts);
 
