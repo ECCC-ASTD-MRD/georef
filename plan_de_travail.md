@@ -44,12 +44,12 @@
 
 # Semaine 8
 
-- changer le paramètre `gridid` à pointeur à `TGeoRef` qui inclus les paramètres de grilles
-- retire code de hachage et tableaux `Grilles[][]` maintenant inutiles
+- changer le paramètre `gridid` pour un pointeur à `TGeoRef` qui inclus les paramètres de grille
+- retirer le code de hachage et tableau `Grille[][]` maintenant inutiles
 
 # Semaines 9 à 14
 
-- retirer fonctions `c_addgrid`, `c_ezqkdef` et `c_ezgdef` puisque devenues inutiles
+- retirer les fonctions `c_addgrid`, `c_ezqkdef` et `c_ezgdef` qui sont devenues inutiles
 - utiliser `PTR_AS_INT` avec fonctions Fortran; adresses des structures `TGeoRef` dans des `int` que l'on re-type (recast) en `TGeoRef` pour les appels vers le C
 - optimiser et nettoyer les fonctions
 
