@@ -23,29 +23,27 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-void ez_calcntncof(wordint gdid)
+void ez_calcntncof(TGeoRef* GRef)
 {
   wordint nni, nnj, gdcol, gdrow;
   
-  c_gdkey2rowcol(gdid, &gdrow, &gdcol);
-  if (Grille[gdrow][gdcol].flags & NEWTON)
+ /*  c_gdkey2rowcol(gdid, &gdrow, &gdcol); */
+  if (GRef->flags & NEWTON)
     return;
 
-  nni = Grille[gdrow][gdcol].ni;
-  nnj = Grille[gdrow][gdcol].j2 - Grille[gdrow][gdcol].j1 + 1;
+  nni = GRef->ni;
+  nnj = GRef->j2 - GRef->j1 + 1;
 
-  if (Grille[gdrow][gdcol].grtyp[0] == (char)'Y') return;
-  Grille[gdrow][gdcol].ncx = (ftnfloat *) malloc(nni*6*sizeof(ftnfloat));
-  Grille[gdrow][gdcol].ncy = (ftnfloat *) malloc(nnj*6*sizeof(ftnfloat));
-  f77name(ez_nwtncof)(Grille[gdrow][gdcol].ncx,Grille[gdrow][gdcol].ncy,
-		      Grille[gdrow][gdcol].ax,Grille[gdrow][gdcol].ay,
-		      &Grille[gdrow][gdcol].ni, &Grille[gdrow][gdcol].nj,
-		      &Grille[gdrow][gdcol].i1, &Grille[gdrow][gdcol].i2, 
-		      &Grille[gdrow][gdcol].j1, &Grille[gdrow][gdcol].j2,
-		      &Grille[gdrow][gdcol].extension);
+  if (GRef->grtyp[0] == (char)'Y') return;
+  GRef->ncx = (ftnfloat *) malloc(nni*6*sizeof(ftnfloat));
+  GRef->ncy = (ftnfloat *) malloc(nnj*6*sizeof(ftnfloat));
+  f77name(ez_nwtncof)(GRef->ncx,GRef->ncy,
+		      GRef->ax,GRef->ay,
+		      &GRef->ni, &GRef->nj,
+		      &GRef->i1, &GRef->i2, 
+		      &GRef->j1, &GRef->j2,
+		      &GRef->extension);
   
-  Grille[gdrow][gdcol].flags |= NEWTON;
-  
-  
+  Grille[gdrow][gdcol].flags |= NEWTON;  
 }
 

@@ -70,13 +70,13 @@ wordint c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
    if (grtyp[0] == '#' || grtyp[0] == 'Y' || grtyp[0] == 'Z' || grtyp[0] == 'G') {
       gdid = c_ezidentify_irreg_grid(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, ax, ay, GRef);
       c_ezdefxg(GRef);
-      c_ezdefaxes(gdid, ax, ay);
+      c_ezdefaxes(GRef, ax, ay);
    } else {
       gdid = c_ezidentify_reg_grid(ni, nj, grtyp, ig1, ig2, ig3, ig4, GRef);
       c_ezdefxg(GRef);
    }
 
-   ez_calcxpncof(gdid);
+   ez_calcxpncof(GRef);
 
 /*    c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id); */
 

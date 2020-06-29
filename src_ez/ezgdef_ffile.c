@@ -133,7 +133,7 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
     {
      return gdid;
     }
-  ez_calcxpncof(gdid);
+  ez_calcxpncof(GRef);
   GRef->i1 = 1;
   GRef->i2 = GRef->ni;
   GRef->j1 = 1;
@@ -141,11 +141,11 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
   if (*grtyp != 'Y')
     {
     c_ezdefxg(GRef);
-    ez_calcntncof(gdid);
+    ez_calcntncof(GRef);
     }
   else
    {
-   ez_calclatlon(gdid);
+   ez_calclatlon(GRef);
    }
 
   if (groptions.verbose > 0)

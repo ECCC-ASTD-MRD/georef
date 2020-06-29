@@ -14,11 +14,11 @@ void c_llfgr(ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint npt
         ftnfloat latOrigine, ftnfloat lonOrigine, ftnfloat deltaLat, ftnfloat deltaLon);
 
 unsigned int ez_calc_crc(int* p, int* flen,  float* ax, float* ay, int ni, int nj);
-wordint ez_calclatlon(wordint gdid);
+wordint ez_calclatlon(TGeoRef* GRef);
 
-void ez_calcntncof(wordint gdid);
+void ez_calcntncof(TGeoRef* GRef);
 
-wordint ez_calcxpncof(wordint gdid);
+wordint ez_calcxpncof(TGeoRef* GRef);
 
 wordint ez_calcxy(wordint gdin, wordint gdout);
 
@@ -257,7 +257,7 @@ int c_ez_refgrid(int grid_index);
 
 
 void c_ezdefxg(TGeoRef* GRef);
-void c_ezdefaxes(wordint gdid, ftnfloat* ax, ftnfloat* ay);
+void c_ezdefaxes(TGeoRef* GRef, ftnfloat* ax, ftnfloat* ay);
 wordint c_gdinterp(ftnfloat* zout, ftnfloat* zin, wordint gdin, ftnfloat* x, ftnfloat* y, wordint npts);
 
 int f77name(gdsetmask)(int* gdid, int* mask);
