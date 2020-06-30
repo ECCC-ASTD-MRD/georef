@@ -637,12 +637,11 @@ PTR_AS_INT f77name(georef_rpncreate)(wordint *ni, wordint *nj, char *grtyp, word
 
 TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int ig4,int FID) {
 
-   TGeoRef *ref;
+   TGeoRef *ref,*fref;
    int      id;
    char     grtyp[2];
 
    ref=GeoRef_New();
-   GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
 
    // If not specified, type is X
    if (GRTYP[0]==' ') GRTYP[0]='X';
@@ -654,16 +653,72 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int 
 #ifdef HAVE_RMN
       // Create master gridid
       if (GRTYP[1]=='#') {
-         // For tiled grids (#) we have to fudge the ig3 ang ig4 to 0 since they're used for tile limit
-         id=RPN_IntIdNew(NI,NJ,grtyp,ig1,ig2,0,0,FID);
-//TODO:         id=ezgdef_ffile(NI,NJ,grtyp,ig1,ig2,0,0,FID);
-     } else {
-         id=RPN_IntIdNew(NI,NJ,grtyp,ig1,ig2,ig3,ig4,FID);
-//TODO:         id=ezgdef_ffile(NI,NJ,grtyp,ig1,ig2,ig3,ig4,FID);
-     }
+         //TOCHECK: For tiled grids (#) we have to fudge the ig3 ang ig4 to 0 since they're used for tile limit
+      }
+
+      if (GRTYP[0]!='#' && GRTYP[0]!='Y' && GRTYP[0]!='Z' && GRTYP[0]!='U' && GRTYP[0]!=' ') {
+         // no need to look for grid descriptors
+         return c_ezgdef_fmem(NI,NJ, grtyp, " ", ig1, ig2, ig3, ig4, NULL, NULL,ref);
+      }
+  
+      ref->grtyp[0]=grtyp[0];
+      ref->grtyp[1]=grtyp[1];
+      ref->ni = NI;
+      ref->nj = NJ;
+//TODO:Do we need theses defines, does fst.ig have to be of size 16 ?
+#define IG1             0
+#define IG2             1
+#define IG3             2
+#define IG4             3
+
+      ref->fst.ig[IG1] = ig1;
+      ref->fst.ig[IG2] = ig2;
+      ref->fst.ig[IG3] = ig3;
+      ref->fst.ig[IG4] = ig4;
+      ref->idx_last_gdin = -1;
+      ref->IG1_JP=ig1;
+      ref->IG2_JP=ig2;
+      ref->IG3_JP=ig3;
+      ref->IG4_JP=ig4;
+      GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
+
+      //TODO: Merge LireEnrPositionnels with RPN_FieldReadGrid
+      if (LireEnrPositionnels(ref, FID, ig1, ig2, ig3, ig4, 0)<0) {
+         // Problems with finding grid descriptors
+         return(NULL);
+      }
+  
+      // This georef already exists
+      if (fref=GeoRef_Find(ref)) {
+        free(ref);
+        return(fref);
+      }
+
+      // This is a new georef
+      GeoRef_Add(ref);
+      if (LireEnrPositionnels(ref,FID,ig1,ig2,ig3,((ref->grtyp[0]=='#' || ref->grtyp[0]=='U')?ig4:0),1)<0) {
+         // problems with reading grid descriptors
+         return(NULL);
+      }
+      
+      if (grtyp[0] != 'U') {
+         ez_calcxpncof(ref);
+         ref->i1 = 1;
+         ref->i2 = ref->ni;
+         ref->j1 = 1;
+         ref->j2 = ref->nj;
+         if (*grtyp != 'Y') {
+            c_ezdefxg(ref);
+            ez_calcntncof(ref);
+         } else {
+            ez_calclatlon(ref);
+         }
+      }
+
+
       // Check for sub-grids (U grids can have sub grids)
       ref->NbId=GRTYP[0]=='U'?c_ezget_nsubgrids(id):1;
-//      ref->NbId=1;
+      // TODO: Switch to pointer table instead of ints
       if ((ref->Ids=(int*)malloc((ref->NbId>1?ref->NbId+1:1)*sizeof(int)))) {
          ref->Ids[0]=id;
          if (ref->NbId>1) {
@@ -673,10 +728,6 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int 
 #endif
    }
 
-   ref->IG1_JP=ig1;
-   ref->IG2_JP=ig2;
-   ref->IG3_JP=ig3;
-   ref->IG4_JP=ig4;
    ref->Grid[0]=GRTYP[0];
    ref->Grid[1]=GRTYP[1];
    ref->Project=GeoRef_RPNProject;
@@ -848,7 +899,7 @@ TGeoRef* GeoRef_RPNGridZE(TGeoRef *GRef,int NI,int NJ,float DX,float DY,float La
    }
    
  //TODO: Merge with EZ  
-   GRef->Ids[0]=c_ezgdef_fmem(NI,NJ,"Z","E",GRef->IG1_JP,GRef->IG2_JP,GRef->IG3_JP,GRef->IG4_JP,GRef->AX_JP,GRef->AY);
+   GRef->Ids[0]=c_ezgdef_fmem(NI,NJ,"Z","E",GRef->IG1_JP,GRef->IG2_JP,GRef->IG3_JP,GRef->IG4_JP,GRef->AX_JP,GRef->AY,GRef);
    
    GRef->NbId=1;
    GRef->Grid[0]='Z';

@@ -866,6 +866,7 @@ int GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) 
    
    if (Ref0->IG1_JP!=Ref1->IG1_JP || Ref0->IG2_JP!=Ref1->IG2_JP || Ref0->IG3_JP!=Ref1->IG3_JP || Ref0->IG4_JP!=Ref1->IG4_JP)
      return(0);
+   //TOTO: Check AX,AY
 
    // Cloud point should never be tested as equal
    if (Ref0->Grid[0]=='Y' || Ref0->Grid[1]=='Y')
@@ -1042,6 +1043,33 @@ int GeoRef_UnProject(TGeoRef* __restrict const Ref,double *X,double *Y,double La
    return(1);
 }
 
+ TGeoRef* GeoRef_Add(TGeoRef *Ref) {
+
+   TList *head;
+
+   GeoRef_Lock();
+   if (head=TList_Add(GeoRef_List,(void*)Ref)) {
+      GeoRef_List=head;
+   }
+   GeoRef_Unlock();
+
+   return((TGeoRef*)(head?head->Data:NULL));
+ }
+
+TGeoRef* GeoRef_Find(TGeoRef *Ref) {
+
+   TList *item;
+
+   GeoRef_Lock();
+   item=TList_Find(GeoRef_List,(TList_CompareProc*)GeoRef_Equal,(void*)Ref);
+   GeoRef_Unlock();
+
+   if (item) {
+      return((TGeoRef*)item->Data);
+   }
+   return(NULL);
+}
+
 TGeoRef* GeoRef_New() {
 
    TGeoRef *ref=malloc(sizeof(TGeoRef));
@@ -1102,11 +1130,6 @@ TGeoRef* GeoRef_New() {
    ref->Value=NULL;
    ref->Distance=NULL;
    ref->Height=NULL;
-
-   // Add to Georef list
-   GeoRef_Lock();
-   GeoRef_List=TList_Add(GeoRef_List,(void*)ref);
-   GeoRef_Unlock();
 
    return(ref);
 }

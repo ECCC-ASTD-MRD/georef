@@ -35,7 +35,9 @@ void c_ez_manageGrillesMemory() {
 }
 
 
-wordint c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, wordint ig1, wordint ig2, wordint ig3, wordint ig4) {
+wordint c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, 
+   wordint ig1, wordint ig2, wordint ig3, wordint ig4, TGeoRef* GRef) 
+{
    wordint i;
    wordint gdid, gdrow, gdcol, nchunks, newGrid;
    wordint res1, res2, newgrsize, grid_index;
@@ -48,8 +50,7 @@ wordint c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, wordint ig1, 
    newGrid = 0;
    typeGrille = grtyp[0];
 
-   if (nGrilles == 0) {
-      gr_list = calloc(chunks_sq[cur_log_chunk], sizeof(TGeoRef *));
+/*    if (nGrilles == 0) {
       Grille = (TGeoRef **) calloc(chunks[cur_log_chunk], sizeof(TGeoRef *));
       Grille[0] = (TGeoRef *) calloc(chunks[cur_log_chunk], sizeof(TGeoRef));
       for (i=0; i < chunks[cur_log_chunk]; i++) {
@@ -57,29 +58,30 @@ wordint c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, wordint ig1, 
       }
    }
 
-   memset((void *)&newgr, 0, (size_t)sizeof(TGeoRef));
-   newgr.grtyp[0] = grtyp[0];
-   newgr.grref[0] = (char) 0;
-   newgr.ni = ni;
-   newgr.nj = nj;
-   newgr.fst.ig[IG1] = ig1;
-   newgr.fst.ig[IG2] = ig2;
-   newgr.fst.ig[IG3] = ig3;
-   newgr.fst.ig[IG4] = ig4;
-   newgr.fst.igref[IG1] = 0;
-   newgr.fst.igref[IG2] = 0;
-   newgr.fst.igref[IG3] = 0;
-   newgr.fst.igref[IG4] = 0;
+   memset((void *)&newgr, 0, (size_t)sizeof(TGeoRef)); */
+   GRef->grtyp[0] = grtyp[0];
+   GRef->grref[0] = (char) 0;
+   GRef->ni = ni;
+   GRef->nj = nj;
+   GRef->fst.ig[IG1] = ig1;
+   GRef->fst.ig[IG2] = ig2;
+   GRef->fst.ig[IG3] = ig3;
+   GRef->fst.ig[IG4] = ig4;
+   GRef->fst.igref[IG1] = 0;
+   GRef->fst.igref[IG2] = 0;
+   GRef->fst.igref[IG3] = 0;
+   GRef->fst.igref[IG4] = 0;
 
 
-   newgrsize = sizeof(TGeoRef);
+/*    newgrsize = sizeof(TGeoRef);
    grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, NULL, NULL, 0, 0);
-   grid_index = grid_crc % primes_sq[cur_log_chunk];
-   if (gr_list[grid_index] == NULL) {
+   grid_index = grid_crc % primes_sq[cur_log_chunk]; */
+
+   gdid = c_ez_addgrid(GRef);
+/*    if (gr_list[grid_index] == NULL) {
       gdid = c_ez_addgrid(grid_index, &newgr);
       return gdid;
    } else {
-      gr = gr_list[grid_index];
       gdid = c_ez_findgrid(grid_index, &newgr);
       if (gdid == -1) {
          gdid = c_ez_addgrid(grid_index, &newgr);
@@ -87,14 +89,15 @@ wordint c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, wordint ig1, 
       } else {
          return gdid;
       }
-   }
+   } */
+   return gdid;
 }
 
 wordint c_ezidentify_irreg_grid(
       wordint ni, wordint nj, char* grtyp, char* grref,
       wordint ig1, wordint ig2, wordint ig3, wordint ig4,
-      ftnfloat* ax, ftnfloat* ay) {
-
+      ftnfloat* ax, ftnfloat* ay, TGeoRef* GRef) 
+{
    wordint i;
    wordint gdid, gdrow, gdcol, nchunks, newGrid;
    wordint res1, res2, newgrsize, npts, grid_index;
@@ -106,8 +109,7 @@ wordint c_ezidentify_irreg_grid(
    newGrid = 0;
    typeGrille = grtyp[0];
 
-   if (nGrilles == 0) {
-      gr_list = calloc(chunks_sq[cur_log_chunk], sizeof(TGeoRef *));
+/*    if (nGrilles == 0) {
       Grille = (TGeoRef **) calloc(chunks[cur_log_chunk],sizeof(TGeoRef *));
       Grille[0] = (TGeoRef *) calloc(chunks[cur_log_chunk], sizeof(TGeoRef));
       for (i = 0; i < chunks[cur_log_chunk]; i++) {
@@ -115,71 +117,71 @@ wordint c_ezidentify_irreg_grid(
       }
    }
 
-   memset((void *)&newgr, (int)0, sizeof(TGeoRef));
-   newgr.grtyp[0] = grtyp[0];
-   newgr.grtyp[1] = '\0';
-   newgr.grref[0] = grref[0];
-   newgr.grref[1] = '\0';
-   newgr.ni = ni;
-   newgr.nj = nj;
-   newgr.fst.ip1      = 0;
-   newgr.fst.ip2      = 0;
-   newgr.fst.ip3      = 0;
-   newgr.fst.igref[IG1] = ig1;
-   newgr.fst.igref[IG2] = ig2;
-   newgr.fst.igref[IG3] = ig3;
-   newgr.fst.igref[IG4] = ig4;
-   newgr.fst.ig[IG1] = ig1;
-   newgr.fst.ig[IG2] = ig2;
-   newgr.fst.ig[IG3] = ig3;
-   newgr.fst.ig[IG4] = ig4;
-   newgr.fst.xg[IG1]  = 0.0;
-   newgr.fst.xg[IG2]  = 0.0;
-   newgr.fst.xg[IG3]  = 0.0;
-   newgr.fst.xg[IG4]  = 0.0;
-   newgr.nsubgrids = 0;
-   strcpy(newgr.fst.nomvarx, "    ");
-   strcpy(newgr.fst.nomvary, "    ");
-   strcpy(newgr.fst.etiketx, "            ");
-   strcpy(newgr.fst.etikety, "            ");
-   strcpy(newgr.fst.typvarx, "  ");
-   strcpy(newgr.fst.typvary, "  ");
-   newgr.fst.deet    = 0;
-   newgr.fst.npas    = 0;
-   newgr.fst.nbits   = 0;
-   newgr.fst.date    = 0;
-   newgr.i1=1;
-   newgr.i2=ni;
-   newgr.j1=1;
-   newgr.j2=nj;
-   newgr.idx_last_gdin = -1;
+   memset((void *)&newgr, (int)0, sizeof(TGeoRef)); */
+   GRef->grtyp[0] = grtyp[0];
+   GRef->grtyp[1] = '\0';
+   GRef->grref[0] = grref[0];
+   GRef->grref[1] = '\0';
+   GRef->ni = ni;
+   GRef->nj = nj;
+   GRef->fst.ip1      = 0;
+   GRef->fst.ip2      = 0;
+   GRef->fst.ip3      = 0;
+   GRef->fst.igref[IG1] = ig1;
+   GRef->fst.igref[IG2] = ig2;
+   GRef->fst.igref[IG3] = ig3;
+   GRef->fst.igref[IG4] = ig4;
+   GRef->fst.ig[IG1] = ig1;
+   GRef->fst.ig[IG2] = ig2;
+   GRef->fst.ig[IG3] = ig3;
+   GRef->fst.ig[IG4] = ig4;
+   GRef->fst.xg[IG1]  = 0.0;
+   GRef->fst.xg[IG2]  = 0.0;
+   GRef->fst.xg[IG3]  = 0.0;
+   GRef->fst.xg[IG4]  = 0.0;
+   GRef->nsubgrids = 0;
+   strcpy(GRef->fst.nomvarx, "    ");
+   strcpy(GRef->fst.nomvary, "    ");
+   strcpy(GRef->fst.etiketx, "            ");
+   strcpy(GRef->fst.etikety, "            ");
+   strcpy(GRef->fst.typvarx, "  ");
+   strcpy(GRef->fst.typvary, "  ");
+   GRef->fst.deet    = 0;
+   GRef->fst.npas    = 0;
+   GRef->fst.nbits   = 0;
+   GRef->fst.date    = 0;
+   GRef->i1=1;
+   GRef->i2=ni;
+   GRef->j1=1;
+   GRef->j2=nj;
+   GRef->idx_last_gdin = -1;
 
-   newgrsize = sizeof(TGeoRef);
+/*    newgrsize = sizeof(TGeoRef); */
    switch(typeGrille) {
       case '#':
-         grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, &(ax[ig3-1]), &(ay[ig4-1]), ni, nj);
-         newgr.ax = ax;
-         newgr.ay = ay; 
+/*          grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, &(ax[ig3-1]), &(ay[ig4-1]), ni, nj); */
+         GRef->ax = ax;
+         GRef->ay = ay; 
          break;
 
       case 'Y':
          npts = ni * nj;
-         grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, ax, ay, npts, npts);
-         newgr.ax = ax;
-         newgr.ay = ay; 
+/*          grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, ax, ay, npts, npts); */
+         GRef->ax = ax;
+         GRef->ay = ay; 
          break;
 
       case 'Z':
-         f77name(cigaxg)(&(newgr.grref),
-            &newgr.fst.xgref[XLAT1], &newgr.fst.xgref[XLON1], &newgr.fst.xgref[XLAT2], &newgr.fst.xgref[XLON2],
-            &newgr.fst.igref[IG1],   &newgr.fst.igref[IG2],   &newgr.fst.igref[IG3],   &newgr.fst.igref[IG4],1);
-         grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, ax, ay, ni, nj);
-         newgr.ax = ax;
-         newgr.ay = ay; 
+         f77name(cigaxg)(&(GRef->grref),
+            &GRef->fst.xgref[XLAT1], &GRef->fst.xgref[XLON1], &GRef->fst.xgref[XLAT2], &GRef->fst.xgref[XLON2],
+            &GRef->fst.igref[IG1],   &GRef->fst.igref[IG2],   &GRef->fst.igref[IG3],   &GRef->fst.igref[IG4],1);
+/*          grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, ax, ay, ni, nj); */
+         GRef->ax = ax;
+         GRef->ay = ay; 
          break;
 
       case 'G':
-         grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, NULL, NULL, 0, 0);
+/*          grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, NULL, NULL, 0, 0); */
          break;
 
       default :
@@ -187,9 +189,10 @@ wordint c_ezidentify_irreg_grid(
          exit(13);
    }
 
-   grid_index = grid_crc % primes_sq[cur_log_chunk];
+/*    grid_index = grid_crc % primes_sq[cur_log_chunk]; */
 
-   if (gr_list[grid_index] == NULL) {
+   gdid = c_ez_addgrid(GRef);
+/*    if (gr_list[grid_index] == NULL) {
       gdid = c_ez_addgrid(grid_index, &newgr);
       return gdid;
    } else {
@@ -200,5 +203,6 @@ wordint c_ezidentify_irreg_grid(
       } else {
          return gdid;
       }
-   }
+   } */
+   return gdid;
 }

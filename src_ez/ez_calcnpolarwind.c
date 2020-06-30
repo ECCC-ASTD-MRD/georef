@@ -130,6 +130,7 @@ wordint ez_calcnpolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat
   free(polar_vv);
   free(polar_uu);
 
-  ier = c_gdrls(gdps);
+  /* TODO: uncomment when ezqkdef modified */
+  //ier = c_gdrls(gdps);
   return 0;
 }

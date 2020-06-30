@@ -165,7 +165,6 @@ typedef struct {
   wordint flags,yyflags;
   wordint use_sincos_cache;
   wordint gdin;
-  wordint next_gdin;
   ftnfloat valpolesud, valpolenord;
   ftnfloat *x, *y;
   wordint *mask_in, *mask_out;
@@ -250,7 +249,8 @@ typedef struct TGeoRef {
    wordint n_gdin, idx_last_gdin, n_gdin_for;
    wordint log_chunk_gdin;
    wordint *gdin_for, *mask;
-   wordint nsubgrids,mymaskgrid;
+   wordint nsubgrids;
+   struct TGeoRef *mymaskgrid;
    wordint mymaskgridi0,mymaskgridi1;
    wordint mymaskgridj0,mymaskgridj1;
    wordint *subgrid;
@@ -267,7 +267,6 @@ typedef struct TGeoRef {
 } TGeoRef;
 
 extern TGeoRef** Grille;
-extern TGeoRef** gr_list;
 
 typedef struct TGeoPos {
    TGeoRef *GRef;                                         // Reference horizontale
@@ -297,6 +296,8 @@ int      GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict con
 int      GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
 int      GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA);
 TGeoRef* GeoRef_New();
+TGeoRef* GeoRef_Add(TGeoRef *Ref);
+TGeoRef* GeoRef_Find(TGeoRef *Ref);
 TGeoRef* GeoRef_Copy(TGeoRef* __restrict const Ref);
 TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref);
 TGeoRef* GeoRef_Reference(TGeoRef* __restrict const Ref);

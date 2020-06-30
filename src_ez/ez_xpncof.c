@@ -22,24 +22,24 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint ez_calcxpncof(wordint gdid)
+wordint ez_calcxpncof(TGeoRef* GRef)
 {
-  wordint gdrow_id, gdcol_id;
+/*   wordint gdrow_id, gdcol_id;
 
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
+  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id); */
 
-  ez_xpncof(&Grille[gdrow_id][gdcol_id].i1,
-            &Grille[gdrow_id][gdcol_id].i2,
-            &Grille[gdrow_id][gdcol_id].j1,
-            &Grille[gdrow_id][gdcol_id].j2,
-            &Grille[gdrow_id][gdcol_id].extension,
-	    Grille[gdrow_id][gdcol_id].ni,
-            Grille[gdrow_id][gdcol_id].nj,
-            Grille[gdrow_id][gdcol_id].grtyp[0],
-            Grille[gdrow_id][gdcol_id].grref[0],
-	    Grille[gdrow_id][gdcol_id].fst.ig[IG1], Grille[gdrow_id][gdcol_id].fst.ig[IG2],
-            Grille[gdrow_id][gdcol_id].fst.ig[IG3], Grille[gdrow_id][gdcol_id].fst.ig[IG4],
-	    groptions.symmetrie, Grille[gdrow_id][gdcol_id].ax, Grille[gdrow_id][gdcol_id].ay);
+  ez_xpncof(&GRef->i1,
+            &GRef->i2,
+            &GRef->j1,
+            &GRef->j2,
+            &GRef->extension,
+	    	GRef->ni,
+            GRef->nj,
+            GRef->grtyp[0],
+            GRef->grref[0],
+	    	GRef->fst.ig[IG1], GRef->fst.ig[IG2],
+            GRef->fst.ig[IG3], GRef->fst.ig[IG4],
+	    	groptions.symmetrie, GRef->ax, GRef->ay);
 
    return 0;
 

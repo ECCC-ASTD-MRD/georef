@@ -13,6 +13,7 @@ void Lire_enrUvercode1(TGeoRef *gr, ftnfloat *yy, wordint nix)
   wordint sub_gdrow_id,sub_gdcol_id;
   char grtypZ[2],grref[2],grrefE[2];
   ftnfloat *ax,*ay;
+  TGeoRef *GRef_yin, *GRef_yang;
 
   ndiv=(int)yy[2];  /* number of LAM grids is 2*/
   ni=(int)yy[5];    /* ni size of LAM grid */
@@ -29,15 +30,17 @@ void Lire_enrUvercode1(TGeoRef *gr, ftnfloat *yy, wordint nix)
   strcpy(grtypZ,"Z"); strcpy(grrefE,"E");
   /*yin*/
   ier = f77name(cxgaig)(grrefE,&ig1refyin,&ig2refyin,&ig3refyin,&ig4refyin,&yy[11], &yy[12], &yy[13], &yy[14],1);
-  gr->subgrid[0] = c_ezgdef_fmem(ni,nj,grtypZ,grrefE,ig1refyin,ig2refyin,ig3refyin,ig4refyin,ax,ay);
-  c_gdkey2rowcol(gr->subgrid[0],  &sub_gdrow_id,  &sub_gdcol_id);
-  c_ezgdef_yymask(&(Grille[sub_gdrow_id][sub_gdcol_id]));
+  GRef_yin = GeoRef_New();
+  gr->subgrid[0] = c_ezgdef_fmem(ni,nj,grtypZ,grrefE,ig1refyin,ig2refyin,ig3refyin,ig4refyin,ax,ay,GRef_yin);
+/*   c_gdkey2rowcol(gr->subgrid[0],  &sub_gdrow_id,  &sub_gdcol_id); */
+  c_ezgdef_yymask(GRef_yin);
 
   /*yang*/
   ier = f77name(cxgaig)(grrefE,&ig1refyan,&ig2refyan,&ig3refyan,&ig4refyan,&yy[yinsize+6], &yy[yinsize+7], &yy[yinsize+8], &yy[yinsize+9],1);
-  gr->subgrid[1] = c_ezgdef_fmem(ni,nj,grtypZ,grrefE,ig1refyan,ig2refyan,ig3refyan,ig4refyan,ax,ay);
-  c_gdkey2rowcol(gr->subgrid[1],  &sub_gdrow_id,  &sub_gdcol_id);
-  c_ezgdef_yymask(&(Grille[sub_gdrow_id][sub_gdcol_id]));
+  GRef_yang = GeoRef_New();
+  gr->subgrid[1] = c_ezgdef_fmem(ni,nj,grtypZ,grrefE,ig1refyan,ig2refyan,ig3refyan,ig4refyan,ax,ay,GRef_yang);
+/*   c_gdkey2rowcol(gr->subgrid[1],  &sub_gdrow_id,  &sub_gdcol_id); */
+  c_ezgdef_yymask(GRef_yang);
   free(ax);
   free(ay);
 }
@@ -344,7 +347,7 @@ wordint LireEnrPositionnels(TGeoRef *gr, wordint iunit, wordint ip1, wordint ip2
      {
      gr->flags  |= AX;
      }
-   return 0;
+  return 0;
 }
 
 void RemplirDeBlancs(char str[],wordint longueur)

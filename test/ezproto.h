@@ -3,14 +3,15 @@
 
 #include "rpnmacros.h"
 #include "rpn_macros_arch.h"
+#include "../src/GeoRef.h"
 
 // RPN external EZscint functions
 extern int  c_ezfreegridset(int gdid, int index);
 extern int  c_ezdefset(int gdout, int gdin);
-extern int  c_ezgdef(int ni, int nj, char *grtyp, char *grref,int ig1, int ig2, int ig3, int ig4, ftnfloat *ax, ftnfloat *ay);
-extern int  c_ezgdef_ffile(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit);
-extern int  c_ezgdef_fll(int ni, int nj,ftnfloat *lat, ftnfloat *lon);
-extern int  c_ezgdef_fmem(int ni, int nj, char *grtyp, char *grref,int ig1, int ig2, int ig3, int ig4, ftnfloat *ax, ftnfloat *ay);
+extern int  c_ezgdef(int ni, int nj, char *grtyp, char *grref,int ig1, int ig2, int ig3, int ig4, ftnfloat *ax, ftnfloat *ay, TGeoRef* GRef);
+extern int  c_ezgdef_ffile(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit, TGeoRef* GRef);
+extern int  c_ezgdef_fll(int ni, int nj,ftnfloat *lat, ftnfloat *lon, TGeoRef* GRef);
+extern int  c_ezgdef_fmem(int ni, int nj, char *grtyp, char *grref,int ig1, int ig2, int ig3, int ig4, ftnfloat *ax, ftnfloat *ay, TGeoRef* GRef);
 extern int  c_ezgprm(int gdid, char *grtyp, int *ni, int *nj, int *ig1, int *ig2, int *ig3, int *ig4);
 extern int  c_ezgenpole(ftnfloat *vpolnor, ftnfloat *vpolsud, ftnfloat *fld,int ni, int nj, int vecteur,char *grtyp, int hem);
 extern int  c_ezgetopt(char *option, char *value);
@@ -19,9 +20,10 @@ extern int  c_ezget_nsubgrids(int id);
 extern int  c_ezget_subgridids(int id,int *subid);
 extern int  c_gdll(int gdid, ftnfloat *lat, ftnfloat *lon);
 extern int  c_ezqkdef(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit);
+extern int  c_ezqkdef_new(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit, TGeoRef* GRef);
              
 extern int  c_ezquickdef(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit);
-extern int  c_gdrls(int gdin);
+extern int  c_gdrls(TGeoRef* GRef);
 extern int  c_ezsetopt(char *option, char *value);
 extern int  c_ezsetval(char *option, ftnfloat fvalue);
 extern int  c_ezsint(ftnfloat *zout, ftnfloat *zin);
@@ -48,8 +50,8 @@ extern void c_ezgfllfxy(ftnfloat *lonp, ftnfloat *latp,ftnfloat *lon, ftnfloat *
 extern void c_ezgfxyfll(ftnfloat *lonp, ftnfloat *latp,ftnfloat *lon, ftnfloat *lat,ftnfloat *r, ftnfloat *ri, int *npts,ftnfloat *xlat1, ftnfloat *xlon1, ftnfloat *xlat2, ftnfloat *xlon2);
 extern void c_ezgfwfllw(ftnfloat *uullout, ftnfloat *vvllout, ftnfloat *latin, ftnfloat *lonin,ftnfloat *xlatingf, ftnfloat *xloningf,int *ni, int *nj,char *grtyp, int *ig1, int *ig2, int *ig3, int *ig4);
 extern void c_ezllwfgfw(ftnfloat *uullout, ftnfloat *vvllout, ftnfloat *latin, ftnfloat *lonin,ftnfloat *xlatingf, ftnfloat *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
-extern void c_ezdefxg(int gdid);
-extern void c_ezdefaxes(int gdid, ftnfloat *ax, ftnfloat *ay);
+extern void c_ezdefxg(TGeoRef* GRef);
+extern void c_ezdefaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay);
 extern int  c_gdinterp(ftnfloat *zout, ftnfloat *zin, int gdin, ftnfloat *x, ftnfloat *y, int npts);
 extern int  c_gdsetmask(int gdid, int *mask);
 extern int  c_gdgetmask(int gdid, int *mask);
