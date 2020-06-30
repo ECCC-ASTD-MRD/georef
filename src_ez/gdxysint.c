@@ -20,7 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
-
+#include "../src/GeoRef.h"
 
 wordint c_gdxysint(ftnfloat *zout, ftnfloat *zin, wordint gdin, ftnfloat *x, ftnfloat *y, wordint npts);
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

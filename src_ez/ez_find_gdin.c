@@ -1,6 +1,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 int c_find_gdin(int gdin, int gdout)
   {

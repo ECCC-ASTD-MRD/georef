@@ -18,8 +18,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 wordint c_ezyymint(wordint gdout, wordint gdin, wordint ni, wordint nj, ftnfloat *maskout, ftnfloat *dlat, ftnfloat *dlon, ftnfloat *yinlat, ftnfloat *yinlon, wordint *yyincount, ftnfloat *yanlat, ftnfloat *yanlon, wordint *yyancount)
 {

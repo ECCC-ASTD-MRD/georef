@@ -14,6 +14,8 @@ include(doxygen)    # Doxygen target
 
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 
+set(CMAKE_INSTALL_PREFIX "" CACHE PATH "..." FORCE)
+
 enable_language(C)
 enable_language(Fortran)
 

@@ -20,13 +20,13 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
-
+#include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 void ez_xpnsrcgd(wordint gdid, ftnfloat *zout, ftnfloat *zin)
 {
-   _Grille gr;
+   TGeoRef gr;
   wordint gdrow_id, gdcol_id;
     
   c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);

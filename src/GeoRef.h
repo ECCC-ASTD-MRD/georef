@@ -41,6 +41,10 @@
 #include "ZRef.h"
 #include "QTree.h"
 
+#ifdef HAVE_RMN
+#include "rpnmacros.h"
+#endif
+
 #ifdef HAVE_GDAL
 #include "gdal_safe.h"
 #include "gdal_alg.h"
@@ -49,6 +53,8 @@
 #else
 #include "ogr_stub.h"
 #endif
+
+#define NZONES             5
 
 #define GRID_NONE     0x0
 #define GRID_REGULAR  0x1        // Regular grid
@@ -117,6 +123,10 @@ typedef union {
 struct TZRef;
 struct TDef;
 struct TGeoRef;
+struct _zone;
+struct _ygrid;
+struct _gemgrid;
+struct _gridset;
 
 typedef int    (TGeoRef_Project)   (struct TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
 typedef int    (TGeoRef_UnProject) (struct TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
@@ -128,40 +138,98 @@ typedef struct TRotationTransform {
    double Lat,Lon,Angle,SinTheta,CosTheta,SinPhi,CosPhi;   
 } TRotationTransform;
 
+typedef struct {
+  wordint npts;               /* nombre de points */
+  ftnfloat *x;                /* vecteur de coordonnees x */
+  ftnfloat *y;                /* vecteur de coordonnees y */
+  wordint *idx;               /* indice du point dans le champ de destination */
+} _zone;
+
+typedef struct {
+  wordint n_wts;              /* nombre de poids */
+  ftnfloat *xx, *yy;
+  ftnfloat *lat, *lon;
+  ftnfloat *wts;              /* tableau de poids */
+   wordint *mask, *idx;       /* indice du point dans le champ de destination */
+} _ygrid;                     /* Grille Y */
+
+typedef struct {
+  wordint flags;
+  ftnfloat *lat_rot, *lon_rot, *lat_true, *lon_true;
+  ftnfloat *sinlat_rot, *coslat_rot, *sinlon_rot, *coslon_rot;
+  ftnfloat *sinlat_true, *coslat_true, *sinlon_true, *coslon_true;
+  ftnfloat r[9], ri[9];
+} _gemgrid;
+
+typedef struct {
+  wordint flags,yyflags;
+  wordint use_sincos_cache;
+  wordint gdin;
+  wordint next_gdin;
+  ftnfloat valpolesud, valpolenord;
+  ftnfloat *x, *y;
+  wordint *mask_in, *mask_out;
+  ftnfloat *yin_maskout,*yan_maskout;
+  ftnfloat *yinlat,*yinlon,*yanlat,*yanlon;
+  ftnfloat *yin2yin_lat,*yin2yin_lon,*yan2yin_lat,*yan2yin_lon;
+  ftnfloat *yin2yan_lat,*yin2yan_lon,*yan2yan_lat,*yan2yan_lon;
+  ftnfloat *yin2yin_x,*yin2yin_y,*yan2yin_x,*yan2yin_y;
+  ftnfloat *yin2yan_x,*yin2yan_y,*yan2yan_x,*yan2yan_y;
+  wordint yincount_yin,yancount_yin,yincount_yan,yancount_yan;
+  _gemgrid gemin, gemout;
+  _ygrid ygrid;
+  _zone zones[NZONES];
+}_gridset;
+
+typedef struct {
+  wordint  ip1, ip2, ip3;
+  wordint date;
+  wordint npas, deet, nbits;
+  wordint hemisphere,axe_y_inverse;
+  ftnfloat xg[16], xgref[16];
+  wordint  ig[16], igref[16];
+  char nomvarx[8];
+  char nomvary[8];
+  char typvarx[4];
+  char typvary[4];
+  char etiketx[16];
+  char etikety[16];
+} _fstinfo;
+
 typedef struct TGeoRef {
-   char*   Name;                                          // Reference name
-   int*    Ids;                                           // Ids des georeferences (>=0 = ezscint)
-   int     NbId,NId;                                      // Nombre de sous-grille
+   char*   Name;                                          ///< Reference name
+   int*    Ids;                                           ///< Ids des georeferences (>=0 = ezscint)
+   int     NbId,NId;                                      ///< Nombre de sous-grille
 
-   int     NRef;                                          // Nombre de reference a la georeference
-   int     Type;                                          // Type de grille
-   int     BD;                                            // Bordure
-   int     NX,NY,X0,Y0,X1,Y1;                             // Grid limits
-   int     IG1,IG2,IG3,IG4;                               // Grid descriptor id
-   char    Grid[3];                                       // Type de grille
+   int     NRef;                                          ///< Nombre de reference a la georeference
+   int     Type;                                          ///< Type de grille
+   int     BD;                                            ///< Bordure
+   int     NX,NY,X0,Y0,X1,Y1;                             ///< Grid limits
+   int     IG1_JP,IG2_JP,IG3_JP,IG4_JP;                   ///< Grid descriptor id
+   char    Grid[3];                                       ///< Type de grille
    
-   Coord  Loc;                                            // (Radar) Localisation du centre de reference
-   double CTH,STH;                                        // (Radar) sin and cos of sweep angle
-   double ResR,ResA;                                      // (Radar) Resolutions en distance et azimuth
-   int    R;                                              // (Radar) Rayon autour du centre de reference en bin
+   Coord  Loc;                                            ///< (Radar) Localisation du centre de reference
+   double CTH,STH;                                        ///< (Radar) sin and cos of sweep angle
+   double ResR,ResA;                                      ///< (Radar) Resolutions en distance et azimuth
+   int    R;                                              ///< (Radar) Rayon autour du centre de reference en bin
 
-   unsigned int NIdx,*Idx;                                // Index dans les positions
-   float        *Lat,*Lon;                                // Coordonnees des points de grilles (Spherical)
-   float        *AX,*AY,*Hgt;                             // Axes de positionnement / deformation
-   double       *Wght;                                    // Barycentric weight array for TIN  (M grids)
+   unsigned int NIdx,*Idx;                                ///< Index dans les positions
+   float        *Lat,*Lon;                                ///< Coordonnees des points de grilles (Spherical)
+   float        *AX_JP,*AY,*Hgt;                          ///< Axes de positionnement / deformation
+   double       *Wght;                                    ///< Barycentric weight array for TIN  (M grids)
 
-   char                         *String;                  // OpenGIS WKT String description
-   double                       *Transform,*InvTransform; // Transformation functions
-   TRotationTransform           *RotTransform;            // Rotation transform
-   void                         *GCPTransform;            // GPC derivative transform (1,2,3 order)
-   void                         *TPSTransform;            // GPC Thin Spline transform
-   void                         *RPCTransform;            // GPC Rigorous Projection Model transform
-   TQTree                       *QTree;                   // Quadtree index
-   OGREnvelope                   LLExtent;                // LatLon extent
-   OGRCoordinateTransformationH  Function,InvFunction;    // Projection functions
-   OGRSpatialReferenceH          Spatial;                 // Spatial reference
+   char                         *String;                  ///< OpenGIS WKT String description
+   double                       *Transform,*InvTransform; ///< Transformation functions
+   TRotationTransform           *RotTransform;            ///< Rotation transform
+   void                         *GCPTransform;            ///< GPC derivative transform (1,2,3 order)
+   void                         *TPSTransform;            ///< GPC Thin Spline transform
+   void                         *RPCTransform;            ///< GPC Rigorous Projection Model transform
+   TQTree                       *QTree;                   ///< Quadtree index
+   OGREnvelope                   LLExtent;                ///< LatLon extent
+   OGRCoordinateTransformationH  Function,InvFunction;    ///< Projection functions
+   OGRSpatialReferenceH          Spatial;                 ///< Spatial reference
 
-   struct TGeoRef    *RefFrom;                            // Georeference de reference (coupe verticale,...)
+   struct TGeoRef    *RefFrom;                            ///< Georeference de reference (coupe verticale,...)
 
    TGeoRef_Project   *Project;
    TGeoRef_UnProject *UnProject;
@@ -169,10 +237,37 @@ typedef struct TGeoRef {
    TGeoRef_Distance  *Distance;
    TGeoRef_Height    *Height;
 
+   // _Grille struct from ezscint.h
+   wordint index;
+   wordint flags;
+   wordint i1, i2, j1, j2;
+   wordint ni,nj;
+   wordint ni_ax, nj_ay;
+   wordint extension;
+   wordint needs_expansion;
+   wordint access_count;
+   wordint next_gd;
+   wordint n_gdin, idx_last_gdin, n_gdin_for;
+   wordint log_chunk_gdin;
+   wordint *gdin_for, *mask;
+   wordint nsubgrids,mymaskgrid;
+   wordint mymaskgridi0,mymaskgridi1;
+   wordint mymaskgridj0,mymaskgridj1;
+   wordint *subgrid;
+   ftnfloat *lat, *lon;
+   ftnfloat *ax, *ay;
+   ftnfloat *ncx, *ncy;
+   char grtyp[4], grref[4];
+   _fstinfo fst;
+   _gridset *gset;
+
 #ifdef HAVE_RPNC   
    int NC_Id,NC_NXDimId,NC_NYDimId;                       // netCDF identifiers
 #endif
 } TGeoRef;
+
+extern TGeoRef** Grille;
+extern TGeoRef** gr_list;
 
 typedef struct TGeoPos {
    TGeoRef *GRef;                                         // Reference horizontale
@@ -215,9 +310,9 @@ int      GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon
 int      GeoRef_Valid(TGeoRef* __restrict const Ref);
 
 TGeoRef* GeoRef_RDRCreate(double Lat,double Lon,double Height,int R,double ResR,double ResA);
-TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID);
+TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int ig4,int FID);
 TGeoRef* GeoRef_RPNGridZE(TGeoRef *GRef,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2);
-TGeoRef* GeoRef_WKTCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
+TGeoRef* GeoRef_WKTCreate(int ni,int nj,char *grtyp,int ig1,int ig2,int ig3,int ig4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
 int      GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
 TGeoRef* GeoRef_RDRCheck(double Lat,double Lon,double Height,double Radius,double ResR,double ResA);
 void     GeoRef_Expand(TGeoRef *Ref);

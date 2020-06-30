@@ -18,8 +18,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 #define BITPOS(i) (i - ((i >> 5) << 5))
 #define GETMSK(fld,i) ((fld[i >> 5]  & (1 << BITPOS(i))) >> BITPOS(i))

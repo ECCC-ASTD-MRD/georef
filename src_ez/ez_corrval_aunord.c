@@ -20,6 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint ez_corrval_aunord(ftnfloat *zout, ftnfloat *zin, wordint gdin, wordint gdout)
 {
@@ -32,7 +33,7 @@ wordint ez_corrval_aunord(ftnfloat *zout, ftnfloat *zin, wordint gdin, wordint g
   wordint quatre = 4;
   wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out, idx_gdin;
   _gridset *gset;
-  _Grille *lgd;
+  TGeoRef *lgd;
 
   c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
   c_gdkey2rowcol(gdout, &gdrow_out, &gdcol_out);
@@ -40,7 +41,7 @@ wordint ez_corrval_aunord(ftnfloat *zout, ftnfloat *zin, wordint gdin, wordint g
 
   gset = &(Grille[gdrow_out][gdcol_out].gset[idx_gdin]);
   npts = gset->zones[AU_NORD].npts;
-  lgd = (_Grille *) &(Grille[gdrow_in][gdcol_in]);
+  lgd = (TGeoRef *) &(Grille[gdrow_in][gdcol_in]);
   if (npts > 0)
     {
     ni = lgd->ni;

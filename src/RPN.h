@@ -56,7 +56,7 @@ typedef struct TRPNHeader {
    int  DATYP;             // Type de donnees
    int  IP1,IP2,IP3;       // Specificateur du champs
    int  NI,NJ,NK,NIJ;      // Dimensions
-   int  IG1,IG2,IG3,IG4;   // Descripteur de grille
+   int  IG1_JP,IG2_JP,IG3_JP,IG4_JP;   // Descripteur de grille
    int  SWA;
    int  LNG;
    int  DLTF;
@@ -93,7 +93,7 @@ int        RPN_FieldWrite(int FileId,TRPNField *Field);
 void       RPN_CopyHead(TRPNHeader *To,TRPNHeader *From);
 int        RPN_FieldTile(int FID,struct TDef *Def,TRPNHeader *Head,struct TGeoRef *GRef,struct TZRef *ZRef,int Comp,int NI,int NJ,int Halo,int DATYP,int NPack,int Rewrite,int Compress);
 
-int RPN_IntIdNew(int NI,int NJ,char* GRTYP,int IG1,int IG2,int IG3, int IG4,int FID);
+int RPN_IntIdNew(int NI,int NJ,char* GRTYP,int IG1_JP,int IG2_JP,int IG3_JP, int IG4_JP,int FID);
 int RPN_IntIdFree(int Id);
 int RPN_IntIdIncr(int Id);
 
@@ -101,7 +101,7 @@ int RPN_GetAllFields(int FID,int DateV,char *Etiket,int Ip1,int Ip2,int Ip3,char
 int RPN_GetAllDates(int *Flds,int NbFlds,int Uniq,int **DateV,int *NbDateV);
 int RPN_GetAllIps(int *Flds,int NbFlds,int IpN,int Uniq,int **Ips,int *NbIp);
 
-int RPN_GenerateIG(int *IG1,int *IG2,int *IG3);
+int RPN_GenerateIG(int *IG1_JP,int *IG2_JP,int *IG3_JP);
 int RPN_LinkFiles(char **Files,int N);
 int RPN_UnLinkFiles(int FID);
 int RPN_LinkPattern(const char* Pattern);
@@ -118,12 +118,12 @@ int  cs_fstouv(char *Path,char *Mode);
 int  cs_fstflush(int Unit);
 int  cs_fstinl(int Unit,int *NI,int *NJ,int *NK,int DateO,char *Etiket,int IP1,int IP2,int IP3,char* TypVar,char *NomVar,int *List,int *Nb,int Max);
 int  cs_fstinf(int Unit,int *NI,int *NJ,int *NK,int DateO,char *Etiket,int IP1,int IP2,int IP3,char* TypVar,char *NomVar);
-int  cs_fstprm(int Unit,int *DateO,int *Deet,int *NPas,int *NI,int *NJ,int *NK,int *NBits,int *Datyp,int *IP1,int *IP2,int *IP3,char* TypVar,char *NomVar,char *Etiket,char *GrTyp,int *IG1,int *IG2,int *IG3,int *IG4,int *Swa,int *Lng,int *DLTF,int *UBC,int *EX1,int *EX2,int *EX3);
+int  cs_fstprm(int Unit,int *DateO,int *Deet,int *NPas,int *NI,int *NJ,int *NK,int *NBits,int *Datyp,int *IP1,int *IP2,int *IP3,char* TypVar,char *NomVar,char *Etiket,char *GrTyp,int *IG1_JP,int *IG2_JP,int *IG3_JP,int *IG4_JP,int *Swa,int *Lng,int *DLTF,int *UBC,int *EX1,int *EX2,int *EX3);
 int  cs_fstlir(void *Buf,int Unit,int *NI,int *NJ,int *NK,int DateO,char *Etiket,int IP1,int IP2,int IP3,char* TypVar,char *NomVar);
 int  cs_fstluk(void *Data,int Idx,int *NI,int *NJ,int *NK);
 int  cs_fstsui(int Unit,int *NI,int *NJ,int *NK);
 int  cs_fstlukt(void *Data,int Unit,int Idx,char *GRTYP,int *NI,int *NJ,int *NK);
-int  cs_fstecr(void *Data,int NPak,int Unit, int DateO,int Deet,int NPas,int NI,int NJ,int NK,int IP1,int IP2,int IP3,char* TypVar,char *NomVar,char *Etiket,char *GrTyp,int IG1,int IG2,int IG3,int IG4,int DaTyp,int Over);
+int  cs_fstecr(void *Data,int NPak,int Unit, int DateO,int Deet,int NPas,int NI,int NJ,int NK,int IP1,int IP2,int IP3,char* TypVar,char *NomVar,char *Etiket,char *GrTyp,int IG1_JP,int IG2_JP,int IG3_JP,int IG4_JP,int DaTyp,int Over);
 
 // EER external Fortran functions
 extern int f77name(rmnlib_version)(char *rmn,int *print,int len);

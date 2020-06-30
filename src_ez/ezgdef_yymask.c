@@ -20,11 +20,11 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
-
+#include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-wordint c_ezgdef_yymask(_Grille *subgd)
+wordint c_ezgdef_yymask(TGeoRef *subgd)
 {
   wordint ni,nj,yni,ynj,i,j,k,ii;
   wordint i0,i1,j0,j1;

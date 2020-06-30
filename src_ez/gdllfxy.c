@@ -20,6 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(gdllfxy)(wordint *gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint *n)
@@ -99,7 +100,7 @@ wordint c_gdllfxy_new(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, f
   ftnfloat dlat, dlon, swlat, swlon;
   wordint indx, indy;
 
-  _Grille gr;
+  TGeoRef gr;
 
   wordint gdrow_id, gdcol_id;
 
@@ -259,7 +260,7 @@ wordint c_gdllfxy_orig(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, 
   ftnfloat dlat, dlon, swlat, swlon;
   wordint indx, indy;
 
-  _Grille gr;
+  TGeoRef gr;
 
   wordint gdrow_id, gdcol_id;
 

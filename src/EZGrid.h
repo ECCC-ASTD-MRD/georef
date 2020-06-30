@@ -173,7 +173,7 @@ TGrid *EZGrid_InterpFactor(TGrid* restrict Grid,const TGrid* restrict Grid0,cons
 float* EZGrid_TileBurn(TGrid* restrict const Grid,TGridTile* restrict const Tile,int K,float* restrict Data);
 float* EZGrid_TileBurnAll(TGrid* restrict const Grid,int K,float* restrict Data);
 
-int EZGrid_IdNew(int NI,int NJ,char* GRTYP,int IG1,int IG2,int IG3, int IG4,int FID);
+int EZGrid_IdNew(int NI,int NJ,char* GRTYP,int IG1_JP,int IG2_JP,int IG3_JP, int IG4_JP,int FID);
 int EZGrid_IdFree(int Id);
 int EZGrid_IdIncr(int Id);
 

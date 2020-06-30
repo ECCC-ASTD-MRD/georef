@@ -20,6 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 wordint ez_defzone_nord(wordint gdin, ftnfloat *x, ftnfloat *y, wordint npts, _zone *zone)

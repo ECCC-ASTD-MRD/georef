@@ -20,6 +20,7 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
+#include "../src/GeoRef.h"
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint ez_corrval_ausud(ftnfloat *zout, ftnfloat *zin, wordint gdin, wordint gdout)
 {
@@ -33,7 +34,7 @@ wordint ez_corrval_ausud(ftnfloat *zout, ftnfloat *zin, wordint gdin, wordint gd
   wordint quatre = 4;
   wordint zero = 0;
   wordint trois = 3;
-  _Grille *lgdin, *lgdout;
+  TGeoRef *lgdin, *lgdout;
 
   wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out, idx_gdin;
   _gridset *gset;

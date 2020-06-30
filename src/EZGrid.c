@@ -451,16 +451,16 @@ static TGrid* EZGrid_CacheFind(const TGrid *Grid,int Master) {
 
             // Check for same grid
             if (Grid->H.GRTYP[0]=='#') {
-               if (GridCache[n]->IP1==Grid->H.IG1 && GridCache[n]->IP2==Grid->H.IG2) {
+               if (GridCache[n]->IP1==Grid->H.IG1_JP && GridCache[n]->IP2==Grid->H.IG2_JP) {
                   pthread_mutex_unlock(&CacheMutex);
                   return(GridCache[n]);
                }
             } else if (Grid->H.GRTYP[0]=='Z' || Grid->H.GRTYP[0]=='M' || Grid->H.GRTYP[0]=='Y'|| Grid->H.GRTYP[0]=='X') {
-               if (GridCache[n]->IP1==Grid->H.IG1 && GridCache[n]->IP2==Grid->H.IG2 && GridCache[n]->IP3==Grid->H.IG3) {
+               if (GridCache[n]->IP1==Grid->H.IG1_JP && GridCache[n]->IP2==Grid->H.IG2_JP && GridCache[n]->IP3==Grid->H.IG3_JP) {
                   pthread_mutex_unlock(&CacheMutex);
                   return(GridCache[n]);
                }
-            } else if (GridCache[n]->H.GRTYP[0]==Grid->H.GRTYP[0] && GridCache[n]->H.IG1==Grid->H.IG1 && GridCache[n]->H.IG2==Grid->H.IG2 && GridCache[n]->H.IG3==Grid->H.IG3 && GridCache[n]->H.IG4==Grid->H.IG4) {
+            } else if (GridCache[n]->H.GRTYP[0]==Grid->H.GRTYP[0] && GridCache[n]->H.IG1_JP==Grid->H.IG1_JP && GridCache[n]->H.IG2_JP==Grid->H.IG2_JP && GridCache[n]->H.IG3_JP==Grid->H.IG3_JP && GridCache[n]->H.IG4_JP==Grid->H.IG4_JP) {
                pthread_mutex_unlock(&CacheMutex);
                return(GridCache[n]);
             }
@@ -613,7 +613,7 @@ int EZGrid_TileGrid(int FIdTo,int NI, int NJ,int Halo,TGrid* restrict const Grid
       // Check if dimensions allow tiling
       if (!NI || !NJ || Grid->H.NI==1 || Grid->H.NJ==1 || (Grid->H.NI<NI && Grid->H.NJ<NJ)) {
          cs_fstecr(data,-Grid->H.NBITS,FIdTo,Grid->H.DATEO,Grid->H.DEET,Grid->H.NPAS,Grid->H.NI,Grid->H.NJ,1,ip1,Grid->H.IP2,
-            Grid->H.IP3,Grid->H.TYPVAR,Grid->H.NOMVAR,Grid->H.ETIKET,Grid->H.GRTYP,Grid->H.IG1,Grid->H.IG2,Grid->H.IG3,Grid->H.IG4,Grid->H.DATYP,0);
+            Grid->H.IP3,Grid->H.TYPVAR,Grid->H.NOMVAR,Grid->H.ETIKET,Grid->H.GRTYP,Grid->H.IG1_JP,Grid->H.IG2_JP,Grid->H.IG3_JP,Grid->H.IG4_JP,Grid->H.DATYP,0);
       } else {
          // Build and save the tiles, we adjust the tile size if it is too big
          for(j=0;j<Grid->H.NJ;j+=NJ) {
@@ -635,7 +635,7 @@ int EZGrid_TileGrid(int FIdTo,int NI, int NJ,int Halo,TGrid* restrict const Grid
                   memcpy(&tile[pj*ni],&data[(dj+pj)*Grid->H.NI+di],ni*sizeof(float));
                }
                cs_fstecr(tile,-Grid->H.NBITS,FIdTo,Grid->H.DATEO,Grid->H.DEET,Grid->H.NPAS,ni,nj,1,ip1,Grid->H.IP2,
-                  no,Grid->H.TYPVAR,Grid->H.NOMVAR,Grid->H.ETIKET,"#",Grid->H.IG1,Grid->H.IG2,di+1,dj+1,Grid->H.DATYP,0);
+                  no,Grid->H.TYPVAR,Grid->H.NOMVAR,Grid->H.ETIKET,"#",Grid->H.IG1_JP,Grid->H.IG2_JP,di+1,dj+1,Grid->H.DATYP,0);
             }
          }
       }
@@ -683,10 +683,10 @@ int EZGrid_Write(int FId,TGrid* restrict const Grid,int NBits,int Overwrite) {
          }
          if (Grid->NbTiles>1) {
             key=cs_fstecr(tile->Data[k],-NBits,FId,Grid->H.DATEO,Grid->H.DEET,Grid->H.NPAS,tile->HNI,tile->HNJ,1,ip1,Grid->H.IP2,
-                 tile->NO,Grid->H.TYPVAR,Grid->H.NOMVAR,Grid->H.ETIKET,"#",Grid->H.IG1,Grid->H.IG2,tile->I+1,tile->J+1,Grid->H.DATYP,Overwrite);
+                 tile->NO,Grid->H.TYPVAR,Grid->H.NOMVAR,Grid->H.ETIKET,"#",Grid->H.IG1_JP,Grid->H.IG2_JP,tile->I+1,tile->J+1,Grid->H.DATYP,Overwrite);
          } else {
             key=cs_fstecr(tile->Data[k],-NBits,FId,Grid->H.DATEO,Grid->H.DEET,Grid->H.NPAS,tile->NI,tile->NJ,1,ip1,Grid->H.IP2,
-                Grid->H.IP3,Grid->H.TYPVAR,Grid->H.NOMVAR,Grid->H.ETIKET,Grid->H.GRTYP,Grid->H.IG1,Grid->H.IG2,Grid->H.IG3,Grid->H.IG4,Grid->H.DATYP,Overwrite);
+                Grid->H.IP3,Grid->H.TYPVAR,Grid->H.NOMVAR,Grid->H.ETIKET,Grid->H.GRTYP,Grid->H.IG1_JP,Grid->H.IG2_JP,Grid->H.IG3_JP,Grid->H.IG4_JP,Grid->H.DATYP,Overwrite);
          }
          ok+=key;
       }
@@ -769,8 +769,8 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
 
    // Check for master grid descriptor
    if (Grid->H.GRTYP[0]=='#') {
-      key=cs_fstinf(Grid->H.FID,&Grid->H.NI,&h.NJ,&h.NK,-1,"",Grid->H.IG1,Grid->H.IG2,-1,"",">>");
-      key=cs_fstinf(Grid->H.FID,&h.NI,&Grid->H.NJ,&h.NK,-1,"",Grid->H.IG1,Grid->H.IG2,-1,"","^^");
+      key=cs_fstinf(Grid->H.FID,&Grid->H.NI,&h.NJ,&h.NK,-1,"",Grid->H.IG1_JP,Grid->H.IG2_JP,-1,"",">>");
+      key=cs_fstinf(Grid->H.FID,&h.NI,&Grid->H.NJ,&h.NK,-1,"",Grid->H.IG1_JP,Grid->H.IG2_JP,-1,"","^^");
       if (key<0) {
          App_Log(WARNING,"%s: Could not find master grid descriptor (>>,^^)\n",__func__);
          RPN_FieldUnlock();
@@ -789,9 +789,9 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
    Grid->GRef=NULL;
    Grid->Halo=0;
    Grid->NTI=Grid->NTJ=0;
-   Grid->IP1=Grid->H.IG1;
-   Grid->IP2=Grid->H.IG2;
-   Grid->IP3=Grid->H.IG3;
+   Grid->IP1=Grid->H.IG1_JP;
+   Grid->IP2=Grid->H.IG2_JP;
+   Grid->IP3=Grid->H.IG3_JP;
    Grid->H.NIJ=Grid->H.NI*Grid->H.NJ;
    h.GRTYP[1]='\0';
    ni=0;
@@ -800,7 +800,7 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
    for(n=0;n<Grid->NbTiles;n++) {
       key=cs_fstprm(idlst[n],&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,
             &h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
-            h.GRTYP,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,
+            h.GRTYP,&h.IG1_JP,&h.IG2_JP,&h.IG3_JP,&h.IG4_JP,&h.SWA,&h.LNG,&h.DLTF,
             &h.UBC,&h.EX1,&h.EX2,&h.EX3);
       if (key<0) {
          App_Log(ERROR,"%s: Missing subgrid number %i\n",__func__,n);
@@ -822,18 +822,18 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
       tile->KBurn = -1;
       tile->Side  = EZGRID_CENTER;
       pthread_mutex_init(&tile->Mutex,NULL);
-      tile->GID =RPN_IntIdNew(h.NI,h.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,Grid->H.FID);
+      tile->GID =RPN_IntIdNew(h.NI,h.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
 
       // Check for tiled data or not
       if (Grid->H.GRTYP[0]=='#') {
-         tile->HI=tile->I=h.IG3-1;
-         tile->HJ=tile->J=h.IG4-1;
+         tile->HI=tile->I=h.IG3_JP-1;
+         tile->HJ=tile->J=h.IG4_JP-1;
 
          // Set the border tile flags and count the number of tiles in I,J
-         if (h.IG3==1)                { tile->Side|=EZGRID_LEFT;   Grid->NTJ++; }
-         if (h.IG3+h.NI+2>Grid->H.NI) { tile->Side|=EZGRID_RIGHT; }
-         if (h.IG4==1)                { tile->Side|=EZGRID_BOTTOM; Grid->NTI++; ni+=h.NI; }
-         if (h.IG4+h.NJ+2>Grid->H.NJ) { tile->Side|=EZGRID_TOP; }
+         if (h.IG3_JP==1)                { tile->Side|=EZGRID_LEFT;   Grid->NTJ++; }
+         if (h.IG3_JP+h.NI+2>Grid->H.NI) { tile->Side|=EZGRID_RIGHT; }
+         if (h.IG4_JP==1)                { tile->Side|=EZGRID_BOTTOM; Grid->NTI++; ni+=h.NI; }
+         if (h.IG4_JP+h.NJ+2>Grid->H.NJ) { tile->Side|=EZGRID_TOP; }
       } else {
          tile->HI=tile->I=0;
          tile->HJ=tile->J=0;
@@ -865,7 +865,7 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
    // Create master grid
    if (Grid->H.GRTYP[0]=='#') {
       h.GRTYP[0]='Z';
-      h.IG3=h.IG4=0;
+      h.IG3_JP=h.IG4_JP=0;
    } else {
       h.GRTYP[0]=Grid->H.GRTYP[0];
    }
@@ -873,16 +873,16 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
 
    switch(Grid->H.GRTYP[0]) {
       case 'M':
-         Grid->GRef=GeoRef_RPNCreate(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,Grid->H.FID);
+         Grid->GRef=GeoRef_RPNCreate(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
 
          cs_fstinf(Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"","##");
          Grid->GRef->NIdx=ni*nj*nk;
          Grid->GRef->Idx=(unsigned int*)malloc(Grid->GRef->NIdx*sizeof(unsigned int));
          Grid->GRef->AY=(float*)malloc(Grid->GRef->NX*sizeof(float));
-         Grid->GRef->AX=(float*)malloc(Grid->GRef->NX*sizeof(float));
+         Grid->GRef->AX_JP=(float*)malloc(Grid->GRef->NX*sizeof(float));
 
          cs_fstlir(Grid->GRef->AY,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"","^^");
-         cs_fstlir(Grid->GRef->AX,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"",">>");
+         cs_fstlir(Grid->GRef->AX_JP,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"",">>");
          cs_fstlir(Grid->GRef->Idx,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"","##");
          
          GeoRef_BuildIndex(Grid->GRef);
@@ -890,13 +890,13 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
    
       case 'X':
       case 'Y':
-         Grid->GRef=GeoRef_RPNCreate(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,Grid->H.FID);
+         Grid->GRef=GeoRef_RPNCreate(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
 
          Grid->GRef->AY=(float*)malloc(Grid->H.NIJ*sizeof(float));
-         Grid->GRef->AX=(float*)malloc(Grid->H.NIJ*sizeof(float));
+         Grid->GRef->AX_JP=(float*)malloc(Grid->H.NIJ*sizeof(float));
 
          cs_fstlir(Grid->GRef->AY,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"","^^");
-         cs_fstlir(Grid->GRef->AX,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"",">>");
+         cs_fstlir(Grid->GRef->AX_JP,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"",">>");
          
          GeoRef_BuildIndex(Grid->GRef);
          break;
@@ -907,7 +907,7 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
             char grtyp[2]={'\0'},tmpc[13]={'\0'};
 
             // Get the X descriptor
-            if( (desc=cs_fstinf(Grid->H.FID,&ni,&nj,&tmpi,-1,"",h.IG1,h.IG2,h.IG3,"",">>")) <=0 ) {
+            if( (desc=cs_fstinf(Grid->H.FID,&ni,&nj,&tmpi,-1,"",h.IG1_JP,h.IG2_JP,h.IG3_JP,"",">>")) <=0 ) {
                App_Log(ERROR,"%s: Could not find grid descriptor (>>) of Z grid\n",__func__);
                RPN_FieldUnlock();
                return(NULL);
@@ -960,10 +960,10 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
                str[ni*nj*nk] = '\0';
 
                // Create the WKT georef
-               Grid->GRef=GeoRef_WKTCreate(Grid->H.NI,Grid->H.NJ,Grid->H.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,str,transform,NULL,NULL);
+               Grid->GRef=GeoRef_WKTCreate(Grid->H.NI,Grid->H.NJ,Grid->H.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,str,transform,NULL,NULL);
 
                // Memory for the descriptors
-               if( !(Grid->GRef->AX=malloc(Grid->H.NIJ*sizeof(*Grid->GRef->AX))) ) {
+               if( !(Grid->GRef->AX_JP=malloc(Grid->H.NIJ*sizeof(*Grid->GRef->AX_JP))) ) {
                   App_Log(ERROR,"%s: Could not allocate memory for descriptor (>>) of Z grid\n",__func__);
                   goto werr;
                }
@@ -973,11 +973,11 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
                }
 
                // Read the descriptors
-               if( cs_fstluk(Grid->GRef->AX,desc,&ni,&nj,&nk) <= 0 ) {
+               if( cs_fstluk(Grid->GRef->AX_JP,desc,&ni,&nj,&nk) <= 0 ) {
                   App_Log(ERROR,"%s: Could not read grid descriptor (>>) of Z grid\n",__func__);
                   goto werr;
                }
-               if( (desc=cs_fstlir(Grid->GRef->AY,Grid->H.FID,&ni,&nj,&nk,-1,"",h.IG1,h.IG2,h.IG3,"","^^")) <=0 ) {
+               if( (desc=cs_fstlir(Grid->GRef->AY,Grid->H.FID,&ni,&nj,&nk,-1,"",h.IG1_JP,h.IG2_JP,h.IG3_JP,"","^^")) <=0 ) {
                   App_Log(ERROR,"%s: Could not find grid descriptor (^^) of Z grid\n",__func__);
                   goto werr;
                }
@@ -995,9 +995,9 @@ werr:
          }
 
       default:
-         Grid->GRef=GeoRef_RPNCreate(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,Grid->H.FID);
+         Grid->GRef=GeoRef_RPNCreate(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
 
-         Grid->GID=RPN_IntIdNew(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,Grid->H.FID);
+         Grid->GID=RPN_IntIdNew(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
          Grid->Wrap=EZGrid_Wrap(Grid);
    }
    GeoRef_Qualify(Grid->GRef);
@@ -1385,13 +1385,13 @@ TGrid *EZGrid_Read(int FId,char* Var,char* TypVar,char* Etiket,int DateV,int IP1
       strcpy(h.NOMVAR,"    ");
       strcpy(h.TYPVAR,"  ");
       c_fstprm(key,&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
-         h.GRTYP,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
+         h.GRTYP,&h.IG1_JP,&h.IG2_JP,&h.IG3_JP,&h.IG4_JP,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
       while( key>=0 && (Var[0]=='\0'&&RPN_IsDesc(h.NOMVAR) || TypVar[0]=='\0'&&h.TYPVAR[0]=='@'&&h.TYPVAR[1]=='@')) {
          key=cs_fstsui(FId,&ni,&nj,&nk);
          strcpy(h.NOMVAR,"    ");
          strcpy(h.TYPVAR,"  ");
          c_fstprm(key,&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
-            h.GRTYP,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
+            h.GRTYP,&h.IG1_JP,&h.IG2_JP,&h.IG3_JP,&h.IG4_JP,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
       }
    }
 
@@ -1443,7 +1443,7 @@ TGrid *EZGrid_ReadIdx(int FId,int Key,int Incr) {
    RPN_FieldLock();
    Key=c_fstprm(Key,&new->H.DATEO,&new->H.DEET,&new->H.NPAS,&new->H.NI,&new->H.NJ,&new->H.NK,&new->H.NBITS,
          &new->H.DATYP,&new->H.IP1,&new->H.IP2,&new->H.IP3,new->H.TYPVAR,new->H.NOMVAR,new->H.ETIKET,
-         new->H.GRTYP,&new->H.IG1,&new->H.IG2,&new->H.IG3,&new->H.IG4,&new->H.SWA,&new->H.LNG,&new->H.DLTF,
+         new->H.GRTYP,&new->H.IG1_JP,&new->H.IG2_JP,&new->H.IG3_JP,&new->H.IG4_JP,&new->H.SWA,&new->H.LNG,&new->H.DLTF,
          &new->H.UBC,&new->H.EX1,&new->H.EX2,&new->H.EX3);
 
    if (new->H.DATEO==0 && new->H.NPAS==0 && new->H.DEET==0) {
@@ -2105,7 +2105,7 @@ int EZGrid_LLGetValueM(TGrid* restrict const GridU,TGrid* restrict const GridV,T
       idxs[2]=gref->Idx[MIdx+2];
       
       // If the barycentric coordinates are within this triangle, get its interpolated value
-      k=Bary_Get(bary,gref->Wght?gref->Wght[MIdx/3]:0.0,Lon,Lat,gref->AX[idxs[0]],gref->AY[idxs[0]],gref->AX[idxs[1]],gref->AY[idxs[1]],gref->AX[idxs[2]],gref->AY[idxs[2]]);
+      k=Bary_Get(bary,gref->Wght?gref->Wght[MIdx/3]:0.0,Lon,Lat,gref->AX_JP[idxs[0]],gref->AY[idxs[0]],gref->AX_JP[idxs[1]],gref->AY[idxs[1]],gref->AX_JP[idxs[2]],gref->AY[idxs[2]]);
    }
 
    // Otherwise, look for the enclosing triangle
@@ -2119,7 +2119,7 @@ int EZGrid_LLGetValueM(TGrid* restrict const GridU,TGrid* restrict const GridV,T
             idxs[2]=gref->Idx[idx+2];
             
             // if the Barycentric coordinates are within this triangle, get its interpolated value
-            if ((k=Bary_Get(bary,gref->Wght?gref->Wght[idx/3]:0.0,Lon,Lat,gref->AX[idxs[0]],gref->AY[idxs[0]],gref->AX[idxs[1]],gref->AY[idxs[1]],gref->AX[idxs[2]],gref->AY[idxs[2]]))) {
+            if ((k=Bary_Get(bary,gref->Wght?gref->Wght[idx/3]:0.0,Lon,Lat,gref->AX_JP[idxs[0]],gref->AY[idxs[0]],gref->AX_JP[idxs[1]],gref->AY[idxs[1]],gref->AX_JP[idxs[2]],gref->AY[idxs[2]]))) {
                MIdx=idx;
                break;
             }
@@ -2842,7 +2842,7 @@ int EZGrid_GetBary(TGrid* restrict const Grid,float Lat,float Lon,Vect3d Bary,Ve
             t=(intptr_t)node->Data[n].Ptr-1; // Remove false pointer increment
             
             // if the Barycentric coordinates are within this triangle, get its interpolated value
-            if (Bary_Get(Bary,Grid->GRef->Wght?Grid->GRef->Wght[t/3]:0.0,Lon,Lat,Grid->GRef->AX[idx[t]],Grid->GRef->AY[idx[t]],Grid->GRef->AX[idx[t+1]],Grid->GRef->AY[idx[t+1]],Grid->GRef->AX[idx[t+2]],Grid->GRef->AY[idx[t+2]])) {
+            if (Bary_Get(Bary,Grid->GRef->Wght?Grid->GRef->Wght[t/3]:0.0,Lon,Lat,Grid->GRef->AX_JP[idx[t]],Grid->GRef->AY[idx[t]],Grid->GRef->AX_JP[idx[t+1]],Grid->GRef->AY[idx[t+1]],Grid->GRef->AX_JP[idx[t+2]],Grid->GRef->AY[idx[t+2]])) {
                if (Index) {
                   Index[0]=idx[t];                    
                   Index[1]=idx[t+1];                    
