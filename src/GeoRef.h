@@ -249,7 +249,8 @@ typedef struct TGeoRef {
    wordint n_gdin, idx_last_gdin, n_gdin_for;
    wordint log_chunk_gdin;
    wordint *gdin_for, *mask;
-   wordint nsubgrids,mymaskgrid;
+   wordint nsubgrids;
+   TGeoRef *mymaskgrid;
    wordint mymaskgridi0,mymaskgridi1;
    wordint mymaskgridj0,mymaskgridj1;
    wordint *subgrid;

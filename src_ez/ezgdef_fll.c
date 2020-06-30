@@ -20,21 +20,20 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
-
+#include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(ezgdef_fll)(wordint *ni, wordint *nj, ftnfloat *lat, ftnfloat *lon)
+wordint f77name(ezgdef_fll)(wordint *ni, wordint *nj, ftnfloat *lat, ftnfloat *lon, PTR_AS_INT GRef)
 {
   wordint gdid;
 
-  gdid = c_ezgdef_fll(*ni, *nj, lat, lon);
+  gdid = c_ezgdef_fll(*ni, *nj, lat, lon, (TGeoRef*)GRef);
   return gdid;
 }
 
-wordint c_ezgdef_fll(wordint ni, wordint nj,ftnfloat *lat, ftnfloat *lon)
+wordint c_ezgdef_fll(wordint ni, wordint nj,ftnfloat *lat, ftnfloat *lon, TGeoRef* GRef)
    {
    wordint gdid;
-   wordint gdrow_id, gdcol_id;
 
    ftnfloat swlat, swlon, dlat, dlon;
    wordint ig1, ig2, ig3, ig4;
@@ -48,7 +47,7 @@ wordint c_ezgdef_fll(wordint ni, wordint nj,ftnfloat *lat, ftnfloat *lon)
    strcpy(grref, "L");
 
    f77name(cxgaig)(grref, &ig1, &ig2, &ig3, &ig4, &swlat, &swlon, &dlat, &dlon);
-   gdid = c_ezgdef_fmem(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, lon, lat);
+   gdid = c_ezgdef_fmem(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, lon, lat, GRef);
 
    return gdid;
 }

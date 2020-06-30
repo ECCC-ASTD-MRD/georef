@@ -66,8 +66,8 @@ wordint f77name(ezgdef_ffile)(wordint* ni, wordint* nj, char* grtyp,
 wordint c_ezgdef_ffile(wordint ni, wordint nj, char* grtyp,
            wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit, TGeoRef* GRef);
 
-wordint f77name(ezgdef_fll)(wordint* ni, wordint* nj, ftnfloat* lat, ftnfloat* lon);
-wordint c_ezgdef_fll(wordint ni, wordint nj,ftnfloat* lat, ftnfloat* lon);
+wordint f77name(ezgdef_fll)(wordint* ni, wordint* nj, ftnfloat* lat, ftnfloat* lon, PTR_AS_INT GRef);
+wordint c_ezgdef_fll(wordint ni, wordint nj,ftnfloat* lat, ftnfloat* lon, TGeoRef* GRef);
 
 wordint f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
                     wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,

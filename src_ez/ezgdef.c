@@ -79,7 +79,7 @@ wordint c_ezgdef(wordint ni, wordint nj, char *grtyp, char *grref,
   switch (source)
     {
     case MEMOIRE:
-      found = c_ezgdef_fmem(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, ax, ay);
+      found = c_ezgdef_fmem(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, ax, ay, GRef);
       break;
       
     case FICHIER:
