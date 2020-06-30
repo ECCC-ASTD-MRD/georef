@@ -690,8 +690,9 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int 
   
       // This georef already exists
       if (fref=GeoRef_Find(ref)) {
-        free(ref);
-        return(fref);
+         free(ref);
+         GeoRef_Incr(fref);
+         return(fref);
       }
 
       // This is a new georef
@@ -707,7 +708,7 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int 
          ref->i2 = ref->ni;
          ref->j1 = 1;
          ref->j2 = ref->nj;
-         if (*grtyp != 'Y') {
+         if (grtyp[0] != 'Y') {
             c_ezdefxg(ref);
             ez_calcntncof(ref);
          } else {
