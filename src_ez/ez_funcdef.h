@@ -56,9 +56,9 @@ wordint c_ezdefset(wordint gdout, wordint gdin);
 
 wordint f77name(ezgdef)(wordint* ni, wordint* nj, char* grtyp, char* grref,
                     wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
-                    ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref, PTR_AS_INT GRef);
+                    ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref);
 wordint c_ezgdef(wordint ni, wordint nj, char* grtyp, char* grref,
-             wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay, TGeoRef* GRef);
+             wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay);
 
 wordint f77name(ezgdef_ffile)(wordint* ni, wordint* nj, char* grtyp,
             wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
