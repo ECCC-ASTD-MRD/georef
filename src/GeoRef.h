@@ -253,7 +253,7 @@ typedef struct TGeoRef {
    struct TGeoRef *mymaskgrid;
    wordint mymaskgridi0,mymaskgridi1;
    wordint mymaskgridj0,mymaskgridj1;
-   wordint *subgrid;
+   struct TGeoRef **subgrid;
    ftnfloat *lat, *lon;
    ftnfloat *ax, *ay;
    ftnfloat *ncx, *ncy;

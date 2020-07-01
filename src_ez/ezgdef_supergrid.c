@@ -23,7 +23,7 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char *grref, wordint *vercode, wordint *nsubgrids, wordint *subgrid, F2Cl lengrtyp, F2Cl lengrref)
+wordint f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char *grref, wordint *vercode, wordint *nsubgrids, PTR_AS_INT subgrid, F2Cl lengrtyp, F2Cl lengrref)
 {
   wordint gdid,i;
   char lgrtyp[2],lgrref[2];
@@ -33,11 +33,11 @@ wordint f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char *g
    
   lgrref[0] = grref[0];
   lgrref[1] = '\0';
-  gdid = c_ezgdef_supergrid(*ni, *nj, lgrtyp, lgrref, *vercode, *nsubgrids,subgrid);
+  gdid = c_ezgdef_supergrid(*ni, *nj, lgrtyp, lgrref, *vercode, *nsubgrids,(TGeoRef**)subgrid);
   return gdid;
 }
 
-wordint c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wordint vercode,wordint nsubgrids, wordint *subgrid)
+wordint c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wordint vercode,wordint nsubgrids, TGeoRef **subgrid)
 {
   wordint sub_gdrow_id, sub_gdcol_id, sub_gdid;
   wordint mask_gdrow_id, mask_gdcol_id, mask_gdid;
@@ -153,13 +153,13 @@ add   the rotation of YIN */
     Grille[gdrow_in][gdcol_in].fst.igref[IG3] = newgr.fst.igref[IG3];
     Grille[gdrow_in][gdcol_in].fst.igref[IG4] = newgr.fst.igref[IG4];
     Grille[gdrow_in][gdcol_in].nsubgrids = nsubgrids;
-    Grille[gdrow_in][gdcol_in].subgrid = (wordint *) malloc(nsubgrids*sizeof(wordint));
+    Grille[gdrow_in][gdcol_in].subgrid = (TGeoRef **) malloc(nsubgrids*sizeof(TGeoRef*));
 
     for (ii=0; ii < nsubgrids; ii++)
        {
        Grille[gdrow_in][gdcol_in].subgrid[ii] = subgrid[ii];
-       c_gdkey2rowcol(subgrid[ii],  &sub_gdrow_id,  &sub_gdcol_id);
-       c_ezgdef_yymask(&(Grille[sub_gdrow_id][sub_gdcol_id]));
+/*        c_gdkey2rowcol(subgrid[ii],  &sub_gdrow_id,  &sub_gdcol_id); */
+       c_ezgdef_yymask(subgrid[ii]);
        if (groptions.verbose > 0)
           {
           printf("Grille[%02d].subgrid[%d] has maskgrid=%d\n",gdid,subgrid[ii],Grille[sub_gdrow_id][sub_gdcol_id].mymaskgrid);

@@ -31,14 +31,16 @@ void Lire_enrUvercode1(TGeoRef *gr, ftnfloat *yy, wordint nix)
   /*yin*/
   ier = f77name(cxgaig)(grrefE,&ig1refyin,&ig2refyin,&ig3refyin,&ig4refyin,&yy[11], &yy[12], &yy[13], &yy[14],1);
   GRef_yin = GeoRef_New();
-  gr->subgrid[0] = c_ezgdef_fmem(ni,nj,grtypZ,grrefE,ig1refyin,ig2refyin,ig3refyin,ig4refyin,ax,ay,GRef_yin);
+  c_ezgdef_fmem(ni,nj,grtypZ,grrefE,ig1refyin,ig2refyin,ig3refyin,ig4refyin,ax,ay,GRef_yin);
+  gr->subgrid[0] = GRef_yin;
 /*   c_gdkey2rowcol(gr->subgrid[0],  &sub_gdrow_id,  &sub_gdcol_id); */
   c_ezgdef_yymask(GRef_yin);
 
   /*yang*/
   ier = f77name(cxgaig)(grrefE,&ig1refyan,&ig2refyan,&ig3refyan,&ig4refyan,&yy[yinsize+6], &yy[yinsize+7], &yy[yinsize+8], &yy[yinsize+9],1);
   GRef_yang = GeoRef_New();
-  gr->subgrid[1] = c_ezgdef_fmem(ni,nj,grtypZ,grrefE,ig1refyan,ig2refyan,ig3refyan,ig4refyan,ax,ay,GRef_yang);
+  c_ezgdef_fmem(ni,nj,grtypZ,grrefE,ig1refyan,ig2refyan,ig3refyan,ig4refyan,ax,ay,GRef_yang);
+  gr->subgrid[1] = GRef_yang;
 /*   c_gdkey2rowcol(gr->subgrid[1],  &sub_gdrow_id,  &sub_gdcol_id); */
   c_ezgdef_yymask(GRef_yang);
   free(ax);

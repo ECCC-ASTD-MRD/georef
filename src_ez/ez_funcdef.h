@@ -77,9 +77,9 @@ wordint c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
 
 
 
-wordint f77name(ezgdef_supergrid)(wordint* ni, wordint* nj, char* grtyp, char* grref, wordint* vercode, wordint* nsubgrids, wordint* subgrid, F2Cl lengrtyp, F2Cl lengrref);
+wordint f77name(ezgdef_supergrid)(wordint* ni, wordint* nj, char* grtyp, char* grref, wordint* vercode, wordint* nsubgrids, PTR_AS_INT subgrid, F2Cl lengrtyp, F2Cl lengrref);
 
-wordint c_ezgdef_supergrid(wordint ni, wordint nj, char* grtyp, char* grref, wordint vercode, wordint nsubgrids, wordint* subgrid);
+wordint c_ezgdef_supergrid(wordint ni, wordint nj, char* grtyp, char* grref, wordint vercode, wordint nsubgrids, TGeoRef** subgrid);
 wordint c_ezgdef_yymask(TGeoRef* gr);
 
 
