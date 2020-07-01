@@ -20,12 +20,12 @@
 
 #include "ezscint.h"
 #include "ez_funcdef.h"
-#include "../src/GeoRef.h"
+
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(ezgdef_ffile)(wordint *ni, wordint *nj, char *grtyp,
             wordint *ig1, wordint *ig2, wordint *ig3, wordint *ig4,
-            wordint *iunit, F2Cl lengrtyp, PTR_AS_INT GRef)
+            wordint *iunit, F2Cl lengrtyp)
 {
   wordint icode;
   char lgrtyp[2];
@@ -33,12 +33,12 @@ wordint f77name(ezgdef_ffile)(wordint *ni, wordint *nj, char *grtyp,
   lgrtyp[0] = grtyp[0];
   lgrtyp[1] = '\0';
 
-  icode = c_ezgdef_ffile(*ni, *nj, lgrtyp, *ig1, *ig2, *ig3, *ig4, *iunit, (TGeoRef*)GRef);
+  icode = c_ezgdef_ffile(*ni, *nj, lgrtyp, *ig1, *ig2, *ig3, *ig4, *iunit);
   return icode;
 }
 
 wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
-          wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit, TGeoRef* GRef)
+          wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit)
 {
   wordint i;
   wordint found, gdrow_in, gdcol_in;
@@ -46,9 +46,9 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
   char grref[2];
   ftnfloat *bidon = NULL;
   int old_ngrilles, gdid;
-  wordint newgrsize, un, grid_index;
+  wordint newgrsize, fseed, un, grid_index;
   unsigned int grid_crc;
-  TGeoRef *gr, newgr;
+  _Grille *gr, newgr;
   wordint *subgrid;
   wordint nsubgrids, vercode,read;
 
@@ -58,40 +58,41 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
   if (typeGrille != '#' && typeGrille != 'Y' && typeGrille != 'Z' && typeGrille != 'U' && typeGrille != ' ')
     { /* no need to look for grid descriptors */
     strcpy(grref, " ");
-    return c_ezgdef_fmem(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, bidon, bidon, GRef);
+    return c_ezgdef_fmem(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, bidon, bidon);
     }
-/*   if (nGrilles == 0)
+  if (nGrilles == 0)
     {
-    Grille = (TGeoRef **) calloc(chunks[cur_log_chunk],sizeof(TGeoRef *));
-    Grille[0] = (TGeoRef *) calloc(chunks[cur_log_chunk], sizeof(TGeoRef));
+    gr_list = calloc(chunks_sq[cur_log_chunk], sizeof(_Grille *));
+    Grille = (_Grille **) calloc(chunks[cur_log_chunk],sizeof(_Grille *));
+    Grille[0] = (_Grille *) calloc(chunks[cur_log_chunk], sizeof(_Grille));
     for (i=0; i < chunks[cur_log_chunk]; i++)
       {
       Grille[0][i].index = -1;
       }
-    } */
+    }
 
-/*   memset(&newgr, (int)0, sizeof(TGeoRef));
-  strcpy(newgr.grtyp, grtyp); */
+  memset(&newgr, (int)0, sizeof(_Grille));
+  strcpy(newgr.grtyp, grtyp);
   /* incoming ni,nj specified by the user */
-  GRef->ni = ni;
-  GRef->nj = nj;
-  GRef->fst.ig[IG1] = ig1;
-  GRef->fst.ig[IG2] = ig2;
-  GRef->fst.ig[IG3] = ig3;
-  GRef->fst.ig[IG4] = ig4;
-  GRef->idx_last_gdin = -1;
+  newgr.ni = ni;
+  newgr.nj = nj;
+  newgr.fst.ig[IG1] = ig1;
+  newgr.fst.ig[IG2] = ig2;
+  newgr.fst.ig[IG3] = ig3;
+  newgr.fst.ig[IG4] = ig4;
+  newgr.idx_last_gdin = -1;
   read=0;
-  found=LireEnrPositionnels(GRef, iunit, ig1, ig2, ig3, ig4, read);
+  found=LireEnrPositionnels(&newgr, iunit, ig1, ig2, ig3, ig4, read);
   if (found < 0) /* problems with finding grid descriptors */
   {
      return found;
   }
-/*   newgrsize = sizeof(TGeoRef);
+  newgrsize = sizeof(_Grille);
+  fseed = 0;
   grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, newgr.ax, newgr.ay, newgr.ni, newgr.nj);
-  grid_index = grid_crc % primes_sq[cur_log_chunk]; */
+  grid_index = grid_crc % primes_sq[cur_log_chunk];
 
-  gdid = c_ez_addgrid(GRef);
-/*   if (gr_list[grid_index] == NULL)
+  if (gr_list[grid_index] == NULL)
     {
     gdid = c_ez_addgrid(grid_index, &newgr);
     }
@@ -106,20 +107,21 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
       {
       return gdid;
       }
-    } */
+    }
 
     /* define new grid */
-/*     c_gdkey2rowcol(gdid, &gdrow_in, &gdcol_in); */
+    c_gdkey2rowcol(gdid, &gdrow_in, &gdcol_in);
     read=1;
-    switch(grtyp[0])
+    switch(newgr.grtyp[0])
       {
       case '#':
       case 'U':
-      found=LireEnrPositionnels(GRef, iunit, ig1, ig2, ig3, ig4, read);
+      gr = &Grille[gdrow_in][gdcol_in];
+      found=LireEnrPositionnels(gr, iunit, ig1, ig2, ig3, ig4, read);
       break;
 
       default:
-      found=LireEnrPositionnels(GRef,iunit, ig1, ig2, ig3, 0,read);
+      found=LireEnrPositionnels(&(Grille[gdrow_in][gdcol_in]),iunit, ig1, ig2, ig3, 0,read);
       break;
       }
       if (found < 0) /* problems with reading grid descriptors */
@@ -128,39 +130,38 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
       }
       
 
-/*   c_gdkey2rowcol(gdid, &gdrow_in, &gdcol_in); */
+  c_gdkey2rowcol(gdid, &gdrow_in, &gdcol_in);
   if (*grtyp == 'U')
     {
      return gdid;
     }
-  ez_calcxpncof(GRef);
-  GRef->i1 = 1;
-  GRef->i2 = GRef->ni;
-  GRef->j1 = 1;
-  GRef->j2 = GRef->nj;
+  ez_calcxpncof(gdid);
+  Grille[gdrow_in][gdcol_in].i1 = 1;
+  Grille[gdrow_in][gdcol_in].i2 = newgr.ni;
+  Grille[gdrow_in][gdcol_in].j1 = 1;
+  Grille[gdrow_in][gdcol_in].j2 = newgr.nj;
   if (*grtyp != 'Y')
     {
-    c_ezdefxg(GRef);
-    ez_calcntncof(GRef);
+    c_ezdefxg(gdid);
+    ez_calcntncof(gdid);
     }
   else
    {
-   ez_calclatlon(GRef);
+   ez_calclatlon(gdid);
    }
 
   if (groptions.verbose > 0)
     {
     printf("gdid = %02d\n", gdid);
-    printf("Grille[%02d].grtyp = '%c'\n", gdid, GRef->grtyp[0]);
-    printf("Grille[%02d].ni    = %d\n",   gdid, GRef->ni);
-    printf("Grille[%02d].nj    = %d\n",   gdid, GRef->nj);
-    printf("Grille[%02d].ig1   = %d\n",   gdid, GRef->fst.ig[IG1]);
-    printf("Grille[%02d].ig2   = %d\n",   gdid, GRef->fst.ig[IG2]);
-    printf("Grille[%02d].ig3   = %d\n",   gdid, GRef->fst.ig[IG3]);
-    printf("Grille[%02d].ig4   = %d\n",   gdid, GRef->fst.ig[IG4]);
+    printf("Grille[%02d].grtyp = '%c'\n", gdid, Grille[gdrow_in][gdcol_in].grtyp[0]);
+    printf("Grille[%02d].ni    = %d\n",   gdid, Grille[gdrow_in][gdcol_in].ni);
+    printf("Grille[%02d].nj    = %d\n",   gdid, Grille[gdrow_in][gdcol_in].nj);
+    printf("Grille[%02d].ig1   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.ig[IG1]);
+    printf("Grille[%02d].ig2   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.ig[IG2]);
+    printf("Grille[%02d].ig3   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.ig[IG3]);
+    printf("Grille[%02d].ig4   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.ig[IG4]);
     }
 
   return gdid;
 
 }
-
