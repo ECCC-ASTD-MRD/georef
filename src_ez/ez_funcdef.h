@@ -69,10 +69,10 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char* grtyp,
 wordint f77name(ezgdef_fll)(wordint* ni, wordint* nj, ftnfloat* lat, ftnfloat* lon);
 wordint c_ezgdef_fll(wordint ni, wordint nj,ftnfloat* lat, ftnfloat* lon);
 
-wordint f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
+PTR_AS_INT f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
                     wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
                     ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref);
-wordint c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
+TGeoRef* c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
              wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay);
 
 
