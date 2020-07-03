@@ -49,10 +49,10 @@ void ez_xpncof(wordint* i1, wordint* i2, wordint* j1, wordint* j2, wordint* couv
 
 void ez_xpnsrcgd(wordint gdid, ftnfloat* zout, ftnfloat* zin);
 
-wordint c_ezfreegridset(wordint gdid, wordint index);
+wordint c_ezfreegridset(TGeoRef* gdid, wordint index);
 
-wordint f77name(ezdefset)(wordint* gdout, wordint* gdin);
-wordint c_ezdefset(wordint gdout, wordint gdin);
+wordint f77name(ezdefset)(PTR_AS_INT gdout, PTR_AS_INT gdin);
+wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin);
 
 wordint f77name(ezgdef)(wordint* ni, wordint* nj, char* grtyp, char* grref,
                     wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,

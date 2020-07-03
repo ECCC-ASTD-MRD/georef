@@ -84,21 +84,21 @@ TGeoRef* c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
    GRef->Distance=GeoRef_RPNDistance;
    GRef->Height=NULL; */
 
-/*    if (groptions.verbose > 0) {
-      printf("Gdid = %02d\n", gdid);
-      printf("Grille[%02d].grtyp = '%c'\n", gdid, GRef->grtyp[0]);
-      printf("Grille[%02d].ni    = %d\n",   gdid, GRef->ni);
-      printf("Grille[%02d].nj    = %d\n",   gdid, GRef->nj);
-      printf("Grille[%02d].ig[IG1]   = %d\n",   gdid, GRef->fst.ig[IG1]);
-      printf("Grille[%02d].ig[IG2]   = %d\n",   gdid, GRef->fst.ig[IG2]);
-      printf("Grille[%02d].ig[IG3]   = %d\n",   gdid, GRef->fst.ig[IG3]);
-      printf("Grille[%02d].ig[IG4]   = %d\n",   gdid, GRef->fst.ig[IG4]);
-      printf("Grille[%02d].grref = '%c'\n", gdid, GRef->grref[0]);
-      printf("Grille[%02d].igref[IG1]= %d\n",   gdid, GRef->fst.igref[IG1]);
-      printf("Grille[%02d].igref[IG2]= %d\n",   gdid, GRef->fst.igref[IG2]);
-      printf("Grille[%02d].igref[IG3]= %d\n",   gdid, GRef->fst.igref[IG3]);
-      printf("Grille[%02d].igref[IG4]= %d\n",   gdid, GRef->fst.igref[IG4]);
-   } */
+   if (groptions.verbose > 0) {
+/*       printf("Gdid = \n", gdid); */
+      printf("Grille[].grtyp = '%c'\n", GRef->grtyp[0]);
+      printf("Grille[].ni    = %d\n",   GRef->ni);
+      printf("Grille[].nj    = %d\n",   GRef->nj);
+      printf("Grille[].ig[IG1]   = %d\n",   GRef->fst.ig[IG1]);
+      printf("Grille[].ig[IG2]   = %d\n",   GRef->fst.ig[IG2]);
+      printf("Grille[].ig[IG3]   = %d\n",   GRef->fst.ig[IG3]);
+      printf("Grille[].ig[IG4]   = %d\n",   GRef->fst.ig[IG4]);
+      printf("Grille[].grref = '%c'\n", GRef->grref[0]);
+      printf("Grille[].igref[IG1]= %d\n",   GRef->fst.igref[IG1]);
+      printf("Grille[].igref[IG2]= %d\n",   GRef->fst.igref[IG2]);
+      printf("Grille[].igref[IG3]= %d\n",   GRef->fst.igref[IG3]);
+      printf("Grille[].igref[IG4]= %d\n",   GRef->fst.igref[IG4]);
+   }
 
    return GRef;
 }
