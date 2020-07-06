@@ -3,7 +3,7 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
-int c_find_gdin(int gdin, int gdout)
+int c_find_gdin(TGeoRef* gdin, TGeoRef* gdout)
   {
    int i, gdrow_out, gdcol_out, idx_gdin, found; 
    _gridset *gset;

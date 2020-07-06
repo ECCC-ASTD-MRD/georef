@@ -675,7 +675,7 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int 
       ref->fst.ig[IG2] = ig2;
       ref->fst.ig[IG3] = ig3;
       ref->fst.ig[IG4] = ig4;
-      ref->idx_last_gdin = -1;
+      ref->idx_last_gdin = NULL;
       ref->IG1_JP=ig1;
       ref->IG2_JP=ig2;
       ref->IG3_JP=ig3;

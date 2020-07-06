@@ -31,8 +31,6 @@ wordint ez_calclatlon(TGeoRef* GRef)
    ftnfloat *lonp, *latp, *xp, *yp;
    ftnfloat *x, *y;
 
-
-/*    c_gdkey2rowcol(gdid, &gdrow, &gdcol); */
    if (!(GRef->flags & LAT))
       {
       ni = GRef->ni;

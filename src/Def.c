@@ -1431,7 +1431,7 @@ int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
    }
    c_ezsetopt("EXTRAP_DEGREE",(char*)Extrap);
    
-   ok=c_ezdefset(ToRef->Ids[ToRef->NId],FromRef->Ids[FromRef->NId]);
+   ok=c_ezdefset(ToRef,FromRef);
 
    if (ok<0) {
       App_Log(ERROR,"%s: EZSCINT internal error, could not define gridset\n",__func__);

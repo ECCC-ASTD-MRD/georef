@@ -22,8 +22,8 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
-void reallocate_gridset_table(TGeoRef* gdid);
-void   allocate_gridset_table(TGeoRef* gdid);
+void reallocate_gridset_table(TGeoRef* gr);
+void   allocate_gridset_table(TGeoRef* gr);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(ezdefset)(PTR_AS_INT gdout, PTR_AS_INT gdin)

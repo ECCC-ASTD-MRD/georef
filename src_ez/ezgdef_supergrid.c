@@ -82,7 +82,7 @@ wordint c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wor
     RemplirDeBlancs(newgr.fst.etikety, 13);
     newgr.ni = ni;
     newgr.nj = nj;
-    newgr.idx_last_gdin = -1;
+    newgr.idx_last_gdin = NULL;
     /* create tictac arrays to add uniqueness in supergrid*/
     ax = (ftnfloat *) malloc(newgr.ni*sizeof(ftnfloat));
     ay = (ftnfloat *) malloc(newgr.nj*sizeof(ftnfloat));
@@ -136,7 +136,7 @@ add   the rotation of YIN */
     strcpy(Grille[gdrow_in][gdcol_in].grref,newgr.grref);
     Grille[gdrow_in][gdcol_in].ni = newgr.ni;
     Grille[gdrow_in][gdcol_in].nj = newgr.nj;
-    Grille[gdrow_in][gdcol_in].idx_last_gdin=-1;
+    Grille[gdrow_in][gdcol_in].idx_last_gdin=NULL;
     Grille[gdrow_in][gdcol_in].fst.ip1 = newgr.fst.ip1;
     Grille[gdrow_in][gdcol_in].fst.ip2 = newgr.fst.ip2;
     Grille[gdrow_in][gdcol_in].fst.ip3 = newgr.fst.ip3;

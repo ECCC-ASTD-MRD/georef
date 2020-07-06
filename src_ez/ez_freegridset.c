@@ -21,67 +21,67 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
-wordint c_ezfreegridset(TGeoRef* gdid, wordint index)
+wordint c_ezfreegridset(TGeoRef* gr, wordint index)
 {
    wordint i;
 
-   if (gdid->gset[index].gdin != NULL)
+   if (gr->gset[index].gdin != NULL)
    {
-      gdid->gset[index].gdin == NULL;
+      gr->gset[index].gdin == NULL;
    }
 
-   if (gdid->gset[index].x != NULL)
+   if (gr->gset[index].x != NULL)
    {
-      free(gdid->gset[index].x);
-      gdid->gset[index].x  = NULL;
+      free(gr->gset[index].x);
+      gr->gset[index].x  = NULL;
    }
 
-   if (gdid->gset[index].y)
+   if (gr->gset[index].y)
    {
-      free(gdid->gset[index].y);
-      gdid->gset[index].y  = NULL;
+      free(gr->gset[index].y);
+      gr->gset[index].y  = NULL;
    }
 
-   if (gdid->gset[index].gemin.lat_rot)
+   if (gr->gset[index].gemin.lat_rot)
    {
-      free(gdid->gset[index].gemin.lat_rot);
-      free(gdid->gset[index].gemin.lon_rot);
-      free(gdid->gset[index].gemin.sinlat_rot);
-      free(gdid->gset[index].gemin.coslat_rot);
-      free(gdid->gset[index].gemin.sinlon_rot);
-      free(gdid->gset[index].gemin.coslon_rot);
-      free(gdid->gset[index].gemin.sinlat_true);
-      free(gdid->gset[index].gemin.coslat_true);
-      free(gdid->gset[index].gemin.sinlon_true);
-      free(gdid->gset[index].gemin.coslon_true);
-      memset(&gdid->gset[index].gemin, (int) 0, sizeof(_gemgrid));
+      free(gr->gset[index].gemin.lat_rot);
+      free(gr->gset[index].gemin.lon_rot);
+      free(gr->gset[index].gemin.sinlat_rot);
+      free(gr->gset[index].gemin.coslat_rot);
+      free(gr->gset[index].gemin.sinlon_rot);
+      free(gr->gset[index].gemin.coslon_rot);
+      free(gr->gset[index].gemin.sinlat_true);
+      free(gr->gset[index].gemin.coslat_true);
+      free(gr->gset[index].gemin.sinlon_true);
+      free(gr->gset[index].gemin.coslon_true);
+      memset(&gr->gset[index].gemin, (int) 0, sizeof(_gemgrid));
    }
 
-   if (gdid->gset[index].gemout.lat_rot)
+   if (gr->gset[index].gemout.lat_rot)
    {
-      free(gdid->gset[index].gemout.lat_rot);
-      free(gdid->gset[index].gemout.lon_rot);
-      free(gdid->gset[index].gemout.sinlat_rot);
-      free(gdid->gset[index].gemout.coslat_rot);
-      free(gdid->gset[index].gemout.sinlon_rot);
-      free(gdid->gset[index].gemout.coslon_rot);
-      free(gdid->gset[index].gemout.sinlat_true);
-      free(gdid->gset[index].gemout.coslat_true);
-      free(gdid->gset[index].gemout.sinlon_true);
-      free(gdid->gset[index].gemout.coslon_true);
-      memset(&gdid->gset[index].gemout, (int) 0, sizeof(_gemgrid));
+      free(gr->gset[index].gemout.lat_rot);
+      free(gr->gset[index].gemout.lon_rot);
+      free(gr->gset[index].gemout.sinlat_rot);
+      free(gr->gset[index].gemout.coslat_rot);
+      free(gr->gset[index].gemout.sinlon_rot);
+      free(gr->gset[index].gemout.coslon_rot);
+      free(gr->gset[index].gemout.sinlat_true);
+      free(gr->gset[index].gemout.coslat_true);
+      free(gr->gset[index].gemout.sinlon_true);
+      free(gr->gset[index].gemout.coslon_true);
+      memset(&gr->gset[index].gemout, (int) 0, sizeof(_gemgrid));
    }
 
    for (i=0; i < NZONES; i++)
    {
-      if (gdid->gset[index].zones[i].npts > 0)
+      if (gr->gset[index].zones[i].npts > 0)
       {
-         free(gdid->gset[index].zones[i].x);
-         free(gdid->gset[index].zones[i].y);
-         free(gdid->gset[index].zones[i].idx);
-         gdid->gset[index].zones[i].x = NULL;
-         gdid->gset[index].zones[i].y = NULL;
-         gdid->gset[index].zones[i].idx = NULL;
+         free(gr->gset[index].zones[i].x);
+         free(gr->gset[index].zones[i].y);
+         free(gr->gset[index].zones[i].idx);
+         gr->gset[index].zones[i].x = NULL;
+         gr->gset[index].zones[i].y = NULL;
+         gr->gset[index].zones[i].idx = NULL;
       }
    }
   return 0;

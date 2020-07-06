@@ -80,7 +80,7 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
   newgr.fst.ig[IG2] = ig2;
   newgr.fst.ig[IG3] = ig3;
   newgr.fst.ig[IG4] = ig4;
-  newgr.idx_last_gdin = -1;
+  newgr.idx_last_gdin = NULL;
   read=0;
   found=LireEnrPositionnels(&newgr, iunit, ig1, ig2, ig3, ig4, read);
   if (found < 0) /* problems with finding grid descriptors */

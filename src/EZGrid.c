@@ -1719,7 +1719,7 @@ int EZGrid_Interp(TGrid* restrict const To, TGrid* restrict const From) {
    }
 
    GeoRef_Lock();
-   ok=c_ezdefset(To->GID,From->GID);
+   ok=c_ezdefset(To->GRef,From->GRef);
    ok=c_ezsint(to,from);
    GeoRef_Unlock();
    if (ok<0)  {

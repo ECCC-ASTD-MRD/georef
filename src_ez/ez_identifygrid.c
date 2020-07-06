@@ -119,7 +119,7 @@ TGeoRef* c_ezidentify_irreg_grid(
    GRef->i2=ni;
    GRef->j1=1;
    GRef->j2=nj;
-   GRef->idx_last_gdin = -1;
+   GRef->idx_last_gdin = NULL;
 
    switch(grtyp[0]) {
       case '#':

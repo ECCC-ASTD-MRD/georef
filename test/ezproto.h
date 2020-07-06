@@ -6,7 +6,7 @@
 #include "../src/GeoRef.h"
 
 // RPN external EZscint functions
-extern int  c_ezfreegridset(int gdid, int index);
+extern int  c_ezfreegridset(TGeoRef* gdid, int index);
 extern int  c_ezdefset(TGeoRef* gdout, TGeoRef* gdin);
 extern int  c_ezgdef(int ni, int nj, char *grtyp, char *grref,int ig1, int ig2, int ig3, int ig4, ftnfloat *ax, ftnfloat *ay);
 extern int  c_ezgdef_ffile(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit);

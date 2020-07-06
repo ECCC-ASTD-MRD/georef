@@ -29,7 +29,6 @@ wordint c_ezgdef_yymask(TGeoRef *subgd)
   wordint ni,nj,yni,ynj,i,j,k,ii;
   wordint i0,i1,j0,j1;
   wordint ig1ref,ig2ref,ig3ref,ig4ref;
-  wordint mask_gdrow_id, mask_gdcol_id, mask_gdid;
   
   ftnfloat *ax,*ay;
 
@@ -63,7 +62,6 @@ wordint c_ezgdef_yymask(TGeoRef *subgd)
 
     if (groptions.verbose > 0)
       {
-       c_gdkey2rowcol(mask_gdid,  &mask_gdrow_id,  &mask_gdcol_id);
        printf("Subgd.mymaskgrid   = %d\n", subgd->mymaskgrid);
        printf("Subgd.mymaskgridi0 = %d pt=%f\n", subgd->mymaskgridi0, subgd->ax[i0]);
        printf("Subgd.mymaskgridi1 = %d pt=%f\n", subgd->mymaskgridi1, subgd->ax[i1]);

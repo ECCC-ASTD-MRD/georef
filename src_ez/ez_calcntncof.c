@@ -27,7 +27,6 @@ void ez_calcntncof(TGeoRef* GRef)
 {
   wordint nni, nnj, gdcol, gdrow;
   
- /*  c_gdkey2rowcol(gdid, &gdrow, &gdcol); */
   if (GRef->flags & NEWTON)
     return;
 

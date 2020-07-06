@@ -85,7 +85,6 @@ TGeoRef* c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
    GRef->Height=NULL; */
 
    if (groptions.verbose > 0) {
-/*       printf("Gdid = \n", gdid); */
       printf("Grille[].grtyp = '%c'\n", GRef->grtyp[0]);
       printf("Grille[].ni    = %d\n",   GRef->ni);
       printf("Grille[].nj    = %d\n",   GRef->nj);
