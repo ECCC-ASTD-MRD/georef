@@ -41,7 +41,6 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    wordint i;
    wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out, npts, cur_gdin;
    int idx_gdin;
-   static wordint found = -1;
    wordint nsets = 0;
 
    if (gdout == NULL)
@@ -80,37 +79,25 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
       gdout->log_chunk_gdin = cur_log_chunk;
    }
 
-
-   found = -1;
-
-   idx_gdin = gdin % primes[gdout->log_chunk_gdin];
+   idx_gdin = 0;
    if (gdout->gset[idx_gdin].gdin == gdin)
    {
-      found = 1;
       iset_gdin = gdin;
       iset_gdout = gdout;
       return 1;
    }
 
-   i = idx_gdin;
-   while ((found == -1) && (i != idx_gdin-1) && (gdout->gset[i].gdin != -1))
+   while (idx_gdin < gdout->n_gdin)
    {
-      if (gdin == gdout->gset[i].gdin)
+      if (gdout->gset[idx_gdin].gdin == gdin)
       {
-         found = i;
          iset_gdin = gdin;
          iset_gdout = gdout;
-         gdout->idx_last_gdin = gdout->gset[i].gdin;
+         gdout->idx_last_gdin = gdout->gset[idx_gdin].gdin;
          return 1;
       }
-      else
-      {
-         i++;
-         if (0 == (i % (primes[gdout->log_chunk_gdin])))
-         {
-            i = 0;
-         }
-      }
+
+      idx_gdin++;
    }
 
    /* si on se rend jusqu'ici alors c'est que le set n'a pas ete trouve */
@@ -118,7 +105,7 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    /* On initialise le vecteur de gdout pour lequel gdin est utilise en entree
       Ceci sera utile si le vecteur de grilles deborde */
 
-   gdout->gset[i].gdin = gdin;
+   gdout->gset[idx_gdin].gdin = gdin;
    cur_gdin = gdin;
    gdout->n_gdin++;
 
@@ -136,9 +123,9 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    {
       gdin->gdin_for = malloc(CHUNK *sizeof(TGeoRef*));
       for (i=0; i < CHUNK; i++)
-         {
-            gdin->gdin_for[i] = NULL;
-         }
+      {
+         gdin->gdin_for[i] = NULL;
+      }
       gdin->gdin_for[0] = gdout;
       gdin->n_gdin_for++;
    }

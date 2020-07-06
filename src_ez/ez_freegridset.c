@@ -25,20 +25,25 @@ wordint c_ezfreegridset(TGeoRef* gdid, wordint index)
 {
    wordint i;
 
+   if (gdid->gset[index].gdin != NULL)
+   {
+      gdid->gset[index].gdin == NULL;
+   }
+
    if (gdid->gset[index].x != NULL)
-      {
+   {
       free(gdid->gset[index].x);
       gdid->gset[index].x  = NULL;
-      }
+   }
 
    if (gdid->gset[index].y)
-      {
+   {
       free(gdid->gset[index].y);
       gdid->gset[index].y  = NULL;
-      }
+   }
 
    if (gdid->gset[index].gemin.lat_rot)
-      {
+   {
       free(gdid->gset[index].gemin.lat_rot);
       free(gdid->gset[index].gemin.lon_rot);
       free(gdid->gset[index].gemin.sinlat_rot);
@@ -50,10 +55,10 @@ wordint c_ezfreegridset(TGeoRef* gdid, wordint index)
       free(gdid->gset[index].gemin.sinlon_true);
       free(gdid->gset[index].gemin.coslon_true);
       memset(&gdid->gset[index].gemin, (int) 0, sizeof(_gemgrid));
-      }
+   }
 
    if (gdid->gset[index].gemout.lat_rot)
-      {
+   {
       free(gdid->gset[index].gemout.lat_rot);
       free(gdid->gset[index].gemout.lon_rot);
       free(gdid->gset[index].gemout.sinlat_rot);
@@ -65,19 +70,19 @@ wordint c_ezfreegridset(TGeoRef* gdid, wordint index)
       free(gdid->gset[index].gemout.sinlon_true);
       free(gdid->gset[index].gemout.coslon_true);
       memset(&gdid->gset[index].gemout, (int) 0, sizeof(_gemgrid));
-      }
+   }
 
-  for (i=0; i < NZONES; i++)
-    {
-    if (gdid->gset[index].zones[i].npts > 0)
+   for (i=0; i < NZONES; i++)
+   {
+      if (gdid->gset[index].zones[i].npts > 0)
       {
-      free(gdid->gset[index].zones[i].x);
-      free(gdid->gset[index].zones[i].y);
-      free(gdid->gset[index].zones[i].idx);
-      gdid->gset[index].zones[i].x = NULL;
-      gdid->gset[index].zones[i].y = NULL;
-      gdid->gset[index].zones[i].idx = NULL;
+         free(gdid->gset[index].zones[i].x);
+         free(gdid->gset[index].zones[i].y);
+         free(gdid->gset[index].zones[i].idx);
+         gdid->gset[index].zones[i].x = NULL;
+         gdid->gset[index].zones[i].y = NULL;
+         gdid->gset[index].zones[i].idx = NULL;
       }
-    }
+   }
   return 0;
 }

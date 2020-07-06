@@ -246,7 +246,8 @@ typedef struct TGeoRef {
    wordint needs_expansion;
    wordint access_count;
    wordint next_gd;
-   wordint n_gdin, idx_last_gdin, n_gdin_for;
+   wordint n_gdin, n_gdin_for;
+   struct TGeoRef *idx_last_gdin;
    wordint log_chunk_gdin;
    wordint *mask;
    struct TGeoRef **gdin_for;

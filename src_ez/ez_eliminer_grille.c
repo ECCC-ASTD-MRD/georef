@@ -70,7 +70,6 @@ void EliminerGrille(TGeoRef* GRef)
     GRef->flags = (int)0;
     }
    
-    /* TODO: GRef->gdin_for[i] devrait etre de type TGeoRef* */
    for (i=0; i < GRef->n_gdin_for; i++)
       {
       index = ez_find_gdin_in_gset(GRef, GRef->gdin_for[i]);
