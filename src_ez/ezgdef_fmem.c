@@ -22,11 +22,11 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
-wordint f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
+PTR_AS_INT f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
    wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
-   ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref, PTR_AS_INT GRef)
+   ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref)
 {
-  wordint icode;
+  PTR_AS_INT icode;
   char lgrtyp[2];
   char lgrref[2];
 
@@ -36,7 +36,7 @@ wordint f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
   lgrref[0] = grref[0];
   lgrref[1] = '\0';
 
-  icode = c_ezgdef_fmem(*ni, *nj, lgrtyp, lgrref, *ig1, *ig2, *ig3, *ig4, ax, ay, (TGeoRef*) GRef);
+  icode = (PTR_AS_INT) c_ezgdef_fmem(*ni, *nj, lgrtyp, lgrref, *ig1, *ig2, *ig3, *ig4, ax, ay);
   return icode;
 }
 
@@ -60,41 +60,44 @@ wordint f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
 //!
 //! If grtyp == 'Z' or '#', the dimensions of ax=ni and ay=nj.
 //! If grtyp == 'Y', the dimensions of ax=ay=ni*nj. 
-wordint c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
-   wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay, TGeoRef* GRef)
+TGeoRef* c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
+   wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay)
 {
-   wordint gdid;
-   wordint gdrow_id, gdcol_id;
-
+   TGeoRef* GRef;
 
    if (grtyp[0] == '#' || grtyp[0] == 'Y' || grtyp[0] == 'Z' || grtyp[0] == 'G') {
-      gdid = c_ezidentify_irreg_grid(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, ax, ay, GRef);
+      GRef = c_ezidentify_irreg_grid(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, ax, ay);
       c_ezdefxg(GRef);
       c_ezdefaxes(GRef, ax, ay);
    } else {
-      gdid = c_ezidentify_reg_grid(ni, nj, grtyp, ig1, ig2, ig3, ig4, GRef);
+      GRef = c_ezidentify_reg_grid(ni, nj, grtyp, ig1, ig2, ig3, ig4);
       c_ezdefxg(GRef);
    }
 
    ez_calcxpncof(GRef);
 
-/*    c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id); */
+/*    GRef->Grid[0]=grtyp[0];
+   GRef->Grid[1]=grtyp[1];
+   GRef->Project=GeoRef_RPNProject;
+   GRef->UnProject=GeoRef_RPNUnProject;
+   GRef->Value=(TGeoRef_Value*)GeoRef_RPNValue;
+   GRef->Distance=GeoRef_RPNDistance;
+   GRef->Height=NULL; */
 
    if (groptions.verbose > 0) {
-      printf("Gdid = %02d\n", gdid);
-      printf("Grille[%02d].grtyp = '%c'\n", gdid, GRef->grtyp[0]);
-      printf("Grille[%02d].ni    = %d\n",   gdid, GRef->ni);
-      printf("Grille[%02d].nj    = %d\n",   gdid, GRef->nj);
-      printf("Grille[%02d].ig[IG1]   = %d\n",   gdid, GRef->fst.ig[IG1]);
-      printf("Grille[%02d].ig[IG2]   = %d\n",   gdid, GRef->fst.ig[IG2]);
-      printf("Grille[%02d].ig[IG3]   = %d\n",   gdid, GRef->fst.ig[IG3]);
-      printf("Grille[%02d].ig[IG4]   = %d\n",   gdid, GRef->fst.ig[IG4]);
-      printf("Grille[%02d].grref = '%c'\n", gdid, GRef->grref[0]);
-      printf("Grille[%02d].igref[IG1]= %d\n",   gdid, GRef->fst.igref[IG1]);
-      printf("Grille[%02d].igref[IG2]= %d\n",   gdid, GRef->fst.igref[IG2]);
-      printf("Grille[%02d].igref[IG3]= %d\n",   gdid, GRef->fst.igref[IG3]);
-      printf("Grille[%02d].igref[IG4]= %d\n",   gdid, GRef->fst.igref[IG4]);
+      printf("Grille[].grtyp = '%c'\n", GRef->grtyp[0]);
+      printf("Grille[].ni    = %d\n",   GRef->ni);
+      printf("Grille[].nj    = %d\n",   GRef->nj);
+      printf("Grille[].ig[IG1]   = %d\n",   GRef->fst.ig[IG1]);
+      printf("Grille[].ig[IG2]   = %d\n",   GRef->fst.ig[IG2]);
+      printf("Grille[].ig[IG3]   = %d\n",   GRef->fst.ig[IG3]);
+      printf("Grille[].ig[IG4]   = %d\n",   GRef->fst.ig[IG4]);
+      printf("Grille[].grref = '%c'\n", GRef->grref[0]);
+      printf("Grille[].igref[IG1]= %d\n",   GRef->fst.igref[IG1]);
+      printf("Grille[].igref[IG2]= %d\n",   GRef->fst.igref[IG2]);
+      printf("Grille[].igref[IG3]= %d\n",   GRef->fst.igref[IG3]);
+      printf("Grille[].igref[IG4]= %d\n",   GRef->fst.igref[IG4]);
    }
 
-   return gdid;
+   return GRef;
 }

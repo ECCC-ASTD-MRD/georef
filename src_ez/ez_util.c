@@ -23,35 +23,35 @@
 
 
 wordint f77name(ezsetgdout)(int *gdout)
-  {
+{
   return c_ezsetgdout(*gdout);
-  }
+}
 
-wordint f77name(ezgetgdout)()
-  {
-  return c_ezgetgdout();
-  }
+PTR_AS_INT f77name(ezgetgdout)()
+{
+  return (PTR_AS_INT)c_ezgetgdout();
+}
 
-wordint c_ezgetgdin()
-  {
+TGeoRef* c_ezgetgdin()
+{
   return iset_gdin; 
-  }
+}
 
-wordint c_ezgetgdout()
+TGeoRef* c_ezgetgdout()
+{
+  if (iset_gdout == NULL)
   {
-  if (iset_gdout == UNDEFINED)
-     {
-     if (iset_gdin != UNDEFINED)
-        {
-	iset_gdout = iset_gdin;
-	}
-     else
-       {
-       iset_gdout = UNDEFINED;
-       }
-     }
-  return iset_gdout;
+    if (iset_gdin != NULL)
+    {
+      iset_gdout = iset_gdin;
+    }
+    else
+    {
+      iset_gdout = NULL;
+    }
   }
+  return iset_gdout;
+}
 
 wordint c_ezsetgdout(gdout)
 wordint gdout;

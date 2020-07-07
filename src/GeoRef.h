@@ -164,7 +164,7 @@ typedef struct {
 typedef struct {
   wordint flags,yyflags;
   wordint use_sincos_cache;
-  wordint gdin;
+  TGeoRef* gdin;
   ftnfloat valpolesud, valpolenord;
   ftnfloat *x, *y;
   wordint *mask_in, *mask_out;
@@ -246,16 +246,24 @@ typedef struct TGeoRef {
    wordint needs_expansion;
    wordint access_count;
    wordint next_gd;
-   wordint n_gdin, idx_last_gdin, n_gdin_for;
+   wordint n_gdin, n_gdin_for;
+   struct TGeoRef *idx_last_gdin;
    wordint log_chunk_gdin;
-   wordint *gdin_for, *mask;
+   wordint *mask;
+   struct TGeoRef **gdin_for;
    wordint nsubgrids;
    struct TGeoRef *mymaskgrid;
    wordint mymaskgridi0,mymaskgridi1;
    wordint mymaskgridj0,mymaskgridj1;
+<<<<<<< HEAD
    wordint *subgrid;
    ftnfloat *lat, *lon; // same as Lat,Lon
    ftnfloat *ax, *ay; // same as AX,AY
+=======
+   struct TGeoRef **subgrid;
+   ftnfloat *lat, *lon;
+   ftnfloat *ax, *ay;
+>>>>>>> e56dd55fdcf6252df06c8c01043d9bfbe331cb92
    ftnfloat *ncx, *ncy;
    char grtyp[4], grref[4];
    _fstinfo fst;
@@ -267,6 +275,8 @@ typedef struct TGeoRef {
 } TGeoRef;
 
 extern TGeoRef** Grille;
+extern TGeoRef* iset_gdin;
+extern TGeoRef* iset_gdout;
 
 typedef struct TGeoPos {
    TGeoRef *GRef;                                         // Reference horizontale

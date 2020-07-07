@@ -1,17 +1,16 @@
 #include "ezscint.h"
 #include "ez_funcdef.h"
-#include "../src/GeoRef.h"
 
-/* #ifdef MUTEX
+#ifdef MUTEX
 //JP
 extern pthread_mutex_t EZ_MTX;
 #endif
 
-int c_ez_findgrid(int grid_index, TGeoRef *gr)
+int c_ez_findgrid(int grid_index, _Grille *gr)
   {
   wordint gdrow, gdcol, index_found, gr_size, resax, resay;
   wordint found, end_reached, next_index, i,j;
-  TGeoRef *refgd;
+  _Grille *refgd;
     
   if (grid_index == -1)
     {
@@ -54,9 +53,9 @@ int c_ez_findgrid(int grid_index, TGeoRef *gr)
                break;
               }
         }
-    // printf("gr->grtyp=%c  ni=%d nj= %d\n",gr->grtyp[0],gr->ni,gr->nj);
-    // printf("refgd->grtyp=%c  ni=%d nj= %d\n",refgd->grtyp[0],refgd->ni,refgd->nj);
-
+     /*  printf("gr->grtyp=%c  ni=%d nj= %d\n",gr->grtyp[0],gr->ni,gr->nj);
+         printf("refgd->grtyp=%c  ni=%d nj= %d\n",refgd->grtyp[0],refgd->ni,refgd->nj);
+     */
   if (gr->grtyp[0] == refgd->grtyp[0] &&
       gr->ni == refgd->ni &&  gr->nj == refgd->nj &&
       gr->fst.ig[IG1] == refgd->fst.ig[IG1] && gr->fst.ig[IG2] == refgd->fst.ig[IG2] &&
@@ -98,8 +97,8 @@ int c_ez_findgrid(int grid_index, TGeoRef *gr)
                     }
                   }
                }
-            // resax = memcmp(refgd->ax, gr->ax, (size_t)(gr->ni*sizeof(ftnfloat)));
-            // resay = memcmp(refgd->ay, gr->ay, (size_t)(gr->nj*sizeof(ftnfloat)));
+/*            resax = memcmp(refgd->ax, gr->ax, (size_t)(gr->ni*sizeof(ftnfloat)));
+            resay = memcmp(refgd->ay, gr->ay, (size_t)(gr->nj*sizeof(ftnfloat)));*/
             }
          else
             {
@@ -123,8 +122,8 @@ int c_ez_findgrid(int grid_index, TGeoRef *gr)
                   }
                }
 
-            // resax = memcmp(refgd->ax, gr->ax, (size_t)(gr->ni*gr->nj*sizeof(ftnfloat)));
-            // resay = memcmp(refgd->ay, gr->ay, (size_t)(gr->ni*gr->nj*sizeof(ftnfloat)));
+/*            resax = memcmp(refgd->ax, gr->ax, (size_t)(gr->ni*gr->nj*sizeof(ftnfloat)));
+            resay = memcmp(refgd->ay, gr->ay, (size_t)(gr->ni*gr->nj*sizeof(ftnfloat)));*/
             }
 
          if (resax == 0 && resay == 0)
@@ -181,12 +180,12 @@ int c_ez_findgrid(int grid_index, TGeoRef *gr)
     {
     return index_found;
     }
-  } */
+  }
 
-/* void dump_gr_list()
+void dump_gr_list()
   {
   int i, gd_row, gd_col;
-  TGeoRef *gr;
+  _Grille *gr;
   
   for (i=0; i < chunks[cur_log_chunk]; i++)
     {
@@ -203,5 +202,4 @@ int c_ez_findgrid(int grid_index, TGeoRef *gr)
       printf("\n");
       }
     }
-  } */
-  
+  }

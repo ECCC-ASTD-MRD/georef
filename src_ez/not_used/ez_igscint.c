@@ -118,14 +118,7 @@ f77name(ez_rguvint)(ftnfloat *spdo, ftnfloat *psio, wordint *li, wordint *lj, ft
     }
   
   ftnstrclean(grtyp,lengrtyp);
-  // Replaces gdin  = c_ezgdef(*ni,*nj,grtyp,NULL,*ig1,*ig2,*ig3,*ig4,NULL,NULL);
-  if (grtyp[0] == '#')
-  {
-    gdin = -1;
-  } else {
-    gdin = c_ezgdef_fmem(*ni,*nj, grtyp, NULL, *ig1, *ig2, *ig3, *ig4, NULL, NULL);
-  }
-
+  gdin  = c_ezgdef(*ni,*nj,grtyp,NULL,*ig1,*ig2,*ig3,*ig4,NULL,NULL);
   ier = c_gdllwdval(gdin, spdo, psio, ui, vi, xlat, tmplon, npts);
   free(tmplon);
 }

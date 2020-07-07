@@ -23,7 +23,7 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char *grref, wordint *vercode, wordint *nsubgrids, wordint *subgrid, F2Cl lengrtyp, F2Cl lengrref)
+wordint f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char *grref, wordint *vercode, wordint *nsubgrids, PTR_AS_INT subgrid, F2Cl lengrtyp, F2Cl lengrref)
 {
   wordint gdid,i;
   char lgrtyp[2],lgrref[2];
@@ -33,11 +33,11 @@ wordint f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char *g
    
   lgrref[0] = grref[0];
   lgrref[1] = '\0';
-  gdid = c_ezgdef_supergrid(*ni, *nj, lgrtyp, lgrref, *vercode, *nsubgrids,subgrid);
+  gdid = c_ezgdef_supergrid(*ni, *nj, lgrtyp, lgrref, *vercode, *nsubgrids,(TGeoRef**)subgrid);
   return gdid;
 }
 
-wordint c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wordint vercode,wordint nsubgrids, wordint *subgrid)
+wordint c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wordint vercode,wordint nsubgrids, TGeoRef **subgrid)
 {
   wordint sub_gdrow_id, sub_gdcol_id, sub_gdid;
   wordint mask_gdrow_id, mask_gdcol_id, mask_gdid;
@@ -82,7 +82,7 @@ wordint c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wor
     RemplirDeBlancs(newgr.fst.etikety, 13);
     newgr.ni = ni;
     newgr.nj = nj;
-    newgr.idx_last_gdin = -1;
+    newgr.idx_last_gdin = NULL;
     /* create tictac arrays to add uniqueness in supergrid*/
     ax = (ftnfloat *) malloc(newgr.ni*sizeof(ftnfloat));
     ay = (ftnfloat *) malloc(newgr.nj*sizeof(ftnfloat));
@@ -136,7 +136,7 @@ add   the rotation of YIN */
     strcpy(Grille[gdrow_in][gdcol_in].grref,newgr.grref);
     Grille[gdrow_in][gdcol_in].ni = newgr.ni;
     Grille[gdrow_in][gdcol_in].nj = newgr.nj;
-    Grille[gdrow_in][gdcol_in].idx_last_gdin=-1;
+    Grille[gdrow_in][gdcol_in].idx_last_gdin=NULL;
     Grille[gdrow_in][gdcol_in].fst.ip1 = newgr.fst.ip1;
     Grille[gdrow_in][gdcol_in].fst.ip2 = newgr.fst.ip2;
     Grille[gdrow_in][gdcol_in].fst.ip3 = newgr.fst.ip3;
@@ -153,13 +153,13 @@ add   the rotation of YIN */
     Grille[gdrow_in][gdcol_in].fst.igref[IG3] = newgr.fst.igref[IG3];
     Grille[gdrow_in][gdcol_in].fst.igref[IG4] = newgr.fst.igref[IG4];
     Grille[gdrow_in][gdcol_in].nsubgrids = nsubgrids;
-    Grille[gdrow_in][gdcol_in].subgrid = (wordint *) malloc(nsubgrids*sizeof(wordint));
+    Grille[gdrow_in][gdcol_in].subgrid = (TGeoRef **) malloc(nsubgrids*sizeof(TGeoRef*));
 
     for (ii=0; ii < nsubgrids; ii++)
        {
        Grille[gdrow_in][gdcol_in].subgrid[ii] = subgrid[ii];
-       c_gdkey2rowcol(subgrid[ii],  &sub_gdrow_id,  &sub_gdcol_id);
-       c_ezgdef_yymask(&(Grille[sub_gdrow_id][sub_gdcol_id]));
+/*        c_gdkey2rowcol(subgrid[ii],  &sub_gdrow_id,  &sub_gdcol_id); */
+       c_ezgdef_yymask(subgrid[ii]);
        if (groptions.verbose > 0)
           {
           printf("Grille[%02d].subgrid[%d] has maskgrid=%d\n",gdid,subgrid[ii],Grille[sub_gdrow_id][sub_gdcol_id].mymaskgrid);

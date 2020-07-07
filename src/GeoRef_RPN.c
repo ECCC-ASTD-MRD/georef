@@ -658,7 +658,7 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int 
 
       if (GRTYP[0]!='#' && GRTYP[0]!='Y' && GRTYP[0]!='Z' && GRTYP[0]!='U' && GRTYP[0]!=' ') {
          // no need to look for grid descriptors
-         return c_ezgdef_fmem(NI,NJ, grtyp, " ", ig1, ig2, ig3, ig4, NULL, NULL,ref);
+         return c_ezgdef_fmem(NI,NJ, grtyp, " ", ig1, ig2, ig3, ig4, NULL, NULL);
       }
   
       ref->grtyp[0]=grtyp[0];
@@ -675,7 +675,7 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int 
       ref->fst.ig[IG2] = ig2;
       ref->fst.ig[IG3] = ig3;
       ref->fst.ig[IG4] = ig4;
-      ref->idx_last_gdin = -1;
+      ref->idx_last_gdin = NULL;
       ref->IG1_JP=ig1;
       ref->IG2_JP=ig2;
       ref->IG3_JP=ig3;
@@ -900,7 +900,7 @@ TGeoRef* GeoRef_RPNGridZE(TGeoRef *GRef,int NI,int NJ,float DX,float DY,float La
    }
    
  //TODO: Merge with EZ  
-   GRef->Ids[0]=c_ezgdef_fmem(NI,NJ,"Z","E",GRef->IG1_JP,GRef->IG2_JP,GRef->IG3_JP,GRef->IG4_JP,GRef->AX_JP,GRef->AY,GRef);
+   GRef->Ids[0]=c_ezgdef_fmem(NI,NJ,"Z","E",GRef->IG1_JP,GRef->IG2_JP,GRef->IG3_JP,GRef->IG4_JP,GRef->AX_JP,GRef->AY);
    
    GRef->NbId=1;
    GRef->Grid[0]='Z';

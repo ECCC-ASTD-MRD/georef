@@ -1,7 +1,6 @@
 #include <rpnmacros.h>
 #include "ezscint.h"
 #include "ez_funcdef.h"
-#include "../src/GeoRef.h"
 
 
 #ifdef MUTEX
@@ -31,10 +30,10 @@ int c_ez_refgrid(int grid_index)
    return(Grille[gdrow][gdcol].access_count);
    }
 
-int c_ez_addgrid(TGeoRef *newgr)
+int c_ez_addgrid(int grid_index, _Grille *newgr)
   {
   int i, gdrow, gdcol, gdindex, next_index, nxt_row, nxt_col, cur_gdid;
-  TGeoRef *cur_gr;
+  _Grille *cur_gr;
 
 #ifdef MUTEX
 // JP
@@ -43,10 +42,11 @@ int c_ez_addgrid(TGeoRef *newgr)
 // JP
   newgr->access_count++;
   
-/*   cur_gr = gr_list[grid_index];
+  cur_gr = gr_list[grid_index];
   if (cur_gr == NULL)
     {
-    c_gdkey2rowcol(nGrilles, &gdrow, &gdcol);
+    gdindex = nGrilles;
+    c_gdkey2rowcol(gdindex, &gdrow, &gdcol);
     gr_list[grid_index] = &Grille[gdrow][gdcol];
     }
   else
@@ -65,14 +65,12 @@ int c_ez_addgrid(TGeoRef *newgr)
     }
     
   c_gdkey2rowcol(nGrilles, &gdrow, &gdcol);
-  memcpy(&(Grille[gdrow][gdcol]), newgr, sizeof(TGeoRef));
+  memcpy(&(Grille[gdrow][gdcol]), newgr, sizeof(_Grille));
   Grille[gdrow][gdcol].index = nGrilles;
-  Grille[gdrow][gdcol].next_gd = -1; */
-  newgr->index = nGrilles;
-  newgr->next_gd = -1;
+  Grille[gdrow][gdcol].next_gd = -1;
   
   nGrilles++;
-/*   if (nGrilles >= chunks_sq[cur_log_chunk])
+  if (nGrilles >= chunks_sq[cur_log_chunk])
     {
     fprintf(stderr, "<c_ez_addgrid> : Message from the EZSCINT package\n");
     fprintf(stderr, "<c_ez_addgrid> : Maximum number of definable grids attained : %d\n", nGrilles);
@@ -83,12 +81,12 @@ int c_ez_addgrid(TGeoRef *newgr)
   if (0 == (nGrilles % chunks[cur_log_chunk]))
     {
     c_gdkey2rowcol(nGrilles, &gdrow, &gdcol);
-    Grille[gdrow] = (TGeoRef *) calloc(chunks[cur_log_chunk], sizeof(TGeoRef));
+    Grille[gdrow] = (_Grille *) calloc(chunks[cur_log_chunk], sizeof(_Grille));
     for (i=0; i < chunks[cur_log_chunk]; i++)
       {
       Grille[gdrow][i].index = -1;
       }
-    } */
+    }
 #ifdef MUTEX
 // JP
 

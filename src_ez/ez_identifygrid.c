@@ -35,31 +35,15 @@ void c_ez_manageGrillesMemory() {
 }
 
 
-wordint c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, 
-   wordint ig1, wordint ig2, wordint ig3, wordint ig4, TGeoRef* GRef) 
+TGeoRef* c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, 
+   wordint ig1, wordint ig2, wordint ig3, wordint ig4) 
 {
-   wordint i;
-   wordint gdid, gdrow, gdcol, nchunks, newGrid;
-   wordint res1, res2, newgrsize, grid_index;
-   unsigned int grid_crc;
-   char typeGrille;
-   TGeoRef* gr;
-   TGeoRef newgr;
+   TGeoRef* GRef, *fref;
 
-   gdid = -1;
-   newGrid = 0;
-   typeGrille = grtyp[0];
+   GRef = GeoRef_New();
 
-/*    if (nGrilles == 0) {
-      Grille = (TGeoRef **) calloc(chunks[cur_log_chunk], sizeof(TGeoRef *));
-      Grille[0] = (TGeoRef *) calloc(chunks[cur_log_chunk], sizeof(TGeoRef));
-      for (i=0; i < chunks[cur_log_chunk]; i++) {
-         Grille[0][i].index = -1;
-      }
-   }
-
-   memset((void *)&newgr, 0, (size_t)sizeof(TGeoRef)); */
    GRef->grtyp[0] = grtyp[0];
+   GRef->grtyp[1] = '\0';
    GRef->grref[0] = (char) 0;
    GRef->ni = ni;
    GRef->nj = nj;
@@ -71,53 +55,34 @@ wordint c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp,
    GRef->fst.igref[IG2] = 0;
    GRef->fst.igref[IG3] = 0;
    GRef->fst.igref[IG4] = 0;
+   GRef->IG1_JP =ig1;
+   GRef->IG2_JP = ig2;
+   GRef->IG3_JP = ig3;
+   GRef->IG4_JP = ig4;
 
+   GeoRef_Size(GRef,0,0,ni-1,nj-1,0);
 
-/*    newgrsize = sizeof(TGeoRef);
-   grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, NULL, NULL, 0, 0);
-   grid_index = grid_crc % primes_sq[cur_log_chunk]; */
-
-   gdid = c_ez_addgrid(GRef);
-/*    if (gr_list[grid_index] == NULL) {
-      gdid = c_ez_addgrid(grid_index, &newgr);
-      return gdid;
-   } else {
-      gdid = c_ez_findgrid(grid_index, &newgr);
-      if (gdid == -1) {
-         gdid = c_ez_addgrid(grid_index, &newgr);
-         return gdid;
-      } else {
-         return gdid;
-      }
-   } */
-   return gdid;
-}
-
-wordint c_ezidentify_irreg_grid(
-      wordint ni, wordint nj, char* grtyp, char* grref,
-      wordint ig1, wordint ig2, wordint ig3, wordint ig4,
-      ftnfloat* ax, ftnfloat* ay, TGeoRef* GRef) 
-{
-   wordint i;
-   wordint gdid, gdrow, gdcol, nchunks, newGrid;
-   wordint res1, res2, newgrsize, npts, grid_index;
-   unsigned int grid_crc;
-   char typeGrille;
-   TGeoRef *gr, newgr;
-
-   gdid = -1;
-   newGrid = 0;
-   typeGrille = grtyp[0];
-
-/*    if (nGrilles == 0) {
-      Grille = (TGeoRef **) calloc(chunks[cur_log_chunk],sizeof(TGeoRef *));
-      Grille[0] = (TGeoRef *) calloc(chunks[cur_log_chunk], sizeof(TGeoRef));
-      for (i = 0; i < chunks[cur_log_chunk]; i++) {
-         Grille[0][i].index = -1;
-      }
+   // This georef already exists
+   if (fref=GeoRef_Find(GRef)) {
+      free(GRef);
+      return fref;
    }
 
-   memset((void *)&newgr, (int)0, sizeof(TGeoRef)); */
+   // This is a new georef
+   GeoRef_Add(GRef);
+
+   return GRef;
+}
+
+TGeoRef* c_ezidentify_irreg_grid(
+      wordint ni, wordint nj, char* grtyp, char* grref,
+      wordint ig1, wordint ig2, wordint ig3, wordint ig4,
+      ftnfloat* ax, ftnfloat* ay) 
+{
+   TGeoRef *GRef, *fref;
+
+   GRef = GeoRef_New();
+
    GRef->grtyp[0] = grtyp[0];
    GRef->grtyp[1] = '\0';
    GRef->grref[0] = grref[0];
@@ -154,19 +119,15 @@ wordint c_ezidentify_irreg_grid(
    GRef->i2=ni;
    GRef->j1=1;
    GRef->j2=nj;
-   GRef->idx_last_gdin = -1;
+   GRef->idx_last_gdin = NULL;
 
-/*    newgrsize = sizeof(TGeoRef); */
-   switch(typeGrille) {
+   switch(grtyp[0]) {
       case '#':
-/*          grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, &(ax[ig3-1]), &(ay[ig4-1]), ni, nj); */
          GRef->ax = ax;
          GRef->ay = ay; 
          break;
 
       case 'Y':
-         npts = ni * nj;
-/*          grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, ax, ay, npts, npts); */
          GRef->ax = ax;
          GRef->ay = ay; 
          break;
@@ -175,34 +136,28 @@ wordint c_ezidentify_irreg_grid(
          f77name(cigaxg)(&(GRef->grref),
             &GRef->fst.xgref[XLAT1], &GRef->fst.xgref[XLON1], &GRef->fst.xgref[XLAT2], &GRef->fst.xgref[XLON2],
             &GRef->fst.igref[IG1],   &GRef->fst.igref[IG2],   &GRef->fst.igref[IG3],   &GRef->fst.igref[IG4],1);
-/*          grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, ax, ay, ni, nj); */
          GRef->ax = ax;
          GRef->ay = ay; 
          break;
 
       case 'G':
-/*          grid_crc = ez_calc_crc((int *)&newgr, &newgrsize, NULL, NULL, 0, 0); */
          break;
 
       default :
-         fprintf(stderr, "c_ezidentify_irreg_grid : undefined grid type : %c\n", typeGrille);
+         fprintf(stderr, "c_ezidentify_irreg_grid : undefined grid type : %c\n", grtyp[0]);
          exit(13);
    }
 
-/*    grid_index = grid_crc % primes_sq[cur_log_chunk]; */
+   GeoRef_Size(GRef,0,0,ni-1,nj-1,0);
 
-   gdid = c_ez_addgrid(GRef);
-/*    if (gr_list[grid_index] == NULL) {
-      gdid = c_ez_addgrid(grid_index, &newgr);
-      return gdid;
-   } else {
-      gdid = c_ez_findgrid(grid_index, &newgr);
-      if (gdid == -1) {
-         gdid = c_ez_addgrid(grid_index, &newgr);
-         return gdid;
-      } else {
-         return gdid;
-      }
-   } */
-   return gdid;
+   // This georef already exists
+   if (fref=GeoRef_Find(GRef)) {
+      free(GRef);
+      return fref;
+   }
+
+   // This is a new georef
+   GeoRef_Add(GRef);
+
+   return GRef;
 }

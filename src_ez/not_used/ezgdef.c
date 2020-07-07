@@ -25,7 +25,7 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(ezgdef)(wordint *ni, wordint *nj, char *grtyp, char *grref, 
 			wordint *ig1, wordint *ig2, wordint *ig3, wordint *ig4, 
-			ftnfloat *ax, ftnfloat *ay, F2Cl lengrtyp, F2Cl lengrref, PTR_AS_INT GRef)
+			ftnfloat *ax, ftnfloat *ay, F2Cl lengrtyp, F2Cl lengrref)
 {
   wordint icode;
   char lgrtyp[2],lgrref[2];
@@ -36,12 +36,12 @@ wordint f77name(ezgdef)(wordint *ni, wordint *nj, char *grtyp, char *grref,
   lgrref[0] = grref[0];
   lgrref[1] = '\0';
   
-  icode = c_ezgdef(*ni, *nj, lgrtyp, lgrref, *ig1, *ig2, *ig3, *ig4, ax, ay, (TGeoRef*)GRef);
+  icode = c_ezgdef(*ni, *nj, lgrtyp, lgrref, *ig1, *ig2, *ig3, *ig4, ax, ay);
   return icode;
 }
 
 wordint c_ezgdef(wordint ni, wordint nj, char *grtyp, char *grref,
-		 wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat *ax, ftnfloat *ay, TGeoRef* GRef)
+		 wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat *ax, ftnfloat *ay)
 {
   wordint found,source;
   char typeGrille;
@@ -79,14 +79,13 @@ wordint c_ezgdef(wordint ni, wordint nj, char *grtyp, char *grref,
   switch (source)
     {
     case MEMOIRE:
-      found = c_ezgdef_fmem(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, ax, ay, GRef);
+      found = c_ezgdef_fmem(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, ax, ay);
       break;
       
     case FICHIER:
-      found = c_ezgdef_ffile(ni, nj, grtyp, ig1, ig2, ig3, ig4, ig4, GRef);
+      found = c_ezgdef_ffile(ni, nj, grtyp, ig1, ig2, ig3, ig4, ig4);
       break;
     }
   
   return found;
 }
-

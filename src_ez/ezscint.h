@@ -141,9 +141,6 @@ typedef struct
 // These declarations used to have the __thread storage class, but threads
 // aren't actually used.  Furthemore, the PGI compiler does not support that
 // storage class
- extern wordint iset;
- extern wordint iset_gdin;
- extern wordint iset_gdout;
  extern _groptions groptions;
 
  extern wordint log_chunks[];

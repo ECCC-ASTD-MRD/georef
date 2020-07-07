@@ -28,12 +28,6 @@ void c_ezdefaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay)
   ftnfloat *temp, dlon;
   wordint zero, deuxnj;
 
-/*   TGeoRef *gr;
-  wordint gdrow_id, gdcol_id;
-  
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-  gr = &Grille[gdrow_id][gdcol_id]; */
-
   switch (GRef->grtyp[0])
     {
     case '#':

@@ -29,8 +29,6 @@ wordint c_ezgdef_yymask(TGeoRef *subgd)
   wordint ni,nj,yni,ynj,i,j,k,ii;
   wordint i0,i1,j0,j1;
   wordint ig1ref,ig2ref,ig3ref,ig4ref;
-  wordint mask_gdrow_id, mask_gdcol_id, mask_gdid;
-  TGeoRef *GRef_mask;
   
   ftnfloat *ax,*ay;
 
@@ -56,9 +54,7 @@ wordint c_ezgdef_yymask(TGeoRef *subgd)
            }
        }
      ynj=k;
-     GRef_mask = GeoRef_New();
-     mask_gdid=c_ezgdef_fmem(yni,ynj,subgd->grtyp,subgd->grref,subgd->fst.igref[IG1],subgd->fst.igref[IG2],subgd->fst.igref[IG3],subgd->fst.igref[IG4],&subgd->ax[i0],&subgd->ay[j0],GRef_mask);
-     subgd->mymaskgrid = GRef_mask;
+     subgd->mymaskgrid = c_ezgdef_fmem(yni,ynj,subgd->grtyp,subgd->grref,subgd->fst.igref[IG1],subgd->fst.igref[IG2],subgd->fst.igref[IG3],subgd->fst.igref[IG4],&subgd->ax[i0],&subgd->ay[j0]);
      subgd->mymaskgridi0=i0;
      subgd->mymaskgridi1=i1;
      subgd->mymaskgridj0=j0;
@@ -66,8 +62,7 @@ wordint c_ezgdef_yymask(TGeoRef *subgd)
 
     if (groptions.verbose > 0)
       {
-       c_gdkey2rowcol(mask_gdid,  &mask_gdrow_id,  &mask_gdcol_id);
-       printf("Subgd.mymaskgrid   = %d\n", mask_gdid);
+       printf("Subgd.mymaskgrid   = %d\n", subgd->mymaskgrid);
        printf("Subgd.mymaskgridi0 = %d pt=%f\n", subgd->mymaskgridi0, subgd->ax[i0]);
        printf("Subgd.mymaskgridi1 = %d pt=%f\n", subgd->mymaskgridi1, subgd->ax[i1]);
        printf("Subgd.mymaskgridj0 = %d pt=%f\n", subgd->mymaskgridj0, subgd->ay[j0]);

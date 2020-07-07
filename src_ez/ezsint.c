@@ -29,9 +29,8 @@ wordint cur_log_chunk = 7;
 // These declarations used to have the __thread storage class, but threads
 // aren't actually used.  Furthemore, the PGI compiler does not support that
 // storage class
-wordint iset     = -1;
-wordint iset_gdin = -1;
-wordint iset_gdout = -1;
+TGeoRef* iset_gdin = NULL;
+TGeoRef* iset_gdout = NULL;
 _groptions groptions = { OUI, CUBIQUE,  MAXIMUM, NON, -1, SYM, SCALAIRE, NON, NON, OUI, 16, 0, DISTANCE, NEAREST, 0.5, 3.0, 0.0  };
 
 wordint log_chunks[]= {0, 1, 2, 3,   4,    5,   6,      7,     8,      9,      10,     11,        12};

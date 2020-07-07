@@ -37,18 +37,9 @@ wordint c_ezqkdef(wordint ni, wordint nj, char *grtyp,
 {
   wordint icode;
   fprintf(stderr,"GOOD LIB");
-  icode = c_ezgdef_ffile(ni, nj, grtyp, ig1, ig2, ig3, ig4, iunit, NULL);
+  icode = c_ezgdef_ffile(ni, nj, grtyp, ig1, ig2, ig3, ig4, iunit);
   
   return icode;
 }
 
-wordint c_ezqkdef_new(wordint ni, wordint nj, char *grtyp,
-             wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit, TGeoRef* GRef)
-{
-  wordint icode;
-  fprintf(stderr,"NEW LIB");
-  icode = c_ezgdef_ffile(ni, nj, grtyp, ig1, ig2, ig3, ig4, iunit, GRef);
-  
-  return icode;
-}
 

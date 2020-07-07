@@ -24,10 +24,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint ez_calcxpncof(TGeoRef* GRef)
 {
-/*   wordint gdrow_id, gdcol_id;
-
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id); */
-
   ez_xpncof(&GRef->i1,
             &GRef->i2,
             &GRef->j1,
