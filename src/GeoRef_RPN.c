@@ -588,6 +588,71 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
    return(TRUE);
 }
 
+PTR_AS_INT f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
+   wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
+   ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref)
+{
+  PTR_AS_INT icode;
+  char lgrtyp[2];
+  char lgrref[2];
+
+  lgrtyp[0] = grtyp[0];
+  lgrtyp[1] = '\0';
+
+  lgrref[0] = grref[0];
+  lgrref[1] = '\0';
+
+  icode = (PTR_AS_INT) c_ezgdef_fmem(*ni, *nj, lgrtyp, lgrref, *ig1, *ig2, *ig3, *ig4, ax, ay);
+  return icode;
+}
+
+//! Insert a grid entry into the list of grids managed by ezscint.  Can be used
+//! with regular and irregular ('Y', 'Z') grids, although it is not very useful
+//! for regular grids.
+//! @param ni Horizontal size of the grid
+//! @param nj
+//! @param grtyp Grid type ('A', 'B', 'E', 'G', 'L', 'N', 'S','Y', 'Z', '#', '!')
+//! @param grref Reference grid type ('E', 'G', 'L', 'N', 'S')
+//! @param ig1 ig1 value associated to the reference grid
+//! @param ig2 ig2 value associated to the reference grid
+//! @param ig3 ig3 value associated to the reference grid
+//! @param ig4 ig4 value associated to the reference grid
+//! @param ax Positional axis mapped to the '>>' record
+//! @param ay Positional axis mapped to the '^^' record
+//!
+//! If the grid type corresponds to a regular grid type (eg. 'A', 'G', 'N', etc.),
+//! then the parameters IG1 through IG4 are taken from an ordinary data record
+//! and grref, ax and ay are not used.
+//!
+//! If grtyp == 'Z' or '#', the dimensions of ax=ni and ay=nj.
+//! If grtyp == 'Y', the dimensions of ax=ay=ni*nj. 
+TGeoRef* c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
+   wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay) {
+   
+   TGeoRef* GRef;
+
+   if (grtyp[0] == '#' || grtyp[0] == 'Y' || grtyp[0] == 'Z' || grtyp[0] == 'G') {
+      GRef = c_ezidentify_irreg_grid(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, ax, ay);
+      c_ezdefxg(GRef);
+      c_ezdefaxes(GRef, ax, ay);
+   } else {
+      GRef = c_ezidentify_reg_grid(ni, nj, grtyp, ig1, ig2, ig3, ig4);
+      c_ezdefxg(GRef);
+   }
+
+   ez_calcxpncof(GRef);
+
+   GRef->Grid[0]=grtyp[0];
+   GRef->Grid[1]=grtyp[1];
+   GRef->Project=GeoRef_RPNProject;
+   GRef->UnProject=GeoRef_RPNUnProject;
+   GRef->Value=(TGeoRef_Value*)GeoRef_RPNValue;
+   GRef->Distance=GeoRef_RPNDistance;
+   GRef->Height=NULL;
+
+   return GRef;
+}
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_RPNCreate>
  * Creation     : Avril 2005 J.P. Gauthier - CMC/CMOE
@@ -632,7 +697,7 @@ PTR_AS_INT f77name(georef_rpncreate)(wordint *ni, wordint *nj, char *grtyp, word
   cgrtyp[0] = grtyp[0];
   cgrtyp[1] = '\0';
 
-  return((PTR_AS_INT)GeoRef_RPNCreate(*ni, *nj, cgrtyp, *ig1, *ig2, *ig3, *ig4, *iunit));
+  return (PTR_AS_INT)GeoRef_RPNCreate(*ni, *nj, cgrtyp, *ig1, *ig2, *ig3, *ig4, *iunit));
 }
 
 TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int ig4,int FID) {

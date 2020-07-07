@@ -54,28 +54,6 @@ wordint c_ezfreegridset(TGeoRef* gdid, wordint index);
 wordint f77name(ezdefset)(PTR_AS_INT gdout, PTR_AS_INT gdin);
 wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin);
 
-wordint f77name(ezgdef)(wordint* ni, wordint* nj, char* grtyp, char* grref,
-                    wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
-                    ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref);
-wordint c_ezgdef(wordint ni, wordint nj, char* grtyp, char* grref,
-             wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay);
-
-wordint f77name(ezgdef_ffile)(wordint* ni, wordint* nj, char* grtyp,
-            wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
-            wordint* iunit, F2Cl lengrtyp);
-wordint c_ezgdef_ffile(wordint ni, wordint nj, char* grtyp,
-           wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit);
-
-wordint f77name(ezgdef_fll)(wordint* ni, wordint* nj, ftnfloat* lat, ftnfloat* lon);
-wordint c_ezgdef_fll(wordint ni, wordint nj,ftnfloat* lat, ftnfloat* lon);
-
-PTR_AS_INT f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
-                    wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
-                    ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref);
-TGeoRef* c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
-             wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay);
-
-
 
 wordint f77name(ezgdef_supergrid)(wordint* ni, wordint* nj, char* grtyp, char* grref, wordint* vercode, wordint* nsubgrids, PTR_AS_INT subgrid, F2Cl lengrtyp, F2Cl lengrref);
 
@@ -125,17 +103,6 @@ wordint c_ezgxprm(wordint gdid, wordint* ni, wordint* nj,
 
 wordint f77name(gdll)(wordint* gdid, ftnfloat* lat, ftnfloat* lon);
 wordint c_gdll(wordint gdid, ftnfloat* lat, ftnfloat* lon);
-
-wordint f77name(ezqkdef)(wordint* ni, wordint* nj, char* grtyp,
-                    wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4, wordint* iunit, F2Cl lengrtyp);
-wordint c_ezqkdef(wordint ni, wordint nj, char* grtyp,
-             wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit);
-
-wordint f77name(ezquickdef)(wordint* ni, wordint* nj, char* grtyp,
-          wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4, wordint* iunit, F2Cl lengrtyp);
-
-wordint c_ezquickdef(wordint ni, wordint nj, char* grtyp,
-         wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit);
 
 wordint f77name(gdrls)(PTR_AS_INT GRef);
 wordint c_gdrls(TGeoRef* GRef);

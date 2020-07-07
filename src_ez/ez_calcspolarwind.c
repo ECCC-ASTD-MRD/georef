@@ -23,7 +23,7 @@
 #include "../src/GeoRef.h"
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint ez_calcspolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat *uuin, ftnfloat *vvin, 
-			  wordint ni, wordint nj, wordint gdin)
+			  wordint ni, wordint nj, TGeoRef *gdin)
 {
   wordint k1, k2;
   ftnfloat *polar_wd, *polar_spd,*polar_lat,*polar_lon,*polar_lat_gem, *polar_lon_gem,*polar_x,*polar_y,*polar_uu,*polar_vv;
@@ -32,12 +32,10 @@ wordint ez_calcspolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat
   ftnfloat xlat1, xlat2, xlon1, xlon2;
   wordint ig1n, ig2n, ig3n, ig4n;
   ftnfloat pi, pj, d60, dgrw;
-  wordint i,j,ier,gdrow,gdcol;
+  wordint i,j,ier;
   TGeoRef *gda, *gdps;
   ftnfloat uupole, vvpole;
   ftnfloat quatrevingtdix, zero;
-    
-  c_gdkey2rowcol(gdin, &gdrow, &gdcol);
 
   polar_uu  = (ftnfloat *) malloc(ni*sizeof(ftnfloat));
   polar_vv  = (ftnfloat *) malloc(ni*sizeof(ftnfloat));
@@ -88,11 +86,11 @@ wordint ez_calcspolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat
   gdps = GeoRef_RPNCreate(ni, 1, grtyps, ig1n, ig2n, ig3n, ig4n, 0);
   c_gduvfwd(gdps, polar_uu, polar_vv, polar_spd,  polar_wd, polar_lat, polar_lon, ni);
 
-  f77name(ez_calcpoleval)(&uupole, polar_uu, &ni, Grille[gdrow][gdcol].ax, 
-			  &Grille[gdrow][gdcol].grtyp, &Grille[gdrow][gdcol].grref,1,1);
+  f77name(ez_calcpoleval)(&uupole, polar_uu, &ni, gdin->ax, 
+			  &gdin->grtyp, &gdin->grref,1,1);
 
-  f77name(ez_calcpoleval)(&vvpole, polar_vv, &ni, Grille[gdrow][gdcol].ax, 
-			  &Grille[gdrow][gdcol].grtyp, &Grille[gdrow][gdcol].grref,1,1);
+  f77name(ez_calcpoleval)(&vvpole, polar_vv, &ni, gdin->ax, 
+			  &gdin->grtyp, &gdin->grref,1,1);
 
   quatrevingtdix = -90.0;
   zero = 0.0;
