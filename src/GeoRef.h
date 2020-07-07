@@ -254,8 +254,8 @@ typedef struct TGeoRef {
    wordint mymaskgridi0,mymaskgridi1;
    wordint mymaskgridj0,mymaskgridj1;
    wordint *subgrid;
-   ftnfloat *lat, *lon;
-   ftnfloat *ax, *ay;
+   ftnfloat *lat, *lon; // same as Lat,Lon
+   ftnfloat *ax, *ay; // same as AX,AY
    ftnfloat *ncx, *ncy;
    char grtyp[4], grref[4];
    _fstinfo fst;
