@@ -28,9 +28,6 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
   wordint icode,i,j,k,ierc1,ierc2,ierc;
   wordint yancount_yin,yincount_yin, yancount_yan,yincount_yan;
   wordint yyin,yyout;
-  wordint yin_gdrow_in, yin_gdcol_in, yin_gdrow_out, yin_gdcol_out;
-  wordint yan_gdrow_in, yan_gdcol_in, yan_gdrow_out, yan_gdcol_out;
-  wordint     gdrow_in,     gdcol_in,     gdrow_out,     gdcol_out;
   wordint ni, nj;
   /*wordint yin2yin,yan2yin,yin2yan,yan2yan;*/
   int idx_gdin;
@@ -57,8 +54,6 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
   else
      {
      yin_gdin = gdin;
-     yin_gdrow_in = gdrow_in;
-     yin_gdcol_in = gdcol_in;
      }
 
 /* setup for output grid */
@@ -71,20 +66,13 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
   else
      {
      yin_gdout = gdout;
-     yin_gdrow_out = gdrow_out;
-     yin_gdcol_out = gdcol_out;
      }
 
-  /* TODO: not sure. valeur par defaut? */
-  // lgdin = &(Grille[yin_gdrow_in ][yin_gdcol_in ]);
-  lgdin = gdin;
-
+  lgdin = yin_gdin;
   lgdout= gdout;
   
-  /* TODO: not sure. valeur par defaut? */
-  // ni = Grille[yin_gdrow_out][yin_gdcol_out].ni;
-  ni = gdout->ni;
-  nj = gdout->nj;
+  ni = yin_gdout->ni;
+  nj = yin_gdout->nj;
 
 /* interp input one grid to yygrid - no masking needed*/
   if (yyin == 0 && yyout == 1)
