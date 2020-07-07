@@ -32,7 +32,8 @@ wordint ez_calcspolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat
   ftnfloat xlat1, xlat2, xlon1, xlon2;
   wordint ig1n, ig2n, ig3n, ig4n;
   ftnfloat pi, pj, d60, dgrw;
-  wordint i,j,ier,gdps,gda,gdrow,gdcol;
+  wordint i,j,ier,gdrow,gdcol;
+  TGeoRef *gda, *gdps;
   ftnfloat uupole, vvpole;
   ftnfloat quatrevingtdix, zero;
     
@@ -75,7 +76,7 @@ wordint ez_calcspolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat
     }
 
   grtypa[0] = 'A';
-  gda = c_ezqkdef(24,12, grtypa, 0,0,0,0,0);
+  gda = GeoRef_RPNCreate(24,12, grtypa, 0,0,0,0,0);
   c_gdwdfuv(gda, polar_spd, polar_wd,  uuin, vvin, polar_lat, polar_lon, ni);
   
   pi   = 0.0;
@@ -84,7 +85,7 @@ wordint ez_calcspolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat
   dgrw = 0.0;
   grtyps[0] = 'S';
   f77name(cxgaig)(grtyps, &ig1n, &ig2n, &ig3n, &ig4n, &pi, &pj, &d60, &dgrw,1);
-  gdps = c_ezqkdef(ni, 1, grtyps, ig1n, ig2n, ig3n, ig4n, 0);
+  gdps = GeoRef_RPNCreate(ni, 1, grtyps, ig1n, ig2n, ig3n, ig4n, 0);
   c_gduvfwd(gdps, polar_uu, polar_vv, polar_spd,  polar_wd, polar_lat, polar_lon, ni);
 
   f77name(ez_calcpoleval)(&uupole, polar_uu, &ni, Grille[gdrow][gdcol].ax, 
@@ -139,7 +140,7 @@ wordint ez_calcspolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat
     free(polar_lat_gem);
     free(polar_lon_gem);
     }
-  /* TODO: uncomment when ezqkdef modified */
-  //ier = c_gdrls(gdps);
+
+  ier = c_gdrls(gdps);
   return 0;
 }

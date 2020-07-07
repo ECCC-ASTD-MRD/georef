@@ -20,12 +20,14 @@
 
 #include <stdio.h>
 #include "ezscint.h"
+#include "../src/GeoRef.h"
 
 f77name(ez_rgll2gd)(ftnfloat *z1, ftnfloat *z2, ftnfloat *xlon, wordint *ni, wordint *nj, 
                     char *grtyp, wordint *ig1, wordint *ig2, wordint *ig3, wordint *ig4,F2Cl lengrtyp)
 {
   ftnfloat *tmplat;
-  wordint gdid, npts,n;
+  wordint npts,n;
+  TGeoRef *gr;
   char lgrtyp[2];
   
   npts = *ni * *nj;
@@ -38,9 +40,9 @@ f77name(ez_rgll2gd)(ftnfloat *z1, ftnfloat *z2, ftnfloat *xlon, wordint *ni, wor
   ftnstrclean(grtyp,lengrtyp);
   strcpy(lgrtyp, grtyp);
 
-  gdid  = c_ezqkdef(*ni,*nj, lgrtyp, *ig1,  *ig2,  *ig3,  *ig4, 0);
+  gr = GeoRef_RPNCreate(*ni,*nj, lgrtyp, *ig1,  *ig2,  *ig3,  *ig4, 0);
 
-  c_gduvfwd(gdid, z1, z2, z1, z2, tmplat, xlon, npts);
+  c_gduvfwd(gr, z1, z2, z1, z2, tmplat, xlon, npts);
   
   
   free(tmplat);
