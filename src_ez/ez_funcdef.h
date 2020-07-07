@@ -221,9 +221,9 @@ wordint c_gdxyfll(wordint gdid, ftnfloat* x, ftnfloat* y, ftnfloat* lat, ftnfloa
 wordint f77name(gdxyzfll)(wordint* gdid, ftnfloat* x, ftnfloat* y, ftnfloat* lat, ftnfloat* lon, wordint* n);
 wordint c_gdxyzfll(wordint gdid, ftnfloat* x, ftnfloat* y, ftnfloat* lat, ftnfloat* lon, wordint n);
 
-wordint c_ezgetgdin();
+TGeoRef* c_ezgetgdin();
 
-wordint c_ezgetgdout();
+TGeoRef* c_ezgetgdout();
 
 wordint f77name(guval)(wordint* gdin, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin,  ftnfloat* vvin,
                    ftnfloat* x, ftnfloat* y, wordint* n);
@@ -256,18 +256,18 @@ int c_ez_refgrid(int grid_index);
 
 void c_ezdefxg(TGeoRef* GRef);
 void c_ezdefaxes(TGeoRef* GRef, ftnfloat* ax, ftnfloat* ay);
-wordint c_gdinterp(ftnfloat* zout, ftnfloat* zin, wordint gdin, ftnfloat* x, ftnfloat* y, wordint npts);
+wordint c_gdinterp(ftnfloat* zout, ftnfloat* zin, TGeoRef* gdin, ftnfloat* x, ftnfloat* y, wordint npts);
 
-int f77name(gdsetmask)(int* gdid, int* mask);
-int f77name(gdgetmask)(int* gdid, int* mask);
+int f77name(gdsetmask)(PTR_AS_INT gr, int* mask);
+int f77name(gdgetmask)(PTR_AS_INT gr, int* mask);
 int f77name(ezsint_m)(float* zout, float* zin);
 int f77name(ezuvint_m)(float* uuout, float* vvout, float* uuin, float* vvin);
 int f77name(ezsint_mdm)(float* zout, int* mask_out, float* zin, int* mask_in);
 int f77name(ezuvint_mdm)(float* uuout, float* vvout, int* mask_out, float* uuin, float* vvin, int* mask_in);
 int f77name(ezsint_mask)(int* mask_out, int* mask_in);
 
-int c_gdsetmask(int gdid, int* mask);
-int c_gdgetmask(int gdid, int* mask);
+int c_gdsetmask(TGeoRef* gr, int* mask);
+int c_gdgetmask(TGeoRef* gr, int* mask);
 int c_ezsint_m(float* zout, float* zin);
 int c_ezuvint_m(float* uuout, float* vvout, float* uuin, float* vvin);
 int c_ezsint_mdm(float* zout, int* mask_out, float* zin, int* mask_in);

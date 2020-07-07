@@ -28,7 +28,7 @@ int c_find_gdin(TGeoRef* gdin, TGeoRef* gdout)
   i = 0;
   if (gset[i].gdin == gdin) 
   {
-    return idx_gdin;
+    return i;
   }
   
   i++; 
