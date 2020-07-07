@@ -23,11 +23,11 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin,wordint gdout,wordint gdin)
+wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
 {
   wordint icode,i,j,k,ierc1,ierc2,ierc;
   wordint yancount_yin,yincount_yin, yancount_yan,yincount_yan;
-  wordint yin_gdin,yan_gdin,yin_gdout,yan_gdout,yyin,yyout;
+  wordint yyin,yyout;
   wordint yin_gdrow_in, yin_gdcol_in, yin_gdrow_out, yin_gdcol_out;
   wordint yan_gdrow_in, yan_gdcol_in, yan_gdrow_out, yan_gdcol_out;
   wordint     gdrow_in,     gdcol_in,     gdrow_out,     gdcol_out;
@@ -37,26 +37,22 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin,wordint gdout,wordint gdin)
   ftnfloat *yin2yin_zvals,*yan2yin_zvals;
   ftnfloat *yin2yan_zvals,*yan2yan_zvals;
   
-  TGeoRef *lgdin, *lgdout;
+  TGeoRef *lgdin, *lgdout, *yin_gdin, *yan_gdin, *yin_gdout, *yan_gdout;
  /*  need only access to either yin or Yang info for the lat and lon val */
    
   yyin=0; yyout=0; 
   ierc=0;
   ierc1=0;ierc2=0;
 
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
-  c_gdkey2rowcol(gdout, &gdrow_out, &gdcol_out);
   idx_gdin = c_find_gdin(gdin, gdout);
 
 /* setup for input grid */
-  if (Grille[gdrow_in][gdcol_in].nsubgrids > 0)
+  if (gdin->nsubgrids > 0)
      {
      yyin=1;
-     yin_gdin = Grille[gdrow_in][gdcol_in].subgrid[0];
-     yan_gdin = Grille[gdrow_in][gdcol_in].subgrid[1];
+     yin_gdin = gdin->subgrid[0];
+     yan_gdin = gdin->subgrid[1];
      /*fprintf(stderr,"<c_ezyysint> finds subgrid %d and %d in src Yin-Yang grid\n",yin_gdin,yan_gdin);*/
-     c_gdkey2rowcol(yin_gdin,  &yin_gdrow_in,  &yin_gdcol_in);
-     c_gdkey2rowcol(yan_gdin,  &yan_gdrow_in,  &yan_gdcol_in);
      }
   else
      {
@@ -66,13 +62,11 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin,wordint gdout,wordint gdin)
      }
 
 /* setup for output grid */
-  if (Grille[gdrow_out][gdcol_out].nsubgrids > 0)
+  if (gdout->nsubgrids > 0)
      {
      yyout=1;
-     yin_gdout = Grille[gdrow_out][gdcol_out].subgrid[0];
-     yan_gdout = Grille[gdrow_out][gdcol_out].subgrid[1];
-     c_gdkey2rowcol(yin_gdout,  &yin_gdrow_out,  &yin_gdcol_out);
-     c_gdkey2rowcol(yan_gdout,  &yan_gdrow_out,  &yan_gdcol_out);
+     yin_gdout = gdout->subgrid[0];
+     yan_gdout = gdout->subgrid[1];
      }
   else
      {
@@ -81,11 +75,16 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin,wordint gdout,wordint gdin)
      yin_gdcol_out = gdcol_out;
      }
 
-  lgdin = &(Grille[yin_gdrow_in ][yin_gdcol_in ]);
-  lgdout= &(Grille[gdrow_out][gdcol_out]);
+  /* TODO: not sure. valeur par defaut? */
+  // lgdin = &(Grille[yin_gdrow_in ][yin_gdcol_in ]);
+  lgdin = gdin;
+
+  lgdout= gdout;
   
-  ni = Grille[yin_gdrow_out][yin_gdcol_out].ni;
-  nj = Grille[yin_gdrow_out][yin_gdcol_out].nj;
+  /* TODO: not sure. valeur par defaut? */
+  // ni = Grille[yin_gdrow_out][yin_gdcol_out].ni;
+  ni = gdout->ni;
+  nj = gdout->nj;
 
 /* interp input one grid to yygrid - no masking needed*/
   if (yyin == 0 && yyout == 1)

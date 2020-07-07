@@ -21,20 +21,18 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
-wordint c_ezyymint(wordint gdout, wordint gdin, wordint ni, wordint nj, ftnfloat *maskout, ftnfloat *dlat, ftnfloat *dlon, ftnfloat *yinlat, ftnfloat *yinlon, wordint *yyincount, ftnfloat *yanlat, ftnfloat *yanlon, wordint *yyancount)
+wordint c_ezyymint(TGeoRef *gdout, TGeoRef *gdin, wordint ni, wordint nj, ftnfloat *maskout, ftnfloat *dlat, ftnfloat *dlon, ftnfloat *yinlat, ftnfloat *yinlon, wordint *yyincount, ftnfloat *yanlat, ftnfloat *yanlon, wordint *yyancount)
 {
-  wordint ivalue,icode,i,j,k,yin_mgid;
-  wordint gdrow_in, gdcol_in, mask_gdrow, mask_gdcol;
+  wordint ivalue,icode,i,j,k;
+  TGeoRef *yin_mg;
   wordint yincount,yancount,yni,ynj;
   ftnfloat *yin_fld, global_extrap_value, local_extrap_value;
   char interp_degree[32],extrap_degree[32],extrap_value[32],local_val[32];
   char global_interp_degree[32],global_extrap_degree[32];
   
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
-  yin_mgid=Grille[gdrow_in][gdcol_in].mymaskgrid;
-  c_gdkey2rowcol(yin_mgid,  &mask_gdrow,  &mask_gdcol);
-  yni=Grille[mask_gdrow][mask_gdcol].ni;
-  ynj=Grille[mask_gdrow][mask_gdcol].nj;
+  yin_mg=gdin->mymaskgrid;
+  yni=yin_mg->ni;
+  ynj=yin_mg->nj;
 
   yin_fld = (ftnfloat *) malloc(yni*ynj*sizeof(ftnfloat));
   memset(yin_fld,0.0,yni*ynj*sizeof(ftnfloat));
@@ -57,7 +55,7 @@ wordint c_ezyymint(wordint gdout, wordint gdin, wordint ni, wordint nj, ftnfloat
   icode = c_ezsetval(extrap_value,local_extrap_value);
   strcpy(local_val,"value");
   icode = c_ezsetopt(extrap_degree, local_val);
-  icode = c_ezdefset(gdout,yin_mgid);
+  icode = c_ezdefset(gdout,yin_mg);
   icode = c_ezsint_orig(maskout,yin_fld);
   /*masking is done,reset original interp options*/
   icode = c_ezsetopt(interp_degree, global_interp_degree);
