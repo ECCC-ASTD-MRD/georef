@@ -22,18 +22,16 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint ez_corrvec(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, wordint gdin, wordint gdout)
+wordint ez_corrvec(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, TGeoRef *gdin, TGeoRef *gdout)
 {
   wordint ier;
 
-  wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out, idx_gdin;
+  wordint idx_gdin;
   _gridset *gset;
   
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
-  c_gdkey2rowcol(gdout, &gdrow_out, &gdcol_out);
   idx_gdin = c_find_gdin(gdin, gdout);
   
-  gset = &(Grille[gdrow_out][gdcol_out].gset[idx_gdin]);
+  gset = &(gdout->gset[idx_gdin]);
   if (gset->zones[AU_NORD].npts > 0)
     {
     ier = ez_corrvec_aunord(uuout,vvout,uuin,vvin, gdin, gdout);
