@@ -26,8 +26,8 @@ wordint ez_corrval(ftnfloat* zout, ftnfloat* zin,  wordint gdin, wordint gdout);
 wordint ez_corrvec(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, wordint gdin, wordint gdout);
 wordint ez_corrval_ausud(ftnfloat* zout, ftnfloat* zin,  wordint gdin, wordint gdout);
 wordint ez_corrval_aunord(ftnfloat* zout, ftnfloat* zin,  wordint gdin, wordint gdout);
-wordint ez_corrvec_aunord(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin,  wordint gdin, wordint gdout);
-wordint ez_corrvec_ausud(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin,  wordint gdin, wordint gdout);
+wordint ez_corrvec_aunord(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin,  TGeoRef* gdin, TGeoRef* gdout);
+wordint ez_corrvec_ausud(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin,  TGeoRef* gdin, TGeoRef* gdout);
 
 
 wordint ez_defzones(wordint gdin, wordint gdout);

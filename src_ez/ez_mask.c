@@ -191,10 +191,7 @@ int c_ezuvint_mdm(float *uuout, float *vvout, int *mask_out, float *uuin, float 
 
 int c_ezsint_mask(int *mask_out, int *mask_in)
 {
-   char grtyp_in[2], grtyp_out[2];
-   int ni_gdin, ni_gdout, nj_gdin, nj_gdout;
-   int ig1_gdin, ig2_gdin, ig3_gdin, ig4_gdin, ig1_gdout, ig2_gdout, ig3_gdout, ig4_gdout;
-   int i, j, k, ier,npts_in, npts_out, idx_gdin;
+   int i, j, k, npts_in, npts_out, idx_gdin;
    unsigned int bitpos;
    float *fmask_in, *fmask_out, *x, *y;
    char current_option[32], interp_degree[32];
@@ -213,24 +210,20 @@ int c_ezsint_mask(int *mask_out, int *mask_in)
 
    c_ezdefset(gdout, gdin);
    idx_gdin = c_find_gdin(gdin, gdout);
-   /* TODO: Désuet si on a TGeoRef* ?? */
-   ier = c_ezgprm(gdin, grtyp_in, &ni_gdin, &nj_gdin, &ig1_gdin, &ig2_gdin, &ig3_gdin, &ig4_gdin);
-   ier = c_ezgprm(gdout, grtyp_out, &ni_gdout, &nj_gdout, &ig1_gdout, &ig2_gdout, &ig3_gdout, &ig4_gdout);
 
+   npts_in  = gdin->ni *gdin->nj;
+   npts_out = gdout->ni*gdout->nj;
 
-   npts_in  = ni_gdin*nj_gdin;
-   npts_out = ni_gdout*nj_gdout;
-
-   if (grtyp_in[0] == 'Y')
+   if (gdin->grtyp[0] == 'Y')
       {
       ygrid = &(gdout->gset[idx_gdin].ygrid);
-      memcpy(mask_out, ygrid->mask, ni_gdout*nj_gdout*sizeof(int));
+      memcpy(mask_out, ygrid->mask, gdout->ni*gdout->nj*sizeof(int));
       }
    else
       {
       x = (float *) gdout->gset[idx_gdin].x;
       y = (float *) gdout->gset[idx_gdin].y;
-      f77name(qqq_ezsint_mask)(mask_out, x, y, &ni_gdout, &nj_gdout, mask_in, &ni_gdin, &nj_gdin);
+      f77name(qqq_ezsint_mask)(mask_out, x, y, &gdout->ni, &gdout->nj, mask_in, &gdin->ni, &gdin->nj);
       }
    return 0;
 }
@@ -248,10 +241,7 @@ int f77name(ezget_mask_zones)(int *mask_out, int *mask_in)
 
 int c_ezget_mask_zones(int *mask_out, int *mask_in)
 {
-   char grtyp_in[2], grtyp_out[2];
-   int ni_gdin, ni_gdout, nj_gdin, nj_gdout;
-   int ig1_gdin, ig2_gdin, ig3_gdin, ig4_gdin, ig1_gdout, ig2_gdout, ig3_gdout, ig4_gdout;
-   int i, j, k, ier,npts_in, npts_out, idx_gdin;
+   int i, j, k, npts_in, npts_out, idx_gdin;
    unsigned int bitpos;
    float *x, *y;
    char current_option[32], interp_degree[32];
@@ -270,16 +260,14 @@ int c_ezget_mask_zones(int *mask_out, int *mask_in)
 
    c_ezdefset(gdout, gdin);
    idx_gdin = c_find_gdin(gdin, gdout);
-   ier = c_ezgprm(gdin, grtyp_in, &ni_gdin, &nj_gdin, &ig1_gdin, &ig2_gdin, &ig3_gdin, &ig4_gdin);
-   ier = c_ezgprm(gdout, grtyp_out, &ni_gdout, &nj_gdout, &ig1_gdout, &ig2_gdout, &ig3_gdout, &ig4_gdout);
 
-   npts_in  = ni_gdin*nj_gdin;
-   npts_out = ni_gdout*nj_gdout;
+   npts_in  = gdin->ni*gdin->nj;
+   npts_out = gdout->ni*gdout->nj;
 
     x = (float *) gdout->gset[idx_gdin].x;
     y = (float *) gdout->gset[idx_gdin].y;
 
-   f77name(qqq_ezget_mask_zones)(mask_out, x, y, &ni_gdout, &nj_gdout, mask_in, &ni_gdin, &nj_gdin);
+   f77name(qqq_ezget_mask_zones)(mask_out, x, y, &gdout->ni, &gdout->nj, mask_in, &gdin->ni, &gdin->nj);
     return 0;
 }
 
