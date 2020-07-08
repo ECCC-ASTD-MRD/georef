@@ -27,7 +27,7 @@
 wordint ez_calclatlon(TGeoRef* GRef)
    {
    ftnfloat xlat00, xlon00, dlat, dlon;
-   wordint i,j,k,ni, nj, npts, hemisphere, gdrow, gdcol;
+   wordint i,j,k,ni, nj, npts, hemisphere;
    ftnfloat *lonp, *latp, *xp, *yp;
    ftnfloat *x, *y;
 

@@ -101,8 +101,8 @@ wordint c_ezgxprm(wordint gdid, wordint* ni, wordint* nj,
               char* grtyp, wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
               char* grref, wordint* ig1ref, wordint* ig2ref, wordint* ig3ref, wordint* ig4ref);
 
-wordint f77name(gdll)(wordint* gdid, ftnfloat* lat, ftnfloat* lon);
-wordint c_gdll(wordint gdid, ftnfloat* lat, ftnfloat* lon);
+wordint f77name(gdll)(PTR_AS_INT GRef, ftnfloat* lat, ftnfloat* lon);
+wordint c_gdll(TGeoRef* GRef, ftnfloat* lat, ftnfloat* lon);
 
 wordint f77name(gdrls)(PTR_AS_INT GRef);
 wordint c_gdrls(TGeoRef* GRef);
