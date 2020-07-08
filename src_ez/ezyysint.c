@@ -34,7 +34,7 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
   ftnfloat *yin2yin_zvals,*yan2yin_zvals;
   ftnfloat *yin2yan_zvals,*yan2yan_zvals;
   
-  TGeoRef *lgdin, *lgdout, *yin_gdin, *yan_gdin, *yin_gdout, *yan_gdout;
+  TGeoRef *yin_gdin, *yan_gdin, *yin_gdout, *yan_gdout;
  /*  need only access to either yin or Yang info for the lat and lon val */
    
   yyin=0; yyout=0; 
@@ -67,9 +67,6 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
      {
      yin_gdout = gdout;
      }
-
-  lgdin = yin_gdin;
-  lgdout= gdout;
   
   ni = yin_gdout->ni;
   nj = yin_gdout->nj;
@@ -99,7 +96,7 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
   if (yan_gdin == gdout)
      {
      icode = c_ezdefset(gdout,yan_gdin);
-     icode = c_ezsint_orig(zout,&zin[(lgdin->ni)*(lgdin->nj)]);   
+     icode = c_ezsint_orig(zout,&zin[(yin_gdin->ni)*(yin_gdin->nj)]);   
      return icode;
      }
 
@@ -128,7 +125,7 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
      if (groptions.valeur_1subgrid == yan_gdin) /* User specifies to use Yang input grid */
         {
         icode = c_ezdefset(yin_gdout,groptions.valeur_1subgrid);
-        ierc = c_ezsint_orig(zout,&zin[(lgdin->ni)*(lgdin->nj)]);
+        ierc = c_ezsint_orig(zout,&zin[(yin_gdin->ni)*(yin_gdin->nj)]);
         return ierc;
         }
 
@@ -142,19 +139,19 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
 /* interp yinyang to one grid */
   if (yyin == 1 && yyout == 0)
     {
-    yincount_yin = lgdout->gset[idx_gdin].yincount_yin;
-    yancount_yin = lgdout->gset[idx_gdin].yancount_yin;
+    yincount_yin = gdout->gset[idx_gdin].yincount_yin;
+    yancount_yin = gdout->gset[idx_gdin].yancount_yin;
     yin2yin_zvals = (ftnfloat *) malloc(yincount_yin*sizeof(ftnfloat));
     yan2yin_zvals = (ftnfloat *) malloc(yancount_yin*sizeof(ftnfloat));
 
     icode = c_gdxysval(yin_gdin,yin2yin_zvals,zin,
-           lgdout->gset[idx_gdin].yin2yin_x,lgdout->gset[idx_gdin].yin2yin_y,
-           lgdout->gset[idx_gdin].yincount_yin);
+           gdout->gset[idx_gdin].yin2yin_x,gdout->gset[idx_gdin].yin2yin_y,
+           gdout->gset[idx_gdin].yincount_yin);
 
     icode = c_gdxysval(yan_gdin,yan2yin_zvals,
-            &zin[(lgdin->ni)*(lgdin->nj)],
-    lgdout->gset[idx_gdin].yan2yin_x,lgdout->gset[idx_gdin].yan2yin_y,
-    lgdout->gset[idx_gdin].yancount_yin);
+            &zin[(yin_gdin->ni)*(yin_gdin->nj)],
+    gdout->gset[idx_gdin].yan2yin_x,gdout->gset[idx_gdin].yan2yin_y,
+    gdout->gset[idx_gdin].yancount_yin);
 
     yincount_yin=0;
     yancount_yin=0;
@@ -163,7 +160,7 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
       for (i=0;i<ni; i++)
         {
         k=(j*ni)+i;
-        if (lgdout->gset[idx_gdin].yin_maskout[k] == 1.0)
+        if (gdout->gset[idx_gdin].yin_maskout[k] == 1.0)
           {
           zout[k]=yan2yin_zvals[yancount_yin]; 
           yancount_yin++;
@@ -184,28 +181,28 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
   if (yyout == 1 && yyin == 1)
     {
 /* interp input YY grid to YY grid */
-    yincount_yin = lgdout->gset[idx_gdin].yincount_yin;
-    yancount_yin = lgdout->gset[idx_gdin].yancount_yin;
-    yincount_yan = lgdout->gset[idx_gdin].yincount_yan;
-    yancount_yan = lgdout->gset[idx_gdin].yancount_yan;
+    yincount_yin = gdout->gset[idx_gdin].yincount_yin;
+    yancount_yin = gdout->gset[idx_gdin].yancount_yin;
+    yincount_yan = gdout->gset[idx_gdin].yincount_yan;
+    yancount_yan = gdout->gset[idx_gdin].yancount_yan;
     yin2yin_zvals = (ftnfloat *) malloc(yincount_yin*sizeof(ftnfloat));
     yan2yin_zvals = (ftnfloat *) malloc(yancount_yin*sizeof(ftnfloat));
     yin2yan_zvals = (ftnfloat *) malloc(yincount_yan*sizeof(ftnfloat));
     yan2yan_zvals = (ftnfloat *) malloc(yancount_yan*sizeof(ftnfloat));
     
     icode = c_gdxysval(yin_gdin,yin2yin_zvals,zin,
-            lgdout->gset[idx_gdin].yin2yin_x,lgdout->gset[idx_gdin].yin2yin_y,
-            lgdout->gset[idx_gdin].yincount_yin);
-    icode = c_gdxysval(yan_gdin,yan2yin_zvals,&zin[(lgdin->ni)*(lgdin->nj)],
-            lgdout->gset[idx_gdin].yan2yin_x,lgdout->gset[idx_gdin].yan2yin_y,
-            lgdout->gset[idx_gdin].yancount_yin);
+            gdout->gset[idx_gdin].yin2yin_x,gdout->gset[idx_gdin].yin2yin_y,
+            gdout->gset[idx_gdin].yincount_yin);
+    icode = c_gdxysval(yan_gdin,yan2yin_zvals,&zin[(yin_gdin->ni)*(yin_gdin->nj)],
+            gdout->gset[idx_gdin].yan2yin_x,gdout->gset[idx_gdin].yan2yin_y,
+            gdout->gset[idx_gdin].yancount_yin);
 
     icode = c_gdxysval(yin_gdin,yin2yan_zvals,zin,
-            lgdout->gset[idx_gdin].yin2yan_x,lgdout->gset[idx_gdin].yin2yan_y,
-            lgdout->gset[idx_gdin].yincount_yan);
-    icode = c_gdxysval(yan_gdin,yan2yan_zvals,&zin[(lgdin->ni)*(lgdin->nj)],
-            lgdout->gset[idx_gdin].yan2yan_x,lgdout->gset[idx_gdin].yan2yan_y,
-       lgdout->gset[idx_gdin].yancount_yan);
+            gdout->gset[idx_gdin].yin2yan_x,gdout->gset[idx_gdin].yin2yan_y,
+            gdout->gset[idx_gdin].yincount_yan);
+    icode = c_gdxysval(yan_gdin,yan2yan_zvals,&zin[(yin_gdin->ni)*(yin_gdin->nj)],
+            gdout->gset[idx_gdin].yan2yan_x,gdout->gset[idx_gdin].yan2yan_y,
+       gdout->gset[idx_gdin].yancount_yan);
 
 /* interp input YY grid to Yin grid */
     yincount_yin=0; yancount_yin=0;
@@ -214,7 +211,7 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
       for (i=0;i<ni; i++)
         {
         k=(j*ni)+i;
-        if (lgdout->gset[idx_gdin].yin_maskout[k] == 1.0)
+        if (gdout->gset[idx_gdin].yin_maskout[k] == 1.0)
           {
           zout[k]=yan2yin_zvals[yancount_yin]; 
           yancount_yin++;
@@ -233,7 +230,7 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
       for (i=0;i<ni; i++)
         {
         k=(j*ni)+i;
-        if (lgdout->gset[idx_gdin].yan_maskout[k] == 1.0)
+        if (gdout->gset[idx_gdin].yan_maskout[k] == 1.0)
           {
           zout[k+(ni*nj)]=yan2yan_zvals[yancount_yan]; 
           yancount_yan++;
