@@ -24,23 +24,17 @@
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-void ez_xpnsrcgd(wordint gdid, ftnfloat *zout, ftnfloat *zin)
-{
-   TGeoRef gr;
-  wordint gdrow_id, gdcol_id;
-    
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-   gr = Grille[gdrow_id][gdcol_id];
-   
-   switch (gr.grtyp[0])
+void ez_xpnsrcgd(TGeoRef *GRef, ftnfloat *zout, ftnfloat *zin)
+{   
+   switch (GRef->grtyp[0])
      {
      case 'A':
      case 'G':
-       f77name(ez_xpngdag2)(zout,zin,&gr.ni,&gr.nj,&gr.j1,&gr.j2,&gr.fst.ig[IG1],&groptions.symmetrie);
+       f77name(ez_xpngdag2)(zout,zin,&GRef->ni,&GRef->nj,&GRef->j1,&GRef->j2,&GRef->fst.ig[IG1],&groptions.symmetrie);
        break;
 
      case 'B':
-       f77name(ez_xpngdb2)(zout,zin,&gr.ni,&gr.nj,&gr.j1,&gr.j2,&gr.fst.ig[IG1],&groptions.symmetrie);
+       f77name(ez_xpngdb2)(zout,zin,&GRef->ni,&GRef->nj,&GRef->j1,&GRef->j2,&GRef->fst.ig[IG1],&groptions.symmetrie);
        break;
 
      default:

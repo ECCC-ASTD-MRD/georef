@@ -24,50 +24,46 @@
 void ez_freezones(_gridset *gdset);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdxysval)(wordint *gdin, ftnfloat *zout, ftnfloat *zin, ftnfloat *x, ftnfloat *y, wordint *n)
+wordint f77name(gdxysval)(PTR_AS_INT gdin, ftnfloat *zout, ftnfloat *zin, ftnfloat *x, ftnfloat *y, wordint *n)
 {
    wordint icode;
    
-   icode = c_gdxysval(*gdin, zout, zin, x, y, *n);
+   icode = c_gdxysval((TGeoRef*)gdin, zout, zin, x, y, *n);
    return icode;
 }
 
-wordint c_gdxysval(wordint gdin, ftnfloat *zout, ftnfloat *zin, ftnfloat *x, ftnfloat *y, wordint n)
+wordint c_gdxysval(TGeoRef *gdin, ftnfloat *zout, ftnfloat *zin, ftnfloat *x, ftnfloat *y, wordint n)
 {
-  wordint j, icode, yin_gdid, yan_gdid,ni,nj;
-  ftnfloat *zoutyin, *zoutyan;
-  ftnfloat *tmpy;
+   wordint j, icode, ni, nj;
+   TGeoRef *yin_gd, *yan_gd;
+   ftnfloat *zoutyin, *zoutyan;
+   ftnfloat *tmpy;
 
-wordint gdrow_id, gdcol_id,yin_gdrow_id,yin_gdcol_id;
-
-  c_gdkey2rowcol(gdin,  &gdrow_id,  &gdcol_id);
-
-  if (Grille[gdrow_id][gdcol_id].nsubgrids > 0)
+  if (gdin->nsubgrids > 0)
       {
-      yin_gdid=Grille[gdrow_id][gdcol_id].subgrid[0];
-      yan_gdid=Grille[gdrow_id][gdcol_id].subgrid[1];
-      c_gdkey2rowcol(yin_gdid,  &yin_gdrow_id,  &yin_gdcol_id);
-      ni = Grille[yin_gdrow_id][yin_gdcol_id].ni;
-      nj = Grille[yin_gdrow_id][yin_gdcol_id].nj;
+      yin_gd=gdin->subgrid[0];
+      yan_gd=gdin->subgrid[1];
+      ni = yin_gd->ni;
+      nj = yin_gd->nj;
       tmpy = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       zoutyin = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       zoutyan = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       for (j=0; j< n; j++)
         {
-          if (y[j] > Grille[yin_gdrow_id][yin_gdcol_id].nj)
+          if (y[j] > yin_gd->nj)
              {
-             tmpy[j]=y[j]-Grille[yin_gdrow_id][yin_gdcol_id].nj;
+             tmpy[j]=y[j]-yin_gd->nj;
              }
           else
              {
              tmpy[j]=y[j];
              }
         }
-      icode = c_gdxysval_orig(yin_gdid,zoutyin,zin,x,tmpy,n);
-      icode = c_gdxysval_orig(yan_gdid,zoutyan,&zin[ni*nj],x,tmpy,n);
+      icode = c_gdxysval_orig(yin_gd,zoutyin,zin,x,tmpy,n);
+      icode = c_gdxysval_orig(yan_gd,zoutyan,&zin[ni*nj],x,tmpy,n);
       for (j=0; j < n; j++)
         {
-        if (y[j] > Grille[yin_gdrow_id][yin_gdcol_id].nj)
+        if (y[j] > yin_gd->nj)
            {
            zout[j]=zoutyan[j];
            }
@@ -88,7 +84,7 @@ wordint gdrow_id, gdcol_id,yin_gdrow_id,yin_gdcol_id;
    
 }
 
-wordint c_gdxysval_orig(wordint gdin, ftnfloat *zout, ftnfloat *zin, ftnfloat *x, ftnfloat *y, wordint n)
+wordint c_gdxysval_orig(TGeoRef *gdin, ftnfloat *zout, ftnfloat *zin, ftnfloat *x, ftnfloat *y, wordint n)
 {
    wordint ier;
 

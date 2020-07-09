@@ -22,45 +22,41 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
-wordint c_gdxysint(ftnfloat *zout, ftnfloat *zin, wordint gdin, ftnfloat *x, ftnfloat *y, wordint npts);
+wordint c_gdxysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, ftnfloat *x, ftnfloat *y, wordint npts);
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdxysint)(ftnfloat *zout, ftnfloat *zin, wordint *gdin, ftnfloat *x, ftnfloat *y, wordint *npts)
+wordint f77name(gdxysint)(ftnfloat *zout, ftnfloat *zin, PTR_AS_INT gdin, ftnfloat *x, ftnfloat *y, wordint *npts)
 {
    wordint icode;
 
-   icode = c_gdxysint(zout, zin, *gdin, x, y, *npts);
+   icode = c_gdxysint(zout, zin, (TGeoRef*)gdin, x, y, *npts);
    return icode;
 }
 
-wordint c_gdxysint(ftnfloat *zout, ftnfloat *zin, wordint gdin, ftnfloat *x, ftnfloat *y, wordint npts)
+wordint c_gdxysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, ftnfloat *x, ftnfloat *y, wordint npts)
 {
    wordint ier;
    ftnfloat *lzin, *lxzin;
   _zone zones[NZONES];
   wordint gdout;
   _gridset tmpset;
-  wordint gdrow_in, gdcol_in;
 
    lzin  = NULL;
    lxzin = NULL;
 
-
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
-
-   if (Grille[gdrow_in][gdcol_in].fst.axe_y_inverse == 1)
+   if (gdin->fst.axe_y_inverse == 1)
       {
-      lzin = (ftnfloat *) malloc(Grille[gdrow_in][gdcol_in].ni*Grille[gdrow_in][gdcol_in].nj*sizeof(ftnfloat));
-      memcpy(lzin, zin, Grille[gdrow_in][gdcol_in].ni*Grille[gdrow_in][gdcol_in].nj*sizeof(ftnfloat));
-      f77name(permut)(lzin, &Grille[gdrow_in][gdcol_in].ni, &Grille[gdrow_in][gdcol_in].nj);
+      lzin = (ftnfloat *) malloc(gdin->ni*gdin->nj*sizeof(ftnfloat));
+      memcpy(lzin, zin, gdin->ni*gdin->nj*sizeof(ftnfloat));
+      f77name(permut)(lzin, &gdin->ni, &gdin->nj);
       }
    else
      {
      lzin = zin;
      }
 
-   if (Grille[gdrow_in][gdcol_in].needs_expansion == OUI)
+   if (gdin->needs_expansion == OUI)
      {
-     lxzin = (ftnfloat *) malloc(2*Grille[gdrow_in][gdcol_in].ni*Grille[gdrow_in][gdcol_in].nj*sizeof(ftnfloat));
+     lxzin = (ftnfloat *) malloc(2*gdin->ni*gdin->nj*sizeof(ftnfloat));
      ez_xpnsrcgd(gdin, lxzin, lzin);
      }
    else

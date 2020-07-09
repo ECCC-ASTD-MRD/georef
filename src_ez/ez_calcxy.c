@@ -23,11 +23,11 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint ez_calcxy(wordint gdin, wordint gdout)
+wordint ez_calcxy(TGeoRef *gdin, TGeoRef *gdout)
 {
    wordint coordonnee, ni_in, nj_in, ni_out, nj_out, ninj_in, ninj_out;
    wordint i,j,ier;
-   wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out, npts, cur_gdin, previous_val_polar_correction;
+   wordint npts, cur_gdin, previous_val_polar_correction;
    int lcl_ngdin, idx_gdin;
    static wordint found = -1;
    static wordint ncalls = 0;
@@ -35,30 +35,28 @@ wordint ez_calcxy(wordint gdin, wordint gdout)
    _ygrid *ygrid;
    float *gdout_lat, *gdout_lon;
 
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
-  c_gdkey2rowcol(gdout, &gdrow_out, &gdcol_out);
   idx_gdin = c_find_gdin(gdin, gdout);
   /* Mettre du code au cas ou gdx_gdin == -1 */
 
-  if (Grille[gdrow_out][gdcol_out].gset[idx_gdin].flags & XXX)
+  if (gdout->gset[idx_gdin].flags & XXX)
       {
       return 0;
       }
 
    /* Dans un premier temps on calcule la position x-y de tous les points sur la grille */
 
-   ni_in =  Grille[gdrow_in][gdcol_in].ni;
-   nj_in =  Grille[gdrow_in][gdcol_in].nj;
+   ni_in =  gdin->ni;
+   nj_in =  gdin->nj;
    ninj_in = ni_in * nj_in;
 
-   ni_out = Grille[gdrow_out][gdcol_out].ni;
-   nj_out = Grille[gdrow_out][gdcol_out].nj;
+   ni_out = gdout->ni;
+   nj_out = gdout->nj;
    ninj_out = ni_out * nj_out;
 
-   Grille[gdrow_out][gdcol_out].gset[idx_gdin].x = (ftnfloat *) malloc(ninj_out*sizeof(ftnfloat));
-   Grille[gdrow_out][gdcol_out].gset[idx_gdin].y = (ftnfloat *) malloc(ninj_out*sizeof(ftnfloat));
+   gdout->gset[idx_gdin].x = (ftnfloat *) malloc(ninj_out*sizeof(ftnfloat));
+   gdout->gset[idx_gdin].y = (ftnfloat *) malloc(ninj_out*sizeof(ftnfloat));
 
-   switch(Grille[gdrow_in][gdcol_in].grtyp[0])
+   switch(gdin->grtyp[0])
       {
       case 'A':
       case 'B':
@@ -68,13 +66,13 @@ wordint ez_calcxy(wordint gdin, wordint gdout)
       case 'S':
       case 'T':
       case '!':
-        f77name(ez_ll2rgd)(Grille[gdrow_out][gdcol_out].gset[idx_gdin].x,
-                           Grille[gdrow_out][gdcol_out].gset[idx_gdin].y,
-                           Grille[gdrow_out][gdcol_out].lat, Grille[gdrow_out][gdcol_out].lon, &ninj_out,
-                           &ni_in, &nj_in, &Grille[gdrow_in][gdcol_in].grtyp,
-                           &Grille[gdrow_in][gdcol_in].fst.ig[IG1], &Grille[gdrow_in][gdcol_in].fst.ig[IG2],
-                           &Grille[gdrow_in][gdcol_in].fst.ig[IG3], &Grille[gdrow_in][gdcol_in].fst.ig[IG4],
-                           &groptions.symmetrie, Grille[gdrow_in][gdcol_in].ay);
+        f77name(ez_ll2rgd)(gdout->gset[idx_gdin].x,
+                           gdout->gset[idx_gdin].y,
+                           gdout->lat, gdout->lon, &ninj_out,
+                           &ni_in, &nj_in, &gdin->grtyp,
+                           &gdin->fst.ig[IG1], &gdin->fst.ig[IG2],
+                           &gdin->fst.ig[IG3], &gdin->fst.ig[IG4],
+                           &groptions.symmetrie, gdin->ay);
         break;
 
 
@@ -82,21 +80,21 @@ wordint ez_calcxy(wordint gdin, wordint gdout)
       case 'Z':
       case 'G':
          coordonnee = RELATIF;
-         f77name(ez_ll2igd)(Grille[gdrow_out][gdcol_out].gset[idx_gdin].x,
-                            Grille[gdrow_out][gdcol_out].gset[idx_gdin].y,
-                            Grille[gdrow_out][gdcol_out].lat, Grille[gdrow_out][gdcol_out].lon, &ninj_out,
-                            &ni_in,&nj_in,&Grille[gdrow_in][gdcol_in].grtyp, &Grille[gdrow_in][gdcol_in].grref,
-                            &Grille[gdrow_in][gdcol_in].fst.igref[IG1], &Grille[gdrow_in][gdcol_in].fst.igref[IG2],
-                            &Grille[gdrow_in][gdcol_in].fst.igref[IG3], &Grille[gdrow_in][gdcol_in].fst.igref[IG4],
-                            Grille[gdrow_in][gdcol_in].ax, Grille[gdrow_in][gdcol_in].ay,
+         f77name(ez_ll2igd)(gdout->gset[idx_gdin].x,
+                            gdout->gset[idx_gdin].y,
+                            gdout->lat, gdout->lon, &ninj_out,
+                            &ni_in,&nj_in,&gdin->grtyp, &gdin->grref,
+                            &gdin->fst.igref[IG1], &gdin->fst.igref[IG2],
+                            &gdin->fst.igref[IG3], &gdin->fst.igref[IG4],
+                            gdin->ax, gdin->ay,
                             &coordonnee);
-         if (Grille[gdrow_in][gdcol_in].grtyp[0] == 'G')
+         if (gdin->grtyp[0] == 'G')
             {
-            if (Grille[gdrow_in][gdcol_in].fst.ig[IG1] == NORD)
+            if (gdin->fst.ig[IG1] == NORD)
               {
               for (j=0; j < ni_out*nj_out; j++)
                 {
-                Grille[gdrow_out][gdcol_out].gset[idx_gdin].y[j] -= nj_in;
+                gdout->gset[idx_gdin].y[j] -= nj_in;
                 }
                }
             }
@@ -105,9 +103,9 @@ wordint ez_calcxy(wordint gdin, wordint gdout)
       case 'Y':
          previous_val_polar_correction = groptions.polar_correction;
          groptions.polar_correction = NON;
-         Grille[gdrow_out][gdcol_out].gset[idx_gdin].ygrid.n_wts = groptions.wgt_num;
+         gdout->gset[idx_gdin].ygrid.n_wts = groptions.wgt_num;
 /*         fprintf(stderr, "(ez_calcxy) %d\n", groptions.wgt_num);*/
-         ygrid = &(Grille[gdrow_out][gdcol_out].gset[idx_gdin].ygrid);
+         ygrid = &(gdout->gset[idx_gdin].ygrid);
          ygrid->lat =  (float *) malloc(ninj_in*sizeof(ftnfloat));
          ygrid->lon =  (float *) malloc(ninj_in*sizeof(ftnfloat));
          gdout_lat =  (float *) malloc(ninj_out*sizeof(ftnfloat));
@@ -118,16 +116,16 @@ wordint ez_calcxy(wordint gdin, wordint gdout)
          ier = c_gdll(gdin, ygrid->lat, ygrid->lon);
          ier = c_gdll(gdout, gdout_lat, gdout_lon);
 
-         if (Grille[gdrow_in][gdcol_in].mask == NULL)
+         if (gdin->mask == NULL)
             {
             f77name(ez_calcxy_y)(ygrid->wts, ygrid->idx,
-               Grille[gdrow_out][gdcol_out].gset[idx_gdin].x, Grille[gdrow_out][gdcol_out].gset[idx_gdin].y, gdout_lat, gdout_lon, ygrid->lat, ygrid->lon, ygrid->mask,
+               gdout->gset[idx_gdin].x, gdout->gset[idx_gdin].y, gdout_lat, gdout_lon, ygrid->lat, ygrid->lon, ygrid->mask,
                &ni_in, &nj_in, &ni_out, &nj_out, &(groptions.wgt_num));
             }
          else
             {
             f77name(ez_calcxy_y_m)(ygrid->wts, ygrid->idx,
-               Grille[gdrow_out][gdcol_out].gset[idx_gdin].x, Grille[gdrow_out][gdcol_out].gset[idx_gdin].y, gdout_lat, gdout_lon, ygrid->mask, ygrid->lat, ygrid->lon, Grille[gdrow_in][gdcol_in].mask,
+               gdout->gset[idx_gdin].x, gdout->gset[idx_gdin].y, gdout_lat, gdout_lon, ygrid->mask, ygrid->lat, ygrid->lon, gdin->mask,
                &ni_in, &nj_in, &ni_out, &nj_out, &(groptions.wgt_num));
             }
 
@@ -140,7 +138,7 @@ wordint ez_calcxy(wordint gdin, wordint gdout)
         break;
       }
 
-   Grille[gdrow_out][gdcol_out].gset[idx_gdin].flags |= XXX;
+   gdout->gset[idx_gdin].flags |= XXX;
 
    return 0;
 }
