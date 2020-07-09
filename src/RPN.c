@@ -251,17 +251,17 @@ int cs_fstecr(void *Data,int NPak,int Unit, int DateO,int Deet,int NPas,int NI,i
  *----------------------------------------------------------------------------
  */
 //TODO: get rid off
-int RPN_IntIdNew(int NI,int NJ,char* GRTYP,int IG1_JP,int IG2_JP,int IG3_JP, int IG4_JP,int FID) {
+TGeoRef* RPN_IntIdNew(int NI,int NJ,char* GRTYP,int IG1_JP,int IG2_JP,int IG3_JP, int IG4_JP,int FID) {
 
-   int id=-1;
+   TGeoRef *GRef;
 
    if (GRTYP[0]!='M' && GRTYP[0]!='W' && GRTYP[0]!='V') {
 //      RPN_IntLock();
-      id=c_ezqkdef(NI,NJ,GRTYP,IG1_JP,IG2_JP,IG3_JP,IG4_JP,FID);
+      GRef=GeoRef_RPNCreate(NI,NJ,GRTYP,IG1_JP,IG2_JP,IG3_JP,IG4_JP,FID);
 //      RPN_IntUnlock();
    }
    
-   return(id);
+   return GRef;
 }
 
 /*----------------------------------------------------------------------------

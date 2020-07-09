@@ -133,7 +133,7 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    {
       if (0 == (gdin->n_gdin_for % CHUNK))
       {
-         gdin->gdin_for = (int *) realloc(gdin->gdin_for, (gdin->n_gdin_for+CHUNK)*sizeof(int));
+         gdin->gdin_for = (TGeoRef**) realloc(gdin->gdin_for, (gdin->n_gdin_for+CHUNK)*sizeof(TGeoRef*));
       }
       gdin->gdin_for[gdin->n_gdin_for] = gdout;
       gdin->n_gdin_for++;

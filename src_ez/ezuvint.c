@@ -33,17 +33,13 @@ wordint f77name(ezuvint)(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfl
 
 wordint c_ezuvint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin)
 {
-  wordint icode,gdin,gdout;
-   
-  wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out;
+  wordint icode;
+  TGeoRef *gdin, *gdout;
    
   gdin = iset_gdin;
   gdout= iset_gdout;
-  
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
-  c_gdkey2rowcol(gdout, &gdrow_out, &gdcol_out);
 
-  if (Grille[gdrow_in][gdcol_in].nsubgrids > 0 || Grille[gdrow_out][gdcol_out].nsubgrids > 0)
+  if (gdin->nsubgrids > 0 || gdout->nsubgrids > 0)
       {
       icode = c_ezyyuvint(uuout,vvout,uuin,vvin,gdout,gdin);
       iset_gdin=gdin;
@@ -57,12 +53,10 @@ wordint c_ezuvint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vv
 
 wordint c_ezuvint_orig(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin)
 {
-  wordint gdin,gdout;
+  TGeoRef *gdin, *gdout;
   wordint npts, ier, ierc,ierc1,ierc2;
   ftnfloat *uullout = NULL;
   ftnfloat *vvllout = NULL;
-   
-  wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out;
    
   gdin = iset_gdin;
   gdout= iset_gdout;
@@ -70,10 +64,7 @@ wordint c_ezuvint_orig(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloa
   ierc1 = 0;
   ierc2 = 0;
   
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
-  c_gdkey2rowcol(gdout, &gdrow_out, &gdcol_out);
-  
-  npts = Grille[gdrow_out][gdcol_out].ni*Grille[gdrow_out][gdcol_out].nj;
+  npts = gdout->ni*gdout->nj;
   ier = ez_calclatlon(gdout);
   
   groptions.vecteur = VECTEUR;
@@ -97,9 +88,9 @@ wordint c_ezuvint_orig(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloa
   vvllout = (ftnfloat *) malloc(npts*sizeof(ftnfloat));
   
   c_gdwdfuv(gdin, uullout, vvllout, uuout, vvout,
-            Grille[gdrow_out][gdcol_out].lat, Grille[gdrow_out][gdcol_out].lon, npts);
+            gdout->lat, gdout->lon, npts);
   c_gduvfwd(gdout, uuout, vvout, uullout, vvllout,
-            Grille[gdrow_out][gdcol_out].lat, Grille[gdrow_out][gdcol_out].lon, npts);
+            gdout->lat, gdout->lon, npts);
   
   groptions.vecteur = SCALAIRE;
   free(uullout);

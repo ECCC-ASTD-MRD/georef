@@ -22,7 +22,7 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint ez_corrval(ftnfloat *zout, ftnfloat *zin, wordint gdin, wordint gdout)
+wordint ez_corrval(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, TGeoRef *gdout)
 {
   wordint i,ierc;
   ftnfloat valmax, valmin,fudgeval;
@@ -31,8 +31,7 @@ wordint ez_corrval(ftnfloat *zout, ftnfloat *zin, wordint gdin, wordint gdout)
   wordint npts,nj;
   ftnfloat vpolnor, vpolsud;
   ftnfloat *temp;
-  wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out, idx_gdin;
-  TGeoRef *lgdin, *lgdout;
+  wordint idx_gdin;
 
   extern ftnfloat f77name(amax)();
   extern ftnfloat f77name(amin)();
@@ -40,18 +39,13 @@ wordint ez_corrval(ftnfloat *zout, ftnfloat *zin, wordint gdin, wordint gdout)
   gdin = iset_gdin;
   gdout= iset_gdout;
   fudgeval_set = 0;
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
-  c_gdkey2rowcol(gdout, &gdrow_out, &gdcol_out);
-
-  lgdin = &(Grille[gdrow_in][gdcol_in]);
-  lgdout = &(Grille[gdrow_out][gdcol_out]);
   
   idx_gdin = c_find_gdin(gdin, gdout);
 
-  nj = lgdin->j2 - lgdin->j1 +1;
+  nj = gdin->j2 - gdin->j1 +1;
   ierc = 0; /* no extrapolation */
   
-  if (lgdout->gset[idx_gdin].zones[DEHORS].npts > 0)
+  if (gdout->gset[idx_gdin].zones[DEHORS].npts > 0)
     {
     ierc = 2; /* code to indicate extrapolation */
     if (groptions.degre_extrap == ABORT)
@@ -61,7 +55,7 @@ wordint ez_corrval(ftnfloat *zout, ftnfloat *zin, wordint gdin, wordint gdout)
       return -1;
       }
 
-    f77name(ez_aminmax)(&valmin,&valmax,zin,&(lgdin->ni), &nj);
+    f77name(ez_aminmax)(&valmin,&valmax,zin,&(gdin->ni), &nj);
     if (groptions.degre_extrap >= MAXIMUM)
       {
       if (groptions.vecteur == VECTEUR)
@@ -106,23 +100,23 @@ wordint ez_corrval(ftnfloat *zout, ftnfloat *zin, wordint gdin, wordint gdout)
          {
         fprintf(stderr, "Error : ezcorrval : fudgeval not set \n");
          }
-      for (i=0; i < lgdout->gset[idx_gdin].zones[DEHORS].npts; i++)
+      for (i=0; i < gdout->gset[idx_gdin].zones[DEHORS].npts; i++)
 	      {
-	      zout[lgdout->gset[idx_gdin].zones[DEHORS].idx[i]] = fudgeval;
+	      zout[gdout->gset[idx_gdin].zones[DEHORS].idx[i]] = fudgeval;
 	      }
       }
     else
       {
       degIntCourant = groptions.degre_interp;
       groptions.degre_interp = groptions.degre_extrap;
-      temp = (ftnfloat *) malloc(lgdout->gset[idx_gdin].zones[DEHORS].npts*sizeof(ftnfloat));
+      temp = (ftnfloat *) malloc(gdout->gset[idx_gdin].zones[DEHORS].npts*sizeof(ftnfloat));
 
-      c_gdinterp(temp, zin, gdin, lgdout->gset[idx_gdin].zones[DEHORS].x,
-		 lgdout->gset[idx_gdin].zones[DEHORS].y, lgdout->gset[idx_gdin].zones[DEHORS].npts);
+      c_gdinterp(temp, zin, gdin, gdout->gset[idx_gdin].zones[DEHORS].x,
+		 gdout->gset[idx_gdin].zones[DEHORS].y, gdout->gset[idx_gdin].zones[DEHORS].npts);
 
-     for (i=0; i < lgdout->gset[idx_gdin].zones[DEHORS].npts; i++)
+     for (i=0; i < gdout->gset[idx_gdin].zones[DEHORS].npts; i++)
          {
-         zout[lgdout->gset[idx_gdin].zones[DEHORS].idx[i]] = temp[i];
+         zout[gdout->gset[idx_gdin].zones[DEHORS].idx[i]] = temp[i];
          }
       free(temp);
       groptions.degre_interp = degIntCourant;
@@ -135,40 +129,40 @@ wordint ez_corrval(ftnfloat *zout, ftnfloat *zin, wordint gdin, wordint gdout)
     }
 
 
-  if (lgdout->gset[idx_gdin].zones[AU_NORD].npts > 0)
+  if (gdout->gset[idx_gdin].zones[AU_NORD].npts > 0)
     {
     ez_corrval_aunord(zout, zin, gdin, gdout);
     }
 
-  if (lgdout->gset[idx_gdin].zones[AU_SUD].npts > 0)
+  if (gdout->gset[idx_gdin].zones[AU_SUD].npts > 0)
     {
     ez_corrval_ausud(zout, zin, gdin, gdout);
     }
 
 
-  if (lgdout->gset[idx_gdin].zones[POLE_NORD].npts > 0 || lgdout->gset[idx_gdin].zones[POLE_SUD].npts > 0)
+  if (gdout->gset[idx_gdin].zones[POLE_NORD].npts > 0 || gdout->gset[idx_gdin].zones[POLE_SUD].npts > 0)
     {
-    if (lgdin->grtyp[0] != 'w')
+    if (gdin->grtyp[0] != 'w')
       {
-      npts = lgdin->ni * lgdin->j2;
-      f77name(ez_calcpoleval)(&vpolnor, &(zin[(nj-1)*lgdin->ni]), &(lgdin->ni),
-lgdin->ax, lgdin->grtyp, lgdin->grref,1,1);
-      for (i=0; i < lgdout->gset[idx_gdin].zones[POLE_NORD].npts; i++)
+      npts = gdin->ni * gdin->j2;
+      f77name(ez_calcpoleval)(&vpolnor, &(zin[(nj-1)*gdin->ni]), &(gdin->ni),
+gdin->ax, gdin->grtyp, gdin->grref,1,1);
+      for (i=0; i < gdout->gset[idx_gdin].zones[POLE_NORD].npts; i++)
 	      {
-	      zout[lgdout->gset[idx_gdin].zones[POLE_NORD].idx[i]] = vpolnor;
+	      zout[gdout->gset[idx_gdin].zones[POLE_NORD].idx[i]] = vpolnor;
 	      }
 
-      f77name(ez_calcpoleval)(&vpolsud, zin, &(lgdin->ni), lgdin->ax,
-lgdin->grtyp, lgdin->grref,1,1);
-      for (i=0; i < lgdout->gset[idx_gdin].zones[POLE_SUD].npts; i++)
+      f77name(ez_calcpoleval)(&vpolsud, zin, &(gdin->ni), gdin->ax,
+gdin->grtyp, gdin->grref,1,1);
+      for (i=0; i < gdout->gset[idx_gdin].zones[POLE_SUD].npts; i++)
 	      {
-	      zout[lgdout->gset[idx_gdin].zones[POLE_SUD].idx[i]] = vpolsud;
+	      zout[gdout->gset[idx_gdin].zones[POLE_SUD].idx[i]] = vpolsud;
 	      }
       }
     }
-  if ((lgdin->grtyp[0] == 'Z' || lgdin->grtyp[0] == '#') && lgdin->grref[0] == 'E' && lgdout->grtyp[0] == 'B')
+  if ((gdin->grtyp[0] == 'Z' || gdin->grtyp[0] == '#') && gdin->grref[0] == 'E' && gdout->grtyp[0] == 'B')
     {
-    f77name(ez_corrbgd)(zout, &(lgdout->ni), &(lgdout->nj), &(lgdout->fst.ig[IG1]));
+    f77name(ez_corrbgd)(zout, &(gdout->ni), &(gdout->nj), &(gdout->fst.ig[IG1]));
     }
 
   return ierc;

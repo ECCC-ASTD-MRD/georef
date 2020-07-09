@@ -23,30 +23,27 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdxyvval)(wordint *gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, wordint *n)
+wordint f77name(gdxyvval)(PTR_AS_INT gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, wordint *n)
 {
    wordint icode;
 
-   icode = c_gdxyvval(*gdin, uuout, vvout, uuin, vvin, x, y, *n);
+   icode = c_gdxyvval((TGeoRef*)gdin, uuout, vvout, uuin, vvin, x, y, *n);
    return icode;
 }
 
-wordint c_gdxyvval(wordint gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, wordint n)
+wordint c_gdxyvval(TGeoRef *gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, wordint n)
 {
-  wordint j, icode, yin_gdid, yan_gdid, ni, nj;
+  wordint j, icode, ni, nj;
+  TGeoRef *yin_gd, *yan_gd;
   ftnfloat *uuyin, *vvyin, *uuyan, *vvyan;
   ftnfloat *tmpy;
 
-  wordint gdrow_id, gdcol_id,yin_gdrow_id,yin_gdcol_id;
-
-  c_gdkey2rowcol(gdin,  &gdrow_id,  &gdcol_id);
-  if (Grille[gdrow_id][gdcol_id].nsubgrids > 0)
+  if (gdin->nsubgrids > 0)
       {
-      yin_gdid=Grille[gdrow_id][gdcol_id].subgrid[0];
-      yan_gdid=Grille[gdrow_id][gdcol_id].subgrid[1];
-      c_gdkey2rowcol(yin_gdid,  &yin_gdrow_id,  &yin_gdcol_id);
-      ni = Grille[yin_gdrow_id][yin_gdcol_id].ni;
-      nj = Grille[yin_gdrow_id][yin_gdcol_id].nj;
+      yin_gd=gdin->subgrid[0];
+      yan_gd=gdin->subgrid[1];
+      ni = yin_gd->ni;
+      nj = yin_gd->nj;
       tmpy = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       uuyin = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       vvyin = (ftnfloat *) malloc(n*sizeof(ftnfloat));
@@ -54,21 +51,21 @@ wordint c_gdxyvval(wordint gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uui
       vvyan = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       for (j=0; j< n; j++)
         {
-          if (y[j] > Grille[yin_gdrow_id][yin_gdcol_id].nj)
+          if (y[j] > yin_gd->nj)
              {
-             tmpy[j]=y[j]-Grille[yin_gdrow_id][yin_gdcol_id].nj;
+             tmpy[j]=y[j]-yin_gd->nj;
              }
           else
              {
              tmpy[j]=y[j];
              }
         }
-      icode = c_gdxyvval_orig(yin_gdid,uuyin,vvyin,uuin,vvin,x,tmpy,n);
-      icode = c_gdxyvval_orig(yan_gdid,uuyan,vvyan,&uuin[ni*nj],&vvin[ni*nj],x,tmpy,n);
+      icode = c_gdxyvval_orig(yin_gd,uuyin,vvyin,uuin,vvin,x,tmpy,n);
+      icode = c_gdxyvval_orig(yan_gd,uuyan,vvyan,&uuin[ni*nj],&vvin[ni*nj],x,tmpy,n);
  
       for (j=0; j < n; j++)
         {
-        if (y[j] > Grille[yin_gdrow_id][yin_gdcol_id].nj)
+        if (y[j] > yin_gd->nj)
            {
            uuout[j]=uuyan[j];
            vvout[j]=vvyan[j];
@@ -92,14 +89,14 @@ wordint c_gdxyvval(wordint gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uui
    }
 }
 
-wordint c_gdxyvval_orig(wordint gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, wordint n)
+wordint c_gdxyvval_orig(TGeoRef *gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, wordint n)
 {
   groptions.vecteur = VECTEUR;
 
 
   groptions.symmetrie = SYM;
   c_gdxysint(uuout,uuin, gdin, x, y, n);
-  groptions.symmetrie = ANTISYM;
+*  groptions.symmetrie = ANTISYM;
   c_gdxysint(vvout,vvin, gdin, x, y, n);
   groptions.symmetrie = SYM;
 

@@ -23,69 +23,60 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(ezll)(wordint *gdid, ftnfloat *lat, ftnfloat *lon)
+wordint f77name(ezll)(PTR_AS_INT GRef, ftnfloat *lat, ftnfloat *lon)
 {
    wordint icode;
    
-   icode = c_gdll(*gdid, lat, lon);
+   icode = c_gdll((TGeoRef*)GRef, lat, lon);
    return icode;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdll)(wordint *gdid, ftnfloat *lat, ftnfloat *lon)
+wordint f77name(gdll)(PTR_AS_INT GRef, ftnfloat *lat, ftnfloat *lon)
 {
    wordint icode;
    
-   icode = c_gdll(*gdid, lat, lon);
+   icode = c_gdll((TGeoRef*)GRef, lat, lon);
    return icode;
 }
 
-wordint c_gdll(wordint gdid, ftnfloat *lat, ftnfloat *lon)
+wordint c_gdll(TGeoRef *GRef, ftnfloat *lat, ftnfloat *lon)
 {
    wordint icode;
-  wordint gdrow_id, gdcol_id, ni, nj;
-  wordint yin_gdid,yan_gdid;
-  wordint yin_gdrow_id, yin_gdcol_id;
-  wordint yan_gdrow_id, yan_gdcol_id;
-    
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-  if (Grille[gdrow_id][gdcol_id].nsubgrids > 0 )
-    {
-    yin_gdid = Grille[gdrow_id][gdcol_id].subgrid[0];
-    yan_gdid = Grille[gdrow_id][gdcol_id].subgrid[1];
-/*    printf("gdll: gdid for yin=%d,gdid for yan=%d\n",yin_gdid,yan_gdid); */
-    c_gdkey2rowcol(yin_gdid, &yin_gdrow_id, &yin_gdcol_id);
-    c_gdkey2rowcol(yan_gdid, &yan_gdrow_id, &yan_gdcol_id);
-    ni = Grille[yin_gdrow_id][yin_gdcol_id].ni;
-    nj = Grille[yin_gdrow_id][yin_gdcol_id].nj;
-/*  printf("gdll: ni=%d, nj=%d\n",ni,nj); */
-    icode=c_gdll_orig(yin_gdid,lat,lon);
-    icode=c_gdll_orig(yan_gdid,&lat[ni*nj],&lon[ni*nj]);
-    }
-  else
-    {
-    icode=c_gdll_orig(gdid,lat,lon);
-    }
-  return icode;
+   wordint ni, nj;
+   TGeoRef *yin_gd, *yan_gd;
+      
+   if (GRef->nsubgrids > 0 )
+      {
+      yin_gd = GRef->subgrid[0];
+      yan_gd = GRef->subgrid[1];
+   /*    printf("gdll: GRef for yin=%d,GRef for yan=%d\n",yin_gd,yan_gd); */
+      ni = yin_gd->ni;
+      nj = yin_gd->nj;
+   /*  printf("gdll: ni=%d, nj=%d\n",ni,nj); */
+      icode=c_gdll_orig(yin_gd,lat,lon);
+      icode=c_gdll_orig(yan_gd,&lat[ni*nj],&lon[ni*nj]);
+      }
+   else
+      {
+      icode=c_gdll_orig(GRef,lat,lon);
+      }
+   return icode;
 }
 
-wordint c_gdll_orig(wordint gdid, ftnfloat *lat, ftnfloat *lon)
+wordint c_gdll_orig(TGeoRef *GRef, ftnfloat *lat, ftnfloat *lon)
 {
-  wordint gdrow_id, gdcol_id;
-    
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-   
-   ez_calclatlon(gdid);
-   if (Grille[gdrow_id][gdcol_id].flags & LAT)
+   ez_calclatlon(GRef);
+   if (GRef->flags & LAT)
       {
-      memcpy(lon, Grille[gdrow_id][gdcol_id].lon, Grille[gdrow_id][gdcol_id].ni*Grille[gdrow_id][gdcol_id].nj*sizeof(ftnfloat));
-      if (Grille[gdrow_id][gdcol_id].fst.axe_y_inverse == 0)
+      memcpy(lon, GRef->lon, GRef->ni*GRef->nj*sizeof(ftnfloat));
+      if (GRef->fst.axe_y_inverse == 0)
          {
-         memcpy(lat, Grille[gdrow_id][gdcol_id].lat, Grille[gdrow_id][gdcol_id].ni*Grille[gdrow_id][gdcol_id].nj*sizeof(ftnfloat));
+         memcpy(lat, GRef->lat, GRef->ni*GRef->nj*sizeof(ftnfloat));
          }
       else
          {
-         memcpy(lat, Grille[gdrow_id][gdcol_id].lat, Grille[gdrow_id][gdcol_id].ni*Grille[gdrow_id][gdcol_id].nj*sizeof(ftnfloat));
+         memcpy(lat, GRef->lat, GRef->ni*GRef->nj*sizeof(ftnfloat));
          }
       }
    else

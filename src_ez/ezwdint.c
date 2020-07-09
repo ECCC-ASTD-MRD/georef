@@ -33,16 +33,13 @@ wordint f77name(ezwdint)(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfl
 
 wordint c_ezwdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin)
 {
-   wordint icode,gdin,gdout;
-   wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out;
+   wordint icode;
+   TGeoRef *gdin, *gdout;
 
    gdin = iset_gdin;
    gdout= iset_gdout;
 
-   c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
-   c_gdkey2rowcol(gdout, &gdrow_out, &gdcol_out);
-
-   if (Grille[gdrow_in][gdcol_in].nsubgrids > 0 || Grille[gdrow_out][gdcol_out].nsubgrids > 0)
+   if (gdin->nsubgrids > 0 || gdout->nsubgrids > 0)
       {
       icode = c_ezyywdint(uuout,vvout,uuin,vvin,gdout,gdin);
       iset_gdin=gdin;
@@ -55,12 +52,13 @@ wordint c_ezwdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vv
 
 wordint c_ezwdint_orig(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin)
 {
-   wordint gdin,gdout,ier,ierc,ierc1,ierc2;
+   wordint ier,ierc,ierc1,ierc2;
+   TGeoRef *gdin, *gdout;
    ftnfloat *uullout = NULL;
    ftnfloat *vvllout = NULL;
    wordint npts;
 
-   wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out, cur_gdin;
+   wordint cur_gdin;
    int lcl_ngdin;
 
    gdin = iset_gdin;
@@ -69,10 +67,7 @@ wordint c_ezwdint_orig(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloa
    ierc1 = 0;
    ierc2 = 0;
 
-   c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
-   c_gdkey2rowcol(gdout, &gdrow_out, &gdcol_out);
-
-   npts = Grille[gdrow_out][gdcol_out].ni*Grille[gdrow_out][gdcol_out].nj;
+   npts = gdout->ni*gdout->nj;
 
    groptions.vecteur = VECTEUR;
 
@@ -101,7 +96,7 @@ wordint c_ezwdint_orig(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloa
    ier = ez_calclatlon(gdout);
 
    c_gdwdfuv(gdin, uullout, vvllout, uuout, vvout,
-             Grille[gdrow_out][gdcol_out].lat, Grille[gdrow_out][gdcol_out].lon, npts);
+             gdout->lat, gdout->lon, npts);
 
    memcpy(uuout, uullout, npts*sizeof(ftnfloat));
    memcpy(vvout, vvllout, npts*sizeof(ftnfloat));

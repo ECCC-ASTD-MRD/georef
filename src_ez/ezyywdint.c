@@ -23,15 +23,12 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat *vvin, wordint gdout,wordint gdin)
+wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat *vvin, TGeoRef *gdout, TGeoRef *gdin)
 {
   int idx_gdin;
   wordint icode,i,j,k,ierc1,ierc2,ierc;
   wordint yancount_yin,yincount_yin, yancount_yan,yincount_yan;
-  wordint yin_gdin,yan_gdin,yin_gdout,yan_gdout,yyin,yyout;
-  wordint yin_gdrow_in, yin_gdcol_in, yin_gdrow_out, yin_gdcol_out;
-  wordint yan_gdrow_in, yan_gdcol_in, yan_gdrow_out, yan_gdcol_out;
-  wordint     gdrow_in,     gdcol_in,     gdrow_out,     gdcol_out;
+  wordint yyin,yyout;
   wordint ni, nj;
   ftnfloat *yin2yin_uuout,*yan2yin_uuout, *yin2yin_vvout,*yan2yin_vvout;
   ftnfloat *yin2yan_uuout,*yan2yan_uuout, *yin2yan_vvout,*yan2yan_vvout;
@@ -39,31 +36,25 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
   ftnfloat *yin2yan_spdout,*yan2yan_spdout, *yin2yan_wdout,*yan2yan_wdout;
   ftnfloat *spdout,*wdout;
   
-  TGeoRef *lgdin, *lgdout;
+  TGeoRef *yin_gdin, *yan_gdin, *yin_gdout, *yan_gdout;
  /*  need only access to either yin or Yang info for the lat and lon val */
    
   yyin=0; yyout=0;
   ierc=0;
   ierc1=0;ierc2=0;
 
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
-  c_gdkey2rowcol(gdout, &gdrow_out, &gdcol_out);
   idx_gdin = c_find_gdin(gdin, gdout);
 
 /* setup for input grid */
-  if (Grille[gdrow_in][gdcol_in].nsubgrids > 0)
+  if (gdin->nsubgrids > 0)
      {
      yyin=1;
-     yin_gdin = Grille[gdrow_in][gdcol_in].subgrid[0];
-     yan_gdin = Grille[gdrow_in][gdcol_in].subgrid[1];
-     c_gdkey2rowcol(yin_gdin,  &yin_gdrow_in,  &yin_gdcol_in);
-     c_gdkey2rowcol(yan_gdin,  &yan_gdrow_in,  &yan_gdcol_in);
+     yin_gdin = gdin->subgrid[0];
+     yan_gdin = gdin->subgrid[1];
      }
   else
      {
      yin_gdin = gdin;
-     yin_gdrow_in = gdrow_in;
-     yin_gdcol_in = gdcol_in;
      }
 
 /* setup for input grid */
@@ -72,20 +63,14 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
      yyout=1;
      yin_gdout = Grille[gdrow_out][gdcol_out].subgrid[0];
      yan_gdout = Grille[gdrow_out][gdcol_out].subgrid[1];
-     c_gdkey2rowcol(yin_gdout,  &yin_gdrow_out,  &yin_gdcol_out);
-     c_gdkey2rowcol(yan_gdout,  &yan_gdrow_out,  &yan_gdcol_out);
      }
   else
      {
      yin_gdout = gdout;
-     yin_gdrow_out = gdrow_out;
-     yin_gdcol_out = gdcol_out;
      }
-  lgdin = &(Grille[yin_gdrow_in ][yin_gdcol_in ]);
-  lgdout= &(Grille[gdrow_out][gdcol_out]);
 
-  ni = Grille[yin_gdrow_out][yin_gdcol_out].ni;
-  nj = Grille[yin_gdrow_out][yin_gdcol_out].nj;
+  ni = yin_gdout->ni;
+  nj = yin_gdout->nj;
 
 /* interp input one grid to yygrid - no masking needed*/
   if (yyin == 0 && yyout == 1)
@@ -112,8 +97,8 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
   if (yan_gdin == gdout)
      {
      icode = c_ezdefset(gdout,yan_gdin);
-     icode = c_ezwdint_orig(uuout,vvout, &uuin[(lgdin->ni)*(lgdin->nj)],
-                                         &vvin[(lgdin->ni)*(lgdin->nj)]);
+     icode = c_ezwdint_orig(uuout,vvout, &uuin[(yin_gdin->ni)*(yin_gdin->nj)],
+                                         &vvin[(yin_gdin->ni)*(yin_gdin->nj)]);
      return icode;
      }
 
@@ -142,7 +127,7 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
      if (groptions.valeur_1subgrid == yan_gdin) /* Use input Yang grid */
         {
         icode = c_ezdefset(yin_gdout,groptions.valeur_1subgrid);
-        ierc = c_ezwdint_orig(uuout,vvout,&uuin[(lgdin->ni)*(lgdin->nj)],&vvin[(lgdin->ni)*(lgdin->nj)]);
+        ierc = c_ezwdint_orig(uuout,vvout,&uuin[(yin_gdin->ni)*(yin_gdin->nj)],&vvin[(yin_gdin->ni)*(yin_gdin->nj)]);
         return ierc;
         }
      }
@@ -155,8 +140,8 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
 /* interp yinyang to one grid */
   if (yyin == 1 && yyout == 0)
     {
-    yincount_yin = lgdout->gset[idx_gdin].yincount_yin;
-    yancount_yin = lgdout->gset[idx_gdin].yancount_yin;
+    yincount_yin = ->gset[idx_gdin].yincount_yin;
+    yancount_yin = ->gset[idx_gdin].yancount_yin;
     yin2yin_uuout = (ftnfloat *) malloc(yincount_yin*sizeof(ftnfloat));
     yin2yin_vvout = (ftnfloat *) malloc(yincount_yin*sizeof(ftnfloat));
     yin2yin_spdout = (ftnfloat *) malloc(yincount_yin*sizeof(ftnfloat));
@@ -166,11 +151,11 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
     yan2yin_spdout = (ftnfloat *) malloc(yancount_yin*sizeof(ftnfloat));
     yan2yin_wdout = (ftnfloat *) malloc(yancount_yin*sizeof(ftnfloat));
 
-    icode = c_gdxyvval_orig(yin_gdin,yin2yin_uuout,yin2yin_vvout,uuin,vvin,lgdout->gset[idx_gdin].yin2yin_x,lgdout->gset[idx_gdin].yin2yin_y,lgdout->gset[idx_gdin].yincount_yin);
-    icode = c_gdwdfuv_orig(yin_gdin,yin2yin_spdout,yin2yin_wdout,yin2yin_uuout,yin2yin_vvout,lgdout->gset[idx_gdin].yin2yin_lat,lgdout->gset[idx_gdin].yin2yin_lon,yincount_yin);
+    icode = c_gdxyvval_orig(yin_gdin,yin2yin_uuout,yin2yin_vvout,uuin,vvin,->gset[idx_gdin].yin2yin_x,->gset[idx_gdin].yin2yin_y,->gset[idx_gdin].yincount_yin);
+    icode = c_gdwdfuv_orig(yin_gdin,yin2yin_spdout,yin2yin_wdout,yin2yin_uuout,yin2yin_vvout,->gset[idx_gdin].yin2yin_lat,->gset[idx_gdin].yin2yin_lon,yincount_yin);
  
-    icode = c_gdxyvval_orig(yan_gdin,yan2yin_uuout,yan2yin_vvout,&uuin[(lgdin->ni)*(lgdin->nj)],&vvin[(lgdin->ni)*(lgdin->nj)],lgdout->gset[idx_gdin].yan2yin_x,lgdout->gset[idx_gdin].yan2yin_y,yancount_yin);
-    icode = c_gdwdfuv_orig(yan_gdin,yan2yin_spdout,yan2yin_wdout,yan2yin_uuout, yan2yin_vvout,lgdout->gset[idx_gdin].yan2yin_lat,lgdout->gset[idx_gdin].yan2yin_lon,yancount_yin);
+    icode = c_gdxyvval_orig(yan_gdin,yan2yin_uuout,yan2yin_vvout,&uuin[(yin_gdin->ni)*(yin_gdin->nj)],&vvin[(yin_gdin->ni)*(yin_gdin->nj)],->gset[idx_gdin].yan2yin_x,->gset[idx_gdin].yan2yin_y,yancount_yin);
+    icode = c_gdwdfuv_orig(yan_gdin,yan2yin_spdout,yan2yin_wdout,yan2yin_uuout, yan2yin_vvout,->gset[idx_gdin].yan2yin_lat,->gset[idx_gdin].yan2yin_lon,yancount_yin);
     yincount_yin=0;
     yancount_yin=0;
     for(j=0; j<nj; j++)
@@ -178,7 +163,7 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
       for (i=0;i<ni; i++)
         {
         k=(j*ni)+i;
-        if (lgdout->gset[idx_gdin].yin_maskout[k] == 1.0)
+        if (->gset[idx_gdin].yin_maskout[k] == 1.0)
           {
           uuout[k]=yan2yin_spdout[yancount_yin]; 
           vvout[k]=yan2yin_wdout[yancount_yin]; 
@@ -206,10 +191,10 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
   if (yyout == 1 && yyin == 1)
     {
 /* interp input YY grid to YIN */
-    yincount_yin = lgdout->gset[idx_gdin].yincount_yin;
-    yancount_yin = lgdout->gset[idx_gdin].yancount_yin;
-    yincount_yan = lgdout->gset[idx_gdin].yincount_yan;
-    yancount_yan = lgdout->gset[idx_gdin].yancount_yan;
+    yincount_yin = ->gset[idx_gdin].yincount_yin;
+    yancount_yin = ->gset[idx_gdin].yancount_yin;
+    yincount_yan = ->gset[idx_gdin].yincount_yan;
+    yancount_yan = ->gset[idx_gdin].yancount_yan;
     yin2yin_uuout = (ftnfloat *) malloc(yincount_yin*sizeof(ftnfloat));
     yin2yin_vvout = (ftnfloat *) malloc(yincount_yin*sizeof(ftnfloat));
     yin2yin_spdout = (ftnfloat *) malloc(yincount_yin*sizeof(ftnfloat));
@@ -228,16 +213,16 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
     yan2yan_spdout = (ftnfloat *) malloc(yancount_yan*sizeof(ftnfloat));
     yan2yan_wdout = (ftnfloat *) malloc(yancount_yan*sizeof(ftnfloat));
 
-    icode = c_gdxyvval_orig(yin_gdin,yin2yin_uuout,yin2yin_vvout,uuin,vvin,lgdout->gset[idx_gdin].yin2yin_x,lgdout->gset[idx_gdin].yin2yin_y,lgdout->gset[idx_gdin].yincount_yin);
-    icode = c_gdwdfuv_orig(yin_gdin,yin2yin_spdout,yin2yin_wdout,yin2yin_uuout,yin2yin_vvout,lgdout->gset[idx_gdin].yin2yin_lat,lgdout->gset[idx_gdin].yin2yin_lon,lgdout->gset[idx_gdin].yincount_yin);
-    icode = c_gdxyvval_orig(yan_gdin,yan2yin_uuout,yan2yin_vvout,&uuin[(lgdin->ni)*(lgdin->nj)],&vvin[(lgdin->ni)*(lgdin->nj)],lgdout->gset[idx_gdin].yan2yin_x,lgdout->gset[idx_gdin].yan2yin_y,lgdout->gset[idx_gdin].yancount_yin);
-    icode = c_gdwdfuv_orig(yan_gdin,yan2yin_spdout,yan2yin_wdout,yan2yin_uuout,yan2yin_vvout,lgdout->gset[idx_gdin].yan2yin_lat,lgdout->gset[idx_gdin].yan2yin_lon,yancount_yin);
+    icode = c_gdxyvval_orig(yin_gdin,yin2yin_uuout,yin2yin_vvout,uuin,vvin,->gset[idx_gdin].yin2yin_x,->gset[idx_gdin].yin2yin_y,->gset[idx_gdin].yincount_yin);
+    icode = c_gdwdfuv_orig(yin_gdin,yin2yin_spdout,yin2yin_wdout,yin2yin_uuout,yin2yin_vvout,->gset[idx_gdin].yin2yin_lat,->gset[idx_gdin].yin2yin_lon,->gset[idx_gdin].yincount_yin);
+    icode = c_gdxyvval_orig(yan_gdin,yan2yin_uuout,yan2yin_vvout,&uuin[(yin_gdin->ni)*(yin_gdin->nj)],&vvin[(yin_gdin->ni)*(yin_gdin->nj)],->gset[idx_gdin].yan2yin_x,->gset[idx_gdin].yan2yin_y,->gset[idx_gdin].yancount_yin);
+    icode = c_gdwdfuv_orig(yan_gdin,yan2yin_spdout,yan2yin_wdout,yan2yin_uuout,yan2yin_vvout,->gset[idx_gdin].yan2yin_lat,->gset[idx_gdin].yan2yin_lon,yancount_yin);
 
-    icode = c_gdxyvval_orig(yin_gdin,yin2yan_uuout,yin2yan_vvout,uuin,vvin,lgdout->gset[idx_gdin].yin2yan_x,lgdout->gset[idx_gdin].yin2yan_y,lgdout->gset[idx_gdin].yincount_yan);
-    icode = c_gdwdfuv_orig(yin_gdin,yin2yan_spdout,yin2yan_wdout,yin2yan_uuout,yin2yan_vvout,lgdout->gset[idx_gdin].yin2yan_lat,lgdout->gset[idx_gdin].yin2yan_lon,lgdout->gset[idx_gdin].yincount_yan);
+    icode = c_gdxyvval_orig(yin_gdin,yin2yan_uuout,yin2yan_vvout,uuin,vvin,->gset[idx_gdin].yin2yan_x,->gset[idx_gdin].yin2yan_y,->gset[idx_gdin].yincount_yan);
+    icode = c_gdwdfuv_orig(yin_gdin,yin2yan_spdout,yin2yan_wdout,yin2yan_uuout,yin2yan_vvout,->gset[idx_gdin].yin2yan_lat,->gset[idx_gdin].yin2yan_lon,->gset[idx_gdin].yincount_yan);
 
-    icode = c_gdxyvval_orig(yan_gdin,yan2yan_uuout,yan2yan_vvout,&uuin[(lgdin->ni)*(lgdin->nj)],&vvin[(lgdin->ni)*(lgdin->nj)],lgdout->gset[idx_gdin].yan2yan_x,lgdout->gset[idx_gdin].yan2yan_y,lgdout->gset[idx_gdin].yancount_yan);
-    icode = c_gdwdfuv_orig(yan_gdin,yan2yan_spdout,yan2yan_wdout,yan2yan_uuout,yan2yan_vvout,lgdout->gset[idx_gdin].yan2yan_lat,lgdout->gset[idx_gdin].yan2yan_lon,lgdout->gset[idx_gdin].yancount_yan);
+    icode = c_gdxyvval_orig(yan_gdin,yan2yan_uuout,yan2yan_vvout,&uuin[(yin_gdin->ni)*(yin_gdin->nj)],&vvin[(yin_gdin->ni)*(yin_gdin->nj)],->gset[idx_gdin].yan2yan_x,->gset[idx_gdin].yan2yan_y,->gset[idx_gdin].yancount_yan);
+    icode = c_gdwdfuv_orig(yan_gdin,yan2yan_spdout,yan2yan_wdout,yan2yan_uuout,yan2yan_vvout,->gset[idx_gdin].yan2yan_lat,->gset[idx_gdin].yan2yan_lon,->gset[idx_gdin].yancount_yan);
 
  /*Build output for YIN output grid */
     yincount_yin=0; yancount_yin=0;
@@ -246,7 +231,7 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
       for (i=0;i<ni; i++)
         {
         k=(j*ni)+i;
-        if (lgdout->gset[idx_gdin].yin_maskout[k] == 1.0)
+        if (->gset[idx_gdin].yin_maskout[k] == 1.0)
           {
           uuout[k]=yan2yin_spdout[yancount_yin]; 
           vvout[k]=yan2yin_wdout[yancount_yin]; 
@@ -268,7 +253,7 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
       for (i=0;i<ni; i++)
         {
         k=(j*ni)+i;
-        if (lgdout->gset[idx_gdin].yan_maskout[k] == 1.0)
+        if (->gset[idx_gdin].yan_maskout[k] == 1.0)
           {
           uuout[k+(ni*nj)]=yan2yan_spdout[yancount_yan]; 
           vvout[k+(ni*nj)]=yan2yan_wdout[yancount_yan]; 

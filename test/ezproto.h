@@ -6,22 +6,16 @@
 #include "../src/GeoRef.h"
 
 // RPN external EZscint functions
-extern int  c_ezfreegridset(TGeoRef* gdid, int index);
+extern int  c_ezfreegridset(TGeoRef* gr, int index);
 extern int  c_ezdefset(TGeoRef* gdout, TGeoRef* gdin);
-extern int  c_ezgdef(int ni, int nj, char *grtyp, char *grref,int ig1, int ig2, int ig3, int ig4, ftnfloat *ax, ftnfloat *ay);
-extern int  c_ezgdef_ffile(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit);
-extern int  c_ezgdef_fll(int ni, int nj,ftnfloat *lat, ftnfloat *lon);
-extern TGeoRef*  c_ezgdef_fmem(int ni, int nj, char *grtyp, char *grref,int ig1, int ig2, int ig3, int ig4, ftnfloat *ax, ftnfloat *ay);
 extern int  c_ezgprm(int gdid, char *grtyp, int *ni, int *nj, int *ig1, int *ig2, int *ig3, int *ig4);
 extern int  c_ezgenpole(ftnfloat *vpolnor, ftnfloat *vpolsud, ftnfloat *fld,int ni, int nj, int vecteur,char *grtyp, int hem);
 extern int  c_ezgetopt(char *option, char *value);
 extern int  c_ezgetval(char *option, ftnfloat *value);
 extern int  c_ezget_nsubgrids(int id);
 extern int  c_ezget_subgridids(int id,int *subid);
-extern int  c_gdll(int gdid, ftnfloat *lat, ftnfloat *lon);
-extern int  c_ezqkdef(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit);
-             
-extern int  c_ezquickdef(int ni, int nj, char *grtyp,int ig1, int ig2, int ig3, int ig4, int iunit);
+extern int  c_gdll(TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon);
+
 extern int  c_gdrls(TGeoRef* GRef);
 extern int  c_ezsetopt(char *option, char *value);
 extern int  c_ezsetval(char *option, ftnfloat fvalue);
@@ -36,9 +30,9 @@ extern int  c_gdllsval(int gdid, ftnfloat *zout, ftnfloat *zin, ftnfloat *lat, f
 extern int  c_gdllvval(int gdid, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin,ftnfloat *lat, ftnfloat *lon, int n);
 extern int  c_gdllwdval(int gdid, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin,ftnfloat *lat, ftnfloat *lon, int n);
 extern int  c_gdxpncf(int gdin, int *i1, int *i2, int *j1, int *j2);
-extern int  c_gdxysval(int gdin, ftnfloat *zout, ftnfloat *zin, ftnfloat *x, ftnfloat *y, int n);
+extern int  c_gdxysval(TGeoRef* gdin, ftnfloat *zout, ftnfloat *zin, ftnfloat *x, ftnfloat *y, int n);
 extern int  c_gdxywdval(int gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, int n);
-extern int  c_gdxyvval(int gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, int n);
+extern int  c_gdxyvval(TGeoRef* gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, int n);
 extern int  c_gduvfwd(int gdid,  ftnfloat *uugdout, ftnfloat *vvgdout, ftnfloat *uullin, ftnfloat *vvllin,ftnfloat *latin, ftnfloat *lonin, int npts);
 extern int  c_gdwdfuv(int gdid, ftnfloat *uullout, ftnfloat *vvllout, ftnfloat *uuin, ftnfloat *vvin,ftnfloat *latin, ftnfloat *lonin, int npts);
 extern int  c_gdxpngd(int gdin, ftnfloat *zxpnded, ftnfloat *zin);
