@@ -22,7 +22,7 @@ wordint ez_calcxpncof(TGeoRef* GRef);
 
 wordint ez_calcxy(TGeoRef* gdin, TGeoRef* gdout);
 
-wordint ez_corrval(ftnfloat* zout, ftnfloat* zin,  TGeoRef* gdin, TGeoRef* gdout);
+wordint ez_corrval(ftnfloat* zout, ftnfloat* zin, TGeoRef* gdin, TGeoRef* gdout);
 wordint ez_corrvec(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, TGeoRef* gdin, TGeoRef* gdout);
 wordint ez_corrval_ausud(ftnfloat* zout, ftnfloat* zin,  TGeoRef* gdin, TGeoRef* gdout);
 wordint ez_corrval_aunord(ftnfloat* zout, ftnfloat* zin,  TGeoRef* gdin, TGeoRef* gdout);
@@ -30,13 +30,13 @@ wordint ez_corrvec_aunord(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnf
 wordint ez_corrvec_ausud(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, TGeoRef* gdin, TGeoRef* gdout);
 
 
-wordint ez_defzones(wordint gdin, wordint gdout);
+wordint ez_defzones(TGeoRef* gdin, TGeoRef* gdout);
 
-wordint ez_defzone_dehors(wordint gdin, ftnfloat* x, ftnfloat* y, wordint npts, _zone* zone);
-wordint ez_defzone_polenord(wordint gdin, ftnfloat* x, ftnfloat* y, wordint npts, _zone* zone);
-wordint ez_defzone_polesud(wordint gdin, ftnfloat* x, ftnfloat* y, wordint npts, _zone* zone);
-wordint ez_defzone_nord(wordint gdin, ftnfloat* x, ftnfloat* y, wordint npts, _zone* zone);
-wordint ez_defzone_sud(wordint gdin, ftnfloat* x, ftnfloat* y, wordint npts, _zone* zone);
+wordint ez_defzone_dehors(TGeoRef* gdin, ftnfloat* x, ftnfloat* y, wordint npts, _zone* zone);
+wordint ez_defzone_polenord(TGeoRef* gdin, ftnfloat* x, ftnfloat* y, wordint npts, _zone* zone);
+wordint ez_defzone_polesud(TGeoRef* gdin, ftnfloat* x, ftnfloat* y, wordint npts, _zone* zone);
+wordint ez_defzone_nord(TGeoRef* gdin, ftnfloat* x, ftnfloat* y, wordint npts, _zone* zone);
+wordint ez_defzone_sud(TGeoRef* gdin, ftnfloat* x, ftnfloat* y, wordint npts, _zone* zone);
 
 wordint ez_interp(ftnfloat* zout, ftnfloat* zin, TGeoRef* gdin, TGeoRef* gdout);
 

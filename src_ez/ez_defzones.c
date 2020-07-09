@@ -23,27 +23,25 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint ez_defzones(wordint gdin, wordint gdout)
+wordint ez_defzones(TGeoRef *gdin, TGeoRef *gdout)
 {
   wordint i;
   wordint extrap;
   int lcl_ngdin;
   
-  wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out, npts, idx_gdin;
-   
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
-  c_gdkey2rowcol(gdout, &gdrow_out, &gdcol_out);
+  wordint npts, idx_gdin;
+
   idx_gdin = c_find_gdin(gdin, gdout);
   
-  if (Grille[gdrow_out][gdcol_out].gset[idx_gdin].flags & ZONES)
+  if (gdout->gset[idx_gdin].flags & ZONES)
       {
       return 0;
       }
     
   
-  npts = Grille[gdrow_out][gdcol_out].ni * Grille[gdrow_out][gdcol_out].nj;
+  npts = gdout->ni * gdout->nj;
   extrap = EZ_NO_EXTRAP;
-  switch (Grille[gdrow_in][gdcol_in].grtyp[0])
+  switch (gdin->grtyp[0])
     {
     case 'N':
     case 'S':
@@ -55,7 +53,7 @@ wordint ez_defzones(wordint gdin, wordint gdout)
     case '#':
     case 'Z':
     case 'Y':
-      switch(Grille[gdrow_in][gdcol_in].grref[0])
+      switch(gdin->grref[0])
 	{
 	case 'N':
 	case 'S':
@@ -64,7 +62,7 @@ wordint ez_defzones(wordint gdin, wordint gdout)
 	  break;
 	  
 	case 'E':
-	  if (359.0 > (Grille[gdrow_in][gdcol_in].ax[Grille[gdrow_in][gdcol_in].ni-1] - Grille[gdrow_in][gdcol_in].ax[0]))
+	  if (359.0 > (gdin->ax[gdin->ni-1] - gdin->ax[0]))
 	    {
 	    extrap = EZ_EXTRAP;
 	    }
@@ -75,32 +73,32 @@ wordint ez_defzones(wordint gdin, wordint gdout)
   
   for (i=0; i < NZONES; i++)
     {
-    Grille[gdrow_out][gdcol_out].gset[idx_gdin].zones[i].npts = 0;
+    gdout->gset[idx_gdin].zones[i].npts = 0;
     }
   
   switch (extrap)
     {
     case EZ_EXTRAP:
-      ez_defzone_dehors(gdin, Grille[gdrow_out][gdcol_out].gset[idx_gdin].x, 
-            Grille[gdrow_out][gdcol_out].gset[idx_gdin].y, npts, 
-            &(Grille[gdrow_out][gdcol_out].gset[idx_gdin].zones[DEHORS]));
+      ez_defzone_dehors(gdin, gdout->gset[idx_gdin].x, 
+            gdout->gset[idx_gdin].y, npts, 
+            &(gdout->gset[idx_gdin].zones[DEHORS]));
       break;
       
     case EZ_NO_EXTRAP:
-      ez_defzone_polenord(gdin, Grille[gdrow_out][gdcol_out].gset[idx_gdin].x, 
-            Grille[gdrow_out][gdcol_out].gset[idx_gdin].y, npts, 
-            &(Grille[gdrow_out][gdcol_out].gset[idx_gdin].zones[POLE_NORD]));
-      ez_defzone_polesud(gdin, Grille[gdrow_out][gdcol_out].gset[idx_gdin].x, 
-            Grille[gdrow_out][gdcol_out].gset[idx_gdin].y, npts, 
-            &(Grille[gdrow_out][gdcol_out].gset[idx_gdin].zones[POLE_SUD]));
-      ez_defzone_sud(gdin, Grille[gdrow_out][gdcol_out].gset[idx_gdin].x, 
-            Grille[gdrow_out][gdcol_out].gset[idx_gdin].y, npts, 
-            &(Grille[gdrow_out][gdcol_out].gset[idx_gdin].zones[AU_SUD]));
-      ez_defzone_nord(gdin, Grille[gdrow_out][gdcol_out].gset[idx_gdin].x, 
-            Grille[gdrow_out][gdcol_out].gset[idx_gdin].y, npts, 
-            &(Grille[gdrow_out][gdcol_out].gset[idx_gdin].zones[AU_NORD]));
+      ez_defzone_polenord(gdin, gdout->gset[idx_gdin].x, 
+            gdout->gset[idx_gdin].y, npts, 
+            &(gdout->gset[idx_gdin].zones[POLE_NORD]));
+      ez_defzone_polesud(gdin, gdout->gset[idx_gdin].x, 
+            gdout->gset[idx_gdin].y, npts, 
+            &(gdout->gset[idx_gdin].zones[POLE_SUD]));
+      ez_defzone_sud(gdin, gdout->gset[idx_gdin].x, 
+            gdout->gset[idx_gdin].y, npts, 
+            &(gdout->gset[idx_gdin].zones[AU_SUD]));
+      ez_defzone_nord(gdin, gdout->gset[idx_gdin].x, 
+            gdout->gset[idx_gdin].y, npts, 
+            &(gdout->gset[idx_gdin].zones[AU_NORD]));
     }
   
-   Grille[gdrow_out][gdcol_out].gset[idx_gdin].flags |= ZONES;
+   gdout->gset[idx_gdin].flags |= ZONES;
   return 0;
 }

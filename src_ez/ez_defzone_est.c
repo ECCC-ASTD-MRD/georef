@@ -22,7 +22,7 @@
 #include "../src/GeoRef.h"
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-wordint ez_defzone_est(wordint gdin, ftnfloat *x, ftnfloat *y, wordint npts, _zone *zone)
+wordint ez_defzone_est(TGeoRef *gdin, ftnfloat *x, ftnfloat *y, wordint npts, _zone *zone)
 {
   return 0;
 }

@@ -23,23 +23,19 @@
 #include "../src/GeoRef.h"
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-wordint ez_defzone_nord(wordint gdin, ftnfloat *x, ftnfloat *y, wordint npts, _zone *zone)
+wordint ez_defzone_nord(TGeoRef *gdin, ftnfloat *x, ftnfloat *y, wordint npts, _zone *zone)
 {
   ftnfloat *tmpx, *tmpy;
   wordint nhits, i;
   wordint *tmpidx;
   wordint jmax;
-
-  wordint gdrow_in, gdcol_in;
-    
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
     
   tmpx =   (ftnfloat *) malloc(npts*sizeof(ftnfloat));
   tmpy =   (ftnfloat *) malloc(npts*sizeof(ftnfloat));
   tmpidx = (wordint  *) malloc(npts*sizeof(wordint));
   
   nhits = 0;
-  jmax = Grille[gdrow_in][gdcol_in].j2-2;
+  jmax = gdin->j2-2;
   for (i=0; i < npts; i++)
     {
     if ((int)y[i] > jmax)
