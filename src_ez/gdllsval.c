@@ -22,33 +22,31 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdllsval)(wordint *gdid, ftnfloat *zout, ftnfloat *zin, ftnfloat *lat, ftnfloat *lon, wordint *n)
+wordint f77name(gdllsval)(PTR_AS_INT GRef, ftnfloat *zout, ftnfloat *zin, ftnfloat *lat, ftnfloat *lon, wordint *n)
 {
    wordint icode;
    
-   icode = c_gdllsval(*gdid, zout, zin, lat, lon, *n);
+   icode = c_gdllsval((TGeoRef*)GRef, zout, zin, lat, lon, *n);
    return icode;
 }
 
-wordint c_gdllsval(wordint gdid, ftnfloat *zout, ftnfloat *zin, ftnfloat *lat, ftnfloat *lon, wordint n)
+wordint c_gdllsval(TGeoRef *GRef, ftnfloat *zout, ftnfloat *zin, ftnfloat *lat, ftnfloat *lon, wordint n)
 {
    ftnfloat *x, *y;
-   wordint ier,gdrow_id,gdcol_id;
-   
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
+   wordint ier;
 
    x = (ftnfloat *)malloc(n * sizeof(float));
    y = (ftnfloat *)malloc(n * sizeof(float));
    
-   if (Grille[gdrow_id][gdcol_id].nsubgrids > 0 )
+   if (GRef->nsubgrids > 0 )
       {
-         ier = c_gdxyfll(gdid, x, y, lat, lon, n);
+         ier = c_gdxyfll(GRef, x, y, lat, lon, n);
       }
    else
       {
-         ier = c_gdxyfll_orig(gdid, x, y, lat, lon, n);
+         ier = c_gdxyfll_orig(GRef, x, y, lat, lon, n);
       }
-   ier = c_gdxysval(gdid, zout, zin, x, y, n);
+   ier = c_gdxysval(GRef, zout, zin, x, y, n);
    
    free(x);
    free(y);

@@ -18,31 +18,28 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "ezscint.h"
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdllwdval)(wordint *gdid, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, 
+wordint f77name(gdllwdval)(PTR_AS_INT GRef, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, 
                       ftnfloat *lat, ftnfloat *lon, wordint *n)
 {
    wordint icode;
    
-   icode = c_gdllwdval(*gdid, uuout,vvout, uuin, vvin, lat, lon, *n);
+   icode = c_gdllwdval((TGeoRef*)GRef, uuout,vvout, uuin, vvin, lat, lon, *n);
    return icode;
 }
 
-wordint c_gdllwdval(wordint gdid, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, 
+wordint c_gdllwdval(TGeoRef *GRef, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, 
                ftnfloat *lat, ftnfloat *lon, wordint n)
 {
-
-   wordint ier,j,yin_gdid, yan_gdid;
-   wordint gdrow_id, gdcol_id,yin_gdrow_id,yin_gdcol_id;
+   wordint ier,j;
+   TGeoRef *yin_gd, *yan_gd;
    ftnfloat *x, *y;
    ftnfloat *uuyin, *vvyin, *uuyan, *vvyan;
 
-   c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-   if (Grille[gdrow_id][gdcol_id].nsubgrids > 0)
+   if (GRef->nsubgrids > 0)
       {
       x = (ftnfloat *) malloc(n * sizeof(float));
       y = (ftnfloat *) malloc(n * sizeof(float));
@@ -52,14 +49,13 @@ wordint c_gdllwdval(wordint gdid, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uu
       vvyan = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       ier = c_gdxyfll(gdid, x, y, lat, lon, n);
       ier = c_gdxyvval(gdid, uuout, vvout, uuin, vvin, x, y, n);
-      yin_gdid=Grille[gdrow_id][gdcol_id].subgrid[0];
-      yan_gdid=Grille[gdrow_id][gdcol_id].subgrid[1];
-      ier = c_gdwdfuv_orig(yin_gdid,uuyin,vvyin,uuout,vvout,lat,lon,n);
-      ier = c_gdwdfuv_orig(yan_gdid,uuyan,vvyan,uuout,vvout,lat,lon,n);
-      c_gdkey2rowcol(yin_gdid,  &yin_gdrow_id,  &yin_gdcol_id);
+      yin_gd=GRef->subgrid[0];
+      yan_gd=GRef->subgrid[1];
+      ier = c_gdwdfuv_orig(yin_gd,uuyin,vvyin,uuout,vvout,lat,lon,n);
+      ier = c_gdwdfuv_orig(yan_gd,uuyan,vvyan,uuout,vvout,lat,lon,n);
       for (j=0; j< n; j++)
         {
-          if (y[j] > Grille[yin_gdrow_id][yin_gdcol_id].nj)
+          if (y[j] > yin_gd->nj)
              {
              uuout[j]=uuyan[j];
              vvout[j]=vvyan[j];

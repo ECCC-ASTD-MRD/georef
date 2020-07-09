@@ -21,25 +21,23 @@
 #include "../src/GeoRef.h"
 #include "ez_funcdef.h"
 
-
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdllvval)(wordint *gdid, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, 
+wordint f77name(gdllvval)(PTR_AS_INT GRef, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, 
                       ftnfloat *lat, ftnfloat *lon, wordint *n)
 {
    wordint icode;
    
-   icode = c_gdllvval(*gdid, uuout,vvout, uuin, vvin, lat, lon, *n);
+   icode = c_gdllvval((TGeoRef*)GRef, uuout,vvout, uuin, vvin, lat, lon, *n);
    return icode;
 }
 
-wordint c_gdllvval(wordint gdid, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, 
+wordint c_gdllvval(TGeoRef *GRef, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, 
                ftnfloat *lat, ftnfloat *lon, wordint n)
 {
    ftnfloat *x, *y;
-   wordint ier,gdrow_id,gdcol_id;
+   wordint ier;
    
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-  if (Grille[gdrow_id][gdcol_id].nsubgrids > 0 )
+  if (GRef->nsubgrids > 0 )
     {
      fprintf(stderr, "<gdllvval>: This operation is not supported for 'U' grids\n");
      return -1;
@@ -50,8 +48,8 @@ wordint c_gdllvval(wordint gdid, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uui
      x = (ftnfloat *) malloc(n * sizeof(float));
      y = (ftnfloat *) malloc(n * sizeof(float));
    
-     ier = c_gdxyfll_orig(gdid, x, y, lat, lon, n);
-     ier = c_gdxyvval(gdid, uuout, vvout, uuin, vvin, x, y, n);
+     ier = c_gdxyfll_orig(GRef, x, y, lat, lon, n);
+     ier = c_gdxyvval(GRef, uuout, vvout, uuin, vvin, x, y, n);
    
      free(x);
      free(y);

@@ -23,19 +23,18 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdxywdval)(wordint *gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, wordint *n)
+wordint f77name(gdxywdval)(PTR_AS_INT gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, wordint *n)
 {
    wordint icode;
    
-   icode = c_gdxywdval(*gdin, uuout, vvout, uuin, vvin, x, y, *n);
+   icode = c_gdxywdval((TGeoRef*)gdin, uuout, vvout, uuin, vvin, x, y, *n);
    return icode;
 
 }
-wordint c_gdxywdval(wordint gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, wordint n)
+wordint c_gdxywdval(TGeoRef *gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, wordint n)
 {
-  wordint ier,j, icode, yin_gdid, yan_gdid,lni,lnj;
-
-  wordint gdrow_id, gdcol_id,yin_gdrow_id,yin_gdcol_id;
+  wordint ier, j, icode, lni, lnj;
+  TGeoRef *yin_gd, *yan_gd;
   ftnfloat *tmplat, *tmplon, *tmpy;
   ftnfloat *uuyin, *vvyin, *uuyan, *vvyan;
   ftnfloat *tmpuu, *tmpvv;
@@ -45,14 +44,12 @@ wordint c_gdxywdval(wordint gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uu
   tmpuu = (ftnfloat *) malloc(n * sizeof(ftnfloat));
   tmpvv = (ftnfloat *) malloc(n * sizeof(ftnfloat));
   
-  c_gdkey2rowcol(gdin,  &gdrow_id,  &gdcol_id);
-  if (Grille[gdrow_id][gdcol_id].nsubgrids > 0)
+  if (gdin->nsubgrids > 0)
       {
-      yin_gdid=Grille[gdrow_id][gdcol_id].subgrid[0];
-      yan_gdid=Grille[gdrow_id][gdcol_id].subgrid[1];
-      c_gdkey2rowcol(yin_gdid,  &yin_gdrow_id,  &yin_gdcol_id);
-      lni = Grille[yin_gdrow_id][yin_gdcol_id].ni;
-      lnj = Grille[yin_gdrow_id][yin_gdcol_id].nj;
+      yin_gd=gdin->subgrid[0];
+      yan_gd=gdin->subgrid[1];
+      lni = yin_gd->ni;
+      lnj = yin_gd->nj;
       tmpy = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       uuyin = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       vvyin = (ftnfloat *) malloc(n*sizeof(ftnfloat));
@@ -60,25 +57,25 @@ wordint c_gdxywdval(wordint gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uu
       vvyan = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       for (j=0; j< n; j++)
         {
-          if (y[j] > Grille[yin_gdrow_id][yin_gdcol_id].nj)
+          if (y[j] > yin_gd->nj)
              {
-             tmpy[j]=y[j]-Grille[yin_gdrow_id][yin_gdcol_id].nj;
+             tmpy[j]=y[j]-yin_gd->nj;
              }
           else
              {
              tmpy[j]=y[j];
              }
         }
-      icode = c_gdxyvval_orig(yin_gdid, tmpuu, tmpvv, uuin, vvin, x, tmpy, n);
-      icode = c_gdllfxy_orig (yin_gdid, tmplat, tmplon, x, tmpy, n);
-      icode = c_gdwdfuv_orig (yin_gdid, uuyin,vvyin,tmpuu,tmpvv,tmplat,tmplon,n);
+      icode = c_gdxyvval_orig(yin_gd, tmpuu, tmpvv, uuin, vvin, x, tmpy, n);
+      icode = c_gdllfxy_orig (yin_gd, tmplat, tmplon, x, tmpy, n);
+      icode = c_gdwdfuv_orig (yin_gd, uuyin,vvyin,tmpuu,tmpvv,tmplat,tmplon,n);
 
-      icode = c_gdxyvval_orig(yan_gdid, tmpuu, tmpvv, &uuin[(lni*lnj)], &vvin[(lni*lnj)], x, tmpy, n);
-      icode = c_gdllfxy_orig (yan_gdid, tmplat, tmplon, x, tmpy, n);
-      icode = c_gdwdfuv_orig (yan_gdid, uuyan,vvyan,tmpuu,tmpvv,tmplat,tmplon,n);
+      icode = c_gdxyvval_orig(yan_gd, tmpuu, tmpvv, &uuin[(lni*lnj)], &vvin[(lni*lnj)], x, tmpy, n);
+      icode = c_gdllfxy_orig (yan_gd, tmplat, tmplon, x, tmpy, n);
+      icode = c_gdwdfuv_orig (yan_gd, uuyan,vvyan,tmpuu,tmpvv,tmplat,tmplon,n);
       for (j=0; j< n; j++)
         {
-          if (y[j] > Grille[yin_gdrow_id][yin_gdcol_id].nj)
+          if (y[j] > yin_gd->nj)
              {
              uuout[j]=uuyan[j];
              vvout[j]=vvyan[j];

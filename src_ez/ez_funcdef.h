@@ -144,17 +144,17 @@ wordint c_gdllfxy(wordint gdid, ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfl
 wordint f77name(gdllfxyz)(wordint* gdid, ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint* n);
 wordint c_gdllfxyz(wordint gdid, ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint n);
 
-wordint f77name(gdllsval)(wordint* gdid, ftnfloat* zout, ftnfloat* zin, ftnfloat* lat, ftnfloat* lon, wordint* n);
-wordint c_gdllsval(wordint gdid, ftnfloat* zout, ftnfloat* zin, ftnfloat* lat, ftnfloat* lon, wordint n);
+wordint f77name(gdllsval)(PTR_AS_INT GRef, ftnfloat* zout, ftnfloat* zin, ftnfloat* lat, ftnfloat* lon, wordint* n);
+wordint c_gdllsval(TGeoRef* GRef, ftnfloat* zout, ftnfloat* zin, ftnfloat* lat, ftnfloat* lon, wordint n);
 
-wordint f77name(gdllvval)(wordint* gdid, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin,
+wordint f77name(gdllvval)(PTR_AS_INT GRef, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin,
                       ftnfloat* lat, ftnfloat* lon, wordint* n);
-wordint c_gdllvval(wordint gdid, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin,
+wordint c_gdllvval(TGeoRef* GRef, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin,
                ftnfloat* lat, ftnfloat* lon, wordint n);
 
-wordint f77name(gdllwdval)(wordint* gdid, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin,
+wordint f77name(gdllwdval)(PTR_AS_INT GRef, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin,
                       ftnfloat* lat, ftnfloat* lon, wordint* n);
-wordint c_gdllwdval(wordint gdid, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin,
+wordint c_gdllwdval(TGeoRef* GRef, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin,
                ftnfloat* lat, ftnfloat* lon, wordint n);
 
 wordint f77name(gdxpncf)(wordint* gdin, wordint* i1, wordint* i2, wordint* j1, wordint* j2);
@@ -163,8 +163,8 @@ wordint c_gdxpncf(wordint gdin, wordint* i1, wordint* i2, wordint* j1, wordint* 
 wordint f77name(gdxysval)(PTR_AS_INT gdin, ftnfloat* zout, ftnfloat* zin, ftnfloat* x, ftnfloat* y, wordint* n);
 wordint c_gdxysval(TGeoRef* gdin, ftnfloat* zout, ftnfloat* zin, ftnfloat* x, ftnfloat* y, wordint n);
 
-wordint f77name(gdxywdval)(wordint* gdin, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, ftnfloat* x, ftnfloat* y, wordint* n);
-wordint c_gdxywdval(wordint gdin, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, ftnfloat* x, ftnfloat* y, wordint n);
+wordint f77name(gdxywdval)(PTR_AS_INT gdin, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, ftnfloat* x, ftnfloat* y, wordint* n);
+wordint c_gdxywdval(TGeoRef* gdin, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, ftnfloat* x, ftnfloat* y, wordint n);
 
 wordint f77name(gdxyvval)(PTR_AS_INT gdin, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, ftnfloat* x, ftnfloat* y, wordint* n);
 wordint c_gdxyvval(TGeoRef* gdin, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, ftnfloat* x, ftnfloat* y, wordint n);
