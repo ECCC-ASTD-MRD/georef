@@ -141,8 +141,8 @@ wordint c_gdgxpndaxes(wordint gdid, ftnfloat* ax, ftnfloat* ay);
 wordint f77name(gdllfxy)(PTR_AS_INT GRef, ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint* n);
 wordint c_gdllfxy(TGeoRef* GRef, ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint n);
 
-wordint f77name(gdllfxyz)(wordint* gdid, ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint* n);
-wordint c_gdllfxyz(wordint gdid, ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint n);
+wordint f77name(gdllfxyz)(PTR_AS_INT GRef, ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint* n);
+wordint c_gdllfxyz(TGeoRef* GRef, ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint n);
 
 wordint f77name(gdllsval)(PTR_AS_INT GRef, ftnfloat* zout, ftnfloat* zin, ftnfloat* lat, ftnfloat* lon, wordint* n);
 wordint c_gdllsval(TGeoRef* GRef, ftnfloat* zout, ftnfloat* zin, ftnfloat* lat, ftnfloat* lon, wordint n);
@@ -179,14 +179,11 @@ wordint f77name(gdwdfuv)(PTR_AS_INT GRef, ftnfloat* uullout, ftnfloat* vvllout, 
 wordint c_gdwdfuv(TGeoRef* GRef, ftnfloat* uullout, ftnfloat* vvllout, ftnfloat* uuin, ftnfloat* vvin,
               ftnfloat* latin, ftnfloat* lonin, wordint npts);
 
-wordint f77name(gdxpngd)(wordint* gdin, ftnfloat* zxpnded, ftnfloat* zin);
-wordint c_gdxpngd(wordint gdin, ftnfloat* zxpnded, ftnfloat* zin);
+wordint f77name(gdxyfll)(PTR_AS_INT GRef, ftnfloat* x, ftnfloat* y, ftnfloat* lat, ftnfloat* lon, wordint* n);
+wordint c_gdxyfll(TGeoRef* GRef, ftnfloat* x, ftnfloat* y, ftnfloat* lat, ftnfloat* lon, wordint n);
 
-wordint f77name(gdxyfll)(wordint* gdid, ftnfloat* x, ftnfloat* y, ftnfloat* lat, ftnfloat* lon, wordint* n);
-wordint c_gdxyfll(wordint gdid, ftnfloat* x, ftnfloat* y, ftnfloat* lat, ftnfloat* lon, wordint n);
-
-wordint f77name(gdxyzfll)(wordint* gdid, ftnfloat* x, ftnfloat* y, ftnfloat* lat, ftnfloat* lon, wordint* n);
-wordint c_gdxyzfll(wordint gdid, ftnfloat* x, ftnfloat* y, ftnfloat* lat, ftnfloat* lon, wordint n);
+wordint f77name(gdxyzfll)(PTR_AS_INT GRef, ftnfloat* x, ftnfloat* y, ftnfloat* lat, ftnfloat* lon, wordint* n);
+wordint c_gdxyzfll(TGeoRef* GRef, ftnfloat* x, ftnfloat* y, ftnfloat* lat, ftnfloat* lon, wordint n);
 
 TGeoRef* c_ezgetgdin();
 

@@ -23,31 +23,25 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdxyzfll)(wordint *gdid, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfloat *lon, wordint *n)
+wordint f77name(gdxyzfll)(PTR_AS_INT GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfloat *lon, wordint *n)
 {
-   return c_gdxyzfll(*gdid, x, y, lat, lon, *n);
+   return c_gdxyzfll((TGeoRef*)GRef, x, y, lat, lon, *n);
 }
 
-wordint c_gdxyzfll(wordint gdid, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfloat *lon, wordint n)
+wordint c_gdxyzfll(TGeoRef *GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfloat *lon, wordint n)
 {
    wordint ni_in, nj_in;
    
    wordint coordonnee;
-
-   TGeoRef grEntree;
    wordint npts;
 
-  wordint gdrow_id, gdcol_id;
-    
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-   grEntree =  Grille[gdrow_id][gdcol_id];
    npts = n;
               
-   ni_in =  grEntree.ni;
-   nj_in =  grEntree.nj;
+   ni_in =  GRef->ni;
+   nj_in =  GRef->nj;
 
    
-   switch(grEntree.grtyp[0])
+   switch(GRef->grtyp[0])
       {
       case 'A':
       case 'B':
@@ -71,10 +65,10 @@ wordint c_gdxyzfll(wordint gdid, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnflo
       case 'Z':
 	coordonnee = ABSOLU;
         f77name(ez_ll2igd)(x, y, lat, lon, &npts,
-			    &ni_in,&nj_in,&grEntree.grtyp, &grEntree.grref,
-			    &grEntree.fst.igref[IG1], &grEntree.fst.igref[IG2], 
-			    &grEntree.fst.igref[IG3], &grEntree.fst.igref[IG4],
-			    grEntree.ax, grEntree.ay, &coordonnee);
+			    &ni_in,&nj_in,&GRef->grtyp, &GRef->grref,
+			    &GRef->fst.igref[IG1], &GRef->fst.igref[IG2], 
+			    &GRef->fst.igref[IG3], &GRef->fst.igref[IG4],
+			    GRef->ax, GRef->ay, &coordonnee);
         break;
         
         

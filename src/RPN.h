@@ -193,7 +193,7 @@ extern int  c_ezwdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat
 extern int  c_gdgaxes(int gdid, ftnfloat *ax, ftnfloat *ay);
 extern int  c_gdgxpndaxes(int gdid, ftnfloat *ax, ftnfloat *ay);
 extern int  c_gdllfxy(struct TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, int n);
-extern int  c_gdllfxyz(int gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, int n);
+extern int  c_gdllfxyz(struct TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, int n);
 extern int  c_gdllsval(struct TGeoRef* GRef, ftnfloat *zout, ftnfloat *zin, ftnfloat *lat, ftnfloat *lon, int n);
 extern int  c_gdllvval(struct TGeoRef* GRef, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin,ftnfloat *lat, ftnfloat *lon, int n);
 extern int  c_gdllwdval(struct TGeoRef* GRef, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin,ftnfloat *lat, ftnfloat *lon, int n);
@@ -203,9 +203,8 @@ extern int  c_gdxywdval(struct TGeoRef* gdin, ftnfloat *uuout, ftnfloat *vvout, 
 extern int  c_gdxyvval(struct TGeoRef* gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, ftnfloat *x, ftnfloat *y, int n);
 extern int  c_gduvfwd(struct TGeoRef* GRef,  ftnfloat *uugdout, ftnfloat *vvgdout, ftnfloat *uullin, ftnfloat *vvllin,ftnfloat *latin, ftnfloat *lonin, int npts);
 extern int  c_gdwdfuv(struct TGeoRef* GRef, ftnfloat *uullout, ftnfloat *vvllout, ftnfloat *uuin, ftnfloat *vvin,ftnfloat *latin, ftnfloat *lonin, int npts);
-extern int  c_gdxpngd(int gdin, ftnfloat *zxpnded, ftnfloat *zin);
-extern int  c_gdxyfll(int gdid, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfloat *lon, int n);
-extern int  c_gdxyzfll(int gdid, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfloat *lon, int n);
+extern int  c_gdxyfll(struct TGeoRef* GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfloat *lon, int n);
+extern int  c_gdxyzfll(struct TGeoRef* GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfloat *lon, int n);
 extern int  c_guval(int gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat *vvin, ftnfloat *x, ftnfloat *y, int n);
 extern void c_ezgfllfxy(ftnfloat *lonp, ftnfloat *latp,ftnfloat *lon, ftnfloat *lat,ftnfloat *r, ftnfloat *ri, int *npts,ftnfloat *xlat1, ftnfloat *xlon1, ftnfloat *xlat2, ftnfloat *xlon2);
 extern void c_ezgfxyfll(ftnfloat *lonp, ftnfloat *latp,ftnfloat *lon, ftnfloat *lat,ftnfloat *r, ftnfloat *ri, int *npts,ftnfloat *xlat1, ftnfloat *xlon1, ftnfloat *xlat2, ftnfloat *xlon2);
