@@ -23,38 +23,33 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdgaxes)(wordint *gdid, ftnfloat *ax, ftnfloat *ay)
+wordint f77name(gdgaxes)(PTR_AS_INT GRef, ftnfloat *ax, ftnfloat *ay)
 {
-   c_gdgaxes(*gdid, ax, ay);
+   c_gdgaxes((TGeoRef*)GRef), ax, ay);
    return 0;
 }
 
-wordint c_gdgaxes(wordint gdid, ftnfloat *ax, ftnfloat *ay)
+wordint c_gdgaxes(TGeoRef *GRef, ftnfloat *ax, ftnfloat *ay)
 {
-
    wordint nix, njy;
-
-  wordint gdrow_id, gdcol_id;
-    
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
    
-   switch(Grille[gdrow_id][gdcol_id].grtyp[0])
+   switch(GRef->grtyp[0])
       {
       case 'Y':
-        nix = Grille[gdrow_id][gdcol_id].ni * Grille[gdrow_id][gdcol_id].nj;
+        nix = GRef->ni * GRef->nj;
         njy = nix;
         break;
 
       default:
-        nix = Grille[gdrow_id][gdcol_id].ni;
-        njy = Grille[gdrow_id][gdcol_id].nj;
+        nix = GRef->ni;
+        njy = GRef->nj;
         break;
       }
    
-   if (Grille[gdrow_id][gdcol_id].flags & AX)
+   if (GRef->flags & AX)
       {
-      memcpy(ax, Grille[gdrow_id][gdcol_id].ax, nix*sizeof(ftnfloat));
-      memcpy(ay, Grille[gdrow_id][gdcol_id].ay, njy*sizeof(ftnfloat));
+      memcpy(ax, GRef->ax, nix*sizeof(ftnfloat));
+      memcpy(ay, GRef->ay, njy*sizeof(ftnfloat));
       }
    else
       {

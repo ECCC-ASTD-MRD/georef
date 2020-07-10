@@ -25,7 +25,7 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 void ez_calcntncof(TGeoRef* GRef)
 {
-  wordint nni, nnj, gdcol, gdrow;
+  wordint nni, nnj;
   
   if (GRef->flags & NEWTON)
     return;
@@ -43,6 +43,6 @@ void ez_calcntncof(TGeoRef* GRef)
 		      &GRef->j1, &GRef->j2,
 		      &GRef->extension);
   
-  Grille[gdrow][gdcol].flags |= NEWTON;  
+  GRef->flags |= NEWTON;  
 }
 

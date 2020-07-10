@@ -58,11 +58,11 @@ wordint c_ezyywdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
      }
 
 /* setup for input grid */
-  if (Grille[gdrow_out][gdcol_out].nsubgrids > 0)
+  if (gdout->nsubgrids > 0)
      {
      yyout=1;
-     yin_gdout = Grille[gdrow_out][gdcol_out].subgrid[0];
-     yan_gdout = Grille[gdrow_out][gdcol_out].subgrid[1];
+     yin_gdout = gdout->subgrid[0];
+     yan_gdout = gdout->subgrid[1];
      }
   else
      {

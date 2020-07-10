@@ -22,7 +22,7 @@ extern int  c_ezsetval(char *option, ftnfloat fvalue);
 extern int  c_ezsint(ftnfloat *zout, ftnfloat *zin);
 extern int  c_ezuvint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin);
 extern int  c_ezwdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin);
-extern int  c_gdgaxes(int gdid, ftnfloat *ax, ftnfloat *ay);
+extern int  c_gdgaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay);
 extern int  c_gdgxpndaxes(int gdid, ftnfloat *ax, ftnfloat *ay);
 extern int  c_gdllfxy(TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, int n);
 extern int  c_gdllfxyz(TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, int n);
@@ -37,7 +37,6 @@ extern int  c_gduvfwd(TGeoRef* GRef,  ftnfloat *uugdout, ftnfloat *vvgdout, ftnf
 extern int  c_gdwdfuv(TGeoRef* GRef, ftnfloat *uullout, ftnfloat *vvllout, ftnfloat *uuin, ftnfloat *vvin,ftnfloat *latin, ftnfloat *lonin, int npts);
 extern int  c_gdxyfll(TGeoRef* GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfloat *lon, int n);
 extern int  c_gdxyzfll(TGeoRef* GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfloat *lon, int n);
-extern int  c_guval(int gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat *vvin, ftnfloat *x, ftnfloat *y, int n);
 extern void c_ezgfllfxy(ftnfloat *lonp, ftnfloat *latp,ftnfloat *lon, ftnfloat *lat,ftnfloat *r, ftnfloat *ri, int *npts,ftnfloat *xlat1, ftnfloat *xlon1, ftnfloat *xlat2, ftnfloat *xlon2);
 extern void c_ezgfxyfll(ftnfloat *lonp, ftnfloat *latp,ftnfloat *lon, ftnfloat *lat,ftnfloat *r, ftnfloat *ri, int *npts,ftnfloat *xlat1, ftnfloat *xlon1, ftnfloat *xlat2, ftnfloat *xlon2);
 extern void c_ezgfwfllw(ftnfloat *uullout, ftnfloat *vvllout, ftnfloat *latin, ftnfloat *lonin,ftnfloat *xlatingf, ftnfloat *xloningf,int *ni, int *nj,char *grtyp, int *ig1, int *ig2, int *ig3, int *ig4);

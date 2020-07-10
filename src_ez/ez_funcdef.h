@@ -13,7 +13,6 @@ wordint LireEnrPositionnels(TGeoRef* gr, wordint iunit, wordint ip1, wordint ip2
 void c_llfgr(ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint npts,
         ftnfloat latOrigine, ftnfloat lonOrigine, ftnfloat deltaLat, ftnfloat deltaLon);
 
-unsigned int ez_calc_crc(int* p, int* flen,  float* ax, float* ay, int ni, int nj);
 wordint ez_calclatlon(TGeoRef* GRef);
 
 void ez_calcntncof(TGeoRef* GRef);
@@ -39,8 +38,6 @@ wordint ez_defzone_nord(TGeoRef* gdin, ftnfloat* x, ftnfloat* y, wordint npts, _
 wordint ez_defzone_sud(TGeoRef* gdin, ftnfloat* x, ftnfloat* y, wordint npts, _zone* zone);
 
 wordint ez_interp(ftnfloat* zout, ftnfloat* zin, TGeoRef* gdin, TGeoRef* gdout);
-
-wordint ez_poleovrw(ftnfloat* zout, wordint gdid);
 
 void ez_xpncof(wordint* i1, wordint* i2, wordint* j1, wordint* j2, wordint* couverture,
             wordint ni, wordint nj, char grtyp, char grref,
@@ -119,9 +116,8 @@ wordint c_ezsetval(char* option, ftnfloat fvalue);
 wordint f77name(ezsint)(ftnfloat* zout, ftnfloat* zin);
 wordint c_ezsint(ftnfloat* zout, ftnfloat* zin);
 
-wordint c_ez_find_gdin(int gdin, int gdout);
-wordint find_gdin_in_gset(wordint gdin, wordint gdout);
-
+wordint c_find_gdin(TGeoRef* gdin, TGeoRef* gdout);
+wordint find_gdin_in_gset(TGeoRef* gdin, TGeoRef* gdout);
 
 
 wordint f77name(ezuvint)(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin);
@@ -132,8 +128,8 @@ wordint c_ezwdint(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vv
 
 wordint ftnstrclean(char* str, wordint lenstr);
 
-wordint f77name(gdgaxes)(wordint* gdid, ftnfloat* ax, ftnfloat* ay);
-wordint c_gdgaxes(wordint gdid, ftnfloat* ax, ftnfloat* ay);
+wordint f77name(gdgaxes)(PTR_AS_INT GRef, ftnfloat* ax, ftnfloat* ay);
+wordint c_gdgaxes(TGeoRef* GRef, ftnfloat* ax, ftnfloat* ay);
 
 wordint f77name(gdgxpndaxes)(wordint* gdid, ftnfloat* ax, ftnfloat* ay);
 wordint c_gdgxpndaxes(wordint gdid, ftnfloat* ax, ftnfloat* ay);
@@ -188,10 +184,6 @@ wordint c_gdxyzfll(TGeoRef* GRef, ftnfloat* x, ftnfloat* y, ftnfloat* lat, ftnfl
 TGeoRef* c_ezgetgdin();
 
 TGeoRef* c_ezgetgdout();
-
-wordint f77name(guval)(wordint* gdin, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin,  ftnfloat* vvin,
-                   ftnfloat* x, ftnfloat* y, wordint* n);
-wordint c_guval(wordint gdin, ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin,  ftnfloat* vvin, ftnfloat* x, ftnfloat* y, wordint n);
 
 void c_ezgfllfxy(ftnfloat* lonp, ftnfloat* latp,
                  ftnfloat* lon, ftnfloat* lat,
