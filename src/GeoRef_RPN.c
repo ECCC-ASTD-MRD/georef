@@ -642,6 +642,9 @@ TGeoRef* c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
 
    ez_calcxpncof(GRef);
 
+   // Check for sub-grids (U grids can have sub grids)
+   GRef->NbId = grtyp[0]=='U'? (GRef->nsubgrids==0? 1 : GRef->nsubgrids) : 1;
+
    GRef->Grid[0]=grtyp[0];
    GRef->Grid[1]=grtyp[1];
    GRef->Project=GeoRef_RPNProject;
@@ -780,16 +783,8 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int 
          }
       }
 
-
       // Check for sub-grids (U grids can have sub grids)
-      ref->NbId=GRTYP[0]=='U'?c_ezget_nsubgrids(id):1;
-      // TODO: Switch to pointer table instead of ints
-      if ((ref->Ids=(int*)malloc((ref->NbId>1?ref->NbId+1:1)*sizeof(int)))) {
-         ref->Ids[0]=id;
-         if (ref->NbId>1) {
-            c_ezget_subgridids(id,&ref->Ids[1]);
-         }
-      }
+      ref->NbId = GRTYP[0]=='U'? (ref->nsubgrids==0? 1 : ref->nsubgrids) : 1;
 #endif
    }
 

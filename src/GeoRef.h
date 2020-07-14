@@ -268,7 +268,6 @@ typedef struct TGeoRef {
 #endif
 } TGeoRef;
 
-extern TGeoRef** Grille;
 extern TGeoRef* iset_gdin;
 extern TGeoRef* iset_gdout;
 
