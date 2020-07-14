@@ -23,18 +23,13 @@
 #include "../src/GeoRef.h"
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-wordint ez_defzone_polesud(wordint gdin, ftnfloat *x, ftnfloat *y, wordint npts, _zone *zone)
+wordint ez_defzone_polesud(TGeoRef *gdin, ftnfloat *x, ftnfloat *y, wordint npts, _zone *zone)
 {
 
   ftnfloat *tmpx, *tmpy;
   ftnfloat latpolesud, lonpolesud, xpolesud, ypolesud;
   wordint nhits, i;
   wordint *tmpidx;
-
-
-  wordint gdrow_in, gdcol_in;
-    
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
   
   tmpx =   (ftnfloat *) malloc(npts*sizeof(ftnfloat));
   tmpy =   (ftnfloat *) malloc(npts*sizeof(ftnfloat));
@@ -42,9 +37,9 @@ wordint ez_defzone_polesud(wordint gdin, ftnfloat *x, ftnfloat *y, wordint npts,
   
   nhits = 0;
   
-  if (Grille[gdrow_in][gdcol_in].grtyp[0] == 'Z' && Grille[gdrow_in][gdcol_in].grref[0] == 'E')
+  if (gdin->grtyp[0] == 'Z' && gdin->grref[0] == 'E')
     {
-    xpolesud = 0.5 * Grille[gdrow_in][gdcol_in].ni;
+    xpolesud = 0.5 * gdin->ni;
     ypolesud = 0.5;
     }
   else

@@ -23,27 +23,23 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdllfxy)(wordint *gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint *n)
+wordint f77name(gdllfxy)(PTR_AS_INT GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint *n)
 {
-  return c_gdllfxy(*gdid, lat, lon, x, y, *n);
+  return c_gdllfxy((TGeoRef*)GRef, lat, lon, x, y, *n);
 
 }
 
-wordint c_gdllfxy(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint n)
+wordint c_gdllfxy(TGeoRef *GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint n)
 {
-  wordint j, icode, yin_gdid, yan_gdid;
+  wordint j, icode;
+  TGeoRef *yin_gd, *yan_gd;
   ftnfloat *latyin, *lonyin, *latyan, *lonyan;
   ftnfloat *tmpy;
 
-  wordint gdrow_id, gdcol_id,yin_gdrow_id,yin_gdcol_id;
-
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-
-  if (Grille[gdrow_id][gdcol_id].nsubgrids > 0 )
+  if (GRef->nsubgrids > 0 )
     {
-      yin_gdid=Grille[gdrow_id][gdcol_id].subgrid[0];
-      yan_gdid=Grille[gdrow_id][gdcol_id].subgrid[1];
-      c_gdkey2rowcol(yin_gdid,  &yin_gdrow_id,  &yin_gdcol_id);
+      yin_gd=GRef->subgrid[0];
+      yan_gd=GRef->subgrid[1];
       tmpy = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       latyin = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       lonyin = (ftnfloat *) malloc(n*sizeof(ftnfloat));
@@ -51,26 +47,26 @@ wordint c_gdllfxy(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfl
       lonyan = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       for (j=0; j< n; j++)
         {
-          if (y[j] > Grille[yin_gdrow_id][yin_gdcol_id].nj)
+          if (y[j] > yin_gd->nj)
              {
-             tmpy[j]=y[j]-Grille[yin_gdrow_id][yin_gdcol_id].nj;
+             tmpy[j]=y[j]-yin_gd->nj;
              }
           else
              {
              tmpy[j]=y[j];
              }
         }
-      icode = c_gdllfxy_orig(yin_gdid,latyin,lonyin,x,tmpy,n);
+      icode = c_gdllfxy_orig(yin_gd,latyin,lonyin,x,tmpy,n);
 /*
       for (j=0; j < n; j++)
         {
            printf("gdllfxy yin x %f y %f : lat %f, lon %f \n",x[j],y[j],lat[j],lon[j]);
         }
 */
-      icode = c_gdllfxy_orig(yan_gdid,latyan,lonyan,x,tmpy,n);
+      icode = c_gdllfxy_orig(yan_gd,latyan,lonyan,x,tmpy,n);
       for (j=0; j < n; j++)
         {
-           if (y[j] > Grille[yin_gdrow_id][yin_gdcol_id].nj)
+           if (y[j] > yin_gd->nj)
               {
               lat[j]=latyan[j];
               lon[j]=lonyan[j];
@@ -87,11 +83,12 @@ wordint c_gdllfxy(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfl
     }
   else
     {
-      icode = c_gdllfxy_new(gdid,lat,lon,x,y,n);
+      icode = c_gdllfxy_new(GRef,lat,lon,x,y,n);
     }
   return icode;
 }
-wordint c_gdllfxy_new(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint n)
+
+wordint c_gdllfxy_new(TGeoRef *GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint n)
 {
   ftnfloat xlat1, xlon1, xlat2, xlon2;
   wordint i, npts, un;
@@ -100,23 +97,16 @@ wordint c_gdllfxy_new(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, f
   ftnfloat dlat, dlon, swlat, swlon;
   wordint indx, indy;
 
-  TGeoRef gr;
-
-  wordint gdrow_id, gdcol_id;
-
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-
-  gr = Grille[gdrow_id][gdcol_id];
   npts = n;
   un = 1;
 
-  switch(gr.grtyp[0])
+  switch(GRef->grtyp[0])
     {
     case 'A':
       for (i=0; i < n; i++)
 	      {
-	      lat[i] = (y[i]-1.0)*gr.fst.xg[DLAT]+gr.fst.xg[SWLAT];
-	      lon[i] = (x[i]-1.0)*gr.fst.xg[DLON]+gr.fst.xg[SWLON];
+	      lat[i] = (y[i]-1.0)*GRef->fst.xg[DLAT]+GRef->fst.xg[SWLAT];
+	      lon[i] = (x[i]-1.0)*GRef->fst.xg[DLON]+GRef->fst.xg[SWLON];
 	      lon[i] = (ftnfloat) (fmod((double) (lon[i] + 360.0), (double) 360.0));
 	      }
       break;
@@ -124,8 +114,8 @@ wordint c_gdllfxy_new(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, f
     case 'B':
       for (i=0; i < n; i++)
 	      {
-	      lat[i] = (y[i]-1.0)*gr.fst.xg[DLAT]+gr.fst.xg[SWLAT];
-	      lon[i] = (x[i]-1.0)*gr.fst.xg[DLON]+gr.fst.xg[SWLON];
+	      lat[i] = (y[i]-1.0)*GRef->fst.xg[DLAT]+GRef->fst.xg[SWLAT];
+	      lon[i] = (x[i]-1.0)*GRef->fst.xg[DLON]+GRef->fst.xg[SWLON];
 	      lon[i] = (ftnfloat) (fmod((double) (lon[i] + 360.0), (double) 360.0));
 	      }
       break;
@@ -135,15 +125,15 @@ wordint c_gdllfxy_new(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, f
       tmpy = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       for (i=0; i < n; i++)
 	      {
-	      dlat  = 180.0 / gr.nj;
-	      dlon  = 360.0 / (gr.ni - 1);
+	      dlat  = 180.0 / GRef->nj;
+	      dlon  = 360.0 / (GRef->ni - 1);
 	      swlat = -90.0 + 0.5 * dlat;
 	      swlon = 0.0;
 	      tmpx[i] = (x[i]-1.0)*dlon+swlon;
 	      tmpy[i] = (y[i]-1.0)*dlat+swlat;
 	      }
 
-      f77name(ez_gfllfxy)(lon,lat,tmpx,tmpy,&n,&gr.fst.xg[XLAT1],&gr.fst.xg[XLON1],&gr.fst.xg[XLAT2],&gr.fst.xg[XLON2]);
+      f77name(ez_gfllfxy)(lon,lat,tmpx,tmpy,&n,&GRef->fst.xg[XLAT1],&GRef->fst.xg[XLON1],&GRef->fst.xg[XLAT2],&GRef->fst.xg[XLON2]);
       free(tmpx);
       free(tmpy);
       break;
@@ -152,15 +142,15 @@ wordint c_gdllfxy_new(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, f
     case 'L':
       for (i=0; i < n; i++)
 	      {
-	      lon[i] = (x[i]-1.0)*gr.fst.xg[DLON]+gr.fst.xg[SWLON];
+	      lon[i] = (x[i]-1.0)*GRef->fst.xg[DLON]+GRef->fst.xg[SWLON];
 	      lon[i] = (ftnfloat) (fmod((double) (lon[i] + 360.0), (double) 360.0));
-	      lat[i] = (y[i]-1.0)*gr.fst.xg[DLAT]+gr.fst.xg[SWLAT];
+	      lat[i] = (y[i]-1.0)*GRef->fst.xg[DLAT]+GRef->fst.xg[SWLAT];
 	      }
       break;
 
     case 'N':
     case 'S':
-      f77name(ez_vllfxy)(lat,lon,x,y,&npts,&un,&gr.fst.xg[D60],&gr.fst.xg[DGRW],&gr.fst.xg[PI],&gr.fst.xg[PJ],&gr.fst.hemisphere);
+      f77name(ez_vllfxy)(lat,lon,x,y,&npts,&un,&GRef->fst.xg[D60],&GRef->fst.xg[DGRW],&GRef->fst.xg[PI],&GRef->fst.xg[PJ],&GRef->fst.hemisphere);
       for (i=0; i < n; i++)
 	      {
 	      lon[i] = (ftnfloat) (fmod((double) (lon[i] + 360.0), (double) 360.0));
@@ -168,11 +158,11 @@ wordint c_gdllfxy_new(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, f
       break;
 
     case 'T':
-      f77name(ez_vtllfxy)(lat,lon,x,y, &gr.fst.xg[CLAT], &gr.fst.xg[CLON], &gr.fst.xg[TD60], &gr.fst.xg[TDGRW], &gr.ni, &gr.nj, &npts);
+      f77name(ez_vtllfxy)(lat,lon,x,y, &GRef->fst.xg[CLAT], &GRef->fst.xg[CLON], &GRef->fst.xg[TD60], &GRef->fst.xg[TDGRW], &GRef->ni, &GRef->nj, &npts);
       break;
 
     case '!':
-      f77name(ez_llflamb)(lat,lon,x,y,&npts,&gr.grtyp,&gr.fst.ig[IG1], &gr.fst.ig[IG2], &gr.fst.ig[IG3], &gr.fst.ig[IG4],1);
+      f77name(ez_llflamb)(lat,lon,x,y,&npts,&GRef->grtyp,&GRef->fst.ig[IG1], &GRef->fst.ig[IG2], &GRef->fst.ig[IG3], &GRef->fst.ig[IG4],1);
       break;
 
 
@@ -192,36 +182,36 @@ wordint c_gdllfxy_new(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, f
 	      {
 	      indx = (int)x[i]-1;
               ytmp[i] = y[i];
-              if (gr.fst.ig[IG2] == 1)
+              if (GRef->fst.ig[IG2] == 1)
                   {
-                    ytmp[i] = gr.nj +1.0 - y[i];
+                    ytmp[i] = GRef->nj +1.0 - y[i];
                   }
 	      indy = (int)ytmp[i]-1;
 
 	      indx = indx < 0 ? 0 : indx;
 	      indy = indy < 0 ? 0 : indy;
-	      indx = indx > gr.ni-2 ? gr.ni-2 : indx;
-	      indy = indy > gr.j2-2 ? gr.j2-2 : indy;
-	      delxx = gr.ax[indx+1]-gr.ax[indx];
-	      tmpx[i] = gr.ax[indx] + ((x[i]-1.0-indx)*delxx);
+	      indx = indx > GRef->ni-2 ? GRef->ni-2 : indx;
+	      indy = indy > GRef->j2-2 ? GRef->j2-2 : indy;
+	      delxx = GRef->ax[indx+1]-GRef->ax[indx];
+	      tmpx[i] = GRef->ax[indx] + ((x[i]-1.0-indx)*delxx);
 
-	      delyy = gr.ay[indy+1]-gr.ay[indy];
-	      tmpy[i] = gr.ay[indy] + ((ytmp[i]-1.0-indy)*delyy);
+	      delyy = GRef->ay[indy+1]-GRef->ay[indy];
+	      tmpy[i] = GRef->ay[indy] + ((ytmp[i]-1.0-indy)*delyy);
 	      }
 
-      switch (gr.grref[0])
+      switch (GRef->grref[0])
 	      {
 	      case 'E':
-	        f77name(cigaxg)(&gr.grref,&xlat1,&xlon1,&xlat2,&xlon2,
-			        &gr.fst.igref[IG1],&gr.fst.igref[IG2],&gr.fst.igref[IG3],&gr.fst.igref[IG4],1);
-	        f77name(ez_gfllfxy)(lon, lat, tmpx, tmpy, &npts, &gr.fst.xgref[XLAT1], &gr.fst.xgref[XLON1],
-			            &gr.fst.xgref[XLAT2], &gr.fst.xgref[XLON2]);
+	        f77name(cigaxg)(&GRef->grref,&xlat1,&xlon1,&xlat2,&xlon2,
+			        &GRef->fst.igref[IG1],&GRef->fst.igref[IG2],&GRef->fst.igref[IG3],&GRef->fst.igref[IG4],1);
+	        f77name(ez_gfllfxy)(lon, lat, tmpx, tmpy, &npts, &GRef->fst.xgref[XLAT1], &GRef->fst.xgref[XLON1],
+			            &GRef->fst.xgref[XLAT2], &GRef->fst.xgref[XLON2]);
 	        break;
 
 	      case 'S':
 	      case 'N':
-	        f77name(ez_vllfxy)(lat,lon,tmpx,tmpy,&npts,&un,&gr.fst.xgref[D60],
-			           &gr.fst.xgref[DGRW],&gr.fst.xgref[PI],&gr.fst.xgref[PJ],&gr.fst.hemisphere);
+	        f77name(ez_vllfxy)(lat,lon,tmpx,tmpy,&npts,&un,&GRef->fst.xgref[D60],
+			           &GRef->fst.xgref[DGRW],&GRef->fst.xgref[PI],&GRef->fst.xgref[PJ],&GRef->fst.hemisphere);
 	        for (i=0; i < n; i++)
 	          {
 	          lon[i] = (ftnfloat) (fmod((double) (lon[i] + 360.0), (double) 360.0));
@@ -231,8 +221,8 @@ wordint c_gdllfxy_new(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, f
 	      case 'L':
 	        for (i=0; i < n; i++)
 	          {
-	          lat[i] = (tmpy[i])*gr.fst.xgref[DLAT]+gr.fst.xgref[SWLAT];
-	          lon[i] = (tmpx[i])*gr.fst.xgref[DLON]+gr.fst.xgref[SWLON];
+	          lat[i] = (tmpy[i])*GRef->fst.xgref[DLAT]+GRef->fst.xgref[SWLAT];
+	          lon[i] = (tmpx[i])*GRef->fst.xgref[DLON]+GRef->fst.xgref[SWLON];
 	          lon[i] = (ftnfloat) (fmod((double) (lon[i] + 360.0), (double) 360.0));
 	          }
 	        break;
@@ -251,7 +241,7 @@ wordint c_gdllfxy_new(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, f
 
 }
 
-wordint c_gdllfxy_orig(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint n)
+wordint c_gdllfxy_orig(TGeoRef *GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint n)
 {
   ftnfloat xlat1, xlon1, xlat2, xlon2;
   wordint i, npts, un;
@@ -260,23 +250,16 @@ wordint c_gdllfxy_orig(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, 
   ftnfloat dlat, dlon, swlat, swlon;
   wordint indx, indy;
 
-  TGeoRef gr;
-
-  wordint gdrow_id, gdcol_id;
-
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-
-  gr = Grille[gdrow_id][gdcol_id];
   npts = n;
   un = 1;
 
-  switch(gr.grtyp[0])
+  switch(GRef->grtyp[0])
     {
     case 'A':
       for (i=0; i < n; i++)
 	      {
-	      lat[i] = (y[i]-1.0)*gr.fst.xg[DLAT]+gr.fst.xg[SWLAT];
-	      lon[i] = (x[i]-1.0)*gr.fst.xg[DLON]+gr.fst.xg[SWLON];
+	      lat[i] = (y[i]-1.0)*GRef->fst.xg[DLAT]+GRef->fst.xg[SWLAT];
+	      lon[i] = (x[i]-1.0)*GRef->fst.xg[DLON]+GRef->fst.xg[SWLON];
 	      lon[i] = (ftnfloat) (fmod((double) (lon[i] + 360.0), (double) 360.0));
 	      }
       break;
@@ -284,8 +267,8 @@ wordint c_gdllfxy_orig(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, 
     case 'B':
       for (i=0; i < n; i++)
 	      {
-	      lat[i] = (y[i]-1.0)*gr.fst.xg[DLAT]+gr.fst.xg[SWLAT];
-	      lon[i] = (x[i]-1.0)*gr.fst.xg[DLON]+gr.fst.xg[SWLON];
+	      lat[i] = (y[i]-1.0)*GRef->fst.xg[DLAT]+GRef->fst.xg[SWLAT];
+	      lon[i] = (x[i]-1.0)*GRef->fst.xg[DLON]+GRef->fst.xg[SWLON];
 	      lon[i] = (ftnfloat) (fmod((double) (lon[i] + 360.0), (double) 360.0));
 	      }
       break;
@@ -295,15 +278,15 @@ wordint c_gdllfxy_orig(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, 
       tmpy = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       for (i=0; i < n; i++)
 	      {
-	      dlat  = 180.0 / gr.nj;
-	      dlon  = 360.0 / (gr.ni - 1);
+	      dlat  = 180.0 / GRef->nj;
+	      dlon  = 360.0 / (GRef->ni - 1);
 	      swlat = -90.0 + 0.5 * dlat;
 	      swlon = 0.0;
 	      tmpx[i] = (x[i]-1.0)*dlon+swlon;
 	      tmpy[i] = (y[i]-1.0)*dlat+swlat;
 	      }
 
-      f77name(ez_gfllfxy)(lon,lat,tmpx,tmpy,&n,&gr.fst.xg[XLAT1],&gr.fst.xg[XLON1],&gr.fst.xg[XLAT2],&gr.fst.xg[XLON2]);
+      f77name(ez_gfllfxy)(lon,lat,tmpx,tmpy,&n,&GRef->fst.xg[XLAT1],&GRef->fst.xg[XLON1],&GRef->fst.xg[XLAT2],&GRef->fst.xg[XLON2]);
       free(tmpx);
       free(tmpy);
       break;
@@ -312,15 +295,15 @@ wordint c_gdllfxy_orig(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, 
     case 'L':
       for (i=0; i < n; i++)
 	      {
-	      lon[i] = (x[i]-1.0)*gr.fst.xg[DLON]+gr.fst.xg[SWLON];
+	      lon[i] = (x[i]-1.0)*GRef->fst.xg[DLON]+GRef->fst.xg[SWLON];
 	      lon[i] = (ftnfloat) (fmod((double) (lon[i] + 360.0), (double) 360.0));
-	      lat[i] = (y[i]-1.0)*gr.fst.xg[DLAT]+gr.fst.xg[SWLAT];
+	      lat[i] = (y[i]-1.0)*GRef->fst.xg[DLAT]+GRef->fst.xg[SWLAT];
 	      }
       break;
 
     case 'N':
     case 'S':
-      f77name(ez_vllfxy)(lat,lon,x,y,&npts,&un,&gr.fst.xg[D60],&gr.fst.xg[DGRW],&gr.fst.xg[PI],&gr.fst.xg[PJ],&gr.fst.hemisphere);
+      f77name(ez_vllfxy)(lat,lon,x,y,&npts,&un,&GRef->fst.xg[D60],&GRef->fst.xg[DGRW],&GRef->fst.xg[PI],&GRef->fst.xg[PJ],&GRef->fst.hemisphere);
       for (i=0; i < n; i++)
 	      {
 	      lon[i] = (ftnfloat) (fmod((double) (lon[i] + 360.0), (double) 360.0));
@@ -328,11 +311,11 @@ wordint c_gdllfxy_orig(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, 
       break;
 
     case 'T':
-      f77name(ez_vtllfxy)(lat,lon,x,y, &gr.fst.xg[CLAT], &gr.fst.xg[CLON], &gr.fst.xg[TD60], &gr.fst.xg[TDGRW], &gr.ni, &gr.nj, &npts);
+      f77name(ez_vtllfxy)(lat,lon,x,y, &GRef->fst.xg[CLAT], &GRef->fst.xg[CLON], &GRef->fst.xg[TD60], &GRef->fst.xg[TDGRW], &GRef->ni, &GRef->nj, &npts);
       break;
 
     case '!':
-      f77name(ez_llflamb)(lat,lon,x,y,&npts,&gr.grtyp,&gr.fst.ig[IG1], &gr.fst.ig[IG2], &gr.fst.ig[IG3], &gr.fst.ig[IG4],1);
+      f77name(ez_llflamb)(lat,lon,x,y,&npts,&GRef->grtyp,&GRef->fst.ig[IG1], &GRef->fst.ig[IG2], &GRef->fst.ig[IG3], &GRef->fst.ig[IG4],1);
       break;
 
 
@@ -354,28 +337,28 @@ wordint c_gdllfxy_orig(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, 
 
 	      indx = indx < 0 ? 0 : indx;
 	      indy = indy < 0 ? 0 : indy;
-	      indx = indx > gr.ni-2 ? gr.ni-2 : indx;
-	      indy = indy > gr.j2-2 ? gr.j2-2 : indy;
-	      delxx = gr.ax[indx+1]-gr.ax[indx];
-	      tmpx[i] = gr.ax[indx] + ((x[i]-1.0-indx)*delxx);
+	      indx = indx > GRef->ni-2 ? GRef->ni-2 : indx;
+	      indy = indy > GRef->j2-2 ? GRef->j2-2 : indy;
+	      delxx = GRef->ax[indx+1]-GRef->ax[indx];
+	      tmpx[i] = GRef->ax[indx] + ((x[i]-1.0-indx)*delxx);
 
-	      delyy = gr.ay[indy+1]-gr.ay[indy];
-	      tmpy[i] = gr.ay[indy] + ((y[i]-1.0-indy)*delyy);
+	      delyy = GRef->ay[indy+1]-GRef->ay[indy];
+	      tmpy[i] = GRef->ay[indy] + ((y[i]-1.0-indy)*delyy);
 	      }
 
-      switch (gr.grref[0])
+      switch (GRef->grref[0])
 	      {
 	      case 'E':
-	        f77name(cigaxg)(&gr.grref,&xlat1,&xlon1,&xlat2,&xlon2,
-			        &gr.fst.igref[IG1],&gr.fst.igref[IG2],&gr.fst.igref[IG3],&gr.fst.igref[IG4],1);
-	        f77name(ez_gfllfxy)(lon, lat, tmpx, tmpy, &npts, &gr.fst.xgref[XLAT1], &gr.fst.xgref[XLON1],
-			            &gr.fst.xgref[XLAT2], &gr.fst.xgref[XLON2]);
+	        f77name(cigaxg)(&GRef->grref,&xlat1,&xlon1,&xlat2,&xlon2,
+			        &GRef->fst.igref[IG1],&GRef->fst.igref[IG2],&GRef->fst.igref[IG3],&GRef->fst.igref[IG4],1);
+	        f77name(ez_gfllfxy)(lon, lat, tmpx, tmpy, &npts, &GRef->fst.xgref[XLAT1], &GRef->fst.xgref[XLON1],
+			            &GRef->fst.xgref[XLAT2], &GRef->fst.xgref[XLON2]);
 	        break;
 
 	      case 'S':
 	      case 'N':
-	        f77name(ez_vllfxy)(lat,lon,tmpx,tmpy,&npts,&un,&gr.fst.xgref[D60],
-			           &gr.fst.xgref[DGRW],&gr.fst.xgref[PI],&gr.fst.xgref[PJ],&gr.fst.hemisphere);
+	        f77name(ez_vllfxy)(lat,lon,tmpx,tmpy,&npts,&un,&GRef->fst.xgref[D60],
+			           &GRef->fst.xgref[DGRW],&GRef->fst.xgref[PI],&GRef->fst.xgref[PJ],&GRef->fst.hemisphere);
 	        for (i=0; i < n; i++)
 	          {
 	          lon[i] = (ftnfloat) (fmod((double) (lon[i] + 360.0), (double) 360.0));
@@ -385,8 +368,8 @@ wordint c_gdllfxy_orig(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, 
 	      case 'L':
 	        for (i=0; i < n; i++)
 	          {
-	          lat[i] = (tmpy[i])*gr.fst.xgref[DLAT]+gr.fst.xgref[SWLAT];
-	          lon[i] = (tmpx[i])*gr.fst.xgref[DLON]+gr.fst.xgref[SWLON];
+	          lat[i] = (tmpy[i])*GRef->fst.xgref[DLAT]+GRef->fst.xgref[SWLAT];
+	          lon[i] = (tmpx[i])*GRef->fst.xgref[DLON]+GRef->fst.xgref[SWLON];
 	          lon[i] = (ftnfloat) (fmod((double) (lon[i] + 360.0), (double) 360.0));
 	          }
 	        break;

@@ -23,7 +23,7 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint ez_defzone_dehors(wordint gdin, ftnfloat *x, ftnfloat *y, wordint npts, _zone *zone)
+wordint ez_defzone_dehors(TGeoRef *gdin, ftnfloat *x, ftnfloat *y, wordint npts, _zone *zone)
 {
   ftnfloat *tmpx, *tmpy;
   wordint *tmpidx;
@@ -32,14 +32,11 @@ wordint ez_defzone_dehors(wordint gdin, ftnfloat *x, ftnfloat *y, wordint npts, 
   
   wordint offsetleft, offsetright, ix, iy;
   
-   wordint gdrow_in, gdcol_in;
-   int lcl_ngdin;
-   
-  c_gdkey2rowcol(gdin,  &gdrow_in,  &gdcol_in);
+  int lcl_ngdin;
   
   tmpx =   (ftnfloat *) malloc(npts*sizeof(ftnfloat));
   tmpy =   (ftnfloat *) malloc(npts*sizeof(ftnfloat));
-  tmpidx = (wordint   *) malloc(npts*sizeof(wordint));
+  tmpidx = (wordint  *) malloc(npts*sizeof(wordint));
   
 /*
   if (groptions.degre_interp == CUBIQUE)
@@ -65,7 +62,7 @@ wordint ez_defzone_dehors(wordint gdin, ftnfloat *x, ftnfloat *y, wordint npts, 
     {
     ix = (wordint)(x[i]+0.5);
     iy = (wordint)(y[i]+0.5);
-    if (ix < (1+offsetleft) || iy < (1+offsetleft) || ix > (Grille[gdrow_in][gdcol_in].ni-offsetright) || iy > (Grille[gdrow_in][gdcol_in].nj-offsetright))
+    if (ix < (1+offsetleft) || iy < (1+offsetleft) || ix > (gdin->ni-offsetright) || iy > (gdin->nj-offsetright))
       {
       tmpx[nhits]  = x[i];
       tmpy[nhits]  = y[i];

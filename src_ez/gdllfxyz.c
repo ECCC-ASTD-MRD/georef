@@ -23,25 +23,17 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdllfxyz)(wordint *gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint *n)
+wordint f77name(gdllfxyz)(PTR_AS_INT GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint *n)
 {
-  return c_gdllfxyz(*gdid, lat, lon, x, y, *n);
+  return c_gdllfxyz((TGeoRef*)GRef, lat, lon, x, y, *n);
 }
 
-wordint c_gdllfxyz(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint n)
+wordint c_gdllfxyz(TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, wordint n)
 {
   wordint i,npts, hem, un;
-  
-  TGeoRef grEntree;
-  
-  wordint gdrow_id, gdcol_id;
-    
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-  
-  grEntree = Grille[gdrow_id][gdcol_id];
   npts = n;
   
-  switch(grEntree.grtyp[0])
+  switch(GRef->grtyp[0])
     {
     case 'A':
     case 'B':
@@ -51,7 +43,7 @@ wordint c_gdllfxyz(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnf
     case 'S':
     case 'T':
     case '!':
-      c_gdllfxy_orig(gdid, lat, lon, x, y, n);
+      c_gdllfxy_orig(GRef, lat, lon, x, y, n);
       break;
       
     case 'Y':
@@ -62,30 +54,30 @@ wordint c_gdllfxyz(wordint gdid, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnf
       
     case '#':
     case 'Z':
-      switch (grEntree.grref[0])
+      switch (GRef->grref[0])
   {
   case 'E':
-    f77name(ez_gfllfxy)(lon,lat,x,y,&npts,&grEntree.fst.xgref[XLAT1],&grEntree.fst.xgref[XLON1],
-            &grEntree.fst.xgref[XLAT2],&grEntree.fst.xgref[XLON2]);
+    f77name(ez_gfllfxy)(lon,lat,x,y,&npts,&GRef->fst.xgref[XLAT1],&GRef->fst.xgref[XLON1],
+            &GRef->fst.xgref[XLAT2],&GRef->fst.xgref[XLON2]);
     break;
     
   case 'S':
   case 'N':
-    if (grEntree.grref[0] == 'N') 
+    if (GRef->grref[0] == 'N') 
       hem = 1;
     else
       hem = 2;
 
     un = 1;
-    f77name(ez_vllfxy)(lat,lon,x,y,&npts,&un,&grEntree.fst.xgref[D60],
-        &grEntree.fst.xgref[DGRW], &grEntree.fst.xgref[PI], &grEntree.fst.xgref[PJ],&grEntree.fst.hemisphere);
+    f77name(ez_vllfxy)(lat,lon,x,y,&npts,&un,&GRef->fst.xgref[D60],
+        &GRef->fst.xgref[DGRW], &GRef->fst.xgref[PI], &GRef->fst.xgref[PJ],&GRef->fst.hemisphere);
     break;
     
   case 'L':
     for (i=0; i < n; i++)
       {
-        lat[i] = (y[i])*grEntree.fst.xgref[DLAT]+ grEntree.fst.xgref[SWLAT];
-        lon[i] = (x[i])*grEntree.fst.xgref[DLON]+ grEntree.fst.xgref[SWLON];
+        lat[i] = (y[i])*GRef->fst.xgref[DLAT]+ GRef->fst.xgref[SWLAT];
+        lon[i] = (x[i])*GRef->fst.xgref[DLON]+ GRef->fst.xgref[SWLON];
         lon[i] = lon[i] < 0.0 ? lon[i] + 360.0 : lon[i];
       }
     break;
