@@ -23,7 +23,7 @@ extern int  c_ezsint(ftnfloat *zout, ftnfloat *zin);
 extern int  c_ezuvint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin);
 extern int  c_ezwdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin);
 extern int  c_gdgaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay);
-extern int  c_gdgxpndaxes(int gdid, ftnfloat *ax, ftnfloat *ay);
+extern int  c_gdgxpndaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay);
 extern int  c_gdllfxy(TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, int n);
 extern int  c_gdllfxyz(TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, int n);
 extern int  c_gdllsval(TGeoRef* GRef, ftnfloat *zout, ftnfloat *zin, ftnfloat *lat, ftnfloat *lon, int n);

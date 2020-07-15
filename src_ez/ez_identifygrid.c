@@ -22,7 +22,8 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
-void c_ez_manageGrillesMemory() {
+// Unused ??
+/* void c_ez_manageGrillesMemory() {
    int nchunks;
    nchunks = nGrilles / (CHUNK * CHUNK);
    if (nchunks > 0 && 0 == (nGrilles % (CHUNK * CHUNK))) {
@@ -32,7 +33,7 @@ void c_ez_manageGrillesMemory() {
    if (0 == (nGrilles % (CHUNK))) {
       Grille[(nGrilles >> LOG2_CHUNK)] = (TGeoRef *) malloc(CHUNK * sizeof(TGeoRef));
    }
-}
+} */
 
 
 TGeoRef* c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, 

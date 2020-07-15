@@ -23,75 +23,63 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(gdgxpndaxes)(wordint *gdid, ftnfloat *ax, ftnfloat *ay)
+wordint f77name(gdgxpndaxes)(PTR_AS_INT GRef, ftnfloat *ax, ftnfloat *ay)
 {
-   c_gdgxpndaxes(*gdid, ax, ay);
+   c_gdgxpndaxes((TGeoRef*)GRef, ax, ay);
    return 0;
 }
 
-wordint c_gdgxpndaxes(wordint gdid, ftnfloat *ax, ftnfloat *ay)
+wordint c_gdgxpndaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay)
 {
   
   wordint nix, njy;
   wordint istart, jstart;
+
+  if (GRef->nsubgrids > 0)
+  {
+      fprintf(stderr, "<gdgxpndaxes> This operation is not supported for 'U' grids.\n");
+      return -1;
+  }
   
-  wordint gdrow_id, gdcol_id;
-    
-  c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-  if (Grille[gdrow_id][gdcol_id].nsubgrids > 0)
-      {
-       fprintf(stderr, "<gdgxpndaxes> This operation is not supported for 'U' grids.\n");
-       return -1;
-      }
-  
-  if (!Grille[gdrow_id][gdcol_id].flags & AX)
-    {
+  if (!GRef->flags & AX)
+  {
     fprintf(stderr, "(gdgxpndaxes) Erreur! A l'aide! Descripteurs manquants!\n");
     return -1;
-    }
+  }
 
-  switch(Grille[gdrow_id][gdcol_id].grtyp[0])
-    {
+  switch(GRef->grtyp[0])
+  {
     case 'Y':
-      nix = Grille[gdrow_id][gdcol_id].ni * Grille[gdrow_id][gdcol_id].nj;
-      memcpy(ax, Grille[gdrow_id][gdcol_id].ax, nix*sizeof(ftnfloat));
-      memcpy(ay, Grille[gdrow_id][gdcol_id].ay, nix*sizeof(ftnfloat));
+      nix = GRef->ni * GRef->nj;
+      memcpy(ax, GRef->ax, nix*sizeof(ftnfloat));
+      memcpy(ay, GRef->ay, nix*sizeof(ftnfloat));
       break;
       
     default:
-      nix = Grille[gdrow_id][gdcol_id].ni;
-      njy = Grille[gdrow_id][gdcol_id].nj;
-      if (Grille[gdrow_id][gdcol_id].i2 == (nix+1)) istart = 1;
-      if (Grille[gdrow_id][gdcol_id].i2 == (nix+2)) istart = 2;
-      if (Grille[gdrow_id][gdcol_id].i2 == (nix)) istart = 0;
+      nix = GRef->ni;
+      njy = GRef->nj;
+      if (GRef->i2 == (nix+1)) istart = 1;
+      if (GRef->i2 == (nix+2)) istart = 2;
+      if (GRef->i2 == (nix)) istart = 0;
 
-      if (Grille[gdrow_id][gdcol_id].j2 == (njy+1)) jstart = 1;
-      if (Grille[gdrow_id][gdcol_id].j2 == (njy+2)) jstart = 2;
-      if (Grille[gdrow_id][gdcol_id].j2 == (njy))   jstart = 0;
-      memcpy(&ax[istart],Grille[gdrow_id][gdcol_id].ax, nix*sizeof(ftnfloat));
-      memcpy(&ay[jstart],Grille[gdrow_id][gdcol_id].ay, njy*sizeof(ftnfloat));
+      if (GRef->j2 == (njy+1)) jstart = 1;
+      if (GRef->j2 == (njy+2)) jstart = 2;
+      if (GRef->j2 == (njy))   jstart = 0;
+      memcpy(&ax[istart],GRef->ax, nix*sizeof(ftnfloat));
+      memcpy(&ay[jstart],GRef->ay, njy*sizeof(ftnfloat));
       
-      if (Grille[gdrow_id][gdcol_id].i2 == (Grille[gdrow_id][gdcol_id].ni+1))
-	{
-	ax[0] = Grille[gdrow_id][gdcol_id].ax[nix-2] - 360.0; 
-	ax[nix] = ax[2];
-	}
+      if (GRef->i2 == (GRef->ni+1))
+      {
+        ax[0] = GRef->ax[nix-2] - 360.0; 
+        ax[nix] = ax[2];
+      }
       
-      if (Grille[gdrow_id][gdcol_id].i2 == (Grille[gdrow_id][gdcol_id].ni+2))
-	{
-	ax[0] = Grille[gdrow_id][gdcol_id].ax[nix-1] - 360.0; 
-	ax[nix] = Grille[gdrow_id][gdcol_id].ax[1]+360.0;
-	ax[nix+1] = Grille[gdrow_id][gdcol_id].ax[2]+360.0;
-	}
-
-      if (Grille[gdrow_id][gdcol_id].j2 == (Grille[gdrow_id][gdcol_id].nj+1))
-	{
-	}
-
-      if (Grille[gdrow_id][gdcol_id].j2 == (Grille[gdrow_id][gdcol_id].nj+2))
-	{
-	}
-
-    }
+      if (GRef->i2 == (GRef->ni+2))
+      {
+        ax[0] = GRef->ax[nix-1] - 360.0; 
+        ax[nix] = GRef->ax[1]+360.0;
+        ax[nix+1] = GRef->ax[2]+360.0;
+      }
+  }
   return 0;
 }

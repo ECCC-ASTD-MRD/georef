@@ -28,7 +28,6 @@ wordint ez_corrval_aunord(ftnfloat* zout, ftnfloat* zin,  TGeoRef* gdin, TGeoRef
 wordint ez_corrvec_aunord(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, TGeoRef* gdin, TGeoRef* gdout);
 wordint ez_corrvec_ausud(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, TGeoRef* gdin, TGeoRef* gdout);
 
-
 wordint ez_defzones(TGeoRef* gdin, TGeoRef* gdout);
 
 wordint ez_defzone_dehors(TGeoRef* gdin, ftnfloat* x, ftnfloat* y, wordint npts, _zone* zone);
@@ -51,12 +50,10 @@ wordint c_ezfreegridset(TGeoRef* gr, wordint index);
 wordint f77name(ezdefset)(PTR_AS_INT gdout, PTR_AS_INT gdin);
 wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin);
 
+PTR_AS_INT f77name(ezgdef_supergrid)(wordint* ni, wordint* nj, char* grtyp, char* grref, wordint* vercode, wordint* nsubgrids, PTR_AS_INT subgrid, F2Cl lengrtyp, F2Cl lengrref);
+TGeoRef* c_ezgdef_supergrid(wordint ni, wordint nj, char* grtyp, char* grref, wordint vercode, wordint nsubgrids, TGeoRef** subgrid);
 
-wordint f77name(ezgdef_supergrid)(wordint* ni, wordint* nj, char* grtyp, char* grref, wordint* vercode, wordint* nsubgrids, PTR_AS_INT subgrid, F2Cl lengrtyp, F2Cl lengrref);
-
-wordint c_ezgdef_supergrid(wordint ni, wordint nj, char* grtyp, char* grref, wordint vercode, wordint nsubgrids, TGeoRef** subgrid);
 wordint c_ezgdef_yymask(TGeoRef* gr);
-
 
 wordint f77name(ezgenpole)(ftnfloat* vpolnor, ftnfloat* vpolsud, ftnfloat* fld,
                            wordint* ni, wordint* nj, wordint* vecteur,
@@ -119,7 +116,6 @@ wordint c_ezsint(ftnfloat* zout, ftnfloat* zin);
 wordint c_find_gdin(TGeoRef* gdin, TGeoRef* gdout);
 wordint find_gdin_in_gset(TGeoRef* gdin, TGeoRef* gdout);
 
-
 wordint f77name(ezuvint)(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin);
 wordint c_ezuvint(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin);
 
@@ -131,8 +127,8 @@ wordint ftnstrclean(char* str, wordint lenstr);
 wordint f77name(gdgaxes)(PTR_AS_INT GRef, ftnfloat* ax, ftnfloat* ay);
 wordint c_gdgaxes(TGeoRef* GRef, ftnfloat* ax, ftnfloat* ay);
 
-wordint f77name(gdgxpndaxes)(wordint* gdid, ftnfloat* ax, ftnfloat* ay);
-wordint c_gdgxpndaxes(wordint gdid, ftnfloat* ax, ftnfloat* ay);
+wordint f77name(gdgxpndaxes)(PTR_AS_INT GRef, ftnfloat* ax, ftnfloat* ay);
+wordint c_gdgxpndaxes(TGeoRef* GRef, ftnfloat* ax, ftnfloat* ay);
 
 wordint f77name(gdllfxy)(PTR_AS_INT GRef, ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint* n);
 wordint c_gdllfxy(TGeoRef* GRef, ftnfloat* lat, ftnfloat* lon, ftnfloat* x, ftnfloat* y, wordint n);
@@ -207,8 +203,6 @@ void  c_ezllwfgfw(ftnfloat* uullout, ftnfloat* vvllout, ftnfloat* latin, ftnfloa
 
 void c_ez_manageGrillesMemory();
 int c_ez_refgrid(int grid_index);
-
-
 
 void c_ezdefxg(TGeoRef* GRef);
 void c_ezdefaxes(TGeoRef* GRef, ftnfloat* ax, ftnfloat* ay);

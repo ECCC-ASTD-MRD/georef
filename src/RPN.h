@@ -191,7 +191,7 @@ extern int  c_ezsint(ftnfloat *zout, ftnfloat *zin);
 extern int  c_ezuvint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin);
 extern int  c_ezwdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin);
 extern int  c_gdgaxes(struct TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay);
-extern int  c_gdgxpndaxes(int gdid, ftnfloat *ax, ftnfloat *ay);
+extern int  c_gdgxpndaxes(struct TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay);
 extern int  c_gdllfxy(struct TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, int n);
 extern int  c_gdllfxyz(struct TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, int n);
 extern int  c_gdllsval(struct TGeoRef* GRef, ftnfloat *zout, ftnfloat *zin, ftnfloat *lat, ftnfloat *lon, int n);
