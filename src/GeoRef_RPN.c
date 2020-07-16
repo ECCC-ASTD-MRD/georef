@@ -690,15 +690,15 @@ TGeoRef* c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
 //wordint c_ezgdef_yymask(TGeoRef* gr);
 
 // Replaces c_ezgdef_ffile and c_ezqkdef
-PTR_AS_INT f77name(georef_rpncreate)(wordint *ni, wordint *nj, char *grtyp, wordint *ig1, wordint *ig2, wordint *ig3, wordint *ig4, wordint *iunit, F2Cl lengrtyp){
- 
-  char cgrtyp[2];
-
-  cgrtyp[0] = grtyp[0];
-  cgrtyp[1] = '\0';
-
-  return (PTR_AS_INT)GeoRef_RPNCreate(*ni, *nj, cgrtyp, *ig1, *ig2, *ig3, *ig4, *iunit));
-}
+//PTR_AS_INT f77name(georef_rpncreate)(wordint *ni, wordint *nj, char *grtyp, wordint *ig1, wordint *ig2, wordint *ig3, wordint *ig4, wordint *iunit, F2Cl lengrtyp){
+// 
+//  char cgrtyp[2];
+//
+//  cgrtyp[0] = grtyp[0];
+//  cgrtyp[1] = '\0';
+//
+//  return (PTR_AS_INT)GeoRef_RPNCreate(*ni, *nj, cgrtyp, *ig1, *ig2, *ig3, *ig4, *iunit));
+//}
 
 TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int ig4,int FID) {
 
