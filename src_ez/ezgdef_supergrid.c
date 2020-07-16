@@ -23,9 +23,8 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char *grref, wordint *vercode, wordint *nsubgrids, PTR_AS_INT subgrid, F2Cl lengrtyp, F2Cl lengrref)
+PTR_AS_INT f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char *grref, wordint *vercode, wordint *nsubgrids, PTR_AS_INT subgrid, F2Cl lengrtyp, F2Cl lengrref)
 {
-  wordint gdid,i;
   char lgrtyp[2],lgrref[2];
 
   lgrtyp[0] = grtyp[0];
@@ -33,175 +32,130 @@ wordint f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char *g
    
   lgrref[0] = grref[0];
   lgrref[1] = '\0';
-  gdid = c_ezgdef_supergrid(*ni, *nj, lgrtyp, lgrref, *vercode, *nsubgrids,(TGeoRef**)subgrid);
-  return gdid;
+  return (PTR_AS_INT) c_ezgdef_supergrid(*ni, *nj, lgrtyp, lgrref, *vercode, *nsubgrids,(TGeoRef**)subgrid);
 }
 
-wordint c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wordint vercode,wordint nsubgrids, TGeoRef **subgrid)
+TGeoRef* c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wordint vercode,wordint nsubgrids, TGeoRef **subgrid)
 {
-  wordint sub_gdrow_id, sub_gdcol_id, sub_gdid;
-  wordint mask_gdrow_id, mask_gdcol_id, mask_gdid;
-  wordint  ii,i,j,k,i0,j0,i1,j1,yni,ynj,gdid;
-  wordint gdrow_in, gdcol_in, grid_index,newgrsize;
+  wordint  i;
   ftnfloat *ax,*ay;
-  unsigned int grid_crc;
-   TGeoRef newgr,*maskgd;
+  TGeoRef *GRef, *fref, *sub_gd;
     
   if (nsubgrids <= 1)
-    {
+  {
     fprintf(stderr,"<c_ezgdef_supergrid> nsubgrids given is less than 2! Aborting...\n");
-    return -1;
-    }
+    return NULL;
+  }
   if (vercode != 1)
-    {
+  {
     fprintf(stderr,"<c_ezgdef_supergrid> invalid vercode! Aborting...\n");
-    return -1;
-    }
-  memset(&newgr, (int)0, sizeof(TGeoRef));
-  strcpy(newgr.fst.etiketx, "            ");
-  strcpy(newgr.fst.etikety, "            ");
-  strcpy(newgr.fst.typvarx, "  ");
-  strcpy(newgr.fst.typvary, "  ");
-  strcpy(newgr.fst.nomvarx, "^>  ");
-  strcpy(newgr.fst.nomvary, "^>  ");
+    return NULL;
+  }
+
+  GRef = GeoRef_New();
+  strcpy(GRef->fst.etiketx, "            ");
+  strcpy(GRef->fst.etikety, "            ");
+  strcpy(GRef->fst.typvarx, "  ");
+  strcpy(GRef->fst.typvary, "  ");
+  strcpy(GRef->fst.nomvarx, "^>  ");
+  strcpy(GRef->fst.nomvary, "^>  ");
+  
   if (vercode == 1)
-    {
-    sub_gdid=subgrid[0];
-    c_gdkey2rowcol(sub_gdid,  &sub_gdrow_id,  &sub_gdcol_id);
+  {
+    sub_gd = subgrid[0];
 
 /*    strcpy(newgr.grtyp, grtyp);
     strcpy(newgr.grref, grref);
 */
-    newgr.grtyp[0]=grtyp[0];
-    newgr.grref[0]=grref[0];
-    RemplirDeBlancs(newgr.fst.nomvarx, 5);
-    RemplirDeBlancs(newgr.fst.typvarx, 3);
-    RemplirDeBlancs(newgr.fst.etiketx, 13);
-    RemplirDeBlancs(newgr.fst.nomvary, 5);
-    RemplirDeBlancs(newgr.fst.typvary, 3);
-    RemplirDeBlancs(newgr.fst.etikety, 13);
-    newgr.ni = ni;
-    newgr.nj = nj;
-    newgr.idx_last_gdin = NULL;
+    GRef->grtyp[0]=grtyp[0];
+    GRef->grref[0]=grref[0];
+    RemplirDeBlancs(GRef->fst.nomvarx, 5);
+    RemplirDeBlancs(GRef->fst.typvarx, 3);
+    RemplirDeBlancs(GRef->fst.etiketx, 13);
+    RemplirDeBlancs(GRef->fst.nomvary, 5);
+    RemplirDeBlancs(GRef->fst.typvary, 3);
+    RemplirDeBlancs(GRef->fst.etikety, 13);
+    GRef->ni = ni;
+    GRef->nj = nj;
+    GRef->idx_last_gdin = NULL;
     /* create tictac arrays to add uniqueness in supergrid*/
-    ax = (ftnfloat *) malloc(newgr.ni*sizeof(ftnfloat));
-    ay = (ftnfloat *) malloc(newgr.nj*sizeof(ftnfloat));
-    memcpy(ax,Grille[sub_gdrow_id][sub_gdcol_id].ax,newgr.ni*sizeof(ftnfloat));
-    memcpy(ay,Grille[sub_gdrow_id][sub_gdcol_id].ay,newgr.nj*sizeof(ftnfloat));
-    newgr.fst.ip1      = Grille[sub_gdrow_id][sub_gdcol_id].fst.ip1;
-    newgr.fst.ip2      = Grille[sub_gdrow_id][sub_gdcol_id].fst.ip2;
-    newgr.fst.ip3      = Grille[sub_gdrow_id][sub_gdcol_id].fst.ip3;
+    ax = (ftnfloat *) malloc(GRef->ni*sizeof(ftnfloat));
+    ay = (ftnfloat *) malloc(GRef->nj*sizeof(ftnfloat));
+    memcpy(ax,sub_gd->ax,GRef->ni*sizeof(ftnfloat));
+    memcpy(ay,sub_gd->ay,GRef->nj*sizeof(ftnfloat));
+    GRef->fst.ip1      = sub_gd->fst.ip1;
+    GRef->fst.ip2      = sub_gd->fst.ip2;
+    GRef->fst.ip3      = sub_gd->fst.ip3;
 /*   to add more uniqueness to the super-grid index Yin-Yang grid, we also
 add   the rotation of YIN */
-    newgr.fst.ig[IG1]  = Grille[sub_gdrow_id][sub_gdcol_id].fst.ig[IG1];
-    newgr.fst.ig[IG2]  = Grille[sub_gdrow_id][sub_gdcol_id].fst.ig[IG2];
-    newgr.fst.ig[IG3]  = Grille[sub_gdrow_id][sub_gdcol_id].fst.ig[IG3];
-    newgr.fst.ig[IG4]  = Grille[sub_gdrow_id][sub_gdcol_id].fst.ig[IG4];
-    newgr.fst.xg[IG1]  = 0.0;
-    newgr.fst.xg[IG2]  = 0.0;
-    newgr.fst.xg[IG3]  = 0.0;
-    newgr.fst.xg[IG4]  = 0.0;
-    newgr.fst.igref[IG1]=vercode;
-    newgr.fst.igref[IG2]=0;
-    newgr.fst.igref[IG3]=0;
-    newgr.fst.igref[IG4]=0;
-    newgr.nsubgrids= nsubgrids;
-     }
-    newgrsize = sizeof(TGeoRef);
-    grid_crc = ez_calc_crc((int *)&newgr,&newgrsize,ax,ay,newgr.ni,newgr.nj);
+    GRef->fst.ig[IG1]  = sub_gd->fst.ig[IG1];
+    GRef->fst.ig[IG2]  = sub_gd->fst.ig[IG2];
+    GRef->fst.ig[IG3]  = sub_gd->fst.ig[IG3];
+    GRef->fst.ig[IG4]  = sub_gd->fst.ig[IG4];
+    GRef->fst.xg[IG1]  = 0.0;
+    GRef->fst.xg[IG2]  = 0.0;
+    GRef->fst.xg[IG3]  = 0.0;
+    GRef->fst.xg[IG4]  = 0.0;
+    GRef->fst.igref[IG1]=vercode;
+    GRef->fst.igref[IG2]=0;
+    GRef->fst.igref[IG3]=0;
+    GRef->fst.igref[IG4]=0;
+    GRef->nsubgrids= nsubgrids;
+  }
 
-    free(ax); free(ay);
-    grid_index = grid_crc % primes_sq[cur_log_chunk];
+  free(ax); free(ay);
+  
+  // This georef already exists
+  if (fref=GeoRef_Find(GRef)) {
+    free(GRef);
+    return fref;
+  }
 
-    gdid = c_ez_addgrid(&newgr);
-/*     if (gr_list[grid_index] == NULL)
-      {
-      gdid = c_ez_addgrid(grid_index, &newgr);
-      }
-    else
-      {
-      gdid = c_ez_findgrid(grid_index, &newgr);
-      if (gdid == -1)
-        {
-        gdid = c_ez_addgrid(grid_index, &newgr);
-        }
-      else
-        {
-        return gdid;
-        }
-      } */
-    c_gdkey2rowcol(gdid, &gdrow_in, &gdcol_in);
-    strcpy(Grille[gdrow_in][gdcol_in].fst.nomvarx,newgr.fst.nomvarx);
-    strcpy(Grille[gdrow_in][gdcol_in].grtyp,newgr.grtyp);
-    strcpy(Grille[gdrow_in][gdcol_in].grref,newgr.grref);
-    Grille[gdrow_in][gdcol_in].ni = newgr.ni;
-    Grille[gdrow_in][gdcol_in].nj = newgr.nj;
-    Grille[gdrow_in][gdcol_in].idx_last_gdin=NULL;
-    Grille[gdrow_in][gdcol_in].fst.ip1 = newgr.fst.ip1;
-    Grille[gdrow_in][gdcol_in].fst.ip2 = newgr.fst.ip2;
-    Grille[gdrow_in][gdcol_in].fst.ip3 = newgr.fst.ip3;
-    Grille[gdrow_in][gdcol_in].fst.ig[IG1] = newgr.fst.ig[IG1];
-    Grille[gdrow_in][gdcol_in].fst.ig[IG2] = newgr.fst.ig[IG2];
-    Grille[gdrow_in][gdcol_in].fst.ig[IG3] = newgr.fst.ig[IG3];
-    Grille[gdrow_in][gdcol_in].fst.ig[IG4] = newgr.fst.ig[IG4];
-    Grille[gdrow_in][gdcol_in].fst.xg[IG1] = newgr.fst.xg[IG1];
-    Grille[gdrow_in][gdcol_in].fst.xg[IG2] = newgr.fst.xg[IG2];
-    Grille[gdrow_in][gdcol_in].fst.xg[IG3] = newgr.fst.xg[IG3];
-    Grille[gdrow_in][gdcol_in].fst.xg[IG4] = newgr.fst.xg[IG4];
-    Grille[gdrow_in][gdcol_in].fst.igref[IG1] = newgr.fst.igref[IG1];
-    Grille[gdrow_in][gdcol_in].fst.igref[IG2] = newgr.fst.igref[IG2];
-    Grille[gdrow_in][gdcol_in].fst.igref[IG3] = newgr.fst.igref[IG3];
-    Grille[gdrow_in][gdcol_in].fst.igref[IG4] = newgr.fst.igref[IG4];
-    Grille[gdrow_in][gdcol_in].nsubgrids = nsubgrids;
-    Grille[gdrow_in][gdcol_in].subgrid = (TGeoRef **) malloc(nsubgrids*sizeof(TGeoRef*));
+  // This is a new georef
+  GeoRef_Add(GRef);
 
-    for (ii=0; ii < nsubgrids; ii++)
-       {
-       Grille[gdrow_in][gdcol_in].subgrid[ii] = subgrid[ii];
-/*        c_gdkey2rowcol(subgrid[ii],  &sub_gdrow_id,  &sub_gdcol_id); */
-       c_ezgdef_yymask(subgrid[ii]);
-       if (groptions.verbose > 0)
-          {
-          printf("Grille[%02d].subgrid[%d] has maskgrid=%d\n",gdid,subgrid[ii],Grille[sub_gdrow_id][sub_gdcol_id].mymaskgrid);
-          }
-       }
+  GRef->subgrid = (TGeoRef **) malloc(nsubgrids*sizeof(TGeoRef*));
+
+  for (i=0; i < nsubgrids; i++)
+  {
+    GRef->subgrid[i] = subgrid[i];
+    c_ezgdef_yymask(subgrid[i]);
+    if (groptions.verbose > 0)
+    {
+      printf("Grille[%02d].subgrid[%d] has maskgrid=%d\n",GRef,subgrid[i],sub_gd->mymaskgrid);
+    }
+  }
 
     if (groptions.verbose > 0)
     {
-    printf("Grille[%02d].nomvarx=%s\n",gdid,Grille[gdrow_in][gdcol_in].fst.nomvarx);
-    printf("Grille[%02d].nomvary=%s\n",gdid,Grille[gdrow_in][gdcol_in].fst.nomvary);
-    printf("Grille[%02d].etikx=%s\n",gdid,Grille[gdrow_in][gdcol_in].fst.etiketx);
-    printf("Grille[%02d].etiky=%s\n",gdid,Grille[gdrow_in][gdcol_in].fst.etikety);
-    printf("Grille[%02d].grtyp = '%c'\n", gdid, Grille[gdrow_in][gdcol_in].grtyp[0]);
-    printf("Grille[%02d].grref = '%c'\n", gdid, Grille[gdrow_in][gdcol_in].grref[0]);
-    printf("Grille[%02d].ni    = %d\n",   gdid, Grille[gdrow_in][gdcol_in].ni);
-    printf("Grille[%02d].nj    = %d\n",   gdid, Grille[gdrow_in][gdcol_in].nj);
-    printf("Grille[%02d].ip1   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.ip1);
-    printf("Grille[%02d].ip2   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.ip2);
-    printf("Grille[%02d].ip3   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.ip3);
-    printf("Grille[%02d].ig1   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.ig[IG1]);
-    printf("Grille[%02d].ig2   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.ig[IG2]);
-    printf("Grille[%02d].ig3   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.ig[IG3]);
-    printf("Grille[%02d].ig4   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.ig[IG4]);
-    printf("Grille[%02d].ig1ref = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.igref[IG1]);
-    printf("Grille[%02d].ig2ref = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.igref[IG2]);
-    printf("Grille[%02d].ig3ref = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.igref[IG3]);
-    printf("Grille[%02d].ig4ref = %d\n",   gdid, Grille[gdrow_in][gdcol_in].fst.igref[IG4]);
-    printf("Grille[%02d].nsubgrids = %d\n", gdid, Grille[gdrow_in][gdcol_in].nsubgrids);
-    printf("Grille[%02d].subgrid[0]   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].subgrid[0]);
-    printf("Grille[%02d].subgrid[1]   = %d\n",   gdid, Grille[gdrow_in][gdcol_in].subgrid[1]);
+    printf("Grille[%02d].nomvarx=%s\n",GRef,GRef->fst.nomvarx);
+    printf("Grille[%02d].nomvary=%s\n",GRef,GRef->fst.nomvary);
+    printf("Grille[%02d].etikx=%s\n",GRef,GRef->fst.etiketx);
+    printf("Grille[%02d].etiky=%s\n",GRef,GRef->fst.etikety);
+    printf("Grille[%02d].grtyp = '%c'\n", GRef, GRef->grtyp[0]);
+    printf("Grille[%02d].grref = '%c'\n", GRef, GRef->grref[0]);
+    printf("Grille[%02d].ni    = %d\n",   GRef, GRef->ni);
+    printf("Grille[%02d].nj    = %d\n",   GRef, GRef->nj);
+    printf("Grille[%02d].ip1   = %d\n",   GRef, GRef->fst.ip1);
+    printf("Grille[%02d].ip2   = %d\n",   GRef, GRef->fst.ip2);
+    printf("Grille[%02d].ip3   = %d\n",   GRef, GRef->fst.ip3);
+    printf("Grille[%02d].ig1   = %d\n",   GRef, GRef->fst.ig[IG1]);
+    printf("Grille[%02d].ig2   = %d\n",   GRef, GRef->fst.ig[IG2]);
+    printf("Grille[%02d].ig3   = %d\n",   GRef, GRef->fst.ig[IG3]);
+    printf("Grille[%02d].ig4   = %d\n",   GRef, GRef->fst.ig[IG4]);
+    printf("Grille[%02d].ig1ref = %d\n",   GRef, GRef->fst.igref[IG1]);
+    printf("Grille[%02d].ig2ref = %d\n",   GRef, GRef->fst.igref[IG2]);
+    printf("Grille[%02d].ig3ref = %d\n",   GRef, GRef->fst.igref[IG3]);
+    printf("Grille[%02d].ig4ref = %d\n",   GRef, GRef->fst.igref[IG4]);
+    printf("Grille[%02d].nsubgrids = %d\n", GRef, GRef->nsubgrids);
+    printf("Grille[%02d].subgrid[0]   = %d\n",   GRef, GRef->subgrid[0]);
+    printf("Grille[%02d].subgrid[1]   = %d\n",   GRef, GRef->subgrid[1]);
 
-    printf("Grille[%02d].fst.xg[1]   = %f\n",   gdid, Grille[gdrow_in][gdcol_in].fst.xg[1]);
-    printf("Grille[%02d].fst.xg[2]   = %f\n",   gdid, Grille[gdrow_in][gdcol_in].fst.xg[2]);
-    printf("Grille[%02d].fst.xg[3]   = %f\n",   gdid, Grille[gdrow_in][gdcol_in].fst.xg[3]);
-    printf("Grille[%02d].fst.xg[4]   = %f\n",   gdid, Grille[gdrow_in][gdcol_in].fst.xg[4]);
+    printf("Grille[%02d].fst.xg[1]   = %f\n",   GRef, GRef->fst.xg[1]);
+    printf("Grille[%02d].fst.xg[2]   = %f\n",   GRef, GRef->fst.xg[2]);
+    printf("Grille[%02d].fst.xg[3]   = %f\n",   GRef, GRef->fst.xg[3]);
+    printf("Grille[%02d].fst.xg[4]   = %f\n",   GRef, GRef->fst.xg[4]);
     }
-    strcpy(Grille[gdrow_in][gdcol_in].fst.nomvarx, newgr.fst.nomvarx);
-    strcpy(Grille[gdrow_in][gdcol_in].fst.typvarx, newgr.fst.typvarx);
-    strcpy(Grille[gdrow_in][gdcol_in].fst.etiketx, newgr.fst.etiketx);
-    strcpy(Grille[gdrow_in][gdcol_in].fst.nomvary, newgr.fst.nomvary);
-    strcpy(Grille[gdrow_in][gdcol_in].fst.typvary, newgr.fst.typvary);
-    strcpy(Grille[gdrow_in][gdcol_in].fst.etikety, newgr.fst.etikety);
-    return gdid;
+    return GRef;
 }
 

@@ -23,7 +23,7 @@ extern int  c_ezsint(ftnfloat *zout, ftnfloat *zin);
 extern int  c_ezuvint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin);
 extern int  c_ezwdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin);
 extern int  c_gdgaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay);
-extern int  c_gdgxpndaxes(int gdid, ftnfloat *ax, ftnfloat *ay);
+extern int  c_gdgxpndaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay);
 extern int  c_gdllfxy(TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, int n);
 extern int  c_gdllfxyz(TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnfloat *y, int n);
 extern int  c_gdllsval(TGeoRef* GRef, ftnfloat *zout, ftnfloat *zin, ftnfloat *lat, ftnfloat *lon, int n);
@@ -51,7 +51,7 @@ extern int  c_ezuvint_m(float *uuout, float *vvout, float *uuin, float *vvin);
 extern int  c_ezsint_mdm(float *zout, int *mask_out, float *zin, int *mask_in);
 extern int  c_ezuvint_mdm(float *uuout, float *vvout, int *mask_out, float *uuin, float *vvin, int *mask_in);
 extern int  c_ezsint_mask(int *mask_out, int *mask_in);
-extern int  c_ez_refgrid(int gdid);
+extern int  c_ez_refgrid(TGeoRef* GRef);
 extern int  c_fst_data_length(int size);
 
 #endif

@@ -117,7 +117,7 @@ double GeoRef_RPNDistance(TGeoRef *GRef,double X0,double Y0,double X1, double Y1
       i[1]=X1+1.0;
       j[1]=Y1+1.0;
 
-      c_gdllfxy(GRef->Ids[GRef->NId],lat,lon,i,j,2);
+      c_gdllfxy(GRef->NId?GRef->subgrid[GRef->NId-1]:GRef,lat,lon,i,j,2);
 
       X0=DEG2RAD(lon[0]);
       X1=DEG2RAD(lon[1]);
@@ -292,7 +292,7 @@ int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,do
       }
    
       // RPN grid
-      if (GRef->Ids) {         
+      if (GRef->NbId) {         
          if (Def->Type==TD_Float32 && Def->Data[1] && !C) { 
             x=X+1.0;
             y=Y+1.0;
@@ -304,11 +304,11 @@ int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,do
             
             Def_Pointer(Def,0,mem,p0);
             Def_Pointer(Def,1,mem,p1);
-            c_gdxywdval(GRef->Ids[GRef->NId],&valf,&valdf,p0,p1,&x,&y,1);
+            c_gdxywdval(GRef->NId?GRef->subgrid[GRef->NId-1]:GRef,&valf,&valdf,p0,p1,&x,&y,1);
 
             // If it's 3D, use the mode for speed since c_gdxywdval only uses 2D
             if (Def->Data[2])
-               c_gdxysval(GRef->Ids[GRef->NId],&valf,(float*)&Def->Mode[mem],&x,&y,1);
+               c_gdxysval(GRef->NId?GRef->subgrid[GRef->NId-1]:GRef,&valf,(float*)&Def->Mode[mem],&x,&y,1);
                *Length=valf;
             if (ThetaXY)
                *ThetaXY=valdf;
@@ -397,7 +397,7 @@ int GeoRef_RPNProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
    i=X+1.0;
    j=Y+1.0;
 
-   c_gdllfxy(GRef->Ids[(GRef->NId==0&&GRef->Grid[0]=='U'?1:GRef->NId)],&lat,&lon,&i,&j,1);
+   c_gdllfxy(GRef->NId?GRef->subgrid[GRef->NId-1]:(GRef->Grid[0]=='U'?GRef->subgrid[GRef->NId]:GRef),&lat,&lon,&i,&j,1);
 #endif
    
    *Lat=lat;
@@ -567,7 +567,7 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
       lat=Lat;
 
       // Extraire la valeur du point de grille
-      c_gdxyfll(GRef->Ids[GRef->NId],&i,&j,&lat,&lon,1);
+      c_gdxyfll(GRef->NId?GRef->subgrid[GRef->NId-1]:GRef,&i,&j,&lat,&lon,1);
 
       *X=i-1.0;
       *Y=j-1.0;
@@ -641,6 +641,9 @@ TGeoRef* c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
    }
 
    ez_calcxpncof(GRef);
+
+   // Check for sub-grids (U grids can have sub grids)
+   GRef->NbId = grtyp[0]=='U'? (GRef->nsubgrids==0? 1 : GRef->nsubgrids) : 1;
 
    GRef->Grid[0]=grtyp[0];
    GRef->Grid[1]=grtyp[1];
@@ -781,16 +784,8 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int 
          }
       }
 
-
       // Check for sub-grids (U grids can have sub grids)
-      ref->NbId=GRTYP[0]=='U'?c_ezget_nsubgrids(id):1;
-      // TODO: Switch to pointer table instead of ints
-      if ((ref->Ids=(int*)malloc((ref->NbId>1?ref->NbId+1:1)*sizeof(int)))) {
-         ref->Ids[0]=id;
-         if (ref->NbId>1) {
-            c_ezget_subgridids(id,&ref->Ids[1]);
-         }
-      }
+      ref->NbId = GRTYP[0]=='U'? (ref->nsubgrids==0? 1 : ref->nsubgrids) : 1;
 #endif
    }
 
