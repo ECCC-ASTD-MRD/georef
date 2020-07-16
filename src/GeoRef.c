@@ -234,7 +234,7 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
             ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
          }
       }
-      c_gdllfxy(FromRef->Ids[FromRef->NId],(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
+      c_gdllfxy(FromRef->NId?FromRef->subgrid[FromRef->NId-1]:FromRef,(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
 
       d=dd?2:1;
       sz=4;
@@ -361,7 +361,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
          }
       }
-      c_gdllfxy(FromRef->Ids[FromRef->NId],(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
+      c_gdllfxy(FromRef->NId?FromRef->subgrid[FromRef->NId-1]:FromRef,(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
 
       d=dd?2:1;
       sz=4;
@@ -427,14 +427,14 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
          }
       }
 
-      c_gdxyfll(ToRef->Ids[ToRef->NId],(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
+      c_gdxyfll(ToRef->NId?ToRef->subgrid[ToRef->NId-1]:ToRef,(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
 //EZFIX
       // If we have the data of source and they're float, get it's values right now
       if (ToDef && ToDef->Type==TD_Float32) {
          if (Degree)
             c_ezsetopt("INTERP_DEGREE",Degree);
          
-         c_gdxysval(ToRef->Ids[ToRef->NId],Scan->D,(float*)ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);         
+         c_gdxysval(ToRef->NId?ToRef->subgrid[ToRef->NId-1]:ToRef,Scan->D,(float*)ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);         
       }
 
       // Cast back to double (Start from end since type is double, not to overlap values
