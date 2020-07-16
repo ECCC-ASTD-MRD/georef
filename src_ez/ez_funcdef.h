@@ -1,7 +1,6 @@
 #include "../src/GeoRef.h"
 
 #ifndef _ezfuncdef
-#include "gd_key2rowcol.c"
 
 void EliminerGrille(TGeoRef* GRef);
 
