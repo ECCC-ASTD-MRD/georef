@@ -202,7 +202,7 @@ void  c_ezllwfgfw(ftnfloat* uullout, ftnfloat* vvllout, ftnfloat* latin, ftnfloa
                   char* grtyp,wordint* ig1,wordint* ig2,wordint* ig3,wordint* ig4);
 
 void c_ez_manageGrillesMemory();
-int c_ez_refgrid(int grid_index);
+int c_ez_refgrid(TGeoRef* GRef);
 
 void c_ezdefxg(TGeoRef* GRef);
 void c_ezdefaxes(TGeoRef* GRef, ftnfloat* ax, ftnfloat* ay);

@@ -962,11 +962,11 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       ref->QTree=NULL;
       
 #ifdef HAVE_RMN
-      if (Ref->Ids) {
-         ref->Ids=(int*)malloc(Ref->NbId*sizeof(int));
-         memcpy(ref->Ids,Ref->Ids,Ref->NbId*sizeof(int));
-         for(i=0;i<ref->NbId;i++)
-            c_ez_refgrid(ref->Ids[i]);
+      if (Ref->subgrid) {
+         ref->subrid=(TGeoRef**)malloc(Ref->nsubgrids*sizeof(TGeoRef*));
+         memcpy(ref->subgrid,Ref->subgrid,Ref->nsubgrids*sizeof(TGeoRef*));
+         for(i=0;i<ref->nsubgrids;i++)
+            c_ez_refgrid(ref->subgrid[i]);
       }
 #endif
 
@@ -1994,10 +1994,11 @@ int GeoRef_Coords(TGeoRef *Ref,float *Lat,float *Lon) {
 int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
 
    unsigned int i,gi,j,gj,nid,pnid,pidx,idx,*tidx;
-   int          ig;
+   int          ig, nx, ny;
    float        di[4],dj[4],dlat[4],dlon[4];
    double       fx,fy,fz,dx[4],dy[4],s,a,b,c;
    char         grtyp[2];
+   TGeoRef *gr;
 
    if (!Ref || Ref->Grid[0]=='X' || Ref->Grid[0]=='Y') {
       App_Log(WARNING,"%s: DX, DY and DA cannot be calculated on an X or Y grid\n",__func__);        
@@ -2044,13 +2045,20 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
 #ifdef HAVE_RMN            
       pnid=Ref->NId;
       pidx=0;
+      nx = Ref->NX;
+      ny = Ref->NY;
       
       // Loop on the subgrids if needed
-      for(nid=(pnid?pnid:(Ref->NbId>1?1:0));nid<=(pnid?pnid:(Ref->NbId>1?Ref->NbId:0));nid++) {
+/*       for(nid=(pnid?pnid:(Ref->NbId>1?1:0));nid<=(pnid?pnid:(Ref->NbId>1?Ref->NbId:0));nid++) { */
+      for(nid=pnid;nid<=(pnid?pnid:(Ref->NbId>1?(Ref->NbId-1):0));nid++) {
          if (Ref->NbId>1 && !pnid) {
-            c_ezgprm(Ref->Ids[nid],grtyp,&Ref->NX,&Ref->NY,&ig,&ig,&ig,&ig);
+/*             c_ezgprm(Ref->Ids[nid],grtyp,&Ref->NX,&Ref->NY,&ig,&ig,&ig,&ig); */ 
+            Ref->NX = Ref->subgrid[nid]->ni;
+            Ref->NY = Ref->subgrid[nid]->nj;
          }
-      
+
+         gr = pnid?Ref->subgrid[nid-1]:(Ref->NbId>1?Ref->subgrid[nid]:Ref);
+
          for(j=0,gj=1;j<Ref->NY;j++,gj++) {
             idx=pidx+j*Ref->NX;
             for(i=0,gi=1;i<Ref->NX;i++,idx++,gi++) {
@@ -2061,7 +2069,8 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
                di[3]=gi;     dj[3]=gj+0.5;
 
                // Reproject gridpoint length coordinates of segments crossing center of cell
-               c_gdllfxy(Ref->Ids[nid],dlat,dlon,di,dj,4);
+/*                c_gdllfxy(Ref->Ids[nid],dlat,dlon,di,dj,4); */
+               c_gdllfxy(gr,dlat,dlon,di,dj,4);
                dx[0]=DEG2RAD(dlon[0]); dy[0]=DEG2RAD(dlat[0]);
                dx[1]=DEG2RAD(dlon[1]); dy[1]=DEG2RAD(dlat[1]);
 
@@ -2085,7 +2094,9 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
       }
       // Set back original grid
       if (Ref->NbId>1 && !pnid) {
-         c_ezgprm(Ref->Ids[pnid],grtyp,&Ref->NX,&Ref->NY,&ig,&ig,&ig,&ig);
+/*          c_ezgprm(Ref->Ids[pnid],grtyp,&Ref->NX,&Ref->NY,&ig,&ig,&ig,&ig); */
+         Ref->NX = nx;
+         Ref->NY = nj;
       }
 #else
       App_Log(ERROR,"%s: RMNLIB support not included\n",__func__);
