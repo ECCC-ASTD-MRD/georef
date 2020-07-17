@@ -83,7 +83,7 @@ typedef struct TGridTile {
    pthread_mutex_t Mutex;               // Per tile mutex for IO
    float **Data;                        // Data pointer
    char  **Mask;                        // Mask pointer
-   int     GID;                         // EZSCINT Tile grid id (for interpolation)
+   TGeoRef *GID;                        // EZSCINT Tile grid id (for interpolation)
    int     I,J;                         // Tile starting point within master grid
    int     NO;                          // Tile number
    int     KBurn;                       // Index estampille
@@ -104,7 +104,6 @@ typedef struct TGrid {
    int             Wrap;                 // Flag indicating grid globe wrap-around (global grids)
    float           Pole[2];              // Pole coverage
 
-   int             GID;                  // EZSCINT Tile grid id (for interpolation)
    int             IP1,IP2,IP3,Master;   // Grid template identifier
    int             Incr;                 // Increasing sorting
    float           Factor;               // Increasing sorting

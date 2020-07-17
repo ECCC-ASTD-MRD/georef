@@ -251,7 +251,7 @@ int cs_fstecr(void *Data,int NPak,int Unit, int DateO,int Deet,int NPas,int NI,i
  *----------------------------------------------------------------------------
  */
 //TODO: get rid off
-TGeoRef* RPN_IntIdNew(int NI,int NJ,char* GRTYP,int IG1_JP,int IG2_JP,int IG3_JP, int IG4_JP,int FID) {
+int RPN_IntIdNew(int NI,int NJ,char* GRTYP,int IG1_JP,int IG2_JP,int IG3_JP, int IG4_JP,int FID) {
 
    TGeoRef *GRef;
 

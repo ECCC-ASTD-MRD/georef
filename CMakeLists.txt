@@ -10,7 +10,7 @@ ec_parse_manifest() # Parse MANIFEST file
 ec_build_info()     # Generate build include file
 
 #set(DOXYGEN_FOUND True)
-# include(doxygen)    # Doxygen target
+include(doxygen)    # Doxygen target
 
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 

@@ -72,24 +72,24 @@ int EZGrid_Wrap(TGrid* restrict const Grid) {
    
       // Check for south pole coverage
       i=1.0;j=1.0;
-      c_gdllfxy(Grid->GID,&lat,&lon,&i,&j,1);
+      c_gdllfxy(Grid->GRef,&lat,&lon,&i,&j,1);
       if (lat==-90.0) {
          i=1.0;j=1.5;
-         c_gdllfxy(Grid->GID,&Grid->Pole[0],&lon,&i,&j,1);
+         c_gdllfxy(Grid->GRef,&Grid->Pole[0],&lon,&i,&j,1);
       }
 
       // Check for north pole coverage
       i=1.0;j=Grid->H.NJ;
-      c_gdllfxy(Grid->GID,&lat,&lon,&i,&j,1);
+      c_gdllfxy(Grid->GRef,&lat,&lon,&i,&j,1);
       if (lat==90.0) {
          i=1.0;j=Grid->H.NJ-0.5;
-         c_gdllfxy(Grid->GID,&Grid->Pole[1],&lon,&i,&j,1);
+         c_gdllfxy(Grid->GRef,&Grid->Pole[1],&lon,&i,&j,1);
       }
 
       i=Grid->H.NI+1.0f;
       j=Grid->H.NJ/2.0f;
-      c_gdllfxy(Grid->GID,&lat,&lon,&i,&j,1);
-      c_gdxyfll(Grid->GID,&i,&j,&lat,&lon,1);
+      c_gdllfxy(Grid->GRef,&lat,&lon,&i,&j,1);
+      c_gdxyfll(Grid->GRef,&i,&j,&lat,&lon,1);
 
       if (Grid->H.GRTYP[0]=='A' || Grid->H.GRTYP[0]=='B' || Grid->H.GRTYP[0]=='G') {
          Grid->Wrap=1;
@@ -822,7 +822,7 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
       tile->KBurn = -1;
       tile->Side  = EZGRID_CENTER;
       pthread_mutex_init(&tile->Mutex,NULL);
-      tile->GID =RPN_IntIdNew(h.NI,h.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
+      tile->GID =GeoRef_RPNCreate(h.NI,h.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
 
       // Check for tiled data or not
       if (Grid->H.GRTYP[0]=='#') {
@@ -996,8 +996,6 @@ werr:
 
       default:
          Grid->GRef=GeoRef_RPNCreate(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
-
-         Grid->GID=RPN_IntIdNew(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
          Grid->Wrap=EZGrid_Wrap(Grid);
    }
    GeoRef_Qualify(Grid->GRef);
@@ -1134,7 +1132,6 @@ TGrid *EZGrid_New(void) {
       new->FT0=new->FT1=0.0f;
       new->Factor=1.0f;
       new->Incr=0;
-      new->GID=-1;
       new->ZRef=NULL;
       new->GRef=NULL;
       new->Wrap=0;
@@ -1181,7 +1178,6 @@ TGrid *EZGrid_Copy(TGrid *Master,int Level) {
       new->Factor=1.0f;
       new->Incr=0;
 
-      new->GID=Master->GID;
       new->Wrap=Master->Wrap;
       new->Halo=Master->Halo;
       memcpy(&new->H,&Master->H,sizeof(TRPNHeader));
@@ -1464,7 +1460,6 @@ TGrid *EZGrid_ReadIdx(int FId,int Key,int Incr) {
    // Check previous master grid existence
    // mst is not in a critical sectin but its veryyyyyyyyyy unlikelyyyyyy that it will cause problems
    if ((mst=EZGrid_CacheFind(new,1))) {
-      new->GID=mst->GID;
       new->ZRef=mst->ZRef;
       new->GRef=mst->GRef;
       new->Wrap=mst->Wrap;
@@ -1943,7 +1938,7 @@ int EZGrid_LLGetValue(TGrid* restrict const Grid,TGridInterpMode Mode,float Lat,
 
       default: // This is a regular RPN grid
 
-         c_gdxyfll(Grid->GID,&i,&j,&Lat,&Lon,1);
+         c_gdxyfll(Grid->GRef,&i,&j,&Lat,&Lon,1);
          return(EZGrid_IJGetValue(Grid,Mode,i-1.0f,j-1.0f,K0,K1,Value));         
    }
    
@@ -2223,7 +2218,7 @@ int EZGrid_LLGetUVValue(TGrid* restrict const GridU,TGrid* restrict const GridV,
                   
       default: // This is a regular RPN grid
          
-         c_gdxyfll(GridU->GID,&i,&j,&Lat,&Lon,1);
+         c_gdxyfll(GridU->GRef,&i,&j,&Lat,&Lon,1);
 
          return(EZGrid_IJGetUVValue(GridU,GridV,Mode,i-1.0f,j-1.0f,K0,K1,UU,VV,Conv));
    }
@@ -2266,7 +2261,7 @@ int EZGrid_IJGetValue(TGrid* restrict const Grid,TGridInterpMode Mode,float I,fl
    int        i,j,k,ik=0,idx,idxj,idxw,idxwj,wrap=0;
    float      dx,dy,dxy,d[4];
 
-   if (!Grid || Grid->GID<0) {
+   if (!Grid || !Grid->GRef) {
       App_Log(ERROR,"%s: Invalid grid\n",__func__);
       return(FALSE);
    }
@@ -2390,7 +2385,7 @@ int EZGrid_IJGetUVValue(TGrid* restrict const GridU,TGrid* restrict const GridV,
    double     d,v;
    int        ik=0,k;
 
-   if (!GridU || !GridV || GridU->GID<0 || GridV->GID<0) {
+   if (!GridU || !GridV || !GridU->GRef || !GridV->GRef) {
       App_Log(ERROR,"%s: Invalid grid\n",__func__);
       return(FALSE);
    }
@@ -2740,11 +2735,11 @@ int EZGrid_GetLL(TGrid* restrict const Grid,float* Lat,float* Lon,float* I,float
    double la,lo;
    float fi,fj;
 
-   if (Grid && Grid->GID>=0) {
+   if (Grid && Grid->GRef) {
       for(i=0;i<Nb;i++) {
          fi=I[i]+1.0;
          fj=J[i]+1.0;
-         if ((ok=c_gdllfxy(Grid->GID,&Lat[i],&Lon[i],&fi,&fj,1))<0) {
+         if ((ok=c_gdllfxy(Grid->GRef,&Lat[i],&Lon[i],&fi,&fj,1))<0) {
             break;
          }
       }
@@ -2783,8 +2778,8 @@ int EZGrid_GetIJ(TGrid* restrict const Grid,float* Lat,float* Lon,float* I,float
    int i,ok=0;
    double x,y;
    
-   if (Grid && Grid->GID>=0) {
-      if (c_gdxyfll(Grid->GID,I,J,Lat,Lon,Nb)!=0) {
+   if (Grid && Grid->GRef) {
+      if (c_gdxyfll(Grid->GRef,I,J,Lat,Lon,Nb)!=0) {
          return(FALSE);
       }
 
