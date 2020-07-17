@@ -222,6 +222,13 @@ extern int  c_ezsint_mask(int *mask_out, int *mask_in);
 extern int  c_ez_refgrid(struct TGeoRef* GRef);
 extern int  c_fst_data_length(int size);
 
+extern wordint ez_calclatlon(struct TGeoRef* GRef);
+void ez_calcntncof(struct TGeoRef* GRef);
+extern wordint ez_calcxpncof(struct TGeoRef* GRef);
+extern wordint LireEnrPositionnels(struct TGeoRef* gr, wordint iunit, wordint ip1, wordint ip2, wordint ip3, wordint ip4, wordint read);
+extern struct TGeoRef* c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, wordint ig1, wordint ig2, wordint ig3, wordint ig4);
+extern struct TGeoRef* c_ezidentify_irreg_grid(wordint ni, wordint nj, char* grtyp, char* grref,wordint ig1, wordint ig2, wordint ig3, wordint ig4,ftnfloat* ax, ftnfloat* ay);
+
 // RPN external BURP functions
 extern int c_mrfopc();
 extern int c_mrfopr();

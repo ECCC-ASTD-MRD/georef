@@ -588,7 +588,7 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
    return(TRUE);
 }
 
-PTR_AS_INT f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
+/* PTR_AS_INT f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
    wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
    ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref)
 {
@@ -604,7 +604,7 @@ PTR_AS_INT f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grr
 
   icode = (PTR_AS_INT) c_ezgdef_fmem(*ni, *nj, lgrtyp, lgrref, *ig1, *ig2, *ig3, *ig4, ax, ay);
   return icode;
-}
+} */
 
 //! Insert a grid entry into the list of grids managed by ezscint.  Can be used
 //! with regular and irregular ('Y', 'Z') grids, although it is not very useful
