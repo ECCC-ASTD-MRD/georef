@@ -19,7 +19,7 @@
  */
 
 #include "ez_funcdef.h"
-// Need #include "../src/GeoRef.h" ?
+#include "ezscint.h"
 
 wordint nGrilles = 0;
 wordint nGrillesMax = CHUNK*CHUNK;

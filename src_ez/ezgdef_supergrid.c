@@ -122,39 +122,39 @@ add   the rotation of YIN */
     c_ezgdef_yymask(subgrid[i]);
     if (groptions.verbose > 0)
     {
-      printf("Grille[%02d].subgrid[%d] has maskgrid=%d\n",GRef,subgrid[i],sub_gd->mymaskgrid);
+      printf("Grille[%p].subgrid[%p] has maskgrid=%p\n",GRef,subgrid[i],sub_gd->mymaskgrid);
     }
   }
 
     if (groptions.verbose > 0)
     {
-    printf("Grille[%02d].nomvarx=%s\n",GRef,GRef->fst.nomvarx);
-    printf("Grille[%02d].nomvary=%s\n",GRef,GRef->fst.nomvary);
-    printf("Grille[%02d].etikx=%s\n",GRef,GRef->fst.etiketx);
-    printf("Grille[%02d].etiky=%s\n",GRef,GRef->fst.etikety);
-    printf("Grille[%02d].grtyp = '%c'\n", GRef, GRef->grtyp[0]);
-    printf("Grille[%02d].grref = '%c'\n", GRef, GRef->grref[0]);
-    printf("Grille[%02d].ni    = %d\n",   GRef, GRef->ni);
-    printf("Grille[%02d].nj    = %d\n",   GRef, GRef->nj);
-    printf("Grille[%02d].ip1   = %d\n",   GRef, GRef->fst.ip1);
-    printf("Grille[%02d].ip2   = %d\n",   GRef, GRef->fst.ip2);
-    printf("Grille[%02d].ip3   = %d\n",   GRef, GRef->fst.ip3);
-    printf("Grille[%02d].ig1   = %d\n",   GRef, GRef->fst.ig[IG1]);
-    printf("Grille[%02d].ig2   = %d\n",   GRef, GRef->fst.ig[IG2]);
-    printf("Grille[%02d].ig3   = %d\n",   GRef, GRef->fst.ig[IG3]);
-    printf("Grille[%02d].ig4   = %d\n",   GRef, GRef->fst.ig[IG4]);
-    printf("Grille[%02d].ig1ref = %d\n",   GRef, GRef->fst.igref[IG1]);
-    printf("Grille[%02d].ig2ref = %d\n",   GRef, GRef->fst.igref[IG2]);
-    printf("Grille[%02d].ig3ref = %d\n",   GRef, GRef->fst.igref[IG3]);
-    printf("Grille[%02d].ig4ref = %d\n",   GRef, GRef->fst.igref[IG4]);
-    printf("Grille[%02d].nsubgrids = %d\n", GRef, GRef->nsubgrids);
-    printf("Grille[%02d].subgrid[0]   = %d\n",   GRef, GRef->subgrid[0]);
-    printf("Grille[%02d].subgrid[1]   = %d\n",   GRef, GRef->subgrid[1]);
+    printf("Grille[%p].nomvarx=%s\n",GRef,GRef->fst.nomvarx);
+    printf("Grille[%p].nomvary=%s\n",GRef,GRef->fst.nomvary);
+    printf("Grille[%p].etikx=%s\n",GRef,GRef->fst.etiketx);
+    printf("Grille[%p].etiky=%s\n",GRef,GRef->fst.etikety);
+    printf("Grille[%p].grtyp = '%c'\n", GRef, GRef->grtyp[0]);
+    printf("Grille[%p].grref = '%c'\n", GRef, GRef->grref[0]);
+    printf("Grille[%p].ni    = %d\n",   GRef, GRef->ni);
+    printf("Grille[%p].nj    = %d\n",   GRef, GRef->nj);
+    printf("Grille[%p].ip1   = %d\n",   GRef, GRef->fst.ip1);
+    printf("Grille[%p].ip2   = %d\n",   GRef, GRef->fst.ip2);
+    printf("Grille[%p].ip3   = %d\n",   GRef, GRef->fst.ip3);
+    printf("Grille[%p].ig1   = %d\n",   GRef, GRef->fst.ig[IG1]);
+    printf("Grille[%p].ig2   = %d\n",   GRef, GRef->fst.ig[IG2]);
+    printf("Grille[%p].ig3   = %d\n",   GRef, GRef->fst.ig[IG3]);
+    printf("Grille[%p].ig4   = %d\n",   GRef, GRef->fst.ig[IG4]);
+    printf("Grille[%p].ig1ref = %d\n",   GRef, GRef->fst.igref[IG1]);
+    printf("Grille[%p].ig2ref = %d\n",   GRef, GRef->fst.igref[IG2]);
+    printf("Grille[%p].ig3ref = %d\n",   GRef, GRef->fst.igref[IG3]);
+    printf("Grille[%p].ig4ref = %d\n",   GRef, GRef->fst.igref[IG4]);
+    printf("Grille[%p].nsubgrids = %d\n", GRef, GRef->nsubgrids);
+    printf("Grille[%p].subgrid[0]   = %p\n",   GRef, GRef->subgrid[0]);
+    printf("Grille[%p].subgrid[1]   = %p\n",   GRef, GRef->subgrid[1]);
 
-    printf("Grille[%02d].fst.xg[1]   = %f\n",   GRef, GRef->fst.xg[1]);
-    printf("Grille[%02d].fst.xg[2]   = %f\n",   GRef, GRef->fst.xg[2]);
-    printf("Grille[%02d].fst.xg[3]   = %f\n",   GRef, GRef->fst.xg[3]);
-    printf("Grille[%02d].fst.xg[4]   = %f\n",   GRef, GRef->fst.xg[4]);
+    printf("Grille[%p].fst.xg[1]   = %f\n",   GRef, GRef->fst.xg[1]);
+    printf("Grille[%p].fst.xg[2]   = %f\n",   GRef, GRef->fst.xg[2]);
+    printf("Grille[%p].fst.xg[3]   = %f\n",   GRef, GRef->fst.xg[3]);
+    printf("Grille[%p].fst.xg[4]   = %f\n",   GRef, GRef->fst.xg[4]);
     }
     return GRef;
 }

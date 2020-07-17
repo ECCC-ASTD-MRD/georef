@@ -133,7 +133,6 @@ wordint c_gdinterp(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, ftnfloat *x, ft
          for (j=0; j < gdout->nj; j++)
             {
             real_j = 1.0 * (j+1);
-            /* TODO: change for TGeoRef* */
             ier = c_gdllfxy_orig(gdout, &gdst_lats[j], &tmp, &real_un, &real_j, 1);
             }
          f77name(ez_avg_sph)(zout, x, y, gdst_lats, &gdout->ni, &gdout->nj,
@@ -233,7 +232,6 @@ wordint c_gdinterp(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, ftnfloat *x, ft
          for (j=0; j < gdout->nj; j++)
             {
             real_j = 1.0 * (j+1);
-            /* TODO: change for TGeoRef* */
             ier = c_gdllfxy_orig(gdout, &gdst_lats[j], &tmp, &real_un, &real_j, 1);
             }
          f77name(ez_avg_sph)(zout, x, y, gdst_lats, &gdout->ni, &gdout->nj,
@@ -249,7 +247,7 @@ wordint c_gdinterp(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, ftnfloat *x, ft
 
 }
 
-int c_gdcompatible_grids(TGeoRef *gdin, TGeoRef gdout)
+int c_gdcompatible_grids(TGeoRef *gdin, TGeoRef* gdout)
 {
    switch(gdout->grtyp[0])
    	{

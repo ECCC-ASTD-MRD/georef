@@ -25,7 +25,7 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(gdgaxes)(PTR_AS_INT GRef, ftnfloat *ax, ftnfloat *ay)
 {
-   c_gdgaxes((TGeoRef*)GRef), ax, ay);
+   c_gdgaxes((TGeoRef*)GRef, ax, ay);
    return 0;
 }
 

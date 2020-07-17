@@ -130,7 +130,7 @@ wordint ez_calcspolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat
   free(polar_vv);
   free(polar_uu);
 
-  if (grtyp[0] == 'Z' && grref[0] == 'E' && polar_lat_gem != NULL)
+  if (gdin->grtyp[0] == 'Z' && gdin->grref[0] == 'E' && polar_lat_gem != NULL)
     {
     free(polar_lat_gem);
     free(polar_lon_gem);

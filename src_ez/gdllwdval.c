@@ -47,8 +47,8 @@ wordint c_gdllwdval(TGeoRef *GRef, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *u
       vvyin = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       uuyan = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       vvyan = (ftnfloat *) malloc(n*sizeof(ftnfloat));
-      ier = c_gdxyfll(gdid, x, y, lat, lon, n);
-      ier = c_gdxyvval(gdid, uuout, vvout, uuin, vvin, x, y, n);
+      ier = c_gdxyfll(GRef, x, y, lat, lon, n);
+      ier = c_gdxyvval(GRef, uuout, vvout, uuin, vvin, x, y, n);
       yin_gd=GRef->subgrid[0];
       yan_gd=GRef->subgrid[1];
       ier = c_gdwdfuv_orig(yin_gd,uuyin,vvyin,uuout,vvout,lat,lon,n);
@@ -72,8 +72,8 @@ wordint c_gdllwdval(TGeoRef *GRef, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *u
       }
    else
       {
-      ier = c_gdllvval(gdid, uuout, vvout, uuin, vvin, lat, lon, n);
-      ier = c_gdwdfuv(gdid, uuout, vvout, uuout, vvout, lat, lon, n);
+      ier = c_gdllvval(GRef, uuout, vvout, uuin, vvin, lat, lon, n);
+      ier = c_gdwdfuv(GRef, uuout, vvout, uuout, vvout, lat, lon, n);
       }
    return 0;
 }

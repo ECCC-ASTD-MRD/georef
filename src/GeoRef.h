@@ -164,7 +164,7 @@ typedef struct {
 typedef struct {
   wordint flags,yyflags;
   wordint use_sincos_cache;
-  TGeoRef* gdin;
+  struct TGeoRef* gdin;
   ftnfloat valpolesud, valpolenord;
   ftnfloat *x, *y;
   wordint *mask_in, *mask_out;

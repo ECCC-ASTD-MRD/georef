@@ -22,7 +22,7 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
-void reallocate_gridset_table(TGeoRef* gr);
+/* void reallocate_gridset_table(TGeoRef* gr); */
 void   allocate_gridset_table(TGeoRef* gr);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -39,7 +39,7 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
   /* d'abord trouver si l'ensemble est deja defini */
 
    wordint i;
-   wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out, npts, cur_gdin;
+   wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out, npts;
    int idx_gdin;
    wordint nsets = 0;
 
@@ -106,7 +106,6 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
       Ceci sera utile si le vecteur de grilles deborde */
 
    gdout->gset[idx_gdin].gdin = gdin;
-   cur_gdin = gdin;
    gdout->n_gdin++;
 
    npts = gdout->ni * gdout->nj;
@@ -114,10 +113,10 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    gdout->gset[i].y = malloc (sizeof(ftnfloat)*npts);
    gdout->gset[i].use_sincos_cache = NON;
 
-   if (gdout->n_gdin >= (primes[gdout->log_chunk_gdin]/2))
+/*    if (gdout->n_gdin >= (primes[gdout->log_chunk_gdin]/2))
    {
       reallocate_gridset_table(gdout);
-   }
+   } */
 
    if (gdin->n_gdin_for == 0)
    {
@@ -141,8 +140,7 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
 
    if (groptions.verbose > 0)
    {
-      printf("gdin : %d gdout: %d\n", gdin, gdout);
-      printf("cur_gdin                           = %03d\n", cur_gdin);
+      printf("gdin : %p gdout: %p\n", gdin, gdout);
       printf("n_gdin                             = %03d\n", gdout->n_gdin);
 /*       printf("Grille[%03d][%03d].gset[%03d].gdin = %d\n", gdrow_out, gdcol_out, cur_gdin, gdin); */
    }
@@ -151,7 +149,7 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    return 1;
 }
 
-void reallocate_gridset_table(TGeoRef* gr)
+/* void reallocate_gridset_table(TGeoRef* gr)
 {
    wordint i;
    wordint newIndex, inserted, curIndex;
@@ -183,7 +181,7 @@ void reallocate_gridset_table(TGeoRef* gr)
          {
             newIndex++;
             inserted = -1;
-            while (inserted == -1) /** && curIndex != (newIndex-1)) (a reverifier-- Yves-20120228)**/
+            while (inserted == -1) // && curIndex != (newIndex-1)) (a reverifier-- Yves-20120228)
             {
                fprintf(stderr, "reallocate_gridset_table -- should not be here\n ");
                if (newTable[newIndex].gdin == NULL)
@@ -202,12 +200,12 @@ void reallocate_gridset_table(TGeoRef* gr)
             }
          }
       }
-   }
+   } 
 
    free(gr->gset);
    gr->gset = newTable;
    gr->log_chunk_gdin++;
-}
+} */
 
 void allocate_gridset_table(TGeoRef* gr)
 {

@@ -22,9 +22,9 @@
 #include "ez_funcdef.h"
 
 
-wordint f77name(ezsetgdout)(int *gdout)
+wordint f77name(ezsetgdout)(PTR_AS_INT gdout)
 {
-  return c_ezsetgdout(*gdout);
+  return c_ezsetgdout((TGeoRef*)gdout);
 }
 
 PTR_AS_INT f77name(ezgetgdout)()
@@ -53,9 +53,8 @@ TGeoRef* c_ezgetgdout()
   return iset_gdout;
 }
 
-wordint c_ezsetgdout(gdout)
-wordint gdout;
-  {
+wordint c_ezsetgdout(TGeoRef* gdout)
+{
   iset_gdout = gdout;
   return 0;
-  }
+}

@@ -20,13 +20,15 @@
 
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
+#include "ezscint.h"
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint ez_calcnpolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat *uuin, ftnfloat *vvin, 
 			  wordint ni, wordint nj, TGeoRef *gdin)
 {
   wordint k1, k2;
   ftnfloat *polar_wd, *polar_spd,*polar_lat,*polar_lon,*polar_lat_gem, *polar_lon_gem, *polar_x, *polar_y, *polar_uu, *polar_vv;
-  char grtyps[2],grtypa[2];
+  char grtypn[2],grtypa[2];
   ftnfloat xlat1, xlat2, xlon1, xlon2;
   wordint ig1n, ig2n, ig3n, ig4n;
   ftnfloat pi, pj, d60, dgrw;

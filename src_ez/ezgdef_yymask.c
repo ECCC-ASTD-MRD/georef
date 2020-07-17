@@ -62,7 +62,7 @@ wordint c_ezgdef_yymask(TGeoRef *subgd)
 
     if (groptions.verbose > 0)
       {
-       printf("Subgd.mymaskgrid   = %d\n", subgd->mymaskgrid);
+       printf("Subgd.mymaskgrid   = %p\n", subgd->mymaskgrid);
        printf("Subgd.mymaskgridi0 = %d pt=%f\n", subgd->mymaskgridi0, subgd->ax[i0]);
        printf("Subgd.mymaskgridi1 = %d pt=%f\n", subgd->mymaskgridi1, subgd->ax[i1]);
        printf("Subgd.mymaskgridj0 = %d pt=%f\n", subgd->mymaskgridj0, subgd->ay[j0]);

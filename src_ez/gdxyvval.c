@@ -96,7 +96,7 @@ wordint c_gdxyvval_orig(TGeoRef *gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloa
 
   groptions.symmetrie = SYM;
   c_gdxysint(uuout,uuin, gdin, x, y, n);
-*  groptions.symmetrie = ANTISYM;
+  groptions.symmetrie = ANTISYM;
   c_gdxysint(vvout,vvin, gdin, x, y, n);
   groptions.symmetrie = SYM;
 

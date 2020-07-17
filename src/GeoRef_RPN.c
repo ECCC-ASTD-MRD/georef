@@ -71,7 +71,7 @@ void GeoRef_Expand(TGeoRef *GRef) {
 
       if (GRef->AX_JP && GRef->AY) {
          if (GRef->Grid[0]=='Z') {
-            c_gdgaxes(GRef->Ids[GRef->NId],GRef->AX_JP,GRef->AY);
+            c_gdgaxes(GRef->NId?GRef->subgrid[GRef->NId-1]:GRef,GRef->AX_JP,GRef->AY);
          } else {
             for(i=0;i<=GRef->X1;i++) {
                GRef->Project(GRef,i,0,&lat,&lon,1,1);

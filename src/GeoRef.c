@@ -963,7 +963,7 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       
 #ifdef HAVE_RMN
       if (Ref->subgrid) {
-         ref->subrid=(TGeoRef**)malloc(Ref->nsubgrids*sizeof(TGeoRef*));
+         ref->subgrid=(TGeoRef**)malloc(Ref->nsubgrids*sizeof(TGeoRef*));
          memcpy(ref->subgrid,Ref->subgrid,Ref->nsubgrids*sizeof(TGeoRef*));
          for(i=0;i<ref->nsubgrids;i++)
             c_ez_refgrid(ref->subgrid[i]);
@@ -2096,7 +2096,7 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
       if (Ref->NbId>1 && !pnid) {
 /*          c_ezgprm(Ref->Ids[pnid],grtyp,&Ref->NX,&Ref->NY,&ig,&ig,&ig,&ig); */
          Ref->NX = nx;
-         Ref->NY = nj;
+         Ref->NY = ny;
       }
 #else
       App_Log(ERROR,"%s: RMNLIB support not included\n",__func__);

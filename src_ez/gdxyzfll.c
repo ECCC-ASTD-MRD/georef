@@ -52,7 +52,7 @@ wordint c_gdxyzfll(TGeoRef *GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfl
       case 'S':
       case 'T':
       case '!':
-	c_gdxyfll_orig(gdid, x, y, lat, lon, n);
+	c_gdxyfll_orig(GRef, x, y, lat, lon, n);
         break;
         
       case 'Y':
