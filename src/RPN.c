@@ -499,7 +499,7 @@ int RPN_FieldReadGrid(TRPNField *Field) {
    if (!Field->GRef || !(Field->GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)) || (Field->GRef->NY==1 && Field->GRef->Grid[0]!='Y' && Field->GRef->Grid[1]!='Y' && Field->GRef->Grid[0]!='M'))
       return(0);
 
-   if ((!Field->GRef->AY || !Field->GRef->AX_JP) && head->File) {
+   if ((!Field->GRef->AY || !Field->GRef->AX_JP)) {
 
       switch(Field->GRef->Grid[0]) {
          case 'M':
