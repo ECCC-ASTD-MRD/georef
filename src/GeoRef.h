@@ -139,19 +139,19 @@ typedef struct TRotationTransform {
 } TRotationTransform;
 
 typedef struct {
-  wordint npts;               /* nombre de points */
-  ftnfloat *x;                /* vecteur de coordonnees x */
-  ftnfloat *y;                /* vecteur de coordonnees y */
-  wordint *idx;               /* indice du point dans le champ de destination */
+  wordint npts;               ///< nombre de points
+  ftnfloat *x;                ///< vecteur de coordonnees x
+  ftnfloat *y;                ///< vecteur de coordonnees y
+  wordint *idx;               ///< indice du point dans le champ de destination
 } _zone;
 
 typedef struct {
-  wordint n_wts;              /* nombre de poids */
+  wordint n_wts;              ///< nombre de poids
   ftnfloat *xx, *yy;
   ftnfloat *lat, *lon;
-  ftnfloat *wts;              /* tableau de poids */
-   wordint *mask, *idx;       /* indice du point dans le champ de destination */
-} _ygrid;                     /* Grille Y */
+  ftnfloat *wts;              ///< tableau de poids
+   wordint *mask, *idx;       ///< indice du point dans le champ de destination
+} _ygrid;                     ///< Grille Y
 
 typedef struct {
   wordint flags;
@@ -198,7 +198,7 @@ typedef struct {
 typedef struct TGeoRef {
    char*   Name;                                          ///< Reference name
    int*    Ids;                                           ///< Ids des georeferences (>=0 = ezscint)
-   int     NbId,NId;                                      ///< Nombre de sous-grille
+   int     NbId,NId;                                      ///< Nombre de sous-grilles (=1 si aucune), sous-grille courante (=0 si toutes)
 
    int     NRef;                                          ///< Nombre de reference a la georeference
    int     Type;                                          ///< Type de grille
@@ -237,7 +237,6 @@ typedef struct TGeoRef {
    TGeoRef_Height    *Height;
 
    // _Grille struct from ezscint.h
-   wordint index;
    wordint flags;
    wordint i1, i2, j1, j2;
    wordint ni,nj;
@@ -264,7 +263,7 @@ typedef struct TGeoRef {
    _gridset *gset;
 
 #ifdef HAVE_RPNC   
-   int NC_Id,NC_NXDimId,NC_NYDimId;                       // netCDF identifiers
+   int NC_Id,NC_NXDimId,NC_NYDimId;                       ///< netCDF identifiers
 #endif
 } TGeoRef;
 
@@ -272,18 +271,18 @@ extern TGeoRef* iset_gdin;
 extern TGeoRef* iset_gdout;
 
 typedef struct TGeoPos {
-   TGeoRef *GRef;                                         // Reference horizontale
-   TZRef   *ZRef;                                         // Reference verticale
-   Vect3d **Pos;                                          // Coordonnees des points de grilles (World)
-   int      NRef;                                         // Nombre de reference a la georeference
+   TGeoRef *GRef;                                         ///< Reference horizontale
+   TZRef   *ZRef;                                         ///< Reference verticale
+   Vect3d **Pos;                                          ///< Coordonnees des points de grilles (World)
+   int      NRef;                                         ///< Nombre de reference a la georeference
 } TGeoPos;
 
 typedef struct TGeoScan {
    double *X,*Y;
    float  *D;
-   unsigned int *V;                                       // Coordonnees et valeurs
-   unsigned int N,S;                                      // Nombre de coordonnees et dimension
-   int DX,DY;                                             // Longueur em X et Y
+   unsigned int *V;                                       ///< Coordonnees et valeurs
+   unsigned int N,S;                                      ///< Nombre de coordonnees et dimension
+   int DX,DY;                                             ///< Longueur em X et Y
 } TGeoScan;
 
 void GeoRef_Lock(void);

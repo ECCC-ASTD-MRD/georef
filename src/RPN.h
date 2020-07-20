@@ -36,43 +36,43 @@
 struct TGeoRef;
 
 typedef struct TRPNFile {
-   char *CId;              // Identificateur du fichier
-   char *Name;             // Path complet du fichier
-   int  Open;              // Etat du fichier
-   unsigned int Id;        // Numero d'unite du fichier
-   int  NRef;              // Nombre de reference
-   char Mode;              // Mode d'ouverture du fichier (r,w,a)
+   char *CId;              ///< Identificateur du fichier
+   char *Name;             ///< Path complet du fichier
+   int  Open;              ///< Etat du fichier
+   unsigned int Id;        ///< Numero d'unite du fichier
+   int  NRef;              ///< Nombre de reference
+   char Mode;              ///< Mode d'ouverture du fichier (r,w,a)
 } TRPNFile;
 
 typedef struct TRPNHeader {
-   TRPNFile *File;         // Fichier dont provient le champs
-   int  FID;               // FID dont provient le champs
-   int  KEY;               // Cle du champs
-   int  DATEO;             // Date d'origine du champs
-   int  DATEV;             // Date de validitee du champs
-   int  DEET;              // Duree d'un pas de temps
-   int  NPAS;              // Pas de temps
-   int  NBITS;             // Nombre de bits du champs
-   int  DATYP;             // Type de donnees
-   int  IP1,IP2,IP3;       // Specificateur du champs
-   int  NI,NJ,NK,NIJ;      // Dimensions
-   int  IG1_JP,IG2_JP,IG3_JP,IG4_JP;   // Descripteur de grille
+   TRPNFile *File;         ///< Fichier dont provient le champs
+   int  FID;               ///< FID dont provient le champs
+   int  KEY;               ///< Cle du champs
+   int  DATEO;             ///< Date d'origine du champs
+   int  DATEV;             ///< Date de validitee du champs
+   int  DEET;              ///< Duree d'un pas de temps
+   int  NPAS;              ///< Pas de temps
+   int  NBITS;             ///< Nombre de bits du champs
+   int  DATYP;             ///< Type de donnees
+   int  IP1,IP2,IP3;       ///< Specificateur du champs
+   int  NI,NJ,NK,NIJ;      ///< Dimensions
+   int  IG1_JP,IG2_JP,IG3_JP,IG4_JP;   ///< Descripteur de grille
    int  SWA;
    int  LNG;
    int  DLTF;
    int  UBC;
    int  EX1,EX2,EX3;
-   char TYPVAR[3];         // Type de variable
-   char NOMVAR[5];         // Nom de la variable
-   char ETIKET[13];        // Etiquette du champs
-   char GRTYP[2];          // Type de grilles
+   char TYPVAR[3];         ///< Type de variable
+   char NOMVAR[5];         ///< Nom de la variable
+   char ETIKET[13];        ///< Etiquette du champs
+   char GRTYP[2];          ///< Type de grilles
 } TRPNHeader;
 
 typedef struct TRPNField {
-   TRPNHeader     Head;    // Entete du champs
-   struct TDef    *Def;    // Definition des donnees
-   struct TGeoRef *GRef;   // Reference geographique horizontale
-   struct TZRef   *ZRef;   // Reference geographique verticale
+   TRPNHeader     Head;    ///< Entete du champs
+   struct TDef    *Def;    ///< Definition des donnees
+   struct TGeoRef *GRef;   ///< Reference geographique horizontale
+   struct TZRef   *ZRef;   ///< Reference geographique verticale
 } TRPNField;
 
 int  RPN_CopyDesc(int FIdTo,TRPNHeader* const H);

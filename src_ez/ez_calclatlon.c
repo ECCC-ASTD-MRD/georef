@@ -266,7 +266,7 @@ wordint ez_calclatlon(TGeoRef* GRef)
 
    if (groptions.verbose == 2)
      {
-     fprintf(stderr, "gdid: %d\n", GRef->index);
+     fprintf(stderr, "gd: %p\n", GRef);
      for (j=0; j < nj; j++)
        {
        for (i=0; i < ni; i++)
