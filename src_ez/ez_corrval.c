@@ -55,6 +55,9 @@ wordint ez_corrval(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, TGeoRef *gdout)
       return -1;
       }
 
+//TODO: check if ok
+//    valmin=f77name(AMIN)(zin,&(gdin->ni),&nj, 0)
+//    valmax=f77name(AMAX)(zin,&(gdin->ni),&nj, 0)
     f77name(ez_aminmax)(&valmin,&valmax,zin,&(gdin->ni), &nj);
     if (groptions.degre_extrap >= MAXIMUM)
       {
