@@ -38,7 +38,7 @@ wordint c_gdwdfuv(TGeoRef *GRef, ftnfloat *spd_out, ftnfloat *wd_out, ftnfloat *
   wordint j, icode;
   ftnfloat *spdout, *wdout;
 
-  if (GRef->nsubgrids > 0 )
+  if (GRef->NbSub > 0 )
     {
      fprintf(stderr, "<gdwdfuv>: This operation is not supported for 'U' grids\n");
      return -1;

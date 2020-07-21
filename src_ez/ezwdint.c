@@ -39,7 +39,7 @@ wordint c_ezwdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vv
    gdin = iset_gdin;
    gdout= iset_gdout;
 
-   if (gdin->nsubgrids > 0 || gdout->nsubgrids > 0)
+   if (gdin->NbSub > 0 || gdout->NbSub > 0)
       {
       icode = c_ezyywdint(uuout,vvout,uuin,vvin,gdout,gdin);
       iset_gdin=gdin;

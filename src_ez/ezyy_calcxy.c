@@ -53,15 +53,15 @@ wordint c_ezyy_calcxy(TGeoRef *gdout,TGeoRef *gdin)
 
   /* To be in this routine, input source grid should be Yin-Yang */
   yyin=1;
-  yin_gdin = gdin->subgrid[0];
-  yan_gdin = gdin->subgrid[1];
+  yin_gdin = gdin->Subs[0];
+  yan_gdin = gdin->Subs[1];
 
   /* Check what the destination grid is */
-  if (gdout->nsubgrids > 0)
+  if (gdout->NbSub > 0)
      {
      yyout=1;
-     yin_gdout = gdout->subgrid[0];
-     yan_gdout = gdout->subgrid[1];
+     yin_gdout = gdout->Subs[0];
+     yan_gdout = gdout->Subs[1];
      ni = yin_gdout->ni;
      nj = yin_gdout->nj;
      }

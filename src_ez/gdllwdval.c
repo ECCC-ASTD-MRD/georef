@@ -39,7 +39,7 @@ wordint c_gdllwdval(TGeoRef *GRef, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *u
    ftnfloat *x, *y;
    ftnfloat *uuyin, *vvyin, *uuyan, *vvyan;
 
-   if (GRef->nsubgrids > 0)
+   if (GRef->NbSub > 0)
       {
       x = (ftnfloat *) malloc(n * sizeof(float));
       y = (ftnfloat *) malloc(n * sizeof(float));
@@ -49,8 +49,8 @@ wordint c_gdllwdval(TGeoRef *GRef, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *u
       vvyan = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       ier = c_gdxyfll(GRef, x, y, lat, lon, n);
       ier = c_gdxyvval(GRef, uuout, vvout, uuin, vvin, x, y, n);
-      yin_gd=GRef->subgrid[0];
-      yan_gd=GRef->subgrid[1];
+      yin_gd=GRef->Subs[0];
+      yan_gd=GRef->Subs[1];
       ier = c_gdwdfuv_orig(yin_gd,uuyin,vvyin,uuout,vvout,lat,lon,n);
       ier = c_gdwdfuv_orig(yan_gd,uuyan,vvyan,uuout,vvout,lat,lon,n);
       for (j=0; j< n; j++)

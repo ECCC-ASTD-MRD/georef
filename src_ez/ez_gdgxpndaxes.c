@@ -35,7 +35,7 @@ wordint c_gdgxpndaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay)
   wordint nix, njy;
   wordint istart, jstart;
 
-  if (GRef->nsubgrids > 0)
+  if (GRef->NbSub > 0)
   {
       fprintf(stderr, "<gdgxpndaxes> This operation is not supported for 'U' grids.\n");
       return -1;

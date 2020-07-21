@@ -66,7 +66,7 @@ int f77name(ezsint_mask)(int *mask_out, int *mask_in)
 int c_gdsetmask(TGeoRef *gr, int *mask)
 {
    int ni, nj;
-   if (gr->nsubgrids > 0)
+   if (gr->NbSub > 0)
    {
       fprintf(stderr, "<gdsetmask> This operation is not supported for 'U' grids.\n");
       return -1;
@@ -90,7 +90,7 @@ int c_gdgetmask(TGeoRef *gr, int *mask)
 {
    int ni, nj;
 
-   if (gr->nsubgrids > 0)
+   if (gr->NbSub > 0)
    {
       fprintf(stderr, "<gdgetmask> This operation is not supported for 'U' grids.\n");
       return -1;
@@ -142,8 +142,8 @@ int c_ezsint_mdm(float *zout, int *mask_out, float *zin, int *mask_in)
 
    c_ezdefset(gdout, gdin);
 
-   if (gdout->nsubgrids > 0 || 
-       gdin->nsubgrids > 0)
+   if (gdout->NbSub > 0 || 
+       gdin->NbSub > 0)
       {
        fprintf(stderr, "<ezsint_mdm> This operation is not supported for 'U' grids.\n");
        return -1;
@@ -171,8 +171,8 @@ int c_ezuvint_mdm(float *uuout, float *vvout, int *mask_out, float *uuin, float 
 
    c_ezdefset(gdout, gdin);
 
-   if (gdout->nsubgrids > 0 || 
-       gdin->nsubgrids > 0)
+   if (gdout->NbSub > 0 || 
+       gdin->NbSub > 0)
       {
        fprintf(stderr, "<ezuvint_mdm> This operation is not supported for 'U' grids.\n");
        return -1;
@@ -201,8 +201,8 @@ int c_ezsint_mask(int *mask_out, int *mask_in)
 
    gdin = c_ezgetgdin();
    gdout = c_ezgetgdout();
-   if (gdout->nsubgrids > 0 || 
-       gdin->nsubgrids > 0)
+   if (gdout->NbSub > 0 || 
+       gdin->NbSub > 0)
       {
        fprintf(stderr, "<ezsint_mask> This operation is not supported for 'U' grids.\n");
        return -1;
@@ -251,8 +251,8 @@ int c_ezget_mask_zones(int *mask_out, int *mask_in)
    strcpy(interp_degree,"interp_degree");
    gdin = c_ezgetgdin();
    gdout = c_ezgetgdout();
-   if (gdout->nsubgrids > 0 || 
-       gdin->nsubgrids > 0)
+   if (gdout->NbSub > 0 || 
+       gdin->NbSub > 0)
       {
        fprintf(stderr, "<ezget_mask_zones> This operation is not supported for 'U' grids.\n");
        return -1;

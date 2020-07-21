@@ -49,8 +49,8 @@ wordint c_ezgdef_ffile(wordint ni, wordint nj, char *grtyp,
   wordint newgrsize, fseed, un, grid_index;
   unsigned int grid_crc;
   _Grille *gr, newgr;
-  wordint *subgrid;
-  wordint nsubgrids, vercode,read;
+  wordint *Subs;
+  wordint NbSub, vercode,read;
 
   found = 0;
   un = 1;

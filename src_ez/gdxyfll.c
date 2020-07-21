@@ -35,10 +35,10 @@ wordint c_gdxyfll(TGeoRef *GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnflo
   TGeoRef *yin_gd, *yan_gd;
   ftnfloat *xyin, *xyan, *yyin, *yyan;
 
-  if (GRef->nsubgrids > 0 )
+  if (GRef->NbSub > 0 )
     {
-      yin_gd=GRef->subgrid[0];
-      yan_gd=GRef->subgrid[1];
+      yin_gd=GRef->Subs[0];
+      yan_gd=GRef->Subs[1];
       maxni= yin_gd->ni;
       maxnj= yin_gd->nj;
       xyin = (ftnfloat *) malloc(n*sizeof(ftnfloat));

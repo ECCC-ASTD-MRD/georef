@@ -46,11 +46,11 @@ wordint c_ezyyuvint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
   idx_gdin = c_find_gdin(gdin, gdout);
 
 /* setup for input grid */
-  if (gdin->nsubgrids > 0)
+  if (gdin->NbSub > 0)
      {
      yyin=1;
-     yin_gdin = gdin->subgrid[0];
-     yan_gdin = gdin->subgrid[1];
+     yin_gdin = gdin->Subs[0];
+     yan_gdin = gdin->Subs[1];
      }
   else
      {
@@ -58,11 +58,11 @@ wordint c_ezyyuvint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin,  ftnfloat 
      }
 
 /* setup for output grid */
-  if (gdout->nsubgrids > 0)
+  if (gdout->NbSub > 0)
      {
      yyout=1;
-     yin_gdout = gdout->subgrid[0];
-     yan_gdout = gdout->subgrid[1];
+     yin_gdout = gdout->Subs[0];
+     yan_gdout = gdout->Subs[1];
      }
   else
      {

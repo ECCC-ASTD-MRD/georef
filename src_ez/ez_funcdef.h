@@ -49,8 +49,8 @@ wordint c_ezfreegridset(TGeoRef* gr, wordint index);
 wordint f77name(ezdefset)(PTR_AS_INT gdout, PTR_AS_INT gdin);
 wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin);
 
-PTR_AS_INT f77name(ezgdef_supergrid)(wordint* ni, wordint* nj, char* grtyp, char* grref, wordint* vercode, wordint* nsubgrids, PTR_AS_INT subgrid, F2Cl lengrtyp, F2Cl lengrref);
-TGeoRef* c_ezgdef_supergrid(wordint ni, wordint nj, char* grtyp, char* grref, wordint vercode, wordint nsubgrids, TGeoRef** subgrid);
+PTR_AS_INT f77name(ezgdef_supergrid)(wordint* ni, wordint* nj, char* grtyp, char* grref, wordint* vercode, wordint* NbSub, PTR_AS_INT Subs, F2Cl lengrtyp, F2Cl lengrref);
+TGeoRef* c_ezgdef_supergrid(wordint ni, wordint nj, char* grtyp, char* grref, wordint vercode, wordint NbSub, TGeoRef** Subs);
 
 wordint c_ezgdef_yymask(TGeoRef* gr);
 

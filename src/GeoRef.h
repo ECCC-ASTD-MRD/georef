@@ -69,6 +69,7 @@
 #define GRID_NUNORTH  0x200      // North is not up
 #define GRID_NEGLON   0x400      // Lon are (-180,180)
 #define GRID_CORNER   0x800      // Grid cell is corner defined (ie: first gridpoint is 0.5 0.5)
+#define GRID_EZ       0x1000     // EZSCINT managed grid
 
 #define GRID_YQTREESIZE   1000
 #define GRID_MQTREEDEPTH  8
@@ -79,6 +80,7 @@
 #define REFDEFAULT "GEOGCS[\"GCS_WGS_1984\",DATUM[\"WGS_1984\",SPHEROID[\"WGS84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.017453292519943295]]"
 #define REFCLAMPBD(R,PX0,PY0,PX1,PY1) if (PX0<(R->X0+R->BD)) PX0=R->X0+R->BD; if (PY0<(R->Y0+R->BD)) PY0=R->Y0+R->BD; if (PX1>(R->X1-R->BD)) PX1=R->X1-R->BD; if (PY1>(R->Y1-R->BD)) PY1=R->Y1-R->BD;
 #define REFCLAMP(R,PX0,PY0,PX1,PY1)   if (PX0<R->X0) PX0=R->X0; if (PY0<R->Y0) PY0=R->Y0; if (PX1>R->X1) PX1=R->X1; if (PY1>R->Y1) PY1=R->Y1;
+#define REFGET(REF)                   (REF->NSub?REF->Subs[REF->NSub-1]:REF)
 
 #define REFCOORD(REF,N,C)\
    if (REF->Grid[1]!='\0') {\
@@ -197,9 +199,6 @@ typedef struct {
 
 typedef struct TGeoRef {
    char*   Name;                                          ///< Reference name
-   int*    Ids;                                           ///< Ids des georeferences (>=0 = ezscint)
-   int     NbId,NId;                                      ///< Nombre de sous-grilles (=1 si aucune), sous-grille courante (=0 si toutes)
-
    int     NRef;                                          ///< Nombre de reference a la georeference
    int     Type;                                          ///< Type de grille
    int     BD;                                            ///< Bordure
@@ -214,7 +213,7 @@ typedef struct TGeoRef {
 
    unsigned int NIdx,*Idx;                                ///< Index dans les positions
    float        *Lat,*Lon;                                ///< Coordonnees des points de grilles (Spherical)
-   float        *AX,*AY,*Hgt;                          ///< Axes de positionnement / deformation
+   float        *AX,*AY,*Hgt;                           ///< Axes de positionnement / deformation
    double       *Wght;                                    ///< Barycentric weight array for TIN  (M grids)
 
    char                         *String;                  ///< OpenGIS WKT String description
@@ -244,17 +243,18 @@ typedef struct TGeoRef {
    wordint extension;
    wordint needs_expansion;
    wordint access_count;
-   wordint n_gdin;                              ///< nombre de grilles source demandees pour interpoler a sa propre grille
-   wordint n_gdin_for;                          ///< nombre des grilles de destination (differentes) pour faire une interpolation avec cette  grille
+   wordint n_gdin;                              ///< Nombre de grilles source demandees pour interpoler a sa propre grille
+   wordint n_gdin_for;                          ///< Nombre des grilles de destination (differentes) pour faire une interpolation avec cette  grille
    wordint idx_last_gdin;                       ///< Position dans gset
    wordint log_chunk_gdin;
    wordint *mask;
    struct TGeoRef **gdin_for;                   ///< Pointeurs vers les georeferences de destination pour faire une interpolation avec cette  grille
-   wordint nsubgrids;                           ///< Nombre de sous-grilles
    struct TGeoRef *mymaskgrid;
+   struct TGeoRef **Subs;                       ///< Lit des sous grilles (GRTYP=U)
+   wordint NbSub;                               ///< Nombre de sous-grilles
+   wordint NSub;                                ///< Sous-grille courante (=0 si toutes)
    wordint mymaskgridi0,mymaskgridi1;
    wordint mymaskgridj0,mymaskgridj1;
-   struct TGeoRef **subgrid;
    ftnfloat *lat, *lon;
    ftnfloat *ax, *ay;
    ftnfloat *ncx, *ncy;

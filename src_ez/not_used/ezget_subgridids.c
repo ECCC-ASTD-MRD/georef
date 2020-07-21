@@ -23,24 +23,24 @@
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(ezget_subgridids)(wordint *gdid, wordint *subgrid)
+wordint f77name(ezget_subgridids)(wordint *gdid, wordint *Subs)
 {
-   return c_ezget_subgridids(*gdid, subgrid);
+   return c_ezget_subgridids(*gdid, Subs);
 }
 
-wordint c_ezget_subgridids(wordint gdid, wordint *subgrid)
+wordint c_ezget_subgridids(wordint gdid, wordint *Subs)
 {
   wordint i,gdrow_id, gdcol_id;
 
   c_gdkey2rowcol(gdid, &gdrow_id, &gdcol_id);
-  if (Grille[gdrow_id][gdcol_id].nsubgrids == 0) 
+  if (Grille[gdrow_id][gdcol_id].NbSub == 0) 
     {
-    *subgrid=gdid;
+    *Subs=gdid;
     return 1;  
     }
-  for (i=0; i<Grille[gdrow_id][gdcol_id].nsubgrids; i++)
+  for (i=0; i<Grille[gdrow_id][gdcol_id].NbSub; i++)
    {
-   subgrid[i]=Grille[gdrow_id][gdcol_id].subgrid[i];
+   Subs[i]=Grille[gdrow_id][gdcol_id].Subs[i];
    }
-  return Grille[gdrow_id][gdcol_id].nsubgrids;
+  return Grille[gdrow_id][gdcol_id].NbSub;
 }

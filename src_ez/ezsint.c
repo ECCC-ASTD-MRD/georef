@@ -69,7 +69,7 @@ wordint c_ezsint(ftnfloat *zout, ftnfloat *zin)
     }
 
 
-  if (gdin->nsubgrids > 0 || gdout->nsubgrids > 0)
+  if (gdin->NbSub > 0 || gdout->NbSub > 0)
       {
 /* get the subgrids and interpolate accordingly */
       icode = c_ezyysint(zout,zin,gdout,gdin);

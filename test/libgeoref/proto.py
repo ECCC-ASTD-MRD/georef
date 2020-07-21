@@ -9,9 +9,9 @@ libgeoref.c_ezdefset.argtypes = (ct.c_int, ct.c_int)
 libgeoref.c_ezdefset.restype = ct.c_int
 c_ezdefset = libgeoref.c_ezdefset
 
-libgeoref.c_ezget_nsubgrids.argtypes = (ct.c_int, )
-libgeoref.c_ezget_nsubgrids.restype  = ct.c_int
-c_ezget_nsubgrids = libgeoref.c_ezget_nsubgrids
+libgeoref.c_ezget_NbSub.argtypes = (ct.c_int, )
+libgeoref.c_ezget_NbSub.restype  = ct.c_int
+c_ezget_NbSub = libgeoref.c_ezget_NbSub
 
 
 libgeoref.c_ezget_subgridids.argtypes = (ct.c_int, npc.ndpointer(dtype=np.intc))

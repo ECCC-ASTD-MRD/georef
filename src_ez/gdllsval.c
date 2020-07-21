@@ -38,7 +38,7 @@ wordint c_gdllsval(TGeoRef *GRef, ftnfloat *zout, ftnfloat *zin, ftnfloat *lat, 
    x = (ftnfloat *)malloc(n * sizeof(float));
    y = (ftnfloat *)malloc(n * sizeof(float));
    
-   if (GRef->nsubgrids > 0 )
+   if (GRef->NbSub > 0 )
       {
          ier = c_gdxyfll(GRef, x, y, lat, lon, n);
       }

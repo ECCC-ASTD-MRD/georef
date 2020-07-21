@@ -39,10 +39,10 @@ wordint c_gdxysval(TGeoRef *gdin, ftnfloat *zout, ftnfloat *zin, ftnfloat *x, ft
    ftnfloat *zoutyin, *zoutyan;
    ftnfloat *tmpy;
 
-  if (gdin->nsubgrids > 0)
+  if (gdin->NbSub > 0)
       {
-      yin_gd=gdin->subgrid[0];
-      yan_gd=gdin->subgrid[1];
+      yin_gd=gdin->Subs[0];
+      yan_gd=gdin->Subs[1];
       ni = yin_gd->ni;
       nj = yin_gd->nj;
       tmpy = (ftnfloat *) malloc(n*sizeof(ftnfloat));

@@ -36,10 +36,10 @@ wordint c_gdllfxy(TGeoRef *GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, ftnf
   ftnfloat *latyin, *lonyin, *latyan, *lonyan;
   ftnfloat *tmpy;
 
-  if (GRef->nsubgrids > 0 )
+  if (GRef->NbSub > 0 )
     {
-      yin_gd=GRef->subgrid[0];
-      yan_gd=GRef->subgrid[1];
+      yin_gd=GRef->Subs[0];
+      yan_gd=GRef->Subs[1];
       tmpy = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       latyin = (ftnfloat *) malloc(n*sizeof(ftnfloat));
       lonyin = (ftnfloat *) malloc(n*sizeof(ftnfloat));

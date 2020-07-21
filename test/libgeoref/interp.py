@@ -40,17 +40,17 @@ def ezdefset(gdidout, gdidin):
         raise EzscintError()
     return istat
 
-def ezget_nsubgrids(super_gdid):
+def ezget_NbSub(super_gdid):
     super_gdid = _getCheckArg(int, super_gdid, super_gdid, 'id')
-    nsubgrids = rp.c_ezget_nsubgrids(super_gdid)
-    if nsubgrids >= 0:
-        return nsubgrids
+    NbSub = rp.c_ezget_NbSub(super_gdid)
+    if NbSub >= 0:
+        return NbSub
     raise EzscintError()
 
 def ezget_subgridids(super_gdid):
     super_gdid = _getCheckArg(int, super_gdid, super_gdid, 'id')
-    nsubgrids  = ezget_nsubgrids(super_gdid)
-    cgridlist  = _np.empty(nsubgrids, dtype=_np.intc, order='F')
+    NbSub  = ezget_NbSub(super_gdid)
+    cgridlist  = _np.empty(NbSub, dtype=_np.intc, order='F')
     istat = rp.c_ezget_subgridids(super_gdid, cgridlist)
     if istat >= 0:
         return cgridlist.tolist()
@@ -77,10 +77,10 @@ def ezgprm(gdid, doSubGrid=False):
         'ig4'   : cig4.value
             }
     if doSubGrid:
-        params['nsubgrids'] = ezget_nsubgrids(gdid)
+        params['NbSub'] = ezget_NbSub(gdid)
         params['subgridid'] = ezget_subgridids(gdid)
         params['subgrid'] = []
-        if params['nsubgrids'] > 0:
+        if params['NbSub'] > 0:
             for gid2 in params['subgridid']:
                 params['subgrid'].append(ezgprm(gid2))
     return params
@@ -115,10 +115,10 @@ def ezgxprm(gdid, doSubGrid=False):
         'ig4ref'   : cig4ref.value
             }
     if doSubGrid:
-        params['nsubgrids'] = ezget_nsubgrids(gdid)
+        params['NbSub'] = ezget_NbSub(gdid)
         params['subgridid'] = ezget_subgridids(gdid)
         params['subgrid'] = []
-        if params['nsubgrids'] > 0:
+        if params['NbSub'] > 0:
             for gid2 in params['subgridid']:
                 params['subgrid'].append(ezgxprm(gid2))
     return params
@@ -186,8 +186,8 @@ def gdll(gdid, lat=None, lon=None):
     lon = _getCheckArg(None, lon, lat, 'lon')
     lat = _getCheckArg(None, lat, lat, 'lat')
     gdid = _getCheckArg(int, gdid, gdid, 'id')
-    nsubgrids = ezget_nsubgrids(gdid)
-    if nsubgrids > 1:
+    NbSub = ezget_NbSub(gdid)
+    if NbSub > 1:
         latlon = []
         subgridid = ezget_subgridids(gdid)
         for id in subgridid:
@@ -199,7 +199,7 @@ def gdll(gdid, lat=None, lon=None):
                 'id' : gdid,
                 'lat' : latlon[0]['lat'],
                 'lon' : latlon[0]['lon'],
-                'nsubgrids' : nsubgrids,
+                'NbSub' : NbSub,
                 'subgridid' : subgridid,
                 'subgrid'   : latlon
                 }
@@ -217,7 +217,7 @@ def gdll(gdid, lat=None, lon=None):
             'id'  : gdid,
             'lat' : lat,
             'lon' : lon,
-            'nsubgrids' : 0,
+            'nbsub' : 0,
             'subgridid' : [gdid],
             'subgrid'   : [{
                 'id'  : gdid,

@@ -181,7 +181,7 @@ extern int  c_ezgprm(int gdid, char *grtyp, int *ni, int *nj, int *ig1, int *ig2
 extern int  c_ezgenpole(ftnfloat *vpolnor, ftnfloat *vpolsud, ftnfloat *fld,int ni, int nj, int vecteur,char *grtyp, int hem);
 extern int  c_ezgetopt(char *option, char *value);
 extern int  c_ezgetval(char *option, ftnfloat *value);
-extern int  c_ezget_nsubgrids(int id);
+extern int  c_ezget_NbSub(int id);
 extern int  c_ezget_subgridids(int id,int *subid);
 extern int  c_gdll(struct TGeoRef* GRef, ftnfloat *lat, ftnfloat *lon);
 extern int  c_gdrls(struct TGeoRef* GRef);

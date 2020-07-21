@@ -23,20 +23,20 @@
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(ezget_nsubgrids)(wordint *gdid)
+wordint f77name(ezget_NbSub)(wordint *gdid)
 {
    wordint icode;
 
-   icode = c_ezget_nsubgrids(*gdid);
+   icode = c_ezget_NbSub(*gdid);
    return icode;
 }
 
-wordint c_ezget_nsubgrids(wordint gdid)
+wordint c_ezget_NbSub(wordint gdid)
 {
   wordint icode, gdrow_id, gdcol_id;
 
   c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-  icode=Grille[gdrow_id][gdcol_id].nsubgrids;
+  icode=Grille[gdrow_id][gdcol_id].NbSub;
   if (icode == 0) 
      {
      icode=1;

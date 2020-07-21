@@ -44,10 +44,10 @@ wordint c_gdxywdval(TGeoRef *gdin, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *u
   tmpuu = (ftnfloat *) malloc(n * sizeof(ftnfloat));
   tmpvv = (ftnfloat *) malloc(n * sizeof(ftnfloat));
   
-  if (gdin->nsubgrids > 0)
+  if (gdin->NbSub > 0)
       {
-      yin_gd=gdin->subgrid[0];
-      yan_gd=gdin->subgrid[1];
+      yin_gd=gdin->Subs[0];
+      yan_gd=gdin->Subs[1];
       lni = yin_gd->ni;
       lnj = yin_gd->nj;
       tmpy = (ftnfloat *) malloc(n*sizeof(ftnfloat));

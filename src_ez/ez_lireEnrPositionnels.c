@@ -24,19 +24,19 @@ void Lire_enrUvercode1(TGeoRef *gr, ftnfloat *yy, wordint nix)
   memcpy(ax,&yy[15],ni*sizeof(ftnfloat));
   memcpy(ay,&yy[15+ni],nj*sizeof(ftnfloat));
   yinsize=15+ni+nj;
-  gr->nsubgrids = ndiv;
-  gr->subgrid = (wordint *) malloc(ndiv*sizeof(wordint));
+  gr->NbSub = ndiv;
+  gr->Subs = (wordint *) malloc(ndiv*sizeof(wordint));
   strcpy(grtypZ,"Z"); strcpy(grrefE,"E");
   /*yin*/
   ier = f77name(cxgaig)(grrefE,&ig1refyin,&ig2refyin,&ig3refyin,&ig4refyin,&yy[11], &yy[12], &yy[13], &yy[14],1);
   GRef_yin = c_ezgdef_fmem(ni,nj,grtypZ,grrefE,ig1refyin,ig2refyin,ig3refyin,ig4refyin,ax,ay);
-  gr->subgrid[0] = GRef_yin;
+  gr->Subs[0] = GRef_yin;
   c_ezgdef_yymask(GRef_yin);
 
   /*yang*/
   ier = f77name(cxgaig)(grrefE,&ig1refyan,&ig2refyan,&ig3refyan,&ig4refyan,&yy[yinsize+6], &yy[yinsize+7], &yy[yinsize+8], &yy[yinsize+9],1);
   GRef_yang = c_ezgdef_fmem(ni,nj,grtypZ,grrefE,ig1refyan,ig2refyan,ig3refyan,ig4refyan,ax,ay);
-  gr->subgrid[1] = GRef_yang;
+  gr->Subs[1] = GRef_yang;
   c_ezgdef_yymask(GRef_yang);
   free(ax);
   free(ay);

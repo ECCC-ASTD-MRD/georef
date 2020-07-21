@@ -46,10 +46,10 @@ wordint c_gdll(TGeoRef *GRef, ftnfloat *lat, ftnfloat *lon)
    wordint ni, nj;
    TGeoRef *yin_gd, *yan_gd;
       
-   if (GRef->nsubgrids > 0 )
+   if (GRef->NbSub > 0 )
       {
-      yin_gd = GRef->subgrid[0];
-      yan_gd = GRef->subgrid[1];
+      yin_gd = GRef->Subs[0];
+      yan_gd = GRef->Subs[1];
    /*    printf("gdll: GRef for yin=%d,GRef for yan=%d\n",yin_gd,yan_gd); */
       ni = yin_gd->ni;
       nj = yin_gd->nj;

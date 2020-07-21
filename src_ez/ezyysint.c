@@ -44,12 +44,12 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
   idx_gdin = c_find_gdin(gdin, gdout);
 
 /* setup for input grid */
-  if (gdin->nsubgrids > 0)
+  if (gdin->NbSub > 0)
      {
      yyin=1;
-     yin_gdin = gdin->subgrid[0];
-     yan_gdin = gdin->subgrid[1];
-     /*fprintf(stderr,"<c_ezyysint> finds subgrid %d and %d in src Yin-Yang grid\n",yin_gdin,yan_gdin);*/
+     yin_gdin = gdin->Subs[0];
+     yan_gdin = gdin->Subs[1];
+     /*fprintf(stderr,"<c_ezyysint> finds Subs %d and %d in src Yin-Yang grid\n",yin_gdin,yan_gdin);*/
      }
   else
      {
@@ -57,11 +57,11 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
      }
 
 /* setup for output grid */
-  if (gdout->nsubgrids > 0)
+  if (gdout->NbSub > 0)
      {
      yyout=1;
-     yin_gdout = gdout->subgrid[0];
-     yan_gdout = gdout->subgrid[1];
+     yin_gdout = gdout->Subs[0];
+     yan_gdout = gdout->Subs[1];
      }
   else
      {

@@ -234,7 +234,7 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
             ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
          }
       }
-      c_gdllfxy(FromRef->NId?FromRef->subgrid[FromRef->NId-1]:FromRef,(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
+      c_gdllfxy(REFGET(FromRef),(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
 
       d=dd?2:1;
       sz=4;
@@ -361,7 +361,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
          }
       }
-      c_gdllfxy(FromRef->NId?FromRef->subgrid[FromRef->NId-1]:FromRef,(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
+      c_gdllfxy(REFGET(FromRef),(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
 
       d=dd?2:1;
       sz=4;
@@ -426,15 +426,14 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             ((float*)Scan->Y)[x]=y0;
          }
       }
-
-      c_gdxyfll(ToRef->NId?ToRef->subgrid[ToRef->NId-1]:ToRef,(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
+      c_gdxyfll(REFGET(ToRef),(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
 //EZFIX
       // If we have the data of source and they're float, get it's values right now
       if (ToDef && ToDef->Type==TD_Float32) {
          if (Degree)
             c_ezsetopt("INTERP_DEGREE",Degree);
          
-         c_gdxysval(ToRef->NId?ToRef->subgrid[ToRef->NId-1]:ToRef,Scan->D,(float*)ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);         
+         c_gdxysval(REFGET(ToRef),Scan->D,(float*)ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);         
       }
 
       // Cast back to double (Start from end since type is double, not to overlap values
@@ -727,12 +726,8 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
 
 #ifdef HAVE_RMN
       // Release ezscint sub-grid
-      if (Ref->Ids) {
-         for(n=0;n<Ref->NbId+1;n++) {
-            if (Ref->Ids[n]>-1)
-               RPN_IntIdFree(Ref->Ids[n]);
-         }
-         free(Ref->Ids);  Ref->Ids=NULL;
+      if (Ref->Subs) {
+         free(Ref->Subs);  Ref->Subs=NULL;
       }
 #endif
 
@@ -781,6 +776,10 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
 
    if (Ref) {
       Ref->Type=GRID_NONE;
+
+      if (Ref->Grid[0]!='X' && Ref->Grid[0]!='O' && Ref->Grid[0]!='P' && Ref->Grid[0]!='M' && Ref->Grid[0]!='V') {
+         Ref->Type|=GRID_EZ;
+      }
 
       if (Ref->Grid[0]=='M' || Ref->Grid[0]=='Y' || Ref->Grid[0]=='X' || Ref->Grid[0]=='O') {
          Ref->Type|=GRID_SPARSE;
@@ -879,7 +878,7 @@ int GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) 
    if (Ref0->BD!=Ref1->BD || (Ref0->Grid[0]!='U' && (Ref0->X0!=Ref1->X0 || Ref0->X1!=Ref1->X1 || Ref0->Y0!=Ref1->Y0 || Ref0->Y1!=Ref1->Y1)))
       return(0);
    
-   if (Ref0->Ids && Ref1->Ids && Ref0->Ids[0]!=Ref1->Ids[0])
+   if (Ref0->Subs && Ref1->Subs && Ref0->Subs[0]!=Ref1->Subs[0])
        return(0);
 
    if (Ref0->R!=Ref1->R || Ref0->ResR!=Ref1->ResR || Ref0->ResA!=Ref1->ResA || Ref0->Loc.Lat!=Ref1->Loc.Lat || Ref0->Loc.Lon!=Ref1->Loc.Lon || Ref0->Loc.Elev!=Ref1->Loc.Elev)
@@ -935,8 +934,7 @@ TGeoRef *GeoRef_Reference(TGeoRef* __restrict const Ref) {
       ref->ResR=Ref->ResR;
       ref->ResA=Ref->ResA;
    }
-   ref->NbId=1;
-   ref->NId=0;
+   ref->NSub=0;
 
    return(ref);
 }
@@ -957,16 +955,16 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       ref->Value=Ref->Value;
       ref->Distance=Ref->Distance;
       ref->Type=Ref->Type;
-      ref->NbId=Ref->NbId;
-      ref->NId=Ref->NId;
+      ref->NbSub=Ref->NbSub;
+      ref->NSub=Ref->NSub;
       ref->QTree=NULL;
       
 #ifdef HAVE_RMN
-      if (Ref->subgrid) {
-         ref->subgrid=(TGeoRef**)malloc(Ref->nsubgrids*sizeof(TGeoRef*));
-         memcpy(ref->subgrid,Ref->subgrid,Ref->nsubgrids*sizeof(TGeoRef*));
-         for(i=0;i<ref->nsubgrids;i++)
-            c_ez_refgrid(ref->subgrid[i]);
+      if (Ref->Subs) {
+         ref->Subs=(TGeoRef**)malloc(Ref->NbSub*sizeof(TGeoRef*));
+         memcpy(ref->Subs,Ref->Subs,Ref->NbSub*sizeof(TGeoRef*));
+         for(i=0;i<ref->NbSub;i++)
+            c_ez_refgrid(ref->Subs[i]);
       }
 #endif
 
@@ -1078,9 +1076,9 @@ TGeoRef* GeoRef_New() {
 
    // General
    ref->Name=NULL;
-   ref->NbId=0;
-   ref->NId=0;
-   ref->Ids=NULL;
+   ref->Subs=NULL;
+   ref->NbSub=0;
+   ref->NSub=0;
    ref->Type=GRID_NONE;
    ref->NRef=1;
    ref->NIdx=0;
@@ -2043,21 +2041,21 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
 
    } else {
 #ifdef HAVE_RMN            
-      pnid=Ref->NId;
+      pnid=Ref->NSub;
       pidx=0;
       nx = Ref->NX;
       ny = Ref->NY;
       
       // Loop on the subgrids if needed
 /*       for(nid=(pnid?pnid:(Ref->NbId>1?1:0));nid<=(pnid?pnid:(Ref->NbId>1?Ref->NbId:0));nid++) { */
-      for(nid=pnid;nid<=(pnid?pnid:(Ref->NbId>1?(Ref->NbId-1):0));nid++) {
-         if (Ref->NbId>1 && !pnid) {
-/*             c_ezgprm(Ref->Ids[nid],grtyp,&Ref->NX,&Ref->NY,&ig,&ig,&ig,&ig); */ 
-            Ref->NX = Ref->subgrid[nid]->ni;
-            Ref->NY = Ref->subgrid[nid]->nj;
+      for(nid=pnid;nid<=(pnid?pnid:(Ref->NbSub>1?(Ref->NbSub-1):0));nid++) {
+         if (Ref->NbSub>1 && !pnid) {
+/*             c_ezgprm(Ref->Subs[nid],grtyp,&Ref->NX,&Ref->NY,&ig,&ig,&ig,&ig); */ 
+            Ref->NX = Ref->Subs[nid]->ni;
+            Ref->NY = Ref->Subs[nid]->nj;
          }
 
-         gr = pnid?Ref->subgrid[nid-1]:(Ref->NbId>1?Ref->subgrid[nid]:Ref);
+         gr = pnid?Ref->Subs[nid-1]:(Ref->NbSub>1?Ref->Subs[nid]:Ref);
 
          for(j=0,gj=1;j<Ref->NY;j++,gj++) {
             idx=pidx+j*Ref->NX;
@@ -2069,7 +2067,7 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
                di[3]=gi;     dj[3]=gj+0.5;
 
                // Reproject gridpoint length coordinates of segments crossing center of cell
-/*                c_gdllfxy(Ref->Ids[nid],dlat,dlon,di,dj,4); */
+/*                c_gdllfxy(Ref->Subs[nid],dlat,dlon,di,dj,4); */
                c_gdllfxy(gr,dlat,dlon,di,dj,4);
                dx[0]=DEG2RAD(dlon[0]); dy[0]=DEG2RAD(dlat[0]);
                dx[1]=DEG2RAD(dlon[1]); dy[1]=DEG2RAD(dlat[1]);
@@ -2093,8 +2091,8 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
          pidx+=idx;
       }
       // Set back original grid
-      if (Ref->NbId>1 && !pnid) {
-/*          c_ezgprm(Ref->Ids[pnid],grtyp,&Ref->NX,&Ref->NY,&ig,&ig,&ig,&ig); */
+      if (Ref->NbSub>1 && !pnid) {
+/*          c_ezgprm(Ref->Subs[pnid],grtyp,&Ref->NX,&Ref->NY,&ig,&ig,&ig,&ig); */
          Ref->NX = nx;
          Ref->NY = ny;
       }

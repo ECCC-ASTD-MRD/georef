@@ -37,7 +37,7 @@ wordint c_gdllvval(TGeoRef *GRef, ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uu
    ftnfloat *x, *y;
    wordint ier;
    
-  if (GRef->nsubgrids > 0 )
+  if (GRef->NbSub > 0 )
     {
      fprintf(stderr, "<gdllvval>: This operation is not supported for 'U' grids\n");
      return -1;

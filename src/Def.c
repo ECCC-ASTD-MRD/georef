@@ -1510,6 +1510,7 @@ int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
             } else {
                // No index, project coordinate and store in index if provided
                ToRef->Project(ToRef,i,j,&lat,&lon,0,1);
+//               fprintf(stderr,"---%f %f\n",lat,lon);
                ok=FromRef->UnProject(FromRef,&di,&dj,lat,lon,1,1);
                if (ip) {
                   *(ip++)=di;
@@ -1580,8 +1581,6 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,cha
       if (ToRef->Grid[0]=='R' || ToRef->Grid[0]=='W' || ToRef->Grid[0]=='X' || FromRef->Grid[0]=='O' || ToRef->Grid[0]=='Y' || ToRef->Grid[0]=='M' || ToRef->Hgt) {
          ezto=0;
       }
-
-      //interp=(char*)TDef_InterpRString[Degree];
          
       // Use ezscint
       if (ezto && ezfrom) {

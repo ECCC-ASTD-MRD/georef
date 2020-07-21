@@ -23,7 +23,7 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-PTR_AS_INT f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char *grref, wordint *vercode, wordint *nsubgrids, PTR_AS_INT subgrid, F2Cl lengrtyp, F2Cl lengrref)
+PTR_AS_INT f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char *grref, wordint *vercode, wordint *NbSub, PTR_AS_INT Subs, F2Cl lengrtyp, F2Cl lengrref)
 {
   char lgrtyp[2],lgrref[2];
 
@@ -32,18 +32,18 @@ PTR_AS_INT f77name(ezgdef_supergrid)(wordint *ni, wordint *nj, char *grtyp, char
    
   lgrref[0] = grref[0];
   lgrref[1] = '\0';
-  return (PTR_AS_INT) c_ezgdef_supergrid(*ni, *nj, lgrtyp, lgrref, *vercode, *nsubgrids,(TGeoRef**)subgrid);
+  return (PTR_AS_INT) c_ezgdef_supergrid(*ni, *nj, lgrtyp, lgrref, *vercode, *NbSub,(TGeoRef**)Subs);
 }
 
-TGeoRef* c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wordint vercode,wordint nsubgrids, TGeoRef **subgrid)
+TGeoRef* c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wordint vercode,wordint NbSub, TGeoRef **Subs)
 {
   wordint  i;
   ftnfloat *ax,*ay;
   TGeoRef *GRef, *fref, *sub_gd;
     
-  if (nsubgrids <= 1)
+  if (NbSub <= 1)
   {
-    fprintf(stderr,"<c_ezgdef_supergrid> nsubgrids given is less than 2! Aborting...\n");
+    fprintf(stderr,"<c_ezgdef_supergrid> NbSub given is less than 2! Aborting...\n");
     return NULL;
   }
   if (vercode != 1)
@@ -62,7 +62,7 @@ TGeoRef* c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wo
   
   if (vercode == 1)
   {
-    sub_gd = subgrid[0];
+    sub_gd = Subs[0];
 
 /*    strcpy(newgr.grtyp, grtyp);
     strcpy(newgr.grref, grref);
@@ -100,7 +100,7 @@ add   the rotation of YIN */
     GRef->fst.igref[IG2]=0;
     GRef->fst.igref[IG3]=0;
     GRef->fst.igref[IG4]=0;
-    GRef->nsubgrids= nsubgrids;
+    GRef->NbSub= NbSub;
   }
 
   free(ax); free(ay);
@@ -114,15 +114,15 @@ add   the rotation of YIN */
   // This is a new georef
   GeoRef_Add(GRef);
 
-  GRef->subgrid = (TGeoRef **) malloc(nsubgrids*sizeof(TGeoRef*));
+  GRef->Subs = (TGeoRef **) malloc(NbSub*sizeof(TGeoRef*));
 
-  for (i=0; i < nsubgrids; i++)
+  for (i=0; i < NbSub; i++)
   {
-    GRef->subgrid[i] = subgrid[i];
-    c_ezgdef_yymask(subgrid[i]);
+    GRef->Subs[i] = Subs[i];
+    c_ezgdef_yymask(Subs[i]);
     if (groptions.verbose > 0)
     {
-      printf("Grille[%p].subgrid[%p] has maskgrid=%p\n",GRef,subgrid[i],sub_gd->mymaskgrid);
+      printf("Grille[%p].Subs[%p] has maskgrid=%p\n",GRef,Subs[i],sub_gd->mymaskgrid);
     }
   }
 
@@ -147,9 +147,9 @@ add   the rotation of YIN */
     printf("Grille[%p].ig2ref = %d\n",   GRef, GRef->fst.igref[IG2]);
     printf("Grille[%p].ig3ref = %d\n",   GRef, GRef->fst.igref[IG3]);
     printf("Grille[%p].ig4ref = %d\n",   GRef, GRef->fst.igref[IG4]);
-    printf("Grille[%p].nsubgrids = %d\n", GRef, GRef->nsubgrids);
-    printf("Grille[%p].subgrid[0]   = %p\n",   GRef, GRef->subgrid[0]);
-    printf("Grille[%p].subgrid[1]   = %p\n",   GRef, GRef->subgrid[1]);
+    printf("Grille[%p].NbSub = %d\n", GRef, GRef->NbSub);
+    printf("Grille[%p].Subs[0]   = %p\n",   GRef, GRef->Subs[0]);
+    printf("Grille[%p].Subs[1]   = %p\n",   GRef, GRef->Subs[1]);
 
     printf("Grille[%p].fst.xg[1]   = %f\n",   GRef, GRef->fst.xg[1]);
     printf("Grille[%p].fst.xg[2]   = %f\n",   GRef, GRef->fst.xg[2]);

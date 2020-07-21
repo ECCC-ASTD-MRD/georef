@@ -24,7 +24,7 @@ def gen_params(nlon, nlat, hemisphere):
     params['nj'] = nlat
     hemisphere_xg1 = {'global': 0, 'north': 1, 'south': 2}
 
-    params['ig1'], params['ig2'], params['ig3'], params['ig4'] = \
+    params['EZ_IG1'], params['ig2'], params['ig3'], params['ig4'] = \
         rmn.cxgaig(params['grtyp'], hemisphere_xg1[hemisphere])
 
     return params

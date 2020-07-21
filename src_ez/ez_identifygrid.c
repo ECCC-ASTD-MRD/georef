@@ -105,7 +105,7 @@ TGeoRef* c_ezidentify_irreg_grid(
    GRef->fst.xg[IG2]  = 0.0;
    GRef->fst.xg[IG3]  = 0.0;
    GRef->fst.xg[IG4]  = 0.0;
-   GRef->nsubgrids = 0;
+   GRef->NbSub = 0;
    strcpy(GRef->fst.nomvarx, "    ");
    strcpy(GRef->fst.nomvary, "    ");
    strcpy(GRef->fst.etiketx, "            ");
