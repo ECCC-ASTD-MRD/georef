@@ -342,7 +342,7 @@ wordint LireEnrPositionnels(TGeoRef *gr, wordint iunit, wordint ip1, wordint ip2
  
   if (read == 1) 
      {
-     gr->flags  |= AX;
+     gr->flags  |= EZ_AX;
      }
   return 0;
 }

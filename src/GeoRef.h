@@ -214,7 +214,7 @@ typedef struct TGeoRef {
 
    unsigned int NIdx,*Idx;                                ///< Index dans les positions
    float        *Lat,*Lon;                                ///< Coordonnees des points de grilles (Spherical)
-   float        *AX_JP,*AY,*Hgt;                          ///< Axes de positionnement / deformation
+   float        *AX,*AY,*Hgt;                          ///< Axes de positionnement / deformation
    double       *Wght;                                    ///< Barycentric weight array for TIN  (M grids)
 
    char                         *String;                  ///< OpenGIS WKT String description

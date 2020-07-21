@@ -65,17 +65,17 @@ void GeoRef_Expand(TGeoRef *GRef) {
    double lat,lon;
    int    i;
 
-   if (GRef->Ids && !GRef->AX_JP) {
-      GRef->AX_JP=(float*)calloc((int)GRef->X1+1,sizeof(float));
+   if (GRef->Ids && !GRef->AX) {
+      GRef->AX=(float*)calloc((int)GRef->X1+1,sizeof(float));
       GRef->AY=(float*)calloc((int)GRef->Y1+1,sizeof(float));
 
-      if (GRef->AX_JP && GRef->AY) {
+      if (GRef->AX && GRef->AY) {
          if (GRef->Grid[0]=='Z') {
-            c_gdgaxes(GRef->NId?GRef->subgrid[GRef->NId-1]:GRef,GRef->AX_JP,GRef->AY);
+            c_gdgaxes(GRef->NId?GRef->subgrid[GRef->NId-1]:GRef,GRef->AX,GRef->AY);
          } else {
             for(i=0;i<=GRef->X1;i++) {
                GRef->Project(GRef,i,0,&lat,&lon,1,1);
-               GRef->AX_JP[i]=lon;
+               GRef->AX[i]=lon;
             }
             for(i=0;i<=GRef->Y1;i++) {
                GRef->Project(GRef,0,i,&lat,&lon,1,1);
@@ -371,13 +371,13 @@ int GeoRef_RPNProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
    }
 
    if (GRef->Type&GRID_SPARSE) {
-      if (GRef->AX_JP && GRef->AY) {
+      if (GRef->AX && GRef->AY) {
          if (GRef->Grid[0]=='Y') {
             idx=Y*(GRef->X1-GRef->X0)+X;
             Y=GRef->AY[idx];
-            X=GRef->AX_JP[idx];
+            X=GRef->AX[idx];
          } else {
-            dx=Vertex_ValS(GRef->AX_JP,NULL,GRef->NX,GRef->NY,X,Y,TRUE);
+            dx=Vertex_ValS(GRef->AX,NULL,GRef->NX,GRef->NY,X,Y,TRUE);
             dy=Vertex_ValS(GRef->AY,NULL,GRef->NX,GRef->NY,X,Y,FALSE);
             
             X=dx;
@@ -447,7 +447,7 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
    
 #ifdef HAVE_RMN
    if (GRef->Type&GRID_SPARSE) {      
-      if (GRef->AX_JP && GRef->AY) {
+      if (GRef->AX && GRef->AY) {
          if (GRef->Grid[0]=='M') {
  
             if (GRef->QTree) {
@@ -458,8 +458,8 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
                   for(n=0;n<node->NbData;n++) {
                      idx=(intptr_t)node->Data[n].Ptr-1; // Remove false pointer increment
 
-                     if (Bary_Get(b,GRef->Wght?GRef->Wght[idx/3]:0.0,Lon,Lat,GRef->AX_JP[GRef->Idx[idx]],GRef->AY[GRef->Idx[idx]],
-                        GRef->AX_JP[GRef->Idx[idx+1]],GRef->AY[GRef->Idx[idx+1]],GRef->AX_JP[GRef->Idx[idx+2]],GRef->AY[GRef->Idx[idx+2]])) {
+                     if (Bary_Get(b,GRef->Wght?GRef->Wght[idx/3]:0.0,Lon,Lat,GRef->AX[GRef->Idx[idx]],GRef->AY[GRef->Idx[idx]],
+                        GRef->AX[GRef->Idx[idx+1]],GRef->AY[GRef->Idx[idx+1]],GRef->AX[GRef->Idx[idx+2]],GRef->AY[GRef->Idx[idx+2]])) {
                         
                         // Return coordinate as triangle index + barycentric coefficient
                         *X=idx+b[0];
@@ -471,8 +471,8 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
             } else {
                // Otherwise loop on all
                for(idx=0;idx<GRef->NIdx-3;idx+=3) {
-                  if (Bary_Get(b,GRef->Wght?GRef->Wght[idx/3]:0.0,Lon,Lat,GRef->AX_JP[GRef->Idx[idx]],GRef->AY[GRef->Idx[idx]],
-                     GRef->AX_JP[GRef->Idx[idx+1]],GRef->AY[GRef->Idx[idx+1]],GRef->AX_JP[GRef->Idx[idx+2]],GRef->AY[GRef->Idx[idx+2]])) {
+                  if (Bary_Get(b,GRef->Wght?GRef->Wght[idx/3]:0.0,Lon,Lat,GRef->AX[GRef->Idx[idx]],GRef->AY[GRef->Idx[idx]],
+                     GRef->AX[GRef->Idx[idx+1]],GRef->AY[GRef->Idx[idx+1]],GRef->AX[GRef->Idx[idx+2]],GRef->AY[GRef->Idx[idx+2]])) {
 
                      // Return coordinate as triangle index + barycentric coefficient
                      *X=idx+b[0];
@@ -945,21 +945,21 @@ TGeoRef* GeoRef_RPNGridZE(TGeoRef *GRef,int NI,int NJ,float DX,float DY,float La
    GEM_grid_param(&bsc_base,&bsc_ext1,&extension,MaxCFL,&LonR,&LatR,&NI,&NJ,&DX,&DY,&x0,&y0,&x1,&y1,-1,FALSE);
  
    if (NI!=GRef->NX+1 || NJ!=GRef->NY+1) {
-      GRef->AX_JP=realloc(GRef->AX_JP,NI*sizeof(float));
+      GRef->AX=realloc(GRef->AX,NI*sizeof(float));
       GRef->AY=realloc(GRef->AY,NJ*sizeof(float));
 
       GeoRef_Size(GRef,0,0,NI-1,NJ-1,0);
    }
 
-   //   f77name(set_gemhgrid4)(GRef->AX_JP,GRef->AY,&NI,&NJ,&DX,&DY,&x0,&x1,&y0,&y1,FALSE);
-   GEM_hgrid4(GRef->AX_JP,GRef->AY,NI,NJ,&DX,&DY,x0,x1,y0,y1,FALSE);
+   //   f77name(set_gemhgrid4)(GRef->AX,GRef->AY,&NI,&NJ,&DX,&DY,&x0,&x1,&y0,&y1,FALSE);
+   GEM_hgrid4(GRef->AX,GRef->AY,NI,NJ,&DX,&DY,x0,x1,y0,y1,FALSE);
         
    if (!GRef->Ids && !(GRef->Ids=(int*)malloc(sizeof(int)))) {
       return(NULL);
    }
    
  //TODO: Merge with EZ  
-   GRef->Ids[0]=c_ezgdef_fmem(NI,NJ,"Z","E",GRef->IG1_JP,GRef->IG2_JP,GRef->IG3_JP,GRef->IG4_JP,GRef->AX_JP,GRef->AY);
+   GRef->Ids[0]=c_ezgdef_fmem(NI,NJ,"Z","E",GRef->IG1_JP,GRef->IG2_JP,GRef->IG3_JP,GRef->IG4_JP,GRef->AX,GRef->AY);
    
    GRef->NbId=1;
    GRef->Grid[0]='Z';

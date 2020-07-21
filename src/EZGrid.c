@@ -879,10 +879,10 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
          Grid->GRef->NIdx=ni*nj*nk;
          Grid->GRef->Idx=(unsigned int*)malloc(Grid->GRef->NIdx*sizeof(unsigned int));
          Grid->GRef->AY=(float*)malloc(Grid->GRef->NX*sizeof(float));
-         Grid->GRef->AX_JP=(float*)malloc(Grid->GRef->NX*sizeof(float));
+         Grid->GRef->AX=(float*)malloc(Grid->GRef->NX*sizeof(float));
 
          cs_fstlir(Grid->GRef->AY,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"","^^");
-         cs_fstlir(Grid->GRef->AX_JP,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"",">>");
+         cs_fstlir(Grid->GRef->AX,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"",">>");
          cs_fstlir(Grid->GRef->Idx,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"","##");
          
          GeoRef_BuildIndex(Grid->GRef);
@@ -893,10 +893,10 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
          Grid->GRef=GeoRef_RPNCreate(Grid->H.NI,Grid->H.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,Grid->H.FID);
 
          Grid->GRef->AY=(float*)malloc(Grid->H.NIJ*sizeof(float));
-         Grid->GRef->AX_JP=(float*)malloc(Grid->H.NIJ*sizeof(float));
+         Grid->GRef->AX=(float*)malloc(Grid->H.NIJ*sizeof(float));
 
          cs_fstlir(Grid->GRef->AY,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"","^^");
-         cs_fstlir(Grid->GRef->AX_JP,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"",">>");
+         cs_fstlir(Grid->GRef->AX,Grid->H.FID,&ni,&nj,&nk,-1,"",Grid->IP1,Grid->IP2,Grid->IP3,"",">>");
          
          GeoRef_BuildIndex(Grid->GRef);
          break;
@@ -963,7 +963,7 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
                Grid->GRef=GeoRef_WKTCreate(Grid->H.NI,Grid->H.NJ,Grid->H.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,str,transform,NULL,NULL);
 
                // Memory for the descriptors
-               if( !(Grid->GRef->AX_JP=malloc(Grid->H.NIJ*sizeof(*Grid->GRef->AX_JP))) ) {
+               if( !(Grid->GRef->AX=malloc(Grid->H.NIJ*sizeof(*Grid->GRef->AX))) ) {
                   App_Log(ERROR,"%s: Could not allocate memory for descriptor (>>) of Z grid\n",__func__);
                   goto werr;
                }
@@ -973,7 +973,7 @@ TGrid* EZGrid_Get(TGrid* restrict const Grid) {
                }
 
                // Read the descriptors
-               if( cs_fstluk(Grid->GRef->AX_JP,desc,&ni,&nj,&nk) <= 0 ) {
+               if( cs_fstluk(Grid->GRef->AX,desc,&ni,&nj,&nk) <= 0 ) {
                   App_Log(ERROR,"%s: Could not read grid descriptor (>>) of Z grid\n",__func__);
                   goto werr;
                }
@@ -2100,7 +2100,7 @@ int EZGrid_LLGetValueM(TGrid* restrict const GridU,TGrid* restrict const GridV,T
       idxs[2]=gref->Idx[MIdx+2];
       
       // If the barycentric coordinates are within this triangle, get its interpolated value
-      k=Bary_Get(bary,gref->Wght?gref->Wght[MIdx/3]:0.0,Lon,Lat,gref->AX_JP[idxs[0]],gref->AY[idxs[0]],gref->AX_JP[idxs[1]],gref->AY[idxs[1]],gref->AX_JP[idxs[2]],gref->AY[idxs[2]]);
+      k=Bary_Get(bary,gref->Wght?gref->Wght[MIdx/3]:0.0,Lon,Lat,gref->AX[idxs[0]],gref->AY[idxs[0]],gref->AX[idxs[1]],gref->AY[idxs[1]],gref->AX[idxs[2]],gref->AY[idxs[2]]);
    }
 
    // Otherwise, look for the enclosing triangle
@@ -2114,7 +2114,7 @@ int EZGrid_LLGetValueM(TGrid* restrict const GridU,TGrid* restrict const GridV,T
             idxs[2]=gref->Idx[idx+2];
             
             // if the Barycentric coordinates are within this triangle, get its interpolated value
-            if ((k=Bary_Get(bary,gref->Wght?gref->Wght[idx/3]:0.0,Lon,Lat,gref->AX_JP[idxs[0]],gref->AY[idxs[0]],gref->AX_JP[idxs[1]],gref->AY[idxs[1]],gref->AX_JP[idxs[2]],gref->AY[idxs[2]]))) {
+            if ((k=Bary_Get(bary,gref->Wght?gref->Wght[idx/3]:0.0,Lon,Lat,gref->AX[idxs[0]],gref->AY[idxs[0]],gref->AX[idxs[1]],gref->AY[idxs[1]],gref->AX[idxs[2]],gref->AY[idxs[2]]))) {
                MIdx=idx;
                break;
             }
@@ -2837,7 +2837,7 @@ int EZGrid_GetBary(TGrid* restrict const Grid,float Lat,float Lon,Vect3d Bary,Ve
             t=(intptr_t)node->Data[n].Ptr-1; // Remove false pointer increment
             
             // if the Barycentric coordinates are within this triangle, get its interpolated value
-            if (Bary_Get(Bary,Grid->GRef->Wght?Grid->GRef->Wght[t/3]:0.0,Lon,Lat,Grid->GRef->AX_JP[idx[t]],Grid->GRef->AY[idx[t]],Grid->GRef->AX_JP[idx[t+1]],Grid->GRef->AY[idx[t+1]],Grid->GRef->AX_JP[idx[t+2]],Grid->GRef->AY[idx[t+2]])) {
+            if (Bary_Get(Bary,Grid->GRef->Wght?Grid->GRef->Wght[t/3]:0.0,Lon,Lat,Grid->GRef->AX[idx[t]],Grid->GRef->AY[idx[t]],Grid->GRef->AX[idx[t+1]],Grid->GRef->AY[idx[t+1]],Grid->GRef->AX[idx[t+2]],Grid->GRef->AY[idx[t+2]])) {
                if (Index) {
                   Index[0]=idx[t];                    
                   Index[1]=idx[t+1];                    

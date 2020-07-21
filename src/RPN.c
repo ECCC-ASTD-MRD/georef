@@ -499,12 +499,12 @@ int RPN_FieldReadGrid(TRPNField *Field) {
    if (!Field->GRef || !(Field->GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)) || (Field->GRef->NY==1 && Field->GRef->Grid[0]!='Y' && Field->GRef->Grid[1]!='Y' && Field->GRef->Grid[0]!='M'))
       return(0);
 
-   if ((!Field->GRef->AY || !Field->GRef->AX_JP) && head->FID>=0) {
+   if ((!Field->GRef->AY || !Field->GRef->AX) && head->FID>=0) {
 
       switch(Field->GRef->Grid[0]) {
          case 'M':
             if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX_JP) RPN_FieldReadComponent(head,&Field->GRef->AX_JP,">>",1,0);
+            if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,">>",1,0);
 
             /* Lire le champs d'indexes*/
             if (!Field->GRef->Idx) {
@@ -527,12 +527,12 @@ int RPN_FieldReadGrid(TRPNField *Field) {
          case 'W':
             if (Field->GRef->Grid[1]=='X' || Field->GRef->Grid[1]=='Y' || Field->GRef->Grid[1]=='Z') {
                if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"^^",1,0);
-               if (!Field->GRef->AX_JP) RPN_FieldReadComponent(head,&Field->GRef->AX_JP,">>",1,0);
+               if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,">>",1,0);
             }
             
             if (Field->GRef->Grid[1]=='Y') {
                if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"LA",0,0);
-               if (!Field->GRef->AX_JP) RPN_FieldReadComponent(head,&Field->GRef->AX_JP,"LO",0,0);
+               if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,"LO",0,0);
                if (!Field->GRef->Hgt) RPN_FieldReadComponent(head,&Field->GRef->Hgt,"ZH",0,0);
             }
             break;
@@ -540,30 +540,30 @@ int RPN_FieldReadGrid(TRPNField *Field) {
          case 'Y':
             if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"LA",0,0);
             if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX_JP) RPN_FieldReadComponent(head,&Field->GRef->AX_JP,"LO",0,0);
-            if (!Field->GRef->AX_JP) RPN_FieldReadComponent(head,&Field->GRef->AX_JP,">>",1,0);
+            if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,"LO",0,0);
+            if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,">>",1,0);
             if (!Field->GRef->Hgt) RPN_FieldReadComponent(head,&Field->GRef->Hgt,"ZH",0,0);
             break;
 
          case 'X':
          case 'O':
             if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX_JP) RPN_FieldReadComponent(head,&Field->GRef->AX_JP,">>",1,0);
+            if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,">>",1,0);
             GeoRef_BuildIndex(Field->GRef);          
             break;
 
           case 'V':
             if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX_JP) RPN_FieldReadComponent(head,&Field->GRef->AX_JP,">>",1,0);
+            if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,">>",1,0);
             RPN_FieldReadLevels(Field);
             break;
       }
 
-      // Need to re-qualify to check AX_JP order
+      // Need to re-qualify to check AX order
       GeoRef_Qualify(Field->GRef);
    }
 
-   return(Field->GRef->AY && Field->GRef->AX_JP);
+   return(Field->GRef->AY && Field->GRef->AX);
 }
 
 /*----------------------------------------------------------------------------

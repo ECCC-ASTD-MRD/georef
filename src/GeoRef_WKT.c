@@ -279,11 +279,11 @@ int GeoRef_WKTProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
 
    // In case of non-uniform grid, figure out where in the position vector we are
    if (GRef->Grid[gidx]=='Z') {
-      if (GRef->AX_JP && GRef->AY) {
+      if (GRef->AX && GRef->AY) {
          // X
-         if( X < GRef->X0 )      { sx=GRef->X0; X=GRef->AX_JP[sx]-(GRef->AX_JP[sx]-GRef->AX_JP[sx+1])*(X-sx); }
-         else if( X > GRef->X1 ) { sx=GRef->X1; X=GRef->AX_JP[sx]+(GRef->AX_JP[sx]-GRef->AX_JP[sx-1])*(X-sx); }
-         else                    { sx=floor(X); X=sx==X?GRef->AX_JP[sx]:ILIN(GRef->AX_JP[sx],GRef->AX_JP[sx+1],X-sx); }
+         if( X < GRef->X0 )      { sx=GRef->X0; X=GRef->AX[sx]-(GRef->AX[sx]-GRef->AX[sx+1])*(X-sx); }
+         else if( X > GRef->X1 ) { sx=GRef->X1; X=GRef->AX[sx]+(GRef->AX[sx]-GRef->AX[sx-1])*(X-sx); }
+         else                    { sx=floor(X); X=sx==X?GRef->AX[sx]:ILIN(GRef->AX[sx],GRef->AX[sx+1],X-sx); }
 
          // Y
          s=GRef->NX;
@@ -292,19 +292,19 @@ int GeoRef_WKTProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
          else                    { sy=floor(Y); Y=sy==Y?GRef->AY[sy*s]:ILIN(GRef->AY[sy*s],GRef->AY[(sy+1)*s],Y-sy); }
       }
    } else if (GRef->Grid[gidx]=='X' || GRef->Grid[gidx]=='Y') {
-      if (GRef->AX_JP && GRef->AY) {
+      if (GRef->AX && GRef->AY) {
          sx=floor(X);sx=CLAMP(sx,GRef->X0,GRef->X1);
          sy=floor(Y);sy=CLAMP(sy,GRef->Y0,GRef->Y1);
          dx=X-sx;;
          dy=Y-sy;
 
          s=sy*GRef->NX+sx;
-         X=GRef->AX_JP[s];
+         X=GRef->AX[s];
          Y=GRef->AY[s];
 
          if (++sx<=GRef->X1) {
             s=sy*GRef->NX+sx;
-            X+=(GRef->AX_JP[s]-X)*dx;
+            X+=(GRef->AX[s]-X)*dx;
          }
 
          if (++sy<=GRef->Y1) {
@@ -422,24 +422,24 @@ int GeoRef_WKTUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
 
          // In case of non-uniform grid, figure out where in the position vector we are 
          if (GRef->Grid[gidx]=='Z') {
-            if (GRef->AX_JP && GRef->AY) {
+            if (GRef->AX && GRef->AY) {
                s=GRef->X0;
                // Check if vector is increasing
-               if (GRef->AX_JP[s]<GRef->AX_JP[s+1]) {
-                  while(s<=GRef->X1 && *X>GRef->AX_JP[s]) s++;
+               if (GRef->AX[s]<GRef->AX[s+1]) {
+                  while(s<=GRef->X1 && *X>GRef->AX[s]) s++;
                } else {
-                  while(s<=GRef->X1 && *X<GRef->AX_JP[s]) s++;
+                  while(s<=GRef->X1 && *X<GRef->AX[s]) s++;
                }
                if (s>GRef->X0) {
                   // We're in so interpolate postion
                   if (s<=GRef->X1) {
-                     *X=(*X-GRef->AX_JP[s-1])/(GRef->AX_JP[s]-GRef->AX_JP[s-1])+s-1;
+                     *X=(*X-GRef->AX[s-1])/(GRef->AX[s]-GRef->AX[s-1])+s-1;
                   } else {
-                     *X=(*X-GRef->AX_JP[GRef->X1])/(GRef->AX_JP[GRef->X1]-GRef->AX_JP[GRef->X1-1])+s-1;
+                     *X=(*X-GRef->AX[GRef->X1])/(GRef->AX[GRef->X1]-GRef->AX[GRef->X1-1])+s-1;
                   }
                } else {
                   // We're out so extrapolate position
-                  *X=GRef->X0+(*X-GRef->AX_JP[0])/(GRef->AX_JP[1]-GRef->AX_JP[0]);
+                  *X=GRef->X0+(*X-GRef->AX[0])/(GRef->AX[1]-GRef->AX[0]);
                }
 
                s=GRef->Y0;dx=GRef->NX;

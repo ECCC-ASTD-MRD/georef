@@ -93,7 +93,7 @@ void c_ezdefaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay)
 
 
       ez_calcntncof(GRef);
-      GRef->flags |= AX;
+      GRef->flags |= EZ_AX;
       break;
 
     default:
@@ -102,6 +102,6 @@ void c_ezdefaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay)
     }
 
 
-  GRef->flags |= AX;
+  GRef->flags |= EZ_AX;
 
 }

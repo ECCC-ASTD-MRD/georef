@@ -14,7 +14,7 @@
 #define NMAXSUBGRIDS 20
 
 #define LAT                         1
-#define AX                          2
+#define EZ_AX                       2
 #define XXX                         4
 #define NEWTON                    256
 #define ZONES                    2048

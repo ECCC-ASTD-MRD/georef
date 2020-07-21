@@ -41,7 +41,7 @@ wordint c_gdgxpndaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay)
       return -1;
   }
   
-  if (!GRef->flags & AX)
+  if (!GRef->flags & EZ_AX)
   {
     fprintf(stderr, "(gdgxpndaxes) Erreur! A l'aide! Descripteurs manquants!\n");
     return -1;
