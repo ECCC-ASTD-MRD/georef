@@ -743,7 +743,7 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int 
       ref->fst.ig[IG2] = ig2;
       ref->fst.ig[IG3] = ig3;
       ref->fst.ig[IG4] = ig4;
-      ref->idx_last_gdin = NULL;
+      ref->idx_last_gdin = -1;
 
       //TODO: Merge LireEnrPositionnels with RPN_FieldReadGrid
       if (LireEnrPositionnels(ref, FID, ig1, ig2, ig3, ig4, 0)<0) {

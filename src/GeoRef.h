@@ -239,18 +239,18 @@ typedef struct TGeoRef {
    // _Grille struct from ezscint.h
    wordint flags;
    wordint i1, i2, j1, j2;
-   wordint ni,nj;
+   wordint ni,nj;                               ///< Dimensions
    wordint ni_ax, nj_ay;
    wordint extension;
    wordint needs_expansion;
    wordint access_count;
-   wordint next_gd;
-   wordint n_gdin, n_gdin_for;
-   struct TGeoRef *idx_last_gdin;
+   wordint n_gdin;                              ///< nombre de grilles source demandees pour interpoler a sa propre grille
+   wordint n_gdin_for;                          ///< nombre des grilles de destination (differentes) pour faire une interpolation avec cette  grille
+   wordint idx_last_gdin;                       ///< Position dans gset
    wordint log_chunk_gdin;
    wordint *mask;
-   struct TGeoRef **gdin_for;
-   wordint nsubgrids;
+   struct TGeoRef **gdin_for;                   ///< Pointeurs vers les georeferences de destination pour faire une interpolation avec cette  grille
+   wordint nsubgrids;                           ///< Nombre de sous-grilles
    struct TGeoRef *mymaskgrid;
    wordint mymaskgridi0,mymaskgridi1;
    wordint mymaskgridj0,mymaskgridj1;

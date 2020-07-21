@@ -6,11 +6,11 @@
 int c_find_gdin(TGeoRef* gdin, TGeoRef* gdout)
 {
   int i; 
-  TGeoRef *idx_gdin;
+  wordint idx_gdin;
   _gridset *gset;
 
   idx_gdin = gdout->idx_last_gdin;
-  if (idx_gdin == NULL)
+  if (idx_gdin == -1)
   {
     c_ezdefset(gdout, gdin);
     // idx_gdin = gdin % primes[gdout->log_chunk_gdin];
@@ -19,10 +19,10 @@ int c_find_gdin(TGeoRef* gdin, TGeoRef* gdout)
   }
     
   gset = gdout->gset;
-  // if (gset[idx_gdin].gdin == gdin) 
-  // {
-  //   return idx_gdin;
-  // }
+  if (idx_gdin != -1 && gset[idx_gdin].gdin == gdin) 
+  {
+    return idx_gdin;
+  }
    
   // idx_gdin = gdin % primes[cur_log_chunk];
   i = 0;
@@ -36,7 +36,7 @@ int c_find_gdin(TGeoRef* gdin, TGeoRef* gdout)
   {
     if (gset[i].gdin == gdin)
     {
-      gdout->idx_last_gdin = gdin;
+      gdout->idx_last_gdin = i;
       return i;
     }
     i++;

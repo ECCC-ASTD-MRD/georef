@@ -77,7 +77,7 @@ TGeoRef* c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wo
     RemplirDeBlancs(GRef->fst.etikety, 13);
     GRef->ni = ni;
     GRef->nj = nj;
-    GRef->idx_last_gdin = NULL;
+    GRef->idx_last_gdin = -1;
     /* create tictac arrays to add uniqueness in supergrid*/
     ax = (ftnfloat *) malloc(GRef->ni*sizeof(ftnfloat));
     ay = (ftnfloat *) malloc(GRef->nj*sizeof(ftnfloat));

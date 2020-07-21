@@ -93,7 +93,7 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
       {
          iset_gdin = gdin;
          iset_gdout = gdout;
-         gdout->idx_last_gdin = gdout->gset[idx_gdin].gdin;
+         gdout->idx_last_gdin = idx_gdin;
          return 1;
       }
 
