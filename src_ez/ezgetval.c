@@ -26,9 +26,9 @@ wordint f77name(ezgetval)(char *option, ftnfloat *fvalue, F2Cl llenoption)
 {
    wordint icode;
    char local_opt[32];
-   wordint lenoption=llenoption;
+   wordint lenoption = llenoption;
 
-   ftnstrclean(option,lenoption);
+   ftnstrclean(option, lenoption);
    strncpy(local_opt, option, lenoption);
    local_opt[lenoption] = '\0';
 
@@ -41,9 +41,9 @@ wordint f77name(ezgetival)(char *option, wordint *ivalue, F2Cl llenoption)
 {
    wordint icode;
    char local_opt[32];
-   wordint lenoption=llenoption;
+   wordint lenoption = llenoption;
 
-   ftnstrclean(option,lenoption);
+   ftnstrclean(option, lenoption);
    strncpy(local_opt, option, lenoption);
    local_opt[lenoption] = '\0';
 
@@ -57,30 +57,25 @@ wordint c_ezgetval(char *option, ftnfloat *fvalue)
 
    strcpy(local_opt, option);
 
-   for (i=0; i < strlen(local_opt); i++)
-      {
-      local_opt[i] = (char) tolower((int)local_opt[i]);
-      }
+   for (i = 0; i < strlen(local_opt); i++)
+   {
+      local_opt[i] = (char)tolower((int)local_opt[i]);
+   }
 
-   if (0 == strcmp(local_opt, "extrap_value" ))
-      {
+   if (0 == strcmp(local_opt, "extrap_value"))
+   {
       *fvalue = groptions.valeur_extrap;
-      }
+   }
 
-   if (0 == strcmp(local_opt, "missing_distance_threshold" ))
-      {
-      *fvalue = groptions.msg_dist_thresh;
-      }
+   if (0 == strcmp(local_opt, "weight_number"))
+   {
+      *fvalue = (float)groptions.wgt_num;
+   }
 
-   if (0 == strcmp(local_opt, "weight_number" ))
-      {
-      *fvalue = (float) groptions.wgt_num;
-      }
-
-    if (0 == strcmp(local_opt, "missing_points_tolerance" ))
-      {
-      *fvalue = (float) groptions.msg_pt_tol;
-      }
+   if (0 == strcmp(local_opt, "missing_points_tolerance"))
+   {
+      *fvalue = (float)groptions.msg_pt_tol;
+   }
    return 0;
 }
 
@@ -91,25 +86,24 @@ wordint c_ezgetival(char *option, wordint *ivalue)
 
    strcpy(local_opt, option);
 
-   for (i=0; i < strlen(local_opt); i++)
-      {
-      local_opt[i] = (char) tolower((int)local_opt[i]);
-      }
+   for (i = 0; i < strlen(local_opt); i++)
+   {
+      local_opt[i] = (char)tolower((int)local_opt[i]);
+   }
 
-   if (0 == strcmp(local_opt, "subgridid" ))
-      {
+   if (0 == strcmp(local_opt, "subgridid"))
+   {
       *ivalue = groptions.valeur_1subgrid;
-      }
+   }
 
-   if (0 == strcmp(local_opt, "weight_number" ))
-      {
+   if (0 == strcmp(local_opt, "weight_number"))
+   {
       *ivalue = groptions.wgt_num;
-      }
+   }
 
-   if (0 == strcmp(local_opt, "missing_points_tolerance" ))
-      {
+   if (0 == strcmp(local_opt, "missing_points_tolerance"))
+   {
       *ivalue = groptions.msg_pt_tol;
-      }
+   }
    return 0;
-
 }

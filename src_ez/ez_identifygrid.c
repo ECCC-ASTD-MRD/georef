@@ -22,30 +22,16 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
-// Unused ??
-/* void c_ez_manageGrillesMemory() {
-   int nchunks;
-   nchunks = nGrilles / (CHUNK * CHUNK);
-   if (nchunks > 0 && 0 == (nGrilles % (CHUNK * CHUNK))) {
-      Grille = (TGeoRef **) realloc(Grille, CHUNK * (nchunks+1) * sizeof(TGeoRef *));
-   }
-
-   if (0 == (nGrilles % (CHUNK))) {
-      Grille[(nGrilles >> LOG2_CHUNK)] = (TGeoRef *) malloc(CHUNK * sizeof(TGeoRef));
-   }
-} */
-
-
-TGeoRef* c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp, 
-   wordint ig1, wordint ig2, wordint ig3, wordint ig4) 
+TGeoRef *c_ezidentify_reg_grid(wordint ni, wordint nj, char *grtyp,
+                               wordint ig1, wordint ig2, wordint ig3, wordint ig4)
 {
-   TGeoRef* GRef, *fref;
+   TGeoRef *GRef, *fref;
 
    GRef = GeoRef_New();
 
    GRef->grtyp[0] = grtyp[0];
    GRef->grtyp[1] = '\0';
-   GRef->grref[0] = (char) 0;
+   GRef->grref[0] = (char)0;
    GRef->ni = ni;
    GRef->nj = nj;
    GRef->fst.ig[IG1] = ig1;
@@ -56,15 +42,16 @@ TGeoRef* c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp,
    GRef->fst.igref[IG2] = 0;
    GRef->fst.igref[IG3] = 0;
    GRef->fst.igref[IG4] = 0;
-   GRef->IG1_JP =ig1;
+   GRef->IG1_JP = ig1;
    GRef->IG2_JP = ig2;
    GRef->IG3_JP = ig3;
    GRef->IG4_JP = ig4;
 
-   GeoRef_Size(GRef,0,0,ni-1,nj-1,0);
+   GeoRef_Size(GRef, 0, 0, ni - 1, nj - 1, 0);
 
    // This georef already exists
-   if (fref=GeoRef_Find(GRef)) {
+   if (fref = GeoRef_Find(GRef))
+   {
       free(GRef);
       return fref;
    }
@@ -75,10 +62,10 @@ TGeoRef* c_ezidentify_reg_grid(wordint ni, wordint nj, char* grtyp,
    return GRef;
 }
 
-TGeoRef* c_ezidentify_irreg_grid(
-      wordint ni, wordint nj, char* grtyp, char* grref,
-      wordint ig1, wordint ig2, wordint ig3, wordint ig4,
-      ftnfloat* ax, ftnfloat* ay) 
+TGeoRef *c_ezidentify_irreg_grid(
+    wordint ni, wordint nj, char *grtyp, char *grref,
+    wordint ig1, wordint ig2, wordint ig3, wordint ig4,
+    ftnfloat *ax, ftnfloat *ay)
 {
    TGeoRef *GRef, *fref;
 
@@ -90,9 +77,9 @@ TGeoRef* c_ezidentify_irreg_grid(
    GRef->grref[1] = '\0';
    GRef->ni = ni;
    GRef->nj = nj;
-   GRef->fst.ip1      = 0;
-   GRef->fst.ip2      = 0;
-   GRef->fst.ip3      = 0;
+   GRef->fst.ip1 = 0;
+   GRef->fst.ip2 = 0;
+   GRef->fst.ip3 = 0;
    GRef->fst.igref[IG1] = ig1;
    GRef->fst.igref[IG2] = ig2;
    GRef->fst.igref[IG3] = ig3;
@@ -101,10 +88,10 @@ TGeoRef* c_ezidentify_irreg_grid(
    GRef->fst.ig[IG2] = ig2;
    GRef->fst.ig[IG3] = ig3;
    GRef->fst.ig[IG4] = ig4;
-   GRef->fst.xg[IG1]  = 0.0;
-   GRef->fst.xg[IG2]  = 0.0;
-   GRef->fst.xg[IG3]  = 0.0;
-   GRef->fst.xg[IG4]  = 0.0;
+   GRef->fst.xg[IG1] = 0.0;
+   GRef->fst.xg[IG2] = 0.0;
+   GRef->fst.xg[IG3] = 0.0;
+   GRef->fst.xg[IG4] = 0.0;
    GRef->NbSub = 0;
    strcpy(GRef->fst.nomvarx, "    ");
    strcpy(GRef->fst.nomvary, "    ");
@@ -112,47 +99,49 @@ TGeoRef* c_ezidentify_irreg_grid(
    strcpy(GRef->fst.etikety, "            ");
    strcpy(GRef->fst.typvarx, "  ");
    strcpy(GRef->fst.typvary, "  ");
-   GRef->fst.deet    = 0;
-   GRef->fst.npas    = 0;
-   GRef->fst.nbits   = 0;
-   GRef->fst.date    = 0;
-   GRef->i1=1;
-   GRef->i2=ni;
-   GRef->j1=1;
-   GRef->j2=nj;
+   GRef->fst.deet = 0;
+   GRef->fst.npas = 0;
+   GRef->fst.nbits = 0;
+   GRef->fst.date = 0;
+   GRef->i1 = 1;
+   GRef->i2 = ni;
+   GRef->j1 = 1;
+   GRef->j2 = nj;
    GRef->idx_last_gdin = -1;
 
-   switch(grtyp[0]) {
-      case '#':
-         GRef->ax = ax;
-         GRef->ay = ay; 
-         break;
+   switch (grtyp[0])
+   {
+   case '#':
+      GRef->ax = ax;
+      GRef->ay = ay;
+      break;
 
-      case 'Y':
-         GRef->ax = ax;
-         GRef->ay = ay; 
-         break;
+   case 'Y':
+      GRef->ax = ax;
+      GRef->ay = ay;
+      break;
 
-      case 'Z':
-         f77name(cigaxg)(&(GRef->grref),
-            &GRef->fst.xgref[XLAT1], &GRef->fst.xgref[XLON1], &GRef->fst.xgref[XLAT2], &GRef->fst.xgref[XLON2],
-            &GRef->fst.igref[IG1],   &GRef->fst.igref[IG2],   &GRef->fst.igref[IG3],   &GRef->fst.igref[IG4],1);
-         GRef->ax = ax;
-         GRef->ay = ay; 
-         break;
+   case 'Z':
+      f77name(cigaxg)(&(GRef->grref),
+                      &GRef->fst.xgref[XLAT1], &GRef->fst.xgref[XLON1], &GRef->fst.xgref[XLAT2], &GRef->fst.xgref[XLON2],
+                      &GRef->fst.igref[IG1], &GRef->fst.igref[IG2], &GRef->fst.igref[IG3], &GRef->fst.igref[IG4], 1);
+      GRef->ax = ax;
+      GRef->ay = ay;
+      break;
 
-      case 'G':
-         break;
+   case 'G':
+      break;
 
-      default :
-         fprintf(stderr, "c_ezidentify_irreg_grid : undefined grid type : %c\n", grtyp[0]);
-         exit(13);
+   default:
+      fprintf(stderr, "c_ezidentify_irreg_grid : undefined grid type : %c\n", grtyp[0]);
+      exit(13);
    }
 
-   GeoRef_Size(GRef,0,0,ni-1,nj-1,0);
+   GeoRef_Size(GRef, 0, 0, ni - 1, nj - 1, 0);
 
    // This georef already exists
-   if (fref=GeoRef_Find(GRef)) {
+   if (fref = GeoRef_Find(GRef))
+   {
       free(GRef);
       return fref;
    }
