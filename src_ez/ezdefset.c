@@ -39,7 +39,7 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
   /* d'abord trouver si l'ensemble est deja defini */
 
    wordint i;
-   wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out, npts;
+   wordint npts;
    int idx_gdin;
    wordint nsets = 0;
 
@@ -51,11 +51,11 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
       }
    }
 
-   if (gdout == gdin)
-   {
-      iset_gdin = gdin;
-      iset_gdout = gdout;
-   }
+   // if (gdout == gdin)
+   // {
+   //    iset_gdin = gdin;
+   //    iset_gdout = gdout;
+   // }
 
    nsets = gdout->n_gdin;
 
@@ -82,8 +82,8 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    idx_gdin = 0;
    if (gdout->gset[idx_gdin].gdin == gdin)
    {
-      iset_gdin = gdin;
-      iset_gdout = gdout;
+      // iset_gdin = gdin;
+      // iset_gdout = gdout;
       return 1;
    }
 
@@ -91,8 +91,8 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    {
       if (gdout->gset[idx_gdin].gdin == gdin)
       {
-         iset_gdin = gdin;
-         iset_gdout = gdout;
+         // iset_gdin = gdin;
+         // iset_gdout = gdout;
          gdout->idx_last_gdin = idx_gdin;
          return 1;
       }
@@ -113,6 +113,7 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    gdout->gset[i].y = malloc (sizeof(ftnfloat)*npts);
    gdout->gset[i].use_sincos_cache = NON;
 
+   /* TODO: change reallocate_gridset_table */
 /*    if (gdout->n_gdin >= (primes[gdout->log_chunk_gdin]/2))
    {
       reallocate_gridset_table(gdout);
@@ -144,8 +145,8 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
       printf("n_gdin                             = %03d\n", gdout->n_gdin);
 /*       printf("Grille[%03d][%03d].gset[%03d].gdin = %d\n", gdrow_out, gdcol_out, cur_gdin, gdin); */
    }
-   iset_gdin = gdin;
-   iset_gdout = gdout;
+   // iset_gdin = gdin;
+   // iset_gdout = gdout;
    return 1;
 }
 

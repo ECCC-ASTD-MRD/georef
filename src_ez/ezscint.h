@@ -119,6 +119,7 @@ typedef struct
   wordint  degre_interp;
   wordint  degre_extrap;
   wordint  use_1subgrid;
+  /* TODO: devrait etre TGeoRef*? */
   wordint  valeur_1subgrid;
   wordint  symmetrie;
   wordint  vecteur;

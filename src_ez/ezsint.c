@@ -28,8 +28,6 @@ wordint cur_log_chunk = 7;
 // These declarations used to have the __thread storage class, but threads
 // aren't actually used.  Furthemore, the PGI compiler does not support that
 // storage class
-TGeoRef* iset_gdin = NULL;
-TGeoRef* iset_gdout = NULL;
 _groptions groptions = { OUI, CUBIQUE,  MAXIMUM, NON, -1, SYM, SCALAIRE, NON, NON, OUI, 16, 0, DISTANCE, NEAREST, 0.5, 3.0, 0.0  };
 
 wordint log_chunks[]= {0, 1, 2, 3,   4,    5,   6,      7,     8,      9,      10,     11,        12};
@@ -40,50 +38,45 @@ wordint chunks_sq[] = {0, 0, 16, 64, 256, 1024, 4096, 16384, 65536, 262144, 1048
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(ezsint)(ftnfloat *zout, ftnfloat *zin)
+wordint f77name(ezsint)(ftnfloat *zout, ftnfloat *zin, PTR_AS_INT gdout, PTR_AS_INT gdin)
 {
    wordint icode;
    
-   icode = c_ezsint(zout, zin);
+   icode = c_ezsint(zout, zin, (TGeoRef*)gdout, (TGeoRef*)gdin);
    return icode;
 }
-wordint c_ezsint(ftnfloat *zout, ftnfloat *zin)
+
+wordint c_ezsint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
 {
   wordint icode;
-  TGeoRef *gdin, *gdout;
    
-  if (iset_gdin == NULL || iset_gdout == NULL)
-    {
+  if (gdin == NULL || gdout == NULL) {
     fprintf(stderr,"<c_ezsint> Source or target grid undefined! Aborting...\n");
     return -1;
-    }
-  
-  
-  gdin = iset_gdin;
-  gdout= iset_gdout;
+  }
+
+  // gdin = iset_gdin;
+  // gdout= iset_gdout;
+  icode = c_ezdefset(gdout,gdin);
    
-  if (iset_gdin == iset_gdout)
-    {
+  if (gdin == gdout) {
     memcpy(zout, zin, gdin->ni*gdin->nj*sizeof(ftnfloat));
     return 1;
-    }
+  }
 
-
-  if (gdin->NbSub > 0 || gdout->NbSub > 0)
-      {
+  if (gdin->NbSub > 0 || gdout->NbSub > 0) {
 /* get the subgrids and interpolate accordingly */
-      icode = c_ezyysint(zout,zin,gdout,gdin);
-      iset_gdin=gdin;
-      iset_gdout=gdout;
-      return icode;
-      }
-  icode = c_ezsint_orig(zout, zin);
+    icode = c_ezyysint(zout,zin,gdout,gdin);
+    // iset_gdin=gdin;
+    // iset_gdout=gdout;
+    return icode;
+  }
+  icode = c_ezsint_orig(zout, zin, gdout, gdin);
   return icode;
 }
 
-wordint c_ezsint_orig(ftnfloat *zout, ftnfloat *zin)
+wordint c_ezsint_orig(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
 {
-  TGeoRef *gdin, *gdout;
   wordint ier,ierc;
   wordint npts;
   ftnfloat *lzin, *lxzin;
@@ -92,42 +85,34 @@ wordint c_ezsint_orig(ftnfloat *zout, ftnfloat *zin)
   lxzin = NULL;
   ierc  = 0;
   
-  if (iset_gdin == NULL || iset_gdout == NULL)
-    {
+  if (gdin == NULL || gdout == NULL) {
     fprintf(stderr,"<c_ezsint_orig> Source or target grid undefined! Aborting...\n");
     return -1;
-    }
-  
-  
-  gdin = iset_gdin;
-  gdout= iset_gdout;
+  }
+
+  // gdin = iset_gdin;
+  // gdout= iset_gdout;
+  icode = c_ezdefset(gdout,gdin);
    
-  if (iset_gdin == iset_gdout)
-    {
+  if (gdin == gdout) {
     memcpy(zout, zin, gdin->ni*gdin->nj*sizeof(ftnfloat));
     return 1;
-    }
+  }
   
-  if (gdin->fst.axe_y_inverse == 1)
-    {
+  if (gdin->fst.axe_y_inverse == 1) {
     lzin = (ftnfloat *) malloc(gdin->ni*gdin->nj*sizeof(ftnfloat));
     memcpy(lzin, zin, gdin->ni*gdin->nj*sizeof(ftnfloat));
     f77name(permut)(lzin, &gdin->ni, &gdin->nj);
-    }
-  else
-    {
+  } else {
     lzin = zin;
-    }
+  }
   
-  if (gdin->needs_expansion == OUI)
-    {
+  if (gdin->needs_expansion == OUI) {
     lxzin = (ftnfloat *) malloc(2*gdin->ni*gdin->nj*sizeof(ftnfloat));
     ez_xpnsrcgd(gdin, lxzin, lzin);
-    }
-  else
-    {
+  } else {
     lxzin = lzin;
-    }
+  }
   
   ier = ez_calclatlon(gdout);
   ier = ez_calcxy(gdin, gdout);
@@ -135,21 +120,18 @@ wordint c_ezsint_orig(ftnfloat *zout, ftnfloat *zin)
   
   ier = ez_interp(zout, lxzin, gdin, gdout);
   
-  if (groptions.polar_correction == OUI)
-    {
+  if (groptions.polar_correction == OUI) {
     ier = ez_defzones(gdin, gdout);
     ierc= ez_corrval(zout, lxzin, gdin, gdout);
-    }
+  }
   
-  if (lzin != zin && lzin != NULL)
-    {
+  if (lzin != zin && lzin != NULL) {
     free(lzin);
-    }
+  }
   
-  if (lxzin != lzin && lxzin != zin && lxzin != NULL)
-    {
+  if (lxzin != lzin && lxzin != zin && lxzin != NULL) {
     free(lxzin);
-    }
+  }
   
   return ierc;
 }

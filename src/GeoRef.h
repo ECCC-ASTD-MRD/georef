@@ -267,9 +267,6 @@ typedef struct TGeoRef {
 #endif
 } TGeoRef;
 
-extern TGeoRef* iset_gdin;
-extern TGeoRef* iset_gdout;
-
 typedef struct TGeoPos {
    TGeoRef *GRef;                                         ///< Reference horizontale
    TZRef   *ZRef;                                         ///< Reference verticale

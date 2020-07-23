@@ -36,8 +36,8 @@ wordint ez_corrval(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, TGeoRef *gdout)
   extern ftnfloat f77name(amax)();
   extern ftnfloat f77name(amin)();
 
-  gdin = iset_gdin;
-  gdout= iset_gdout;
+  // gdin = iset_gdin;
+  // gdout= iset_gdout;
   fudgeval_set = 0;
   
   idx_gdin = c_find_gdin(gdin, gdout);

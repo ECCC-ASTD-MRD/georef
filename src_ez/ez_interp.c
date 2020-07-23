@@ -27,7 +27,7 @@ wordint ez_interp(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, TGeoRef *gdout)
   {
   wordint ni_in, nj_in, ni_out, nj_out, ninj_out;
   
-  wordint gdrow_in, gdrow_out, gdcol_in, gdcol_out, npts, cur_gdin, idx_gdin;
+  wordint npts, cur_gdin, idx_gdin;
   int lcl_ngdin;
 
   idx_gdin = c_find_gdin(gdin, gdout);

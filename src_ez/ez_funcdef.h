@@ -109,17 +109,17 @@ wordint c_ezsetival(char* option, wordint ivalue);
 wordint f77name(ezsetval)(char* option, ftnfloat* fvalue, F2Cl lenoption);
 wordint c_ezsetval(char* option, ftnfloat fvalue);
 
-wordint f77name(ezsint)(ftnfloat* zout, ftnfloat* zin);
-wordint c_ezsint(ftnfloat* zout, ftnfloat* zin);
+wordint f77name(ezsint)(ftnfloat* zout, ftnfloat* zin, PTR_AS_INT gdout, PTR_AS_INT gdin);
+wordint c_ezsint(ftnfloat* zout, ftnfloat* zin, TGeoRef *gdout, TGeoRef *gdin);
 
 wordint c_find_gdin(TGeoRef* gdin, TGeoRef* gdout);
 wordint find_gdin_in_gset(TGeoRef* gdin, TGeoRef* gdout);
 
-wordint f77name(ezuvint)(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin);
-wordint c_ezuvint(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin);
+wordint f77name(ezuvint)(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, PTR_AS_INT gdout, PTR_AS_INT gdin);
+wordint c_ezuvint(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, TGeoRef *gdout, TGeoRef *gdin);
 
-wordint f77name(ezwdint)(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin);
-wordint c_ezwdint(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin);
+wordint f77name(ezwdint)(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, PTR_AS_INT gdout, PTR_AS_INT gdin);
+wordint c_ezwdint(ftnfloat* uuout, ftnfloat* vvout, ftnfloat* uuin, ftnfloat* vvin, TGeoRef *gdout, TGeoRef *gdin);
 
 wordint ftnstrclean(char* str, wordint lenstr);
 

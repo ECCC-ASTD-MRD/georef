@@ -23,43 +23,44 @@
 #include "../src/GeoRef.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-wordint f77name(ezuvint)(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin)
+wordint f77name(ezuvint)(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, PTR_AS_INT gdout, PTR_AS_INT gdin)
 {
    wordint icode;
    
-   icode = c_ezuvint(uuout, vvout, uuin, vvin);
+   icode = c_ezuvint(uuout, vvout, uuin, vvin, (TGeoRef*)gdout, (TGeoRef*)gdin);
    return icode;
 }
 
-wordint c_ezuvint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin)
+wordint c_ezuvint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, TGeoRef *gdout, TGeoRef *gdin)
 {
   wordint icode;
-  TGeoRef *gdin, *gdout;
-   
-  gdin = iset_gdin;
-  gdout= iset_gdout;
+
+  // gdin = iset_gdin;
+  // gdout= iset_gdout;
+  icode = c_ezdefset(gdout,gdin);
 
   if (gdin->NbSub > 0 || gdout->NbSub > 0)
       {
       icode = c_ezyyuvint(uuout,vvout,uuin,vvin,gdout,gdin);
-      iset_gdin=gdin;
-      iset_gdout=gdout;
+      // iset_gdin=gdin;
+      // iset_gdout=gdout;
       return icode;
       }
-  icode = c_ezuvint_orig(uuout, vvout, uuin,vvin);
+  icode = c_ezuvint_orig(uuout, vvout, uuin,vvin,gdout,gdin);
   return icode;
 
 }
 
-wordint c_ezuvint_orig(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin)
+wordint c_ezuvint_orig(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, TGeoRef *gdout, TGeoRef *gdin)
 {
-  TGeoRef *gdin, *gdout;
   wordint npts, ier, ierc,ierc1,ierc2;
   ftnfloat *uullout = NULL;
   ftnfloat *vvllout = NULL;
-   
-  gdin = iset_gdin;
-  gdout= iset_gdout;
+
+  // gdin = iset_gdin;
+  // gdout= iset_gdout;
+  icode = c_ezdefset(gdout,gdin);
+
   ierc = 0;
   ierc1 = 0;
   ierc2 = 0;
