@@ -22,20 +22,18 @@
 #include "ezscint.h"
 
 wordint nGrilles = 0;
-wordint nGrillesMax = CHUNK*CHUNK;
 wordint cur_log_chunk = 7;
 
 // These declarations used to have the __thread storage class, but threads
 // aren't actually used.  Furthemore, the PGI compiler does not support that
 // storage class
-_groptions groptions = { OUI, CUBIQUE,  MAXIMUM, NON, -1, SYM, SCALAIRE, NON, NON, OUI, 16, 0, DISTANCE, NEAREST, 0.5, 3.0, 0.0  };
+_groptions groptions = {OUI, CUBIQUE, MAXIMUM, NON, -1, SYM, SCALAIRE, NON, NON, OUI, 16, 0, DISTANCE, NEAREST, 0.5, 3.0, 0.0};
 
-wordint log_chunks[]= {0, 1, 2, 3,   4,    5,   6,      7,     8,      9,      10,     11,        12};
-wordint primes[]    = {0, 0, 3, 7,  13,   31,   61,   127,   251,    509,    1021,   2039,      4093};
-wordint chunks[]    = {0, 0, 4, 8,  16,   32,   64,   128,   256,    512,    1024,   2048,      4096};
+wordint log_chunks[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+wordint primes[] = {0, 0, 3, 7, 13, 31, 61, 127, 251, 509, 1021, 2039, 4093};
+wordint chunks[] = {0, 0, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
 wordint primes_sq[] = {0, 0, 3, 61, 251, 1021, 4093, 16381, 65521, 262139, 1048573, 4194301, 16777213};
 wordint chunks_sq[] = {0, 0, 16, 64, 256, 1024, 4096, 16384, 65536, 262144, 1048576, 4194304, 16777216};
-
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 wordint f77name(ezsint)(ftnfloat *zout, ftnfloat *zin, PTR_AS_INT gdout, PTR_AS_INT gdin)
@@ -49,29 +47,32 @@ wordint f77name(ezsint)(ftnfloat *zout, ftnfloat *zin, PTR_AS_INT gdout, PTR_AS_
 wordint c_ezsint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
 {
   wordint icode;
-   
-  if (gdin == NULL || gdout == NULL) {
-    fprintf(stderr,"<c_ezsint> Source or target grid undefined! Aborting...\n");
+
+  if (gdin == NULL || gdout == NULL)
+  {
+    fprintf(stderr, "<c_ezsint> Source or target grid undefined! Aborting...\n");
     return -1;
   }
 
   // gdin = iset_gdin;
   // gdout= iset_gdout;
   icode = c_ezdefset(gdout,gdin);
-   
-  if (gdin == gdout) {
-    memcpy(zout, zin, gdin->ni*gdin->nj*sizeof(ftnfloat));
+
+  if (gdin == gdout)
+  {
+    memcpy(zout, zin, gdin->ni * gdin->nj * sizeof(ftnfloat));
     return 1;
   }
 
-  if (gdin->NbSub > 0 || gdout->NbSub > 0) {
-/* get the subgrids and interpolate accordingly */
-    icode = c_ezyysint(zout,zin,gdout,gdin);
-    // iset_gdin=gdin;
-    // iset_gdout=gdout;
+  if (gdin->NbSub > 0 || gdout->NbSub > 0)
+  {
+    /* get the subgrids and interpolate accordingly */
+    icode = c_ezyysint(zout, zin, gdout, gdin);
+    // iset_gdin = gdin;
+    // iset_gdout = gdout;
     return icode;
   }
-  icode = c_ezsint_orig(zout, zin, gdout, gdin);
+  icode = c_ezsint_orig(zout, zin);
   return icode;
 }
 
@@ -80,58 +81,69 @@ wordint c_ezsint_orig(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gd
   wordint ier,ierc;
   wordint npts;
   ftnfloat *lzin, *lxzin;
-  
-  lzin  = NULL;
+
+  lzin = NULL;
   lxzin = NULL;
-  ierc  = 0;
-  
-  if (gdin == NULL || gdout == NULL) {
-    fprintf(stderr,"<c_ezsint_orig> Source or target grid undefined! Aborting...\n");
+  ierc = 0;
+
+  if (gdin == NULL || gdout == NULL)
+  {
+    fprintf(stderr, "<c_ezsint_orig> Source or target grid undefined! Aborting...\n");
     return -1;
   }
 
   // gdin = iset_gdin;
   // gdout= iset_gdout;
   icode = c_ezdefset(gdout,gdin);
-   
-  if (gdin == gdout) {
-    memcpy(zout, zin, gdin->ni*gdin->nj*sizeof(ftnfloat));
+
+  if (gdin == gdout)
+  {
+    memcpy(zout, zin, gdin->ni * gdin->nj * sizeof(ftnfloat));
     return 1;
   }
-  
-  if (gdin->fst.axe_y_inverse == 1) {
-    lzin = (ftnfloat *) malloc(gdin->ni*gdin->nj*sizeof(ftnfloat));
-    memcpy(lzin, zin, gdin->ni*gdin->nj*sizeof(ftnfloat));
+
+  if (gdin->fst.axe_y_inverse == 1)
+  {
+    lzin = (ftnfloat *)malloc(gdin->ni * gdin->nj * sizeof(ftnfloat));
+    memcpy(lzin, zin, gdin->ni * gdin->nj * sizeof(ftnfloat));
     f77name(permut)(lzin, &gdin->ni, &gdin->nj);
-  } else {
+  }
+  else
+  {
     lzin = zin;
   }
-  
-  if (gdin->needs_expansion == OUI) {
-    lxzin = (ftnfloat *) malloc(2*gdin->ni*gdin->nj*sizeof(ftnfloat));
+
+  if (gdin->needs_expansion == OUI)
+  {
+    lxzin = (ftnfloat *)malloc(2 * gdin->ni * gdin->nj * sizeof(ftnfloat));
     ez_xpnsrcgd(gdin, lxzin, lzin);
-  } else {
+  }
+  else
+  {
     lxzin = lzin;
   }
-  
+
   ier = ez_calclatlon(gdout);
   ier = ez_calcxy(gdin, gdout);
-  npts = gdout->ni*gdout->nj;
-  
+  npts = gdout->ni * gdout->nj;
+
   ier = ez_interp(zout, lxzin, gdin, gdout);
-  
-  if (groptions.polar_correction == OUI) {
+
+  if (groptions.polar_correction == OUI)
+  {
     ier = ez_defzones(gdin, gdout);
-    ierc= ez_corrval(zout, lxzin, gdin, gdout);
+    ierc = ez_corrval(zout, lxzin, gdin, gdout);
   }
-  
-  if (lzin != zin && lzin != NULL) {
+
+  if (lzin != zin && lzin != NULL)
+  {
     free(lzin);
   }
-  
-  if (lxzin != lzin && lxzin != zin && lxzin != NULL) {
+
+  if (lxzin != lzin && lxzin != zin && lxzin != NULL)
+  {
     free(lxzin);
   }
-  
+
   return ierc;
 }

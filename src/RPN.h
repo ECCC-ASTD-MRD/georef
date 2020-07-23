@@ -177,7 +177,6 @@ extern int c_fsteff();
 // RPN external EZscint functions
 extern int  c_ezfreegridset(struct TGeoRef* gr, int index);
 extern int  c_ezdefset(struct TGeoRef* gdout, struct TGeoRef* gdin);
-extern int  c_ezgprm(int gdid, char *grtyp, int *ni, int *nj, int *ig1, int *ig2, int *ig3, int *ig4);
 extern int  c_ezgenpole(ftnfloat *vpolnor, ftnfloat *vpolsud, ftnfloat *fld,int ni, int nj, int vecteur,char *grtyp, int hem);
 extern int  c_ezgetopt(char *option, char *value);
 extern int  c_ezgetval(char *option, ftnfloat *value);
