@@ -51,6 +51,7 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
       }
    }
 
+   /* TODO: what is it for? */
    // if (gdout == gdin)
    // {
    //    iset_gdin = gdin;

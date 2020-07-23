@@ -44,10 +44,10 @@ wordint c_ezyymint(TGeoRef *gdout, TGeoRef *gdin, wordint ni, wordint nj, ftnflo
   icode = c_ezgetopt(extrap_degree,global_extrap_degree);
   ivalue = 0;
   if (0 == strcmp(global_extrap_degree,"value"))
-    {
+  {
     icode = c_ezgetval(extrap_value,&global_extrap_value);
     ivalue = 1;
-    }
+  }
   strcpy(local_val,"nearest");
   icode = c_ezsetopt(interp_degree, local_val);
 
@@ -55,14 +55,13 @@ wordint c_ezyymint(TGeoRef *gdout, TGeoRef *gdin, wordint ni, wordint nj, ftnflo
   icode = c_ezsetval(extrap_value,local_extrap_value);
   strcpy(local_val,"value");
   icode = c_ezsetopt(extrap_degree, local_val);
-  icode = c_ezdefset(gdout,yin_mg);
-  icode = c_ezsint_orig(maskout,yin_fld);
+  icode = c_ezsint_orig(maskout,yin_fld,gdout,yin_mg);
   /*masking is done,reset original interp options*/
   icode = c_ezsetopt(interp_degree, global_interp_degree);
-    if (ivalue == 1)
-    {
+  if (ivalue == 1)
+  {
     icode = c_ezsetval(extrap_value, global_extrap_value);
-    }
+  }
   icode = c_ezsetopt(extrap_degree, global_extrap_degree);
   free(yin_fld);
 
@@ -70,24 +69,24 @@ wordint c_ezyymint(TGeoRef *gdout, TGeoRef *gdin, wordint ni, wordint nj, ftnflo
   yancount=0;
   yincount=0;
   for (j=0; j<nj; j++)
+  {
+    for (i=0;i<ni; i++)
+    {
+      k=(j*ni)+i; 
+      if (maskout[k] == 1.0)
       {
-      for (i=0;i<ni; i++)
-         {
-         k=(j*ni)+i; 
-         if (maskout[k] == 1.0)
-            {
-            yanlat[yancount]=dlat[k];
-            yanlon[yancount]=dlon[k];
-            yancount++;
-            }
-         else
-            {
-            yinlat[yincount]=dlat[k];
-            yinlon[yincount]=dlon[k];
-            yincount++;
-            }
-         }
+        yanlat[yancount]=dlat[k];
+        yanlon[yancount]=dlon[k];
+        yancount++;
       }
+      else
+      {
+        yinlat[yincount]=dlat[k];
+        yinlon[yincount]=dlon[k];
+        yincount++;
+      }
+    }
+  }
   *yyincount = yincount;
   *yyancount = yancount;
   return icode;

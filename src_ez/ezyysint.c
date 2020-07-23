@@ -45,91 +45,84 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
 
 /* setup for input grid */
   if (gdin->NbSub > 0)
-     {
-     yyin=1;
-     yin_gdin = gdin->Subs[0];
-     yan_gdin = gdin->Subs[1];
-     /*fprintf(stderr,"<c_ezyysint> finds Subs %d and %d in src Yin-Yang grid\n",yin_gdin,yan_gdin);*/
-     }
+  {
+    yyin=1;
+    yin_gdin = gdin->Subs[0];
+    yan_gdin = gdin->Subs[1];
+    /*fprintf(stderr,"<c_ezyysint> finds Subs %d and %d in src Yin-Yang grid\n",yin_gdin,yan_gdin);*/
+  }
   else
-     {
-     yin_gdin = gdin;
-     }
+  {
+    yin_gdin = gdin;
+  }
 
 /* setup for output grid */
   if (gdout->NbSub > 0)
-     {
-     yyout=1;
-     yin_gdout = gdout->Subs[0];
-     yan_gdout = gdout->Subs[1];
-     }
+  {
+    yyout=1;
+    yin_gdout = gdout->Subs[0];
+    yan_gdout = gdout->Subs[1];
+  }
   else
-     {
-     yin_gdout = gdout;
-     }
+  {
+    yin_gdout = gdout;
+  }
   
   ni = yin_gdout->ni;
   nj = yin_gdout->nj;
 
 /* interp input one grid to yygrid - no masking needed*/
   if (yyin == 0 && yyout == 1)
-    {
-    icode = c_ezdefset(yin_gdout,gdin);
-    ierc1 = c_ezsint_orig(zout,zin);
-    icode = c_ezdefset(yan_gdout,gdin);
-    ierc2 = c_ezsint_orig(&zout[ni*nj],zin);   
+  {
+    ierc1 = c_ezsint_orig(zout, zin, yin_gdout, gdin);
+    ierc2 = c_ezsint_orig(&zout[ni*nj], zin, yan_gdout, gdin);   
     if (ierc1 == 2 || ierc2 == 2)
-       {
-        ierc=2;
-       }
-    return ierc;
+    {
+      ierc=2;
     }
+    return ierc;
+  }
 
   /* check if one input sub grid is identical to dest sub grid or dest single grid */
   
   if (yin_gdin == gdout)
-     {
-     icode = c_ezdefset(gdout,yin_gdin);
-     icode = c_ezsint_orig(zout,zin);
-     return icode;
-     }
+  {
+    icode = c_ezsint_orig(zout, zin, gdout, yin_gdin);
+    return icode;
+  }
   if (yan_gdin == gdout)
-     {
-     icode = c_ezdefset(gdout,yan_gdin);
-     icode = c_ezsint_orig(zout,&zin[(yin_gdin->ni)*(yin_gdin->nj)]);   
-     return icode;
-     }
+  {
+    icode = c_ezsint_orig(zout, &zin[(yin_gdin->ni)*(yin_gdin->nj)], gdout, yan_gdin);   
+    return icode;
+  }
 
   /* User specifies to use 1 subgrid for interpolation ezsetopt(USE_1SUBGRID) */
   /* User must specify the sub grid value in ezsetival(SUBGRIDID) */
   /* This is only appropriate if the destination grid is non yin-yang grid */
   if (groptions.use_1subgrid == 1) /* User specifies to use 1 subgrid only */
-     {
-     if (yyout == 1) /* output is a Yin-Yang grid */
-        {
-         fprintf(stderr,"<c_ezyysint> cannot use 1 subgrid to interpolate to a Yin-Yang grid  Aborting...\n");
-         return -1;
-        }
-     if (groptions.valeur_1subgrid != yin_gdin &&  
-         groptions.valeur_1subgrid != yan_gdin)  /* chosen subgrid is neither Yin or Yang in source grid */
-        {
-         fprintf(stderr,"<c_ezyysint> define src subgridid in ezsetival(subgridid)! Aborting...\n");
-         return -1;
-        }
-     if (groptions.valeur_1subgrid == yin_gdin) /*User specifies to use yin input grid */
-        {
-        icode = c_ezdefset(yin_gdout,groptions.valeur_1subgrid);
-        ierc = c_ezsint_orig(zout,zin);
-        return ierc;
-        }
-     if (groptions.valeur_1subgrid == yan_gdin) /* User specifies to use Yang input grid */
-        {
-        icode = c_ezdefset(yin_gdout,groptions.valeur_1subgrid);
-        ierc = c_ezsint_orig(zout,&zin[(yin_gdin->ni)*(yin_gdin->nj)]);
-        return ierc;
-        }
-
-     }
+  {
+    if (yyout == 1) /* output is a Yin-Yang grid */
+    {
+      fprintf(stderr,"<c_ezyysint> cannot use 1 subgrid to interpolate to a Yin-Yang grid  Aborting...\n");
+      return -1;
+    }
+    if (groptions.valeur_1subgrid != yin_gdin &&  
+        groptions.valeur_1subgrid != yan_gdin)  /* chosen subgrid is neither Yin or Yang in source grid */
+    {
+      fprintf(stderr,"<c_ezyysint> define src subgridid in ezsetival(subgridid)! Aborting...\n");
+      return -1;
+    }
+    if (groptions.valeur_1subgrid == yin_gdin) /*User specifies to use yin input grid */
+    {
+      ierc = c_ezsint_orig(zout, zin, yin_gdout, groptions.valeur_1subgrid);
+      return ierc;
+    }
+    if (groptions.valeur_1subgrid == yan_gdin) /* User specifies to use Yang input grid */
+    {
+      ierc = c_ezsint_orig(zout, &zin[(yin_gdin->ni)*(yin_gdin->nj)], yin_gdout, groptions.valeur_1subgrid);
+      return ierc;
+    }
+  }
   /*End of ONE grid option*/   
 
   /* TO USE both Yin and Yang grids in Yin-yang input grid */
@@ -138,7 +131,7 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
 
 /* interp yinyang to one grid */
   if (yyin == 1 && yyout == 0)
-    {
+  {
     yincount_yin = gdout->gset[idx_gdin].yincount_yin;
     yancount_yin = gdout->gset[idx_gdin].yancount_yin;
     yin2yin_zvals = (ftnfloat *) malloc(yincount_yin*sizeof(ftnfloat));
@@ -156,30 +149,30 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
     yincount_yin=0;
     yancount_yin=0;
     for(j=0; j<nj; j++)
-      {
+    {
       for (i=0;i<ni; i++)
-        {
+      {
         k=(j*ni)+i;
         if (gdout->gset[idx_gdin].yin_maskout[k] == 1.0)
-          {
+        {
           zout[k]=yan2yin_zvals[yancount_yin]; 
           yancount_yin++;
-          }
+        }
         else
-          {
+        {
           zout[k]=yin2yin_zvals[yincount_yin]; 
           yincount_yin++;
-          }
         }
       }
+    }
     free(yin2yin_zvals);
     free(yan2yin_zvals);
     return icode;
-   }
+  }
 
 /* interp yinyang to yinyang*/
   if (yyout == 1 && yyin == 1)
-    {
+  {
 /* interp input YY grid to YY grid */
     yincount_yin = gdout->gset[idx_gdin].yincount_yin;
     yancount_yin = gdout->gset[idx_gdin].yancount_yin;
@@ -207,47 +200,47 @@ wordint c_ezyysint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
 /* interp input YY grid to Yin grid */
     yincount_yin=0; yancount_yin=0;
     for(j=0; j<nj; j++)
-      {
+    {
       for (i=0;i<ni; i++)
-        {
+      {
         k=(j*ni)+i;
         if (gdout->gset[idx_gdin].yin_maskout[k] == 1.0)
-          {
+        {
           zout[k]=yan2yin_zvals[yancount_yin]; 
           yancount_yin++;
-          }
+        }
         else
-          {
+        {
           zout[k]=yin2yin_zvals[yincount_yin]; 
           yincount_yin++;
-          }
         }
       }
+    }
 /* interp input YY grid to Yang grid */
     yincount_yan=0; yancount_yan=0;
     for(j=0; j<nj; j++)
-      {
+    {
       for (i=0;i<ni; i++)
-        {
+      {
         k=(j*ni)+i;
         if (gdout->gset[idx_gdin].yan_maskout[k] == 1.0)
-          {
+        {
           zout[k+(ni*nj)]=yan2yan_zvals[yancount_yan]; 
           yancount_yan++;
-          }
+        }
         else
-          {
+        {
           zout[k+(ni*nj)]=yin2yan_zvals[yincount_yan]; 
           yincount_yan++;
-          }
         }
       }
+    }
    free(yin2yin_zvals);
    free(yan2yin_zvals);
    free(yin2yan_zvals);
    free(yan2yan_zvals);
-   }
+  }
 
-   return icode;
+  return icode;
 }
 

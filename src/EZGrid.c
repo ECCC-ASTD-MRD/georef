@@ -1714,8 +1714,7 @@ int EZGrid_Interp(TGrid* restrict const To, TGrid* restrict const From) {
    }
 
    GeoRef_Lock();
-   ok=c_ezdefset(To->GRef,From->GRef);
-   ok=c_ezsint(to,from);
+   ok=c_ezsint(to, from, To->GRef,From->GRef);
    GeoRef_Unlock();
    if (ok<0)  {
       App_Log(ERROR,"%s: Unable to do interpolation (c_ezscint (%i))\n",__func__,ok);

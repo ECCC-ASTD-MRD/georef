@@ -1430,8 +1430,6 @@ int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
       c_ezsetval("EXTRAP_VALUE",ToDef->NoData);
    }
    c_ezsetopt("EXTRAP_DEGREE",(char*)Extrap);
-   
-   ok=c_ezdefset(ToRef,FromRef);
 
    if (ok<0) {
       App_Log(ERROR,"%s: EZSCINT internal error, could not define gridset\n",__func__);
@@ -1451,15 +1449,15 @@ int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
          // In case of Y grid, get the speed and dir instead of wind components
          // since grid oriented components dont mean much
          if (ToRef->Grid[0]=='Y') {
-            ok=c_ezwdint(pt0,pt1,pf0,pf1);
+            ok=c_ezwdint(pt0, pt1, pf0, pf1, ToRef, FromRef);
          } else {
-            ok=c_ezuvint(pt0,pt1,pf0,pf1);
+            ok=c_ezuvint(pt0, pt1, pf0, pf1, ToRef, FromRef);
          }
       } else{
          // Interpolation scalaire
          Def_Pointer(ToDef,0,k*FSIZE2D(ToDef),pt0);
          Def_Pointer(FromDef,0,k*FSIZE2D(FromDef),pf0);
-         ok=c_ezsint(pt0,pf0);
+         ok=c_ezsint(pt0, pf0, ToRef, FromRef);
       }
    }
    GeoRef_Unlock();

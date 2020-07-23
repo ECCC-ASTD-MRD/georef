@@ -186,17 +186,17 @@ int f77name(gdsetmask)(PTR_AS_INT gr, int *mask);
 int f77name(gdgetmask)(PTR_AS_INT gr, int *mask);
 int f77name(ezsint_m)(float *zout, float *zin);
 int f77name(ezuvint_m)(float *uuout, float *vvout, float *uuin, float *vvin);
-int f77name(ezsint_mdm)(float *zout, int *mask_out, float *zin, int *mask_in);
-int f77name(ezuvint_mdm)(float *uuout, float *vvout, int *mask_out, float *uuin, float *vvin, int *mask_in);
-int f77name(ezsint_mask)(int *mask_out, int *mask_in);
+int f77name(ezsint_mdm)(float *zout, int *mask_out, float *zin, int *mask_in, PTR_AS_INT gdout, PTR_AS_INT gdin);
+int f77name(ezuvint_mdm)(float *uuout, float *vvout, int *mask_out, float *uuin, float *vvin, int *mask_in, PTR_AS_INT gdout, PTR_AS_INT gdin);
+int f77name(ezsint_mask)(int *mask_out, int *mask_in, PTR_AS_INT gdout, PTR_AS_INT gdin);
 
 int c_gdsetmask(TGeoRef *gr, int *mask);
 int c_gdgetmask(TGeoRef *gr, int *mask);
 int c_ezsint_m(float *zout, float *zin);
 int c_ezuvint_m(float *uuout, float *vvout, float *uuin, float *vvin);
-int c_ezsint_mdm(float *zout, int *mask_out, float *zin, int *mask_in);
-int c_ezuvint_mdm(float *uuout, float *vvout, int *mask_out, float *uuin, float *vvin, int *mask_in);
-int c_ezsint_mask(int *mask_out, int *mask_in);
+int c_ezsint_mdm(float *zout, int *mask_out, float *zin, int *mask_in, TGeoRef *gdout, TGeoRef *gdin);
+int c_ezuvint_mdm(float *uuout, float *vvout, int *mask_out, float *uuin, float *vvin, int *mask_in, TGeoRef *gdout, TGeoRef *gdin);
+int c_ezsint_mask(int *mask_out, int *mask_in, TGeoRef *gdout, TGeoRef *gdin);
 
 #endif
 #define _ezfuncdef
