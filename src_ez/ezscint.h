@@ -115,7 +115,6 @@ typedef struct
   ftnfloat valeur_extrap;
 } _groptions;
 
-extern wordint nGrilles;
 extern wordint cur_log_chunk;
 
 // These declarations used to have the __thread storage class, but threads

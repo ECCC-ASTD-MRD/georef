@@ -27,55 +27,52 @@
 extern pthread_mutex_t EZ_MTX;
 #endif
 
+/* TODO: mutex still needed? */
 void EliminerGrille(TGeoRef* GRef)
 {
-  wordint i, index;
-  wordint gdrow_id, gdcol_id;
+   wordint i, index;
     
 #ifdef MUTEX
 // JP
    pthread_mutex_lock(&EZ_MTX);
 #endif
-  
-   if (GRef->access_count > 0)
-    {
-    GRef->access_count--;
-    }
-   
-   if (GRef->access_count == 0)
-    {
-    if (GRef->flags & LAT)
-        {
-        free(GRef->lat);
-        free(GRef->lon);
-        GRef->lat = NULL;
-        GRef->lon = NULL;
-        }
 
-    if (GRef->flags & EZ_AX)
-        {
-        free(GRef->ax);
-        free(GRef->ay);
-        GRef->ax = NULL;
-        GRef->ay = NULL;
-        }
+   if (GRef->flags & LAT)
+   {
+      free(GRef->lat);
+      free(GRef->lon);
+      GRef->lat = NULL;
+      GRef->lon = NULL;
+   }
 
-    if (GRef->ncx != NULL)
-        {
-        free(GRef->ncx);
-        free(GRef->ncy);
-        GRef->ncx = NULL;
-        GRef->ncy = NULL;
-        }
-    GRef->flags = (int)0;
-    }
+   if (GRef->flags & EZ_AX)
+   {
+      free(GRef->ax);
+      free(GRef->ay);
+      GRef->ax = NULL;
+      GRef->ay = NULL;
+   }
+
+   if (GRef->ncx != NULL)
+   {
+      free(GRef->ncx);
+      free(GRef->ncy);
+      GRef->ncx = NULL;
+      GRef->ncy = NULL;
+   }
+   GRef->flags = (int)0;
    
+   // Release ezscint sub-grid
+   if (Ref->Subs) {
+      free(Ref->Subs);  Ref->Subs=NULL;
+   }
+
    for (i=0; i < GRef->n_gdin_for; i++)
-      {
+   {
       index = ez_find_gdin_in_gset(GRef, GRef->gdin_for[i]);
       c_ezfreegridset(GRef->gdin_for[i], index);
-      }
-      nGrilles--;
+   }
+
 #ifdef MUTEX
 // JP
    pthread_mutex_unlock(&EZ_MTX);

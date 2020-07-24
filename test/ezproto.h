@@ -48,7 +48,6 @@ extern int  c_ezuvint_m(float *uuout, float *vvout, float *uuin, float *vvin);
 extern int  c_ezsint_mdm(float *zout, int *mask_out, float *zin, int *mask_in);
 extern int  c_ezuvint_mdm(float *uuout, float *vvout, int *mask_out, float *uuin, float *vvin, int *mask_in);
 extern int  c_ezsint_mask(int *mask_out, int *mask_in);
-extern int  c_ez_refgrid(TGeoRef* GRef);
 extern int  c_fst_data_length(int size);
 
 #endif

@@ -21,7 +21,6 @@
 #include "ez_funcdef.h"
 #include "ezscint.h"
 
-wordint nGrilles = 0;
 wordint cur_log_chunk = 7;
 
 // These declarations used to have the __thread storage class, but threads

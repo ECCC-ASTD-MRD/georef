@@ -725,10 +725,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       }
 
 #ifdef HAVE_RMN
-      // Release ezscint sub-grid
-      if (Ref->Subs) {
-         free(Ref->Subs);  Ref->Subs=NULL;
-      }
+      EliminerGrille(Ref);
 #endif
 
 #ifdef HAVE_GDAL
@@ -964,7 +961,7 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
          ref->Subs=(TGeoRef**)malloc(Ref->NbSub*sizeof(TGeoRef*));
          memcpy(ref->Subs,Ref->Subs,Ref->NbSub*sizeof(TGeoRef*));
          for(i=0;i<ref->NbSub;i++)
-            c_ez_refgrid(ref->Subs[i]);
+            GeoRef_Incr(ref->Subs[i]);
       }
 #endif
 

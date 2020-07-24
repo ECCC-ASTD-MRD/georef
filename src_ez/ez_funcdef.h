@@ -176,8 +176,6 @@ void c_ezllwfgfw(ftnfloat *uullout, ftnfloat *vvllout, ftnfloat *latin, ftnfloat
                  wordint *ni, wordint *nj,
                  char *grtyp, wordint *ig1, wordint *ig2, wordint *ig3, wordint *ig4);
 
-int c_ez_refgrid(TGeoRef *GRef);
-
 void c_ezdefxg(TGeoRef *GRef);
 void c_ezdefaxes(TGeoRef *GRef, ftnfloat *ax, ftnfloat *ay);
 wordint c_gdinterp(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, ftnfloat *x, ftnfloat *y, wordint npts);
