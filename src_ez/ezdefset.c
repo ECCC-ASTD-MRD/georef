@@ -114,11 +114,10 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    gdout->gset[i].y = malloc (sizeof(ftnfloat)*npts);
    gdout->gset[i].use_sincos_cache = NON;
 
-   /* TODO: change reallocate_gridset_table */
-/*    if (gdout->n_gdin >= (primes[gdout->log_chunk_gdin]/2))
+   if (gdout->n_gdin >= (primes[gdout->log_chunk_gdin]/2))
    {
       reallocate_gridset_table(gdout);
-   } */
+   }
 
    if (gdin->n_gdin_for == 0)
    {
@@ -151,7 +150,8 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    return 1;
 }
 
-/* void reallocate_gridset_table(TGeoRef* gr)
+ /* TODO: confirm */
+void reallocate_gridset_table(TGeoRef* gr)
 {
    wordint i;
    wordint newIndex, inserted, curIndex;
@@ -174,7 +174,8 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    {
       if (gr->gset[i].gdin != NULL)
       {
-         newIndex = gr->gset[i].gdin % newChunkSize;
+         memcpy(&(newTable[i]), &(gr->gset[i]), sizeof(_gridset));
+/*          newIndex = gr->gset[i].gdin % newChunkSize;
          if (newTable[newIndex].gdin == NULL)
          {
             memcpy(&(newTable[newIndex]), &(gr->gset[i]), sizeof(_gridset));
@@ -200,14 +201,14 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
                   }
                }
             }
-         }
+         } */
       }
    } 
 
    free(gr->gset);
    gr->gset = newTable;
    gr->log_chunk_gdin++;
-} */
+}
 
 void allocate_gridset_table(TGeoRef* gr)
 {

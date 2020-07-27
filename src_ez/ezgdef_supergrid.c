@@ -108,6 +108,7 @@ add   the rotation of YIN */
   // This georef already exists
   if (fref=GeoRef_Find(GRef)) {
     free(GRef);
+    GeoRef_Incr(fref);
     return fref;
   }
 

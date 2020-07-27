@@ -53,6 +53,7 @@ TGeoRef *c_ezidentify_reg_grid(wordint ni, wordint nj, char *grtyp,
    if (fref = GeoRef_Find(GRef))
    {
       free(GRef);
+      GeoRef_Incr(fref);
       return fref;
    }
 
@@ -143,6 +144,7 @@ TGeoRef *c_ezidentify_irreg_grid(
    if (fref = GeoRef_Find(GRef))
    {
       free(GRef);
+      GeoRef_Incr(fref);
       return fref;
    }
 
