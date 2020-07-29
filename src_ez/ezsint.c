@@ -77,7 +77,7 @@ wordint c_ezsint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
 
 wordint c_ezsint_orig(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
 {
-  wordint ier,ierc;
+  wordint ier,ierc,icode;
   wordint npts;
   ftnfloat *lzin, *lxzin;
 

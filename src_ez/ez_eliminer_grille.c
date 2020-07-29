@@ -63,8 +63,8 @@ void EliminerGrille(TGeoRef* GRef)
    GRef->flags = (int)0;
    
    // Release ezscint sub-grid
-   if (Ref->Subs) {
-      free(Ref->Subs);  Ref->Subs=NULL;
+   if (GRef->Subs) {
+      free(GRef->Subs);  GRef->Subs=NULL;
    }
 
    for (i=0; i < GRef->n_gdin_for; i++)

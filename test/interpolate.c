@@ -93,8 +93,6 @@ main(int argc,char *argv[]) {
    p[0]=(float*)calloc(ni*nj*nk,sizeof(float));
    gid_in=c_ezqkdef(ni,nj,h.GRTYP,h.IG1,h.IG2,h.IG3,h.IG4,id[0]);
 
-   err=c_ezdefset(gid_out,gid_in);
-
    // Loop on all fields
    while(key>=0) {
       
@@ -106,7 +104,7 @@ main(int argc,char *argv[]) {
                   &h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG1,
                   &h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
       c_fstluk(p[0],key,&ni,&nj,&nk);
-      err=c_ezsint(p[2],p[0]);
+      err=c_ezsint(p[2],p[0],gid_out,gid_in);
       err=c_fstecr(p[2],NULL,-h.NBITS,id[1],h.DATEO,h.DEET,h.NPAS,hg.NI,hg.NJ,hg.NK,h.IP1,h.IP2,h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,hg.IG1,hg.IG2,hg.IG3,hg.IG4,h.DATYP,0);
    
       key=c_fstsui(id[0],&ni,&nj,&nk);

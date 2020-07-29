@@ -41,18 +41,18 @@ wordint c_ezwdint(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vv
 
    if (gdin->NbSub > 0 || gdout->NbSub > 0)
       {
-      icode = c_ezyywdint(uuout,vvout,uuin,vvin,gdout,gdin);
+      icode = c_ezyywdint(uuout, vvout, uuin, vvin, gdout, gdin);
       // iset_gdin=gdin;
       // iset_gdout=gdout;
       return icode;
       }
-   icode = c_ezwdint_orig(uuout, vvout, uuin, vvin,gdout,gdin);
+   icode = c_ezwdint_orig(uuout, vvout, uuin, vvin, gdout, gdin);
    return icode;
 }
 
 wordint c_ezwdint_orig(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloat *vvin, TGeoRef *gdout, TGeoRef *gdin)
 {
-   wordint ier,ierc,ierc1,ierc2;
+   wordint ier,ierc,ierc1,ierc2,icode;
    ftnfloat *uullout = NULL;
    ftnfloat *vvllout = NULL;
    wordint npts;
@@ -73,10 +73,10 @@ wordint c_ezwdint_orig(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloa
    groptions.vecteur = VECTEUR;
 
    groptions.symmetrie = SYM;
-   ierc1=c_ezsint(uuout,uuin);
+   ierc1=c_ezsint(uuout, uuin, gdout, gdin);
 
    groptions.symmetrie = ANTISYM;
-   ierc2=c_ezsint(vvout,vvin);
+   ierc2=c_ezsint(vvout, vvin, gdout, gdin);
 
    if (ierc1 == 2 || ierc2 == 2)
       {

@@ -110,9 +110,9 @@ wordint c_ezdefset(TGeoRef* gdout, TGeoRef* gdin)
    gdout->n_gdin++;
 
    npts = gdout->ni * gdout->nj;
-   gdout->gset[i].x = malloc (sizeof(ftnfloat)*npts);
-   gdout->gset[i].y = malloc (sizeof(ftnfloat)*npts);
-   gdout->gset[i].use_sincos_cache = NON;
+   gdout->gset[idx_gdin].x = malloc (sizeof(ftnfloat)*npts);
+   gdout->gset[idx_gdin].y = malloc (sizeof(ftnfloat)*npts);
+   gdout->gset[idx_gdin].use_sincos_cache = NON;
 
    if (gdout->n_gdin >= (primes[gdout->log_chunk_gdin]/2))
    {

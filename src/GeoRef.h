@@ -243,7 +243,7 @@ typedef struct TGeoRef {
    wordint extension;
    wordint needs_expansion;
    wordint n_gdin;                              ///< Nombre de grilles source demandees pour interpoler a sa propre grille
-   wordint n_gdin_for;                          ///< Nombre des grilles de destination (differentes) pour faire une interpolation avec cette  grille
+   wordint n_gdin_for;                          ///< Nombre de grilles de destination (differentes) pour faire une interpolation avec cette  grille
    wordint idx_last_gdin;                       ///< Position dans gset
    wordint log_chunk_gdin;
    wordint *mask;

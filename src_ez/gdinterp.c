@@ -22,6 +22,24 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
+/* TODO: Get rid of c_ezgetgdout() */
+TGeoRef* c_ezgetgdout()
+{
+/*   if (iset_gdout == NULL)
+  {
+    if (iset_gdin != NULL)
+    {
+      iset_gdout = iset_gdin;
+    }
+    else
+    {
+      iset_gdout = NULL;
+    }
+  }
+  return iset_gdout; */
+  return NULL;
+}
+
 wordint c_gdinterp(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, ftnfloat *x, ftnfloat *y, wordint npts)
 {
    wordint lnpts;
