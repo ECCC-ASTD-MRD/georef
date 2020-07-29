@@ -71,7 +71,7 @@ wordint c_ezsint(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdout, TGeoRef *gdin)
     // iset_gdout = gdout;
     return icode;
   }
-  icode = c_ezsint_orig(zout, zin);
+  icode = c_ezsint_orig(zout, zin, gdout, gdin);
   return icode;
 }
 

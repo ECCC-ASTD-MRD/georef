@@ -72,7 +72,7 @@ int c_ez_findgrid(int grid_index, _Grille *gr)
          gr->fst.igref[IG3] == refgd->fst.igref[IG3] && 
          gr->fst.igref[IG4] == refgd->fst.igref[IG4])
       {
-      if (refgd->ax != NULL && refgd->ay != NULL && gr->ax != NULL && gr->ay != NULL)
+      if (refgd->AX != NULL && refgd->AY != NULL && gr->AX != NULL && gr->AY != NULL)
          {
          resax = 0;
          resay = 0;
@@ -80,7 +80,7 @@ int c_ez_findgrid(int grid_index, _Grille *gr)
             {
             for (i=0; i < gr->ni; i++)
                {
-               if (refgd->ax[i] != gr->ax[i])
+               if (refgd->AX[i] != gr->AX[i])
                  {
                  resax=1;
                  break;
@@ -90,21 +90,21 @@ int c_ez_findgrid(int grid_index, _Grille *gr)
                {
                for (j=0; j < gr->nj; j++)
                   {
-                  if (refgd->ay[j] != gr->ay[j])
+                  if (refgd->AY[j] != gr->AY[j])
                     {
                     resay=1;
                     break;
                     }
                   }
                }
-/*            resax = memcmp(refgd->ax, gr->ax, (size_t)(gr->ni*sizeof(ftnfloat)));
-            resay = memcmp(refgd->ay, gr->ay, (size_t)(gr->nj*sizeof(ftnfloat)));*/
+/*            resax = memcmp(refgd->AX, gr->AX, (size_t)(gr->ni*sizeof(ftnfloat)));
+            resay = memcmp(refgd->AY, gr->AY, (size_t)(gr->nj*sizeof(ftnfloat)));*/
             }
          else
             {
             for (i=0; i < gr->ni*gr->nj; i++)
                {
-               if (refgd->ax[i] != gr->ax[i])
+               if (refgd->AX[i] != gr->AX[i])
                  {
                  resax=1;
                  break;
@@ -114,7 +114,7 @@ int c_ez_findgrid(int grid_index, _Grille *gr)
                {
                for (j=0; j < gr->ni*gr->nj; j++)
                   {
-                  if (refgd->ay[j] != gr->ay[j])
+                  if (refgd->AY[j] != gr->AY[j])
                     {
                     resay=1;
                     break;
@@ -122,8 +122,8 @@ int c_ez_findgrid(int grid_index, _Grille *gr)
                   }
                }
 
-/*            resax = memcmp(refgd->ax, gr->ax, (size_t)(gr->ni*gr->nj*sizeof(ftnfloat)));
-            resay = memcmp(refgd->ay, gr->ay, (size_t)(gr->ni*gr->nj*sizeof(ftnfloat)));*/
+/*            resax = memcmp(refgd->AX, gr->AX, (size_t)(gr->ni*gr->nj*sizeof(ftnfloat)));
+            resay = memcmp(refgd->AY, gr->AY, (size_t)(gr->ni*gr->nj*sizeof(ftnfloat)));*/
             }
 
          if (resax == 0 && resay == 0)

@@ -61,15 +61,15 @@ wordint ez_corrvec_aunord(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnf
 	      case 'Z':
 	      case 'E':
 	      case 'G':
-          ay[0] = gdin->ay[gdin->j2-3];
-          ay[1] = gdin->ay[gdin->j2-2];
-          ay[2] = gdin->ay[gdin->j2-1];
+          ay[0] = gdin->AY[gdin->j2-3];
+          ay[1] = gdin->AY[gdin->j2-2];
+          ay[2] = gdin->AY[gdin->j2-1];
           ay[3] = 90.0;
 	        f77name(ez_irgdint_3_wnnc)(corr_uus,gset->zones[AU_NORD].x, gset->zones[AU_NORD].y,&npts,
-				           gdin->ax, ay, polar_uu_in,
+				           gdin->AX, ay, polar_uu_in,
 				           &ni, &j1, &j2, &gdin->extension);
 	        f77name(ez_irgdint_3_wnnc)(corr_vvs,gset->zones[AU_NORD].x, gset->zones[AU_NORD].y,&npts,
-				           gdin->ax, ay, polar_vv_in,
+				           gdin->AX, ay, polar_vv_in,
 				           &ni, &j1, &j2, &gdin->extension);
 	        break;
 

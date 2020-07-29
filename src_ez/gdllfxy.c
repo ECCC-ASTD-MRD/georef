@@ -192,11 +192,11 @@ wordint c_gdllfxy_new(TGeoRef *GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x, 
 	      indy = indy < 0 ? 0 : indy;
 	      indx = indx > GRef->ni-2 ? GRef->ni-2 : indx;
 	      indy = indy > GRef->j2-2 ? GRef->j2-2 : indy;
-	      delxx = GRef->ax[indx+1]-GRef->ax[indx];
-	      tmpx[i] = GRef->ax[indx] + ((x[i]-1.0-indx)*delxx);
+	      delxx = GRef->AX[indx+1]-GRef->AX[indx];
+	      tmpx[i] = GRef->AX[indx] + ((x[i]-1.0-indx)*delxx);
 
-	      delyy = GRef->ay[indy+1]-GRef->ay[indy];
-	      tmpy[i] = GRef->ay[indy] + ((ytmp[i]-1.0-indy)*delyy);
+	      delyy = GRef->AY[indy+1]-GRef->AY[indy];
+	      tmpy[i] = GRef->AY[indy] + ((ytmp[i]-1.0-indy)*delyy);
 	      }
 
       switch (GRef->grref[0])
@@ -339,11 +339,11 @@ wordint c_gdllfxy_orig(TGeoRef *GRef, ftnfloat *lat, ftnfloat *lon, ftnfloat *x,
 	      indy = indy < 0 ? 0 : indy;
 	      indx = indx > GRef->ni-2 ? GRef->ni-2 : indx;
 	      indy = indy > GRef->j2-2 ? GRef->j2-2 : indy;
-	      delxx = GRef->ax[indx+1]-GRef->ax[indx];
-	      tmpx[i] = GRef->ax[indx] + ((x[i]-1.0-indx)*delxx);
+	      delxx = GRef->AX[indx+1]-GRef->AX[indx];
+	      tmpx[i] = GRef->AX[indx] + ((x[i]-1.0-indx)*delxx);
 
-	      delyy = GRef->ay[indy+1]-GRef->ay[indy];
-	      tmpy[i] = GRef->ay[indy] + ((y[i]-1.0-indy)*delyy);
+	      delyy = GRef->AY[indy+1]-GRef->AY[indy];
+	      tmpy[i] = GRef->AY[indy] + ((y[i]-1.0-indy)*delyy);
 	      }
 
       switch (GRef->grref[0])

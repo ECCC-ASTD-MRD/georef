@@ -119,7 +119,7 @@ wordint c_gdxyfll_new(TGeoRef *GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ft
 				 lat, tmplons, &npts,
 				 &ni_in, &nj_in, &GRef->grtyp,
 				 &GRef->fst.ig[IG1], &GRef->fst.ig[IG2], &GRef->fst.ig[IG3], &GRef->fst.ig[IG4],
-				 &sym, GRef->ay);
+				 &sym, GRef->AY);
 	      free(tmplons);
 	      break;
 
@@ -132,7 +132,7 @@ wordint c_gdxyfll_new(TGeoRef *GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ft
 				 &ni_in,&nj_in,&GRef->grtyp, &GRef->grref,
 				 &GRef->fst.igref[IG1], &GRef->fst.igref[IG2], 
 				 &GRef->fst.igref[IG3], &GRef->fst.igref[IG4],
-				 GRef->ax, GRef->ay,&coordonnee);
+				 GRef->AX, GRef->AY,&coordonnee);
 	      if (GRef->grtyp[0] == 'G' && GRef->fst.ig[IG1] == 1) 
 		 {
 	          for  (j=0; j < npts; j++)
@@ -189,7 +189,7 @@ wordint c_gdxyfll_orig(TGeoRef *GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, f
         lat, tmplons, &npts,
         &ni_in, &nj_in, &GRef->grtyp,
         &GRef->fst.ig[IG1], &GRef->fst.ig[IG2], &GRef->fst.ig[IG3], &GRef->fst.ig[IG4],
-        &sym, GRef->ay);
+        &sym, GRef->AY);
       free(tmplons);
       break;
 
@@ -202,7 +202,7 @@ wordint c_gdxyfll_orig(TGeoRef *GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, f
         &ni_in,&nj_in,&GRef->grtyp, &GRef->grref,
         &GRef->fst.igref[IG1], &GRef->fst.igref[IG2], 
         &GRef->fst.igref[IG3], &GRef->fst.igref[IG4],
-        GRef->ax, GRef->ay,&coordonnee);
+        GRef->AX, GRef->AY,&coordonnee);
       if (GRef->grtyp[0] == 'G' && GRef->fst.ig[IG1] == 1) 
       {
         for  (j=0; j < npts; j++)

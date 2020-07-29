@@ -72,7 +72,7 @@ wordint ez_calcxy(TGeoRef *gdin, TGeoRef *gdout)
                            &ni_in, &nj_in, &gdin->grtyp,
                            &gdin->fst.ig[IG1], &gdin->fst.ig[IG2],
                            &gdin->fst.ig[IG3], &gdin->fst.ig[IG4],
-                           &groptions.symmetrie, gdin->ay);
+                           &groptions.symmetrie, gdin->AY);
         break;
 
 
@@ -86,7 +86,7 @@ wordint ez_calcxy(TGeoRef *gdin, TGeoRef *gdout)
                             &ni_in,&nj_in,&gdin->grtyp, &gdin->grref,
                             &gdin->fst.igref[IG1], &gdin->fst.igref[IG2],
                             &gdin->fst.igref[IG3], &gdin->fst.igref[IG4],
-                            gdin->ax, gdin->ay,
+                            gdin->AX, gdin->AY,
                             &coordonnee);
          if (gdin->grtyp[0] == 'G')
             {

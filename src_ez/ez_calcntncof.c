@@ -37,7 +37,7 @@ void ez_calcntncof(TGeoRef* GRef)
   GRef->ncx = (ftnfloat *) malloc(nni*6*sizeof(ftnfloat));
   GRef->ncy = (ftnfloat *) malloc(nnj*6*sizeof(ftnfloat));
   f77name(ez_nwtncof)(GRef->ncx,GRef->ncy,
-		      GRef->ax,GRef->ay,
+		      GRef->AX,GRef->AY,
 		      &GRef->ni, &GRef->nj,
 		      &GRef->i1, &GRef->i2, 
 		      &GRef->j1, &GRef->j2,

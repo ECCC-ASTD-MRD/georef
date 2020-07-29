@@ -35,7 +35,7 @@ wordint ez_calcxpncof(TGeoRef* GRef)
             GRef->grref[0],
 	    	GRef->fst.ig[IG1], GRef->fst.ig[IG2],
             GRef->fst.ig[IG3], GRef->fst.ig[IG4],
-	    	groptions.symmetrie, GRef->ax, GRef->ay);
+	    	groptions.symmetrie, GRef->AX, GRef->AY);
 
    return 0;
 

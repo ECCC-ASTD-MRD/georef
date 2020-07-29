@@ -62,7 +62,7 @@ wordint ez_defzones(TGeoRef *gdin, TGeoRef *gdout)
 	  break;
 	  
 	case 'E':
-	  if (359.0 > (gdin->ax[gdin->ni-1] - gdin->ax[0]))
+	  if (359.0 > (gdin->AX[gdin->ni-1] - gdin->AX[0]))
 	    {
 	    extrap = EZ_EXTRAP;
 	    }

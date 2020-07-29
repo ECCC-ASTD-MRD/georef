@@ -113,21 +113,21 @@ TGeoRef *c_ezidentify_irreg_grid(
    switch (grtyp[0])
    {
    case '#':
-      GRef->ax = ax;
-      GRef->ay = ay;
+      GRef->AX = ax;
+      GRef->AY = ay;
       break;
 
    case 'Y':
-      GRef->ax = ax;
-      GRef->ay = ay;
+      GRef->AX = ax;
+      GRef->AY = ay;
       break;
 
    case 'Z':
       f77name(cigaxg)(&(GRef->grref),
                       &GRef->fst.xgref[XLAT1], &GRef->fst.xgref[XLON1], &GRef->fst.xgref[XLAT2], &GRef->fst.xgref[XLON2],
                       &GRef->fst.igref[IG1], &GRef->fst.igref[IG2], &GRef->fst.igref[IG3], &GRef->fst.igref[IG4], 1);
-      GRef->ax = ax;
-      GRef->ay = ay;
+      GRef->AX = ax;
+      GRef->AY = ay;
       break;
 
    case 'G':

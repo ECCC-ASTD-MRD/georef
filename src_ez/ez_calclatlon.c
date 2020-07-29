@@ -131,13 +131,13 @@ wordint ez_calclatlon(TGeoRef* GRef)
 
             case 'L':
             case 'O':
-            memcpy(GRef->lon, GRef->ax, GRef->ni*GRef->nj*sizeof(ftnfloat));
-	    memcpy(GRef->lat, GRef->ay, GRef->ni*GRef->nj*sizeof(ftnfloat));
+            memcpy(GRef->lon, GRef->AX, GRef->ni*GRef->nj*sizeof(ftnfloat));
+	    memcpy(GRef->lat, GRef->AY, GRef->ni*GRef->nj*sizeof(ftnfloat));
 	    for (i=0; i < GRef->ni*GRef->nj; i++)
                {
 	       if (GRef->lon[i] < 0.0)
                   {
-	          GRef->lon[i] = GRef->ax[i] + 360.0;
+	          GRef->lon[i] = GRef->AX[i] + 360.0;
 	          }
 	       }
 	    break;
@@ -157,8 +157,8 @@ wordint ez_calclatlon(TGeoRef* GRef)
                {
                for (i=0; i < ni; i++)
                  {
-                 GRef->lat[C_TO_FTN(i,j,ni)] = GRef->ay[j];
-                 GRef->lon[C_TO_FTN(i,j,ni)] = GRef->ax[i];
+                 GRef->lat[C_TO_FTN(i,j,ni)] = GRef->AY[j];
+                 GRef->lon[C_TO_FTN(i,j,ni)] = GRef->AX[i];
                  }
                }
 
@@ -168,7 +168,7 @@ wordint ez_calclatlon(TGeoRef* GRef)
 	       {
 	       for (i=0; i < ni; i++)
 		 {
-		 GRef->lat[C_TO_FTN(i,j,ni)] = GRef->ay[j+nj];
+		 GRef->lat[C_TO_FTN(i,j,ni)] = GRef->AY[j+nj];
 		 }
 	       }
 	     }

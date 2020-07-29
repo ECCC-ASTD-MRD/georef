@@ -82,8 +82,8 @@ wordint ez_calcnpolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat
   gdps = GeoRef_RPNCreate(ni, 1, grtypn, ig1n, ig2n, ig3n, ig4n, 0);
   c_gduvfwd(gdps, polar_uu, polar_vv, polar_spd,  polar_wd, polar_lat, polar_lon, ni);
 
-  f77name(ez_calcpoleval)(&uupole, polar_uu, &ni, gdin->ax, &gdin->grtyp, &gdin->grref,1,1);
-  f77name(ez_calcpoleval)(&vvpole, polar_vv, &ni, gdin->ax, &gdin->grtyp, &gdin->grref,1,1);
+  f77name(ez_calcpoleval)(&uupole, polar_uu, &ni, gdin->AX, &gdin->grtyp, &gdin->grref,1,1);
+  f77name(ez_calcpoleval)(&vvpole, polar_vv, &ni, gdin->AX, &gdin->grtyp, &gdin->grref,1,1);
 
   quatrevingtdix = 90.0;
   zero = 0.0;

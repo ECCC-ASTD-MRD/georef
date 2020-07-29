@@ -47,10 +47,10 @@ void EliminerGrille(TGeoRef* GRef)
 
    if (GRef->flags & EZ_AX)
    {
-      free(GRef->ax);
-      free(GRef->ay);
-      GRef->ax = NULL;
-      GRef->ay = NULL;
+      free(GRef->AX);
+      free(GRef->AY);
+      GRef->AX = NULL;
+      GRef->AY = NULL;
    }
 
    if (GRef->ncx != NULL)

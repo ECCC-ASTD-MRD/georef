@@ -51,7 +51,7 @@ wordint ez_corrval_ausud(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, TGeoRef *
 
     temp = (ftnfloat *) malloc(4 * ni * sizeof(ftnfloat));
     vals = (ftnfloat *) malloc(npts * sizeof(ftnfloat));
-    f77name(ez_calcpoleval)(&vpolesud, zin, &ni, gdin->ax,
+    f77name(ez_calcpoleval)(&vpolesud, zin, &ni, gdin->AX,
 			    &gdin->grtyp, &gdin->grref,1,1);
     f77name(ez_fillspole)(temp, zin, &ni, &gdin->j1, &gdin->j2, &vpolesud);
 
@@ -63,26 +63,26 @@ wordint ez_corrval_ausud(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, TGeoRef *
 	     case 'Z':
 	     case 'E':
 	     case 'G':
-          if  (gdin->ay[gdin->j1-1] == -90.0)
+          if  (gdin->AY[gdin->j1-1] == -90.0)
              {
-                ay[0] = gdin->ay[0];
-                ay[1] = gdin->ay[1];
-                ay[2] = gdin->ay[2];
-                ay[3] = gdin->ay[3];
+                ay[0] = gdin->AY[0];
+                ay[1] = gdin->AY[1];
+                ay[2] = gdin->AY[2];
+                ay[3] = gdin->AY[3];
                 f77name(ez_irgdint_3_wnnc)(vals,gset->zones[AU_SUD].x,
                             gset->zones[AU_SUD].y,&npts,
-                            gdin->ax, ay, temp,
+                            gdin->AX, ay, temp,
                             &ni, &j1, &j2, &gdin->extension);
              }
     else
        {
              ay[0] = -90.0;
-             ay[1] = gdin->ay[0];
-             ay[2] = gdin->ay[1];
-             ay[3] = gdin->ay[2];
+             ay[1] = gdin->AY[0];
+             ay[2] = gdin->AY[1];
+             ay[3] = gdin->AY[2];
              f77name(ez_irgdint_3_wnnc)(vals,gset->zones[AU_SUD].x,
                          gset->zones[AU_SUD].y,&npts,
-                         gdin->ax, ay, temp,
+                         gdin->AX, ay, temp,
                          &ni, &j1, &j2, &gdin->extension);
 
        }

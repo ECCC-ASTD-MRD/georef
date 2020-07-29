@@ -35,20 +35,20 @@ void c_ezdefaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay)
       f77name(cigaxg)(&GRef->grref,&GRef->fst.xgref[XLAT1], &GRef->fst.xgref[XLON1], &GRef->fst.xgref[XLAT2], &GRef->fst.xgref[XLON2],
 		      &GRef->fst.igref[IG1], &GRef->fst.igref[IG2], &GRef->fst.igref[IG3], &GRef->fst.igref[IG4],1);
 
-      GRef->ax = (ftnfloat *) malloc(GRef->ni*sizeof(ftnfloat));
-      GRef->ay = (ftnfloat *) malloc(GRef->nj*sizeof(ftnfloat));
+      GRef->AX = (ftnfloat *) malloc(GRef->ni*sizeof(ftnfloat));
+      GRef->AY = (ftnfloat *) malloc(GRef->nj*sizeof(ftnfloat));
 
-      memcpy(GRef->ax,ax,GRef->ni*sizeof(ftnfloat));
-      memcpy(GRef->ay,ay,GRef->nj*sizeof(ftnfloat));
+      memcpy(GRef->AX,ax,GRef->ni*sizeof(ftnfloat));
+      memcpy(GRef->AY,ay,GRef->nj*sizeof(ftnfloat));
       ez_calcxpncof(GRef);
       ez_calcntncof(GRef);
       break;
 
     case 'Y':
-      GRef->ax = (ftnfloat *) malloc(GRef->ni*GRef->nj*sizeof(ftnfloat));
-      GRef->ay = (ftnfloat *) malloc(GRef->ni*GRef->nj*sizeof(ftnfloat));
-      memcpy(GRef->ax,ax,GRef->ni*GRef->nj*sizeof(ftnfloat));
-      memcpy(GRef->ay,ay,GRef->ni*GRef->nj*sizeof(ftnfloat));
+      GRef->AX = (ftnfloat *) malloc(GRef->ni*GRef->nj*sizeof(ftnfloat));
+      GRef->AY = (ftnfloat *) malloc(GRef->ni*GRef->nj*sizeof(ftnfloat));
+      memcpy(GRef->AX,ax,GRef->ni*GRef->nj*sizeof(ftnfloat));
+      memcpy(GRef->AY,ay,GRef->ni*GRef->nj*sizeof(ftnfloat));
 
       ez_calcxpncof(GRef);
       break;
@@ -62,11 +62,11 @@ void c_ezdefaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay)
       f77name(cxgaig)(&GRef->grref,&GRef->fst.igref[IG1], &GRef->fst.igref[IG2], &GRef->fst.igref[IG3], &GRef->fst.igref[IG4],
 		      &GRef->fst.xgref[SWLAT], &GRef->fst.xgref[SWLON], &GRef->fst.xgref[DLAT], &GRef->fst.xgref[DLON],1);
 
-      GRef->ax = (ftnfloat *) malloc(GRef->ni*sizeof(ftnfloat));
+      GRef->AX = (ftnfloat *) malloc(GRef->ni*sizeof(ftnfloat));
       dlon = 360. / (ftnfloat) GRef->ni;
       for (i=0; i < GRef->ni; i++)
 	      {
-	      GRef->ax[i] = (ftnfloat)i * dlon;
+	      GRef->AX[i] = (ftnfloat)i * dlon;
 	      }
 
       zero = 0;
@@ -75,18 +75,18 @@ void c_ezdefaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay)
       switch (GRef->fst.ig[IG1])
 	      {
 	      case GLOBAL:
-	        GRef->ay = (ftnfloat *) malloc(GRef->nj*sizeof(ftnfloat));
+	        GRef->AY = (ftnfloat *) malloc(GRef->nj*sizeof(ftnfloat));
 	        temp    = (ftnfloat *) malloc(GRef->nj*sizeof(ftnfloat));
-	        f77name(ez_glat)(GRef->ay,temp,&GRef->nj,&zero);
+	        f77name(ez_glat)(GRef->AY,temp,&GRef->nj,&zero);
 	        free(temp);
 	        break;
 
 	      case NORD:
 	      case SUD:
 	        deuxnj = 2 * GRef->nj;
-	        GRef->ay = (ftnfloat *) malloc(deuxnj*sizeof(ftnfloat));
+	        GRef->AY = (ftnfloat *) malloc(deuxnj*sizeof(ftnfloat));
 	        temp    = (ftnfloat *) malloc(deuxnj*sizeof(ftnfloat));
-	        f77name(ez_glat)(GRef->ay,temp,&deuxnj,&zero);
+	        f77name(ez_glat)(GRef->AY,temp,&deuxnj,&zero);
 	        free(temp);
 	        break;
 	      }

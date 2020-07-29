@@ -102,14 +102,14 @@ wordint c_gdinterp(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, ftnfloat *x, ft
          {
          case 0:
             f77name(ez_irgdint_1_nw)(zout,x, y,
-               &lnpts, gdin->ax, gdin->ay,
+               &lnpts, gdin->AX, gdin->AY,
                zin,&gdin->ni, &gdin->nj);
             break;
 
          case 1:
          case 2:
             f77name(ez_irgdint_1_w)(zout,x, y,
-               &lnpts, gdin->ax, gdin->ay,
+               &lnpts, gdin->AX, gdin->AY,
                zin,&gdin->ni, &gdin->j1, &gdin->j2, &gdin->extension);
             break;
          }
@@ -120,7 +120,7 @@ wordint c_gdinterp(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, ftnfloat *x, ft
          {
          case 0:
             f77name(ez_irgdint_3_nw)(zout, x, y,
-               &lnpts, gdin->ax, gdin->ay,
+               &lnpts, gdin->AX, gdin->AY,
                gdin->ncx, gdin->ncy, zin,
                &gdin->i1, &gdin->i2,
                &gdin->j1, &gdin->j2);
@@ -129,7 +129,7 @@ wordint c_gdinterp(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, ftnfloat *x, ft
          case 1:
          case 2:
             f77name(ez_irgdint_3_w)(zout, x, y,
-               &lnpts, gdin->ax, gdin->ay,
+               &lnpts, gdin->AX, gdin->AY,
                gdin->ncx, gdin->ncy, zin,
                &gdin->ni, &gdin->j1, &gdin->j2,
                &gdin->extension);

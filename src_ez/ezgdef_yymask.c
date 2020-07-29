@@ -35,7 +35,7 @@ wordint c_ezgdef_yymask(TGeoRef *subgd)
   k=0;
   for (i=0; i < subgd->ni; i++)
        {
-       if (subgd->ax[i] >= 45.0 && subgd->ax[i] <= 315.0)
+       if (subgd->AX[i] >= 45.0 && subgd->AX[i] <= 315.0)
            {
             k++;
             if (k == 1) i0=i;
@@ -46,7 +46,7 @@ wordint c_ezgdef_yymask(TGeoRef *subgd)
      k=0;
      for (i=0; i < subgd->nj; i++)
        {
-       if (subgd->ay[i] >= -45.0 && subgd->ay[i] <= 45.0)
+       if (subgd->AY[i] >= -45.0 && subgd->AY[i] <= 45.0)
            {
             k++;
             if (k == 1) j0=i;
@@ -54,7 +54,7 @@ wordint c_ezgdef_yymask(TGeoRef *subgd)
            }
        }
      ynj=k;
-     subgd->mymaskgrid = c_ezgdef_fmem(yni,ynj,subgd->grtyp,subgd->grref,subgd->fst.igref[IG1],subgd->fst.igref[IG2],subgd->fst.igref[IG3],subgd->fst.igref[IG4],&subgd->ax[i0],&subgd->ay[j0]);
+     subgd->mymaskgrid = c_ezgdef_fmem(yni,ynj,subgd->grtyp,subgd->grref,subgd->fst.igref[IG1],subgd->fst.igref[IG2],subgd->fst.igref[IG3],subgd->fst.igref[IG4],&subgd->AX[i0],&subgd->AY[j0]);
      subgd->mymaskgridi0=i0;
      subgd->mymaskgridi1=i1;
      subgd->mymaskgridj0=j0;
@@ -63,10 +63,10 @@ wordint c_ezgdef_yymask(TGeoRef *subgd)
     if (groptions.verbose > 0)
       {
        printf("Subgd.mymaskgrid   = %p\n", subgd->mymaskgrid);
-       printf("Subgd.mymaskgridi0 = %d pt=%f\n", subgd->mymaskgridi0, subgd->ax[i0]);
-       printf("Subgd.mymaskgridi1 = %d pt=%f\n", subgd->mymaskgridi1, subgd->ax[i1]);
-       printf("Subgd.mymaskgridj0 = %d pt=%f\n", subgd->mymaskgridj0, subgd->ay[j0]);
-       printf("Subgd.mymaskgridj1 = %d pt=%f\n", subgd->mymaskgridj1, subgd->ay[j1]);
+       printf("Subgd.mymaskgridi0 = %d pt=%f\n", subgd->mymaskgridi0, subgd->AX[i0]);
+       printf("Subgd.mymaskgridi1 = %d pt=%f\n", subgd->mymaskgridi1, subgd->AX[i1]);
+       printf("Subgd.mymaskgridj0 = %d pt=%f\n", subgd->mymaskgridj0, subgd->AY[j0]);
+       printf("Subgd.mymaskgridj1 = %d pt=%f\n", subgd->mymaskgridj1, subgd->AY[j1]);
       }
     return 0;
 

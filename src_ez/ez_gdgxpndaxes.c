@@ -51,8 +51,8 @@ wordint c_gdgxpndaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay)
   {
     case 'Y':
       nix = GRef->ni * GRef->nj;
-      memcpy(ax, GRef->ax, nix*sizeof(ftnfloat));
-      memcpy(ay, GRef->ay, nix*sizeof(ftnfloat));
+      memcpy(ax, GRef->AX, nix*sizeof(ftnfloat));
+      memcpy(ay, GRef->AY, nix*sizeof(ftnfloat));
       break;
       
     default:
@@ -65,20 +65,20 @@ wordint c_gdgxpndaxes(TGeoRef* GRef, ftnfloat *ax, ftnfloat *ay)
       if (GRef->j2 == (njy+1)) jstart = 1;
       if (GRef->j2 == (njy+2)) jstart = 2;
       if (GRef->j2 == (njy))   jstart = 0;
-      memcpy(&ax[istart],GRef->ax, nix*sizeof(ftnfloat));
-      memcpy(&ay[jstart],GRef->ay, njy*sizeof(ftnfloat));
+      memcpy(&ax[istart],GRef->AX, nix*sizeof(ftnfloat));
+      memcpy(&ay[jstart],GRef->AY, njy*sizeof(ftnfloat));
       
       if (GRef->i2 == (GRef->ni+1))
       {
-        ax[0] = GRef->ax[nix-2] - 360.0; 
+        ax[0] = GRef->AX[nix-2] - 360.0; 
         ax[nix] = ax[2];
       }
       
       if (GRef->i2 == (GRef->ni+2))
       {
-        ax[0] = GRef->ax[nix-1] - 360.0; 
-        ax[nix] = GRef->ax[1]+360.0;
-        ax[nix+1] = GRef->ax[2]+360.0;
+        ax[0] = GRef->AX[nix-1] - 360.0; 
+        ax[nix] = GRef->AX[1]+360.0;
+        ax[nix+1] = GRef->AX[2]+360.0;
       }
   }
   return 0;

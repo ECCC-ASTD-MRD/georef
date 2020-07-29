@@ -50,25 +50,25 @@ void Lire_enrTicTac(TGeoRef *gr, ftnfloat *ax, wordint nixnjx, ftnfloat *ay, wor
     {
     case 'Y':
     case 'Z':
-      gr->ax = (ftnfloat *) malloc(nixnjx*sizeof(ftnfloat));
-      gr->ay = (ftnfloat *) malloc(niynjy*sizeof(ftnfloat));
-      memcpy(gr->ax,ax,nixnjx*sizeof(ftnfloat));
-      memcpy(gr->ay,ay,niynjy*sizeof(ftnfloat));
+      gr->AX = (ftnfloat *) malloc(nixnjx*sizeof(ftnfloat));
+      gr->AY = (ftnfloat *) malloc(niynjy*sizeof(ftnfloat));
+      memcpy(gr->AX,ax,nixnjx*sizeof(ftnfloat));
+      memcpy(gr->AY,ay,niynjy*sizeof(ftnfloat));
       break;
   
     case '#':
-      gr->ax = (ftnfloat *) malloc(gr->ni*sizeof(ftnfloat));
-      gr->ay = (ftnfloat *) malloc(gr->nj*sizeof(ftnfloat));
+      gr->AX = (ftnfloat *) malloc(gr->ni*sizeof(ftnfloat));
+      gr->AY = (ftnfloat *) malloc(gr->nj*sizeof(ftnfloat));
       offsetx = ip3 - 1;
       offsety = ip4 - 1;
       for (j=0; j < gr->nj; j++)
         {
-        gr->ay[j] = ay[j+offsety];
+        gr->AY[j] = ay[j+offsety];
         }
   
       for (i=0; i < gr->ni; i++)
         {
-        gr->ax[i] = ax[i+offsetx];
+        gr->AX[i] = ax[i+offsetx];
         }
       break;
     }
@@ -76,9 +76,9 @@ void Lire_enrTicTac(TGeoRef *gr, ftnfloat *ax, wordint nixnjx, ftnfloat *ay, wor
       {
       for (i=0; i < gr->ni; i++)
           {
-          if (gr->ax[i] < 0.0)
+          if (gr->AX[i] < 0.0)
              {
-             gr->ax[i] += 360.0;
+             gr->AX[i] += 360.0;
              }
           }
       }

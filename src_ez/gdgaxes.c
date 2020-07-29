@@ -48,8 +48,8 @@ wordint c_gdgaxes(TGeoRef *GRef, ftnfloat *ax, ftnfloat *ay)
    
    if (GRef->flags & EZ_AX)
       {
-      memcpy(ax, GRef->ax, nix*sizeof(ftnfloat));
-      memcpy(ay, GRef->ay, njy*sizeof(ftnfloat));
+      memcpy(ax, GRef->AX, nix*sizeof(ftnfloat));
+      memcpy(ay, GRef->AY, njy*sizeof(ftnfloat));
       }
    else
       {

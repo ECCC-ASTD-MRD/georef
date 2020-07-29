@@ -68,7 +68,7 @@ wordint c_gdxyzfll(TGeoRef *GRef, ftnfloat *x, ftnfloat *y, ftnfloat *lat, ftnfl
 			    &ni_in,&nj_in,&GRef->grtyp, &GRef->grref,
 			    &GRef->fst.igref[IG1], &GRef->fst.igref[IG2], 
 			    &GRef->fst.igref[IG3], &GRef->fst.igref[IG4],
-			    GRef->ax, GRef->ay, &coordonnee);
+			    GRef->AX, GRef->AY, &coordonnee);
         break;
         
         

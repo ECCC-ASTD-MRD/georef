@@ -149,13 +149,13 @@ wordint ez_corrval(ftnfloat *zout, ftnfloat *zin, TGeoRef *gdin, TGeoRef *gdout)
       {
       npts = gdin->ni * gdin->j2;
       f77name(ez_calcpoleval)(&vpolnor, &(zin[(nj-1)*gdin->ni]), &(gdin->ni),
-gdin->ax, gdin->grtyp, gdin->grref,1,1);
+gdin->AX, gdin->grtyp, gdin->grref,1,1);
       for (i=0; i < gdout->gset[idx_gdin].zones[POLE_NORD].npts; i++)
 	      {
 	      zout[gdout->gset[idx_gdin].zones[POLE_NORD].idx[i]] = vpolnor;
 	      }
 
-      f77name(ez_calcpoleval)(&vpolsud, zin, &(gdin->ni), gdin->ax,
+      f77name(ez_calcpoleval)(&vpolsud, zin, &(gdin->ni), gdin->AX,
 gdin->grtyp, gdin->grref,1,1);
       for (i=0; i < gdout->gset[idx_gdin].zones[POLE_SUD].npts; i++)
 	      {

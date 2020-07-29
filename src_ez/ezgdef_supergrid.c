@@ -81,8 +81,8 @@ TGeoRef* c_ezgdef_supergrid(wordint ni, wordint nj, char *grtyp, char *grref, wo
     /* create tictac arrays to add uniqueness in supergrid*/
     ax = (ftnfloat *) malloc(GRef->ni*sizeof(ftnfloat));
     ay = (ftnfloat *) malloc(GRef->nj*sizeof(ftnfloat));
-    memcpy(ax,sub_gd->ax,GRef->ni*sizeof(ftnfloat));
-    memcpy(ay,sub_gd->ay,GRef->nj*sizeof(ftnfloat));
+    memcpy(ax,sub_gd->AX,GRef->ni*sizeof(ftnfloat));
+    memcpy(ay,sub_gd->AY,GRef->nj*sizeof(ftnfloat));
     GRef->fst.ip1      = sub_gd->fst.ip1;
     GRef->fst.ip2      = sub_gd->fst.ip2;
     GRef->fst.ip3      = sub_gd->fst.ip3;
