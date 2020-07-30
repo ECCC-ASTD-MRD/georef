@@ -68,7 +68,7 @@ wordint ez_calcxy(TGeoRef *gdin, TGeoRef *gdout)
       case '!':
         f77name(ez_ll2rgd)(gdout->gset[idx_gdin].x,
                            gdout->gset[idx_gdin].y,
-                           gdout->lat, gdout->lon, &ninj_out,
+                           gdout->Lat, gdout->Lon, &ninj_out,
                            &ni_in, &nj_in, &gdin->grtyp,
                            &gdin->fst.ig[IG1], &gdin->fst.ig[IG2],
                            &gdin->fst.ig[IG3], &gdin->fst.ig[IG4],
@@ -82,7 +82,7 @@ wordint ez_calcxy(TGeoRef *gdin, TGeoRef *gdout)
          coordonnee = RELATIF;
          f77name(ez_ll2igd)(gdout->gset[idx_gdin].x,
                             gdout->gset[idx_gdin].y,
-                            gdout->lat, gdout->lon, &ninj_out,
+                            gdout->Lat, gdout->Lon, &ninj_out,
                             &ni_in,&nj_in,&gdin->grtyp, &gdin->grref,
                             &gdin->fst.igref[IG1], &gdin->fst.igref[IG2],
                             &gdin->fst.igref[IG3], &gdin->fst.igref[IG4],

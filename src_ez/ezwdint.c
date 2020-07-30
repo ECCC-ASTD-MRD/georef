@@ -97,7 +97,7 @@ wordint c_ezwdint_orig(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloa
    ier = ez_calclatlon(gdout);
 
    c_gdwdfuv(gdin, uullout, vvllout, uuout, vvout,
-             gdout->lat, gdout->lon, npts);
+             gdout->Lat, gdout->Lon, npts);
 
    memcpy(uuout, uullout, npts*sizeof(ftnfloat));
    memcpy(vvout, vvllout, npts*sizeof(ftnfloat));

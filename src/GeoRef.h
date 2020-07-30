@@ -212,6 +212,7 @@ typedef struct TGeoRef {
    int    R;                                              ///< (Radar) Rayon autour du centre de reference en bin
 
    unsigned int NIdx,*Idx;                                ///< Index dans les positions
+   /* TODO: Ezscint utilise ftnfloat */
    float        *Lat,*Lon;                                ///< Coordonnees des points de grilles (Spherical)
    float        *AX,*AY,*Hgt;                           ///< Axes de positionnement / deformation
    double       *Wght;                                    ///< Barycentric weight array for TIN  (M grids)
@@ -249,13 +250,11 @@ typedef struct TGeoRef {
    wordint *mask;
    struct TGeoRef **gdin_for;                   ///< Pointeurs vers les georeferences de destination pour faire une interpolation avec cette  grille
    struct TGeoRef *mymaskgrid;
-   struct TGeoRef **Subs;                       ///< Lit des sous grilles (GRTYP=U)
+   struct TGeoRef **Subs;                       ///< Liste des sous grilles (GRTYP=U)
    wordint NbSub;                               ///< Nombre de sous-grilles
    wordint NSub;                                ///< Sous-grille courante (=0 si toutes)
    wordint mymaskgridi0,mymaskgridi1;
    wordint mymaskgridj0,mymaskgridj1;
-   ftnfloat *lat, *lon;
-   ftnfloat *ax, *ay;
    ftnfloat *ncx, *ncy;
    char grtyp[4], grref[4];
    _fstinfo fst;

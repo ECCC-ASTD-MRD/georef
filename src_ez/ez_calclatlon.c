@@ -37,14 +37,14 @@ wordint ez_calclatlon(TGeoRef* GRef)
       nj = GRef->nj;
       npts = ni*nj;
 
-      GRef->lat = (ftnfloat *) malloc(ni*nj*sizeof(ftnfloat));
-      GRef->lon = (ftnfloat *) malloc(ni*nj*sizeof(ftnfloat));
+      GRef->Lat = (ftnfloat *) malloc(ni*nj*sizeof(ftnfloat));
+      GRef->Lon = (ftnfloat *) malloc(ni*nj*sizeof(ftnfloat));
 
       switch(GRef->grtyp[0])
          {
          case 'A':
          case 'B':
-         f77name(grll)(GRef->lat,GRef->lon,&ni,&nj,
+         f77name(grll)(GRef->Lat,GRef->Lon,&ni,&nj,
 		    &GRef->fst.xg[SWLAT],&GRef->fst.xg[SWLON], &GRef->fst.xg[DLAT], &GRef->fst.xg[DLON]);
          break;
 
@@ -54,24 +54,24 @@ wordint ez_calclatlon(TGeoRef* GRef)
          xlon00 = 0.0;
          xlat00 = -90. + 0.5*dlat;
 
-         f77name(grll)(GRef->lat,GRef->lon,&ni,&nj,&xlat00,&xlon00,&dlat,&dlon);
+         f77name(grll)(GRef->Lat,GRef->Lon,&ni,&nj,&xlat00,&xlon00,&dlat,&dlon);
 
          f77name(cigaxg)(&GRef->grtyp, &GRef->fst.xg[XLAT1], &GRef->fst.xg[XLON1],
 			&GRef->fst.xg[XLAT2], &GRef->fst.xg[XLON2],
          &GRef->fst.ig[IG1],  &GRef->fst.ig[IG2], &GRef->fst.ig[IG3], &GRef->fst.ig[IG4],1);
          latp = (ftnfloat *) malloc(ni*nj*sizeof(ftnfloat));
          lonp = (ftnfloat *) malloc(ni*nj*sizeof(ftnfloat));
-         f77name(ez_gfllfxy)(lonp,latp,GRef->lon,GRef->lat,&npts,
+         f77name(ez_gfllfxy)(lonp,latp,GRef->Lon,GRef->Lat,&npts,
 			       &GRef->fst.xg[XLAT1], &GRef->fst.xg[XLON1], &GRef->fst.xg[XLAT2],
 			       &GRef->fst.xg[XLON2]);
-         memcpy(GRef->lat,latp,npts*sizeof(ftnfloat));
-         memcpy(GRef->lon,lonp,npts*sizeof(ftnfloat));
+         memcpy(GRef->Lat,latp,npts*sizeof(ftnfloat));
+         memcpy(GRef->Lon,lonp,npts*sizeof(ftnfloat));
          free(latp);
          free(lonp);
          break;
 
          case 'L':
-         f77name(grll)(GRef->lat,GRef->lon,&ni,&nj,
+         f77name(grll)(GRef->Lat,GRef->Lon,&ni,&nj,
 			 &GRef->fst.xg[SWLAT],&GRef->fst.xg[SWLON],
 			 &GRef->fst.xg[DLAT], &GRef->fst.xg[DLON]);
            break;
@@ -86,7 +86,7 @@ wordint ez_calclatlon(TGeoRef* GRef)
            {
            hemisphere = 2;
             }
-         f77name(grps)(GRef->lat,GRef->lon,&ni,&nj,
+         f77name(grps)(GRef->Lat,GRef->Lon,&ni,&nj,
 			 &GRef->fst.xg[PI],&GRef->fst.xg[PJ],
 			 &GRef->fst.xg[D60], &GRef->fst.xg[DGRW], &hemisphere);
          break;
@@ -112,8 +112,8 @@ wordint ez_calclatlon(TGeoRef* GRef)
                            &GRef->fst.xg[TD60],&GRef->fst.xg[TDGRW],
                            &ni,&nj,&npts);
 
-          memcpy(GRef->lon, lonp, ni*nj*sizeof(ftnfloat));
-          memcpy(GRef->lat, latp, ni*nj*sizeof(ftnfloat));
+          memcpy(GRef->Lon, lonp, ni*nj*sizeof(ftnfloat));
+          memcpy(GRef->Lat, latp, ni*nj*sizeof(ftnfloat));
           free(lonp);
           free(latp);
           free(xp);
@@ -131,13 +131,13 @@ wordint ez_calclatlon(TGeoRef* GRef)
 
             case 'L':
             case 'O':
-            memcpy(GRef->lon, GRef->AX, GRef->ni*GRef->nj*sizeof(ftnfloat));
-	    memcpy(GRef->lat, GRef->AY, GRef->ni*GRef->nj*sizeof(ftnfloat));
+            memcpy(GRef->Lon, GRef->AX, GRef->ni*GRef->nj*sizeof(ftnfloat));
+	    memcpy(GRef->Lat, GRef->AY, GRef->ni*GRef->nj*sizeof(ftnfloat));
 	    for (i=0; i < GRef->ni*GRef->nj; i++)
                {
-	       if (GRef->lon[i] < 0.0)
+	       if (GRef->Lon[i] < 0.0)
                   {
-	          GRef->lon[i] = GRef->AX[i] + 360.0;
+	          GRef->Lon[i] = GRef->AX[i] + 360.0;
 	          }
 	       }
 	    break;
@@ -157,8 +157,8 @@ wordint ez_calclatlon(TGeoRef* GRef)
                {
                for (i=0; i < ni; i++)
                  {
-                 GRef->lat[C_TO_FTN(i,j,ni)] = GRef->AY[j];
-                 GRef->lon[C_TO_FTN(i,j,ni)] = GRef->AX[i];
+                 GRef->Lat[C_TO_FTN(i,j,ni)] = GRef->AY[j];
+                 GRef->Lon[C_TO_FTN(i,j,ni)] = GRef->AX[i];
                  }
                }
 
@@ -168,7 +168,7 @@ wordint ez_calclatlon(TGeoRef* GRef)
 	       {
 	       for (i=0; i < ni; i++)
 		 {
-		 GRef->lat[C_TO_FTN(i,j,ni)] = GRef->AY[j+nj];
+		 GRef->Lat[C_TO_FTN(i,j,ni)] = GRef->AY[j+nj];
 		 }
 	       }
 	     }
@@ -180,7 +180,7 @@ wordint ez_calclatlon(TGeoRef* GRef)
 	       latp = (ftnfloat *) malloc(ni*nj*sizeof(ftnfloat));
 	       lonp = (ftnfloat *) malloc(ni*nj*sizeof(ftnfloat));
 	       f77name(ez_vllfxy)(latp,lonp,
-			       GRef->lon,GRef->lat,&ni,&nj,
+			       GRef->Lon,GRef->Lat,&ni,&nj,
 			       &GRef->fst.xgref[D60],&GRef->fst.xgref[DGRW],
 			       &GRef->fst.xgref[PI], &GRef->fst.xgref[PJ], &GRef->fst.hemisphere);
 
@@ -189,8 +189,8 @@ wordint ez_calclatlon(TGeoRef* GRef)
 		 if (lonp[i] < 0.0) lonp[i] += 360.0;
 		 }
 
-	       memcpy(GRef->lon, lonp, ni*nj*sizeof(ftnfloat));
-	       memcpy(GRef->lat, latp, ni*nj*sizeof(ftnfloat));
+	       memcpy(GRef->Lon, lonp, ni*nj*sizeof(ftnfloat));
+	       memcpy(GRef->Lat, latp, ni*nj*sizeof(ftnfloat));
 	       free(lonp);
 	       free(latp);
 	       break;
@@ -200,21 +200,21 @@ wordint ez_calclatlon(TGeoRef* GRef)
 		 {
 		 for (i=0; i < ni; i++)
 		   {
-		   GRef->lat[C_TO_FTN(i,j,ni)] += 1.0;
-		   GRef->lon[C_TO_FTN(i,j,ni)] += 1.0;
+		   GRef->Lat[C_TO_FTN(i,j,ni)] += 1.0;
+		   GRef->Lon[C_TO_FTN(i,j,ni)] += 1.0;
 		   }
 		 }
-	       c_llfgr(GRef->lat, GRef->lon, GRef->lon, GRef->lat, ni*nj,
+	       c_llfgr(GRef->Lat, GRef->Lon, GRef->Lon, GRef->Lat, ni*nj,
 		       GRef->fst.xgref[SWLAT],GRef->fst.xgref[SWLON], GRef->fst.xgref[DLAT], GRef->fst.xgref[DLON]);
 	       break;
 
 	     case 'E':
 	       latp = (ftnfloat *) malloc(ni*nj*sizeof(ftnfloat));
 	       lonp = (ftnfloat *) malloc(ni*nj*sizeof(ftnfloat));
-	       f77name(ez_gfllfxy)(lonp,latp,GRef->lon,GRef->lat,&npts,
+	       f77name(ez_gfllfxy)(lonp,latp,GRef->Lon,GRef->Lat,&npts,
 				   &GRef->fst.xgref[XLAT1],&GRef->fst.xgref[XLON1], &GRef->fst.xgref[XLAT2], &GRef->fst.xgref[XLON2]);
-	       memcpy(GRef->lon, lonp, ni*nj*sizeof(ftnfloat));
-	       memcpy(GRef->lat, latp, ni*nj*sizeof(ftnfloat));
+	       memcpy(GRef->Lon, lonp, ni*nj*sizeof(ftnfloat));
+	       memcpy(GRef->Lat, latp, ni*nj*sizeof(ftnfloat));
 	       free(lonp);
 	       free(latp);
 	       break;
@@ -233,14 +233,14 @@ wordint ez_calclatlon(TGeoRef* GRef)
 	       y[C_TO_FTN(i,j,ni)] = (ftnfloat) (j+1.0);
 	       }
 	     }
-	   f77name(ez_llflamb)(GRef->lat,GRef->lon,x,y,&npts,
+	   f77name(ez_llflamb)(GRef->Lat,GRef->Lon,x,y,&npts,
 			       &GRef->grtyp, &GRef->fst.ig[IG1],&GRef->fst.ig[IG2],
 			       &GRef->fst.ig[IG3],&GRef->fst.ig[IG4],1);
 	   for (i=0; i < npts; i++)
 	     {
-	     if (GRef->lon[i] < 0.0)
+	     if (GRef->Lon[i] < 0.0)
 	       {
-	       GRef->lon[i] += 360.0;
+	       GRef->Lon[i] += 360.0;
 	       }
 	     }
 	   break;
@@ -253,7 +253,7 @@ wordint ez_calclatlon(TGeoRef* GRef)
 	case 'A':
 	  if (GRef->fst.ig[IG2] == 1)
 	    {
-	    f77name(permut)(GRef->lat, &GRef->ni, &GRef->nj);
+	    f77name(permut)(GRef->Lat, &GRef->ni, &GRef->nj);
 	    }
 	  break;
 
@@ -271,7 +271,7 @@ wordint ez_calclatlon(TGeoRef* GRef)
        {
        for (i=0; i < ni; i++)
 	 {
-	 fprintf(stderr, "%d %d %f %f\n", i,j,GRef->lat[i], GRef->lon[i]);
+	 fprintf(stderr, "%d %d %f %f\n", i,j,GRef->Lat[i], GRef->Lon[i]);
 	 }
        }
      }

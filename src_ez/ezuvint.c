@@ -89,9 +89,9 @@ wordint c_ezuvint_orig(ftnfloat *uuout, ftnfloat *vvout, ftnfloat *uuin, ftnfloa
   vvllout = (ftnfloat *) malloc(npts*sizeof(ftnfloat));
   
   c_gdwdfuv(gdin, uullout, vvllout, uuout, vvout,
-            gdout->lat, gdout->lon, npts);
+            gdout->Lat, gdout->Lon, npts);
   c_gduvfwd(gdout, uuout, vvout, uullout, vvllout,
-            gdout->lat, gdout->lon, npts);
+            gdout->Lat, gdout->Lon, npts);
   
   groptions.vecteur = SCALAIRE;
   free(uullout);

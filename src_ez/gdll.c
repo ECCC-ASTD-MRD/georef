@@ -69,14 +69,14 @@ wordint c_gdll_orig(TGeoRef *GRef, ftnfloat *lat, ftnfloat *lon)
    ez_calclatlon(GRef);
    if (GRef->flags & LAT)
       {
-      memcpy(lon, GRef->lon, GRef->ni*GRef->nj*sizeof(ftnfloat));
+      memcpy(lon, GRef->Lon, GRef->ni*GRef->nj*sizeof(ftnfloat));
       if (GRef->fst.axe_y_inverse == 0)
          {
-         memcpy(lat, GRef->lat, GRef->ni*GRef->nj*sizeof(ftnfloat));
+         memcpy(lat, GRef->Lat, GRef->ni*GRef->nj*sizeof(ftnfloat));
          }
       else
          {
-         memcpy(lat, GRef->lat, GRef->ni*GRef->nj*sizeof(ftnfloat));
+         memcpy(lat, GRef->Lat, GRef->ni*GRef->nj*sizeof(ftnfloat));
          }
       }
    else

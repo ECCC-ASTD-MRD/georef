@@ -36,13 +36,13 @@ void EliminerGrille(TGeoRef* GRef)
 // JP
    pthread_mutex_lock(&EZ_MTX);
 #endif
-
-   if (GRef->flags & LAT)
+/* TODO: already freed */
+/*    if (GRef->flags & LAT)
    {
-      free(GRef->lat);
-      free(GRef->lon);
-      GRef->lat = NULL;
-      GRef->lon = NULL;
+      free(GRef->Lat);
+      free(GRef->Lon);
+      GRef->Lat = NULL;
+      GRef->Lon = NULL;
    }
 
    if (GRef->flags & EZ_AX)
@@ -51,7 +51,7 @@ void EliminerGrille(TGeoRef* GRef)
       free(GRef->AY);
       GRef->AX = NULL;
       GRef->AY = NULL;
-   }
+   } */
 
    if (GRef->ncx != NULL)
    {
