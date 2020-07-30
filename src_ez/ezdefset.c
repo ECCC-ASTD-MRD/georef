@@ -22,7 +22,7 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
-/* void reallocate_gridset_table(TGeoRef* gr); */
+void reallocate_gridset_table(TGeoRef* gr);
 void   allocate_gridset_table(TGeoRef* gr);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

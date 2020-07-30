@@ -25,7 +25,7 @@ void Lire_enrUvercode1(TGeoRef *gr, ftnfloat *yy, wordint nix)
   memcpy(ay,&yy[15+ni],nj*sizeof(ftnfloat));
   yinsize=15+ni+nj;
   gr->NbSub = ndiv;
-  gr->Subs = (wordint *) malloc(ndiv*sizeof(wordint));
+  gr->Subs = (TGeoRef **) malloc(ndiv*sizeof(TGeoRef*));
   strcpy(grtypZ,"Z"); strcpy(grrefE,"E");
   /*yin*/
   ier = f77name(cxgaig)(grrefE,&ig1refyin,&ig2refyin,&ig3refyin,&ig4refyin,&yy[11], &yy[12], &yy[13], &yy[14],1);
