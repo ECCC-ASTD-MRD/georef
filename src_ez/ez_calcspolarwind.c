@@ -136,6 +136,6 @@ wordint ez_calcspolarwind(ftnfloat *polar_uu_in, ftnfloat *polar_vv_in, ftnfloat
     free(polar_lon_gem);
     }
 
-  ier = c_gdrls(gdps);
+  ier = GeoRef_Free(gdps);
   return 0;
 }
