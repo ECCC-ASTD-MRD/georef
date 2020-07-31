@@ -46,6 +46,7 @@ TGeoRef *c_ezidentify_reg_grid(wordint ni, wordint nj, char *grtyp,
    GRef->IG2_JP = ig2;
    GRef->IG3_JP = ig3;
    GRef->IG4_JP = ig4;
+   GRef->n_gdin_for = 0;
 
    GeoRef_Size(GRef, 0, 0, ni - 1, nj - 1, 0);
 
@@ -109,6 +110,7 @@ TGeoRef *c_ezidentify_irreg_grid(
    GRef->j1 = 1;
    GRef->j2 = nj;
    GRef->idx_last_gdin = -1;
+   GRef->n_gdin_for = 0;
 
    switch (grtyp[0])
    {
