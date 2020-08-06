@@ -21,8 +21,10 @@
 #include "ez_funcdef.h"
 #include "../src/GeoRef.h"
 
-wordint c_ezyymint(TGeoRef *gdout, TGeoRef *gdin, wordint ni, wordint nj, ftnfloat *maskout, ftnfloat *dlat, ftnfloat *dlon, ftnfloat *yinlat, ftnfloat *yinlon, wordint *yyincount, ftnfloat *yanlat, ftnfloat *yanlon, wordint *yyancount)
-{
+wordint c_ezyymint(TGeoRef *gdout, TGeoRef *gdin, wordint ni, wordint nj, 
+                   ftnfloat *maskout, ftnfloat *dlat, ftnfloat *dlon, ftnfloat *yinlat, 
+                   ftnfloat *yinlon, wordint *yyincount, ftnfloat *yanlat, ftnfloat *yanlon, wordint *yyancount)
+{  
   wordint ivalue,icode,i,j,k;
   TGeoRef *yin_mg;
   wordint yincount,yancount,yni,ynj;
