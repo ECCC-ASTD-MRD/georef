@@ -99,6 +99,8 @@
 
 typedef struct
 {
+  wordint  damage_control;
+  wordint  memory_use;
   wordint degre_interp;
   wordint degre_extrap;
   wordint use_1subgrid;
