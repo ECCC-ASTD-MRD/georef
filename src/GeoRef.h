@@ -238,24 +238,24 @@ typedef struct TGeoRef {
 
    // _Grille struct from ezscint.h
    wordint flags;
-   wordint i1, i2, j1, j2;
+   wordint i1, i2, j1, j2;                      ///< Expansion coefficients used to expand grid
    wordint ni,nj;                               ///< Dimensions
-   wordint ni_ax, nj_ay;
+   wordint ni_ax, nj_ay;                        ///< Dimensions of grid descriptors 
    wordint extension;
    wordint needs_expansion;
    wordint n_gdin;                              ///< Nombre de grilles source demandees pour interpoler a sa propre grille
    wordint n_gdin_for;                          ///< Nombre de grilles de destination (differentes) pour faire une interpolation avec cette  grille
    wordint idx_last_gdin;                       ///< Position dans gset
    wordint log_chunk_gdin;
-   wordint *mask;
+   wordint *mask;                               ///< Masque
    struct TGeoRef **gdin_for;                   ///< Pointeurs vers les georeferences de destination pour faire une interpolation avec cette  grille
-   struct TGeoRef *mymaskgrid;
+   struct TGeoRef *mymaskgrid;                  ///< Grille source utilisee pour l'interpolation (GRTYP=U)
    struct TGeoRef **Subs;                       ///< Liste des sous grilles (GRTYP=U)
    wordint NbSub;                               ///< Nombre de sous-grilles
    wordint NSub;                                ///< Sous-grille courante (=0 si toutes)
-   wordint mymaskgridi0,mymaskgridi1;
-   wordint mymaskgridj0,mymaskgridj1;
-   ftnfloat *ncx, *ncy;
+   wordint mymaskgridi0,mymaskgridi1;           ///< Indices pour les point depart (~45) et fin (~135) de 'longitude' (limites des points de source (GRTYP=U) pour faire l'interpolation a la destination) 
+   wordint mymaskgridj0,mymaskgridj1;           ///< Indices pour les point depart (~ -45)  et fin (~45) de 'latitude (limites des points de source (GRTYP=U) pour faire l'interpolation a la destination) 
+   ftnfloat *ncx, *ncy;                         ///< Coefficients uti1ises dans la forme newtonienne de l'interpolation de Lagrange
    char grtyp[4], grref[4];
    _fstinfo fst;
    _gridset *gset;
