@@ -238,53 +238,6 @@ switch(DEF->Type) {\
    }\
 }
 
-// Raster interpolation modes
-typedef enum {
-   IR_NEAREST                        = 0,
-   IR_LINEAR                         = 1,
-   IR_CUBIC                          = 2,
-   IR_NORMALIZED_CONSERVATIVE        = 3,
-   IR_CONSERVATIVE                   = 4,
-   IR_MAXIMUM                        = 5,
-   IR_MINIMUM                        = 6,
-   IR_SUM                            = 7,
-   IR_AVERAGE                        = 8,
-   IR_VARIANCE                       = 9,
-   IR_SQUARE                         = 10,
-   IR_NORMALIZED_COUNT               = 11,
-   IR_COUNT                          = 12,
-   IR_VECTOR_AVERAGE                 = 13,
-   IR_NOP                            = 14,
-   IR_ACCUM                          = 15,
-   IR_BUFFER                         = 16,
-   IR_SUBNEAREST                     = 17,
-   IR_SUBLINEAR                      = 18
-} TDef_InterpR;
-
-// Vector interpolation modes
-typedef enum {
-   IV_FAST                           = 0,
-   IV_WITHIN                         = 1,
-   IV_INTERSECT                      = 2,
-   IV_CENTROID                       = 3,
-   IV_ALIASED                        = 4,
-   IV_CONSERVATIVE                   = 5,
-   IV_NORMALIZED_CONSERVATIVE        = 6,
-   IV_POINT_CONSERVATIVE             = 7,
-   IV_LENGTH_CONSERVATIVE            = 8,
-   IV_LENGTH_NORMALIZED_CONSERVATIVE = 9,
-   IV_LENGTH_ALIASED                 = 10
-} TDef_InterpV;
-
-// Interpolation value combination modes
-typedef enum {
-   CB_REPLACE   = 0,
-   CB_MIN       = 1,
-   CB_MAX       = 2,
-   CB_SUM       = 3,
-   CB_AVERAGE   = 4,
-} TDef_Combine;
-
 // Value data type
 typedef enum {
     TD_Unknown = 0,
@@ -334,7 +287,7 @@ void  Def_Clear(TDef *Def);
 int   Def_Compat(TDef *DefTo,TDef *DefFrom);
 TDef *Def_Copy(TDef *Def);
 TDef *Def_CopyPromote(TDef *Def,TDef_Type Type);
-void  Def_Free(TDef *Def);
+int   Def_Free(TDef *Def);
 TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type);
 TDef *Def_Resize(TDef *Def,int NI,int NJ,int NK);
 int   Def_Paste(TDef *DefTo,TDef *DefPaste,int X0,int Y0);
@@ -342,9 +295,9 @@ int   Def_Paste(TDef *DefTo,TDef *DefPaste,int X0,int Y0);
 int   Def_Rasterize(TDef *Def,struct TGeoRef *Ref,OGRGeometryH Geom,double Value,TDef_Combine Comb);
 int   Def_GridCell2OGR(OGRGeometryH Geom,struct TGeoRef *RefTo,struct TGeoRef *RefFrom,int I,int J,int Seg);
 
-int   Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char *Interp,char *Extrap,char Mask,float *Index);
-int   Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char *Interp,char *Extrap,char Mask,float *Index);
-int   Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char *Interp,char *Extrap,char Mask,float *Index);
+int   Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,float *Index);
+int   Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,char Mask,float *Index);
+int   Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,char Mask,float *Index);
 int   Def_GridInterpAverage(struct TGeoRef *ToRef,TDef *ToDef,struct TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize,TDef *TmpDef,TDef_InterpR Mode,int Final);
 int   Def_GridInterpConservative(struct TGeoRef *ToRef,TDef *ToDef,struct TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Mode,int Final,int Prec,float *Index);
 int   Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char Degree);

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'Wrapper pour la fonction c_ezsint de libgeoref'
+'Wrapper pour la fonction GeoRef_Interp de libgeoref'
 
 import ctypes as ct
 import numpy  as _np
@@ -174,7 +174,7 @@ def ezsint(gdidout, gdidin, zin, zout=None):
     if not (isinstance(zout, _np.ndarray) and zout.shape == dshape):
         raise TypeError("Wrong type,shape for zout: {0}, {1}"\
                         .format(type(zout), repr(dshape)))
-    istat = rp.c_ezsint(zout, zin)
+    istat = rp.GeoRef_Interp(zout, zin)
     if istat >= 0:
         return zout
     raise EzscintError()

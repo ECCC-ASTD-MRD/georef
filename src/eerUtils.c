@@ -747,6 +747,14 @@ void strrep(char *Str,char Tok,char Rep) {
    }
 }
 
+void strblank2end(char *Str,int Length) {
+   int i;
+
+   for (i=strlen(Str);i<Length; i++) {
+      Str[i]=' ';
+   }
+   Str[Length-1] = '\0';
+}
 
 void strtrim(char *Str,char Tok) {
 

@@ -1,6 +1,6 @@
 message(STATUS "Generating test binaries")
 
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
 add_link_options(-Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib)
 
 IF(DEFINED ENV{INTELCOMP_HOME})

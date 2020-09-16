@@ -300,8 +300,6 @@ void App_Start(void) {
    // RMN Lib settings
    c_fstopc("MSGLVL","WARNIN",0);
    c_fstopc("TOLRNC","SYSTEM",0);
-   c_ezsetopt("INTERP_DEGREE","LINEAR");
-   c_ezsetopt("VERBOSE","NO");
 #endif
    
    App->State      = RUN;
@@ -347,11 +345,6 @@ void App_Start(void) {
    #pragma omp parallel
    {
       App=&AppInstance;
-#ifdef HAVE_RMN     
-      // Need to define default for ezscint for each thread
-      c_ezsetopt("INTERP_DEGREE","LINEAR");
-      c_ezsetopt("VERBOSE","NO");
-#endif
    }
    App_ThreadPlace();
 #else

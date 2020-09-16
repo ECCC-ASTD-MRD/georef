@@ -36,13 +36,12 @@
 #include "Def.h"
 #include "RPN.h"
 #include "Vertex.h"
-#include "EZGrid.h"
 
-void     GeoRef_Expand(TGeoRef *GRef);
-double   GeoRef_RPNDistance(TGeoRef *GRef,double X0,double Y0,double X1, double Y1);
-int      GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
-int      GeoRef_RPNProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
-int      GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
+void     GeoRef_Expand(TGeoRef *Ref);
+double   GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
+int      GeoRef_RPNValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
+int      GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
+int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_Expand>
@@ -51,7 +50,7 @@ int      GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double
  * But          : Effectuer l'expansion des axes de la grilles selon les >> ^^.
  *
  * Parametres    :
- *   <GRef>       : Pointeur sur la reference geographique
+ *   <Ref>       : Pointeur sur la reference geographique
  *
  * Retour       :
  *
@@ -59,27 +58,27 @@ int      GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-void GeoRef_Expand(TGeoRef *GRef) {
+void GeoRef_Expand(TGeoRef *Ref) {
 
 #ifdef HAVE_RMN
    double lat,lon;
    int    i;
 
-   if (GRef->Type&GRID_EZ && !GRef->AX) {
-      GRef->AX=(float*)calloc((int)GRef->X1+1,sizeof(float));
-      GRef->AY=(float*)calloc((int)GRef->Y1+1,sizeof(float));
+   if (Ref->Type&GRID_EZ && !Ref->AX) {
+      Ref->AX=(float*)calloc((int)Ref->X1+1,sizeof(float));
+      Ref->AY=(float*)calloc((int)Ref->Y1+1,sizeof(float));
 
-      if (GRef->AX && GRef->AY) {
-         if (GRef->Grid[0]=='Z') {
-            c_gdgaxes(REFGET(GRef),GRef->AX,GRef->AY);
+      if (Ref->AX && Ref->AY) {
+         if (Ref->GRTYP[0]=='Z') {
+            c_gdgaxes(REFGET(Ref),Ref->AX,Ref->AY);
          } else {
-            for(i=0;i<=GRef->X1;i++) {
-               GRef->Project(GRef,i,0,&lat,&lon,1,1);
-               GRef->AX[i]=lon;
+            for(i=0;i<=Ref->X1;i++) {
+               Ref->Project(Ref,i,0,&lat,&lon,1,1);
+               Ref->AX[i]=lon;
             }
-            for(i=0;i<=GRef->Y1;i++) {
-               GRef->Project(GRef,0,i,&lat,&lon,1,1);
-               GRef->AY[i]=lat;
+            for(i=0;i<=Ref->Y1;i++) {
+               Ref->Project(Ref,0,i,&lat,&lon,1,1);
+               Ref->AY[i]=lat;
             }
          }
       }
@@ -94,7 +93,7 @@ void GeoRef_Expand(TGeoRef *GRef) {
  * But          : Calculer la distance entre deux points.
  *
  * Parametres    :
- *   <GRef>      : Pointeur sur la reference geographique
+ *   <Ref>      : Pointeur sur la reference geographique
  *   <X0>        : coordonnee en X dans la projection/grille
  *   <Y0>        : coordonnee en Y dans la projection/grille
  *   <X0>        : coordonnee en X dans la projection/grille
@@ -106,18 +105,18 @@ void GeoRef_Expand(TGeoRef *GRef) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-double GeoRef_RPNDistance(TGeoRef *GRef,double X0,double Y0,double X1, double Y1) {
+double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1) {
 
 #ifdef HAVE_RMN
    float i[2],j[2],lat[2],lon[2];
 
-   if (GRef->Type&GRID_EZ) {
+   if (Ref->Type&GRID_EZ) {
       i[0]=X0+1.0;
       j[0]=Y0+1.0;
       i[1]=X1+1.0;
       j[1]=Y1+1.0;
 
-      c_gdllfxy(REFGET(GRef),lat,lon,i,j,2);
+      GeoRef_XY2LL(REFGET(Ref),lat,lon,i,j,2);
 
       X0=DEG2RAD(lon[0]);
       X1=DEG2RAD(lon[1]);
@@ -137,9 +136,9 @@ double GeoRef_RPNDistance(TGeoRef *GRef,double X0,double Y0,double X1, double Y1
  * But          : Extraire la valeur d'une matrice de donnees.
  *
  * Parametres    :
- *   <GRef>      : Pointeur sur la reference geographique
+ *   <Ref>      : Pointeur sur la reference geographique
  *   <Def>       : Pointeur sur la definition de la donnee
- *   <Mode>      : Mode d'interpolation (N=NEAREST,L=LINEAR);
+ *   <Interp>    : Mode d'interpolation
  *   <C>         : Composante
  *   <X>         : coordonnee en X dans la projection/grille
  *   <Y>         : coordonnee en Y dans la projection/grille
@@ -154,7 +153,7 @@ double GeoRef_RPNDistance(TGeoRef *GRef,double X0,double Y0,double X1, double Y1
  *---------------------------------------------------------------------------------------------------------------
 */
 
-int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,double Z,double *Length,double *ThetaXY) {
+int GeoRef_RPNValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY) {
 
    Vect3d       b,v;
    float        x,y,valf,valdf;
@@ -166,33 +165,33 @@ int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,do
 
 #ifdef HAVE_RMN
    // In case of triangle meshe
-   if (GRef->Grid[0]=='M') {
+   if (Ref->GRTYP[0]=='M') {
       if (C<Def->NC && X>=0 && Y>=0) {
          b[0]=X-(int)X;
          b[1]=Y-(int)Y;
          b[2]=1.0-b[0]-b[1];
          ix=(int)X;
 
-         if (Mode=='N') {
+         if (Interp==IR_NEAREST) {
             n=(b[0]>b[1]?(b[0]>b[2]?0:2):(b[1]>b[2]?1:2));
-            Def_Get(Def,C,GRef->Idx[ix+n],x);
+            Def_Get(Def,C,Ref->Idx[ix+n],x);
          } else {
-            Def_Get(Def,C,GRef->Idx[ix],v[0]);
-            Def_Get(Def,C,GRef->Idx[ix+1],v[1]);
-            Def_Get(Def,C,GRef->Idx[ix+2],v[2]);
+            Def_Get(Def,C,Ref->Idx[ix],v[0]);
+            Def_Get(Def,C,Ref->Idx[ix+1],v[1]);
+            Def_Get(Def,C,Ref->Idx[ix+2],v[2]);
 
             x=Bary_InterpV(b,v);
          }
          *Length=x;
          
          if (Def->Data[1] && !C) {
-            if (Mode=='N') {
+            if (Interp==IR_NEAREST) {
                n=(b[0]>b[1]?(b[0]>b[2]?0:2):(b[1]>b[2]?1:2));
-               Def_Get(Def,1,GRef->Idx[ix+n],y);
+               Def_Get(Def,1,Ref->Idx[ix+n],y);
             } else {
-               Def_Get(Def,1,GRef->Idx[ix],v[0]);
-               Def_Get(Def,1,GRef->Idx[ix+1],v[1]);
-               Def_Get(Def,1,GRef->Idx[ix+2],v[2]);
+               Def_Get(Def,1,Ref->Idx[ix],v[0]);
+               Def_Get(Def,1,Ref->Idx[ix+1],v[1]);
+               Def_Get(Def,1,Ref->Idx[ix+2],v[2]);
 
                y=Bary_InterpV(b,v);
             }
@@ -206,7 +205,7 @@ int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,do
    }
 
    // Si on est a l'interieur de la grille ou que l'extrapolation est activee
-   if (C<Def->NC && X>=(GRef->X0-0.5) && Y>=(GRef->Y0-0.5) && Z>=0 && X<(GRef->X1+0.5) && Y<(GRef->Y1+0.5) && Z<=Def->NK-1) {
+   if (C<Def->NC && X>=(Ref->X0-0.5) && Y>=(Ref->Y0-0.5) && Z>=0 && X<(Ref->X1+0.5) && Y<(Ref->Y1+0.5) && Z<=Def->NK-1) {
 
       // Index memoire du niveau desire
       mem=Def->NIJ*(int)Z;
@@ -221,7 +220,7 @@ int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,do
       }
 
       // Point cloud
-      if (GRef->Grid[0]=='Y' || GRef->Grid[0]=='P' || Def->NI==1 || Def->NJ==1) {
+      if (Ref->GRTYP[0]=='Y' || Ref->GRTYP[0]=='P' || Def->NI==1 || Def->NJ==1) {
          mem+=idx;
          Def_Get(Def,C,mem,x);
          if (Def->Data[1] && !C) {
@@ -235,16 +234,16 @@ int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,do
       } 
 
       // Check for nodata in linear interpolation 
-      if (Def->Type>=TD_Int64 && Mode!='N') {
+      if (Def->Type>=TD_Int64 && Interp!=IR_NEAREST) {
          int idxs[4],dx,dy;
          double vals[4];
          
          dx=X;
          dy=Y;
          idxs[0]=mem+dy*Def->NI+dx;
-         idxs[1]=(dx<GRef->X1)?idxs[0]+1:idxs[0];
-         idxs[2]=(dy<GRef->Y1)?idxs[0]+Def->NI:idxs[0];
-         idxs[3]=(dy<GRef->Y1 && dx<GRef->X1)?idxs[0]+Def->NI+1:idxs[0];
+         idxs[1]=(dx<Ref->X1)?idxs[0]+1:idxs[0];
+         idxs[2]=(dy<Ref->Y1)?idxs[0]+Def->NI:idxs[0];
+         idxs[3]=(dy<Ref->Y1 && dx<Ref->X1)?idxs[0]+Def->NI+1:idxs[0];
          
          Def_GetQuad(Def,C,idxs,vals);
 
@@ -254,7 +253,7 @@ int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,do
       }
      
       // XSection
-      if (GRef->Grid[0]=='V') {
+      if (Ref->GRTYP[0]=='V') {
          if (Def->Data[1]) {
             Def_GetMod(Def,FIDX2D(Def,ix,iy),*Length);
          } else {
@@ -264,15 +263,15 @@ int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,do
       }
 
       // Unstructured or not referenced
-      if (GRef->Grid[0]=='X' || GRef->Grid[0]=='O') {
-         if (Def->Type<=TD_Int64 || Mode=='N' || (X==ix && Y==iy)) {
+      if (Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='O') {
+         if (Def->Type<=TD_Int64 || Interp==IR_NEAREST || (X==ix && Y==iy)) {
             mem+=idx;
 
            // Pour un champs vectoriel
             if (Def->Data[1] && !C) {
                Def_Get(Def,0,mem,x);
                Def_Get(Def,1,mem,y);
-               if (ThetaXY) *ThetaXY=180+RAD2DEG(atan2(x,y)-GeoRef_GeoDir(GRef,X,Y));
+               if (ThetaXY) *ThetaXY=180+RAD2DEG(atan2(x,y)-GeoRef_GeoDir(Ref,X,Y));
                *Length=hypot(x,y);
             } else {
                Def_GetMod(Def,mem,*Length);              
@@ -282,7 +281,7 @@ int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,do
             if (Def->Data[1] && !C) {
                x=VertexVal(Def,0,X,Y,Z);
                y=VertexVal(Def,1,X,Y,Z);
-               if (ThetaXY) *ThetaXY=180+RAD2DEG(atan2(x,y)-GeoRef_GeoDir(GRef,X,Y));
+               if (ThetaXY) *ThetaXY=180+RAD2DEG(atan2(x,y)-GeoRef_GeoDir(Ref,X,Y));
                *Length=hypot(x,y);
             } else {
                *Length=VertexVal(Def,-1,X,Y,Z);               
@@ -292,35 +291,35 @@ int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,do
       }
    
       // RPN grid
-      if (GRef->Type&GRID_EZ) {         
+      if (Ref->Type&GRID_EZ) {         
          if (Def->Type==TD_Float32 && Def->Data[1] && !C) { 
             x=X+1.0;
             y=Y+1.0;
 
-            if (Mode=='N') {
+            if (Interp==IR_NEAREST) {
                x=lrint(x);
                y=lrint(y);
             }
             
             Def_Pointer(Def,0,mem,p0);
             Def_Pointer(Def,1,mem,p1);
-            c_gdxywdval(REFGET(GRef),&valf,&valdf,p0,p1,&x,&y,1);
+            GeoRef_XYWDVal(REFGET(Ref),&valf,&valdf,p0,p1,&x,&y,1);
 
-            // If it's 3D, use the mode for speed since c_gdxywdval only uses 2D
+            // If it's 3D, use the mode for speed since GeoRef_XYWDVal only uses 2D
             if (Def->Data[2])
-               c_gdxysval(REFGET(GRef),&valf,(float*)&Def->Mode[mem],&x,&y,1);
+               GeoRef_XYVal(REFGET(Ref),&valf,(float*)&Def->Mode[mem],&x,&y,1);
                *Length=valf;
             if (ThetaXY)
                *ThetaXY=valdf;
          } else {            
-            if (Mode=='N') {
+            if (Interp==IR_NEAREST) {
                mem+=idx;
                Def_Get(Def,C,mem,*Length);
             } else {
                *Length=VertexVal(Def,C,X,Y,Z);
 //            Def_Pointer(Def,0,mem,p0);
 //            x=X+=1.0;y=Y+=1.0;
-//                c_gdxysval(REFGET(GRef),&valf,p0,&x,&y,1);
+//                GeoRef_XYVal(REFGET(Ref),&valf,p0,&x,&y,1);
 //               fprintf(stderr,"----- %.10e %.10e   ---> %.10e\n",*Length,valf,*Length-valf);
             }
             if (ThetaXY)
@@ -340,7 +339,7 @@ int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,do
  * But          : Projeter une coordonnee de projection en latlon.
  *
  * Parametres    :
- *   <GRef>      : Pointeur sur la reference geographique
+ *   <Ref>      : Pointeur sur la reference geographique
  *   <X>         : coordonnee en X dans la projection/grille
  *   <Y>         : coordonnee en Y dans la projection/grille
  *   <Lat>       : Latitude
@@ -354,7 +353,7 @@ int GeoRef_RPNValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double X,double Y,do
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_RPNProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
+int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
 
    float i,j,lat=-999.0,lon=-999.0;
    int   idx;
@@ -362,7 +361,7 @@ int GeoRef_RPNProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
    int    sx,sy,s;
 
 #ifdef HAVE_RMN
-   if (X<(GRef->X0-0.5) || Y<(GRef->Y0-0.5) || X>(GRef->X1+0.5) || Y>(GRef->Y1+0.5)) {
+   if (X<(Ref->X0-0.5) || Y<(Ref->Y0-0.5) || X>(Ref->X1+0.5) || Y>(Ref->Y1+0.5)) {
       if (!Extrap) {
          *Lat=-999.0;
          *Lon=-999.0;
@@ -370,15 +369,15 @@ int GeoRef_RPNProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
       }
    }
 
-   if (GRef->Type&GRID_SPARSE) {
-      if (GRef->AX && GRef->AY) {
-         if (GRef->Grid[0]=='Y') {
-            idx=Y*(GRef->X1-GRef->X0)+X;
-            Y=GRef->AY[idx];
-            X=GRef->AX[idx];
+   if (Ref->Type&GRID_SPARSE) {
+      if (Ref->AX && Ref->AY) {
+         if (Ref->GRTYP[0]=='Y') {
+            idx=Y*(Ref->X1-Ref->X0)+X;
+            Y=Ref->AY[idx];
+            X=Ref->AX[idx];
          } else {
-            dx=Vertex_ValS(GRef->AX,NULL,GRef->NX,GRef->NY,X,Y,TRUE);
-            dy=Vertex_ValS(GRef->AY,NULL,GRef->NX,GRef->NY,X,Y,FALSE);
+            dx=Vertex_ValS(Ref->AX,NULL,Ref->NX,Ref->NY,X,Y,TRUE);
+            dy=Vertex_ValS(Ref->AY,NULL,Ref->NX,Ref->NY,X,Y,FALSE);
             
             X=dx;
             Y=dy;
@@ -388,7 +387,7 @@ int GeoRef_RPNProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
       }
    }
 
-   if (!(GRef->Type&GRID_EZ) || GRef->Type&GRID_SPARSE) {
+   if (!(Ref->Type&GRID_EZ) || Ref->Type&GRID_SPARSE) {
       *Lat=Y;
       *Lon=X;
       return(1);
@@ -397,7 +396,7 @@ int GeoRef_RPNProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
    i=X+1.0;
    j=Y+1.0;
 
-   c_gdllfxy(REFGET(GRef),&lat,&lon,&i,&j,1);
+   GeoRef_XY2LL(REFGET(Ref),&lat,&lon,&i,&j,1);
 #endif
    
    *Lat=lat;
@@ -413,7 +412,7 @@ int GeoRef_RPNProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
  * But          : Projeter une latlon en position grille.
  *
  * Parametres    :
- *   <GRef>      : Pointeur sur la reference geographique
+ *   <Ref>      : Pointeur sur la reference geographique
  *   <X>         : coordonnee en X dans la projection/grille
  *   <Y>         : coordonnee en Y dans la projection/grille
  *   <Lat>       : Latitude
@@ -427,7 +426,7 @@ int GeoRef_RPNProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
  *
  *---------------------------------------------------------------------------------------------------------------
 */                     
-int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
+int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
 
    float   i,j,lat,lon;
    int     x,y,n,nd,dx,dy,idx,idxs[8];
@@ -443,23 +442,23 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
    if (Lat>90.0 || Lat<-90.0 || Lon==-999.0) 
      return(FALSE);
 
-   Lon=GeoRef_Lon(GRef,Lon);
+   Lon=GeoRef_Lon(Ref,Lon);
    
 #ifdef HAVE_RMN
-   if (GRef->Type&GRID_SPARSE) {      
-      if (GRef->AX && GRef->AY) {
-         if (GRef->Grid[0]=='M') {
+   if (Ref->Type&GRID_SPARSE) {      
+      if (Ref->AX && Ref->AY) {
+         if (Ref->GRTYP[0]=='M') {
  
-            if (GRef->QTree) {
+            if (Ref->QTree) {
                // If there's an index use it
-               if ((node=QTree_Find(GRef->QTree,Lon,Lat)) && node->NbData) {
+               if ((node=QTree_Find(Ref->QTree,Lon,Lat)) && node->NbData) {
                   
                   // Loop on this nodes data payload
                   for(n=0;n<node->NbData;n++) {
                      idx=(intptr_t)node->Data[n].Ptr-1; // Remove false pointer increment
 
-                     if (Bary_Get(b,GRef->Wght?GRef->Wght[idx/3]:0.0,Lon,Lat,GRef->AX[GRef->Idx[idx]],GRef->AY[GRef->Idx[idx]],
-                        GRef->AX[GRef->Idx[idx+1]],GRef->AY[GRef->Idx[idx+1]],GRef->AX[GRef->Idx[idx+2]],GRef->AY[GRef->Idx[idx+2]])) {
+                     if (Bary_Get(b,Ref->Wght?Ref->Wght[idx/3]:0.0,Lon,Lat,Ref->AX[Ref->Idx[idx]],Ref->AY[Ref->Idx[idx]],
+                        Ref->AX[Ref->Idx[idx+1]],Ref->AY[Ref->Idx[idx+1]],Ref->AX[Ref->Idx[idx+2]],Ref->AY[Ref->Idx[idx+2]])) {
                         
                         // Return coordinate as triangle index + barycentric coefficient
                         *X=idx+b[0];
@@ -470,9 +469,9 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
                }
             } else {
                // Otherwise loop on all
-               for(idx=0;idx<GRef->NIdx-3;idx+=3) {
-                  if (Bary_Get(b,GRef->Wght?GRef->Wght[idx/3]:0.0,Lon,Lat,GRef->AX[GRef->Idx[idx]],GRef->AY[GRef->Idx[idx]],
-                     GRef->AX[GRef->Idx[idx+1]],GRef->AY[GRef->Idx[idx+1]],GRef->AX[GRef->Idx[idx+2]],GRef->AY[GRef->Idx[idx+2]])) {
+               for(idx=0;idx<Ref->NIdx-3;idx+=3) {
+                  if (Bary_Get(b,Ref->Wght?Ref->Wght[idx/3]:0.0,Lon,Lat,Ref->AX[Ref->Idx[idx]],Ref->AY[Ref->Idx[idx]],
+                     Ref->AX[Ref->Idx[idx+1]],Ref->AY[Ref->Idx[idx+1]],Ref->AX[Ref->Idx[idx+2]],Ref->AY[Ref->Idx[idx+2]])) {
 
                      // Return coordinate as triangle index + barycentric coefficient
                      *X=idx+b[0];
@@ -481,18 +480,18 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
                   }
                }
             }            
-         } else if (GRef->Grid[0]=='Y') {
+         } else if (Ref->GRTYP[0]=='Y') {
             // Get nearest point
-            if (GeoRef_Nearest(GRef,Lon,Lat,&idx,dists,1)) {
+            if (GeoRef_Nearest(Ref,Lon,Lat,&idx,dists,1)) {
                if (dists[0]<1.0) {
-                  *Y=(int)(idx/GRef->NX);
-                  *X=idx-(*Y)*GRef->NX;
+                  *Y=(int)(idx/Ref->NX);
+                  *X=idx-(*Y)*Ref->NX;
                   return(TRUE);
                }         
             }
-         } else if (GRef->Grid[0]=='X' || GRef->Grid[0]=='O') {
+         } else if (Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='O') {
             // Get nearest points
-            if ((nd=GeoRef_Nearest(GRef,Lon,Lat,idxs,dists,8))) {
+            if ((nd=GeoRef_Nearest(Ref,Lon,Lat,idxs,dists,8))) {
                
                pt[0]=Lon;
                pt[1]=Lat;
@@ -503,16 +502,16 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
 
                   // Find within which quad
                   dx=-1;dy=-1;
-                  if (!GeoRef_WithinCell(GRef,pt,pts,idx-GRef->NX-1,idx-1,idx,idx-GRef->NX)) {
+                  if (!GeoRef_WithinCell(Ref,pt,pts,idx-Ref->NX-1,idx-1,idx,idx-Ref->NX)) {
                  
                      dx=0;dy=-1;
-                     if (!GeoRef_WithinCell(GRef,pt,pts,idx-GRef->NX,idx,idx+1,idx-GRef->NX+1)) {
+                     if (!GeoRef_WithinCell(Ref,pt,pts,idx-Ref->NX,idx,idx+1,idx-Ref->NX+1)) {
                         
                         dx=-1;dy=0;
-                        if (!GeoRef_WithinCell(GRef,pt,pts,idx-1,idx+GRef->NX-1,idx+GRef->NX,idx)) {
+                        if (!GeoRef_WithinCell(Ref,pt,pts,idx-1,idx+Ref->NX-1,idx+Ref->NX,idx)) {
                      
                            dx=0;dy=0;
-                           if (!GeoRef_WithinCell(GRef,pt,pts,idx,idx+GRef->NX,idx+GRef->NX+1,idx+1)) {
+                           if (!GeoRef_WithinCell(Ref,pt,pts,idx,idx+Ref->NX,idx+Ref->NX+1,idx+1)) {
                               idx=-1;
                            }
                         }
@@ -530,8 +529,8 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
                   Vertex_Map(pts,X,Y,Lon,Lat);
                   
                   if (!ISNAN(*X) && !ISNAN(*Y)) {
-                     y=idx/GRef->NX;
-                     x=idx-y*GRef->NX;
+                     y=idx/Ref->NX;
+                     x=idx-y*Ref->NX;
                      *Y+=y+dy;
                      *X+=x+dx; 
                   } else {
@@ -545,7 +544,7 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
                }
 
                // Si on est a l'interieur de la grille
-               if (*X>(GRef->X1+0.5) || *Y>(GRef->Y1+0.5) || *X<(GRef->X0-0.5) || *Y<(GRef->Y0-0.5)) {
+               if (*X>(Ref->X1+0.5) || *Y>(Ref->Y1+0.5) || *X<(Ref->X0-0.5) || *Y<(Ref->Y0-0.5)) {
                   *X=-1.0;
                   *Y=-1.0;
                   return(FALSE);
@@ -557,7 +556,7 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
       return(FALSE);
    }
 
-   if (!(GRef->Type&GRID_EZ)) {
+   if (!(Ref->Type&GRID_EZ)) {
       *Y=Lat;
       *X=Lon;
       return(TRUE);
@@ -567,16 +566,16 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
       lat=Lat;
 
       // Extraire la valeur du point de grille
-      c_gdxyfll(REFGET(GRef),&i,&j,&lat,&lon,1);
+      GeoRef_LL2XY(REFGET(Ref),&i,&j,&lat,&lon,1);
 
       *X=i-1.0;
       *Y=j-1.0;
 
       // Fix for G grid 0-360 1/5 gridpoint problem
-      if (GRef->Grid[0]=='G' && *X>GRef->X1+0.5) *X-=(GRef->X1+1);
+      if (Ref->GRTYP[0]=='G' && *X>Ref->X1+0.5) *X-=(Ref->X1+1);
 
       // Si on est a l'interieur de la grille
-      if (*X>(GRef->X1+0.5) || *Y>(GRef->Y1+0.5) || *X<(GRef->X0-0.5) || *Y<(GRef->Y0-0.5)) {
+      if (*X>(Ref->X1+0.5) || *Y>(Ref->Y1+0.5) || *X<(Ref->X0-0.5) || *Y<(Ref->Y0-0.5)) {
          if (!Extrap) {
             *X=-1.0;
             *Y=-1.0;
@@ -588,23 +587,132 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
    return(TRUE);
 }
 
-/* PTR_AS_INT f77name(ezgdef_fmem)(wordint* ni, wordint* nj, char* grtyp, char* grref,
-   wordint* ig1, wordint* ig2, wordint* ig3, wordint* ig4,
-   ftnfloat* ax, ftnfloat* ay, F2Cl lengrtyp, F2Cl lengrref)
-{
-  PTR_AS_INT icode;
-  char lgrtyp[2];
-  char lgrref[2];
+int GeoRef_RPNDefXG(TGeoRef* Ref) {
 
-  lgrtyp[0] = grtyp[0];
-  lgrtyp[1] = '\0';
+   switch (Ref->GRTYP[0]) {
+      case 'A':
+      case 'G':
+         Ref->RPNHead.XG[X_DLON]  = 360. /Ref->NX;
+         Ref->RPNHead.XG[X_SWLON] = 0.0;
+         switch (Ref->RPNHead.IG[X_IG1]) {
+				case 0:
+				   Ref->RPNHead.XG[X_DLAT] = 180./Ref->NY;
+				   Ref->RPNHead.XG[X_SWLAT] = -90. + 0.5*Ref->RPNHead.XG[X_DLAT];
+				   break;
 
-  lgrref[0] = grref[0];
-  lgrref[1] = '\0';
+				case 1:
+				   Ref->RPNHead.XG[X_DLAT] = 90./Ref->NY;
+				   Ref->RPNHead.XG[X_SWLAT] = 0.5*Ref->RPNHead.XG[X_DLAT];
+				   Ref->Type |= GRID_EXPAND;
+				   break;
 
-  icode = (PTR_AS_INT) c_ezgdef_fmem(*ni, *nj, lgrtyp, lgrref, *ig1, *ig2, *ig3, *ig4, ax, ay);
-  return icode;
-} */
+				case 2:
+				   Ref->RPNHead.XG[X_DLAT] = 90./Ref->NY;
+				   Ref->RPNHead.XG[X_SWLAT] = -90. + 0.5*Ref->RPNHead.XG[X_DLAT];
+				   Ref->Type |= GRID_EXPAND;
+				   break;
+
+				default:
+			      App_Log(ERROR,"%s: 'A' grid has to be Global/North/South\n",__func__);
+               return(-1);
+				   break;
+			}
+
+         switch(Ref->RPNHead.IG[X_IG2]) {
+	         case 1:
+	            Ref->Type|=GRID_YINVERT;
+	            break;
+
+	         default:
+	            break;
+	      }
+         break;
+
+      case 'B':
+         Ref->RPNHead.XG[X_DLON] = 360. /(Ref->NX-1);
+         Ref->RPNHead.XG[X_SWLON] = 0.0;
+         switch (Ref->RPNHead.IG[X_IG1]) {
+	         case 0:
+	            Ref->RPNHead.XG[X_DLAT] = 180./(Ref->NY-1);
+	            Ref->RPNHead.XG[X_SWLAT] = -90.;
+	            break;
+
+	         case 1:
+	            Ref->RPNHead.XG[X_DLAT] = 90./(Ref->NY-1);
+	            Ref->RPNHead.XG[X_SWLAT] = 0.;
+	            Ref->Type |= GRID_EXPAND;
+	            break;
+
+	         case 2:
+	            Ref->RPNHead.XG[X_DLAT] = 90./(Ref->NY-1);
+	            Ref->RPNHead.XG[X_SWLAT] = -90.;
+	            Ref->Type |= GRID_EXPAND;
+	            break;
+
+	         default:
+  			      App_Log(ERROR,"%s: 'B' grid has to be Global/North/South\n",__func__);
+	            return(-1);
+	      }
+
+         switch(Ref->RPNHead.IG[X_IG2]) {
+	         case 1:
+	            Ref->Type|=GRID_YINVERT;
+	            break;
+
+	         default:
+	            break;
+	      }
+         break;
+
+      case 'E':
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_LAT1],&Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2],&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
+      /*      Ref->RPNHead.XG[X_DLAT] = 180./Ref->NY;
+	      Ref->RPNHead.XG[X_DLON] = 360./(Ref->NX-1);
+	      Ref->RPNHead.XG[X_SWLON] = 0.0;
+	      Ref->RPNHead.XG[X_SWLAT] = -90. + 0.5*Ref->RPNHead.XG[X_DLAT];
+      */
+         break;
+
+      case 'H':
+      case 'Y':
+      case '!':
+         break;
+
+      case '#':
+      case 'Z':
+         if (Ref->RPNHead.GRREF[0] == 'N') Ref->Hemi = NORTH;
+         if (Ref->RPNHead.GRREF[0] == 'S') Ref->Hemi = SOUTH;
+         if (Ref->RPNHead.GRREF[0] == 'E') {
+            f77name(cigaxg)(Ref->RPNHead.GRREF,&Ref->RPNHead.XGREF[X_LAT1], &Ref->RPNHead.XGREF[X_LON1], &Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2],&Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4]);
+         }
+         break;
+
+      case 'L':
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_SWLAT], &Ref->RPNHead.XG[X_SWLON], &Ref->RPNHead.XG[X_DLAT], &Ref->RPNHead.XG[X_DLON],&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
+         break;
+
+      case 'N':
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_PI], &Ref->RPNHead.XG[X_PJ], &Ref->RPNHead.XG[X_D60], &Ref->RPNHead.XG[X_DGRW],&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
+         Ref->Hemi = NORTH;
+         break;
+
+      case 'S':
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_PI], &Ref->RPNHead.XG[X_PJ], &Ref->RPNHead.XG[X_D60], &Ref->RPNHead.XG[X_DGRW],&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
+         Ref->Hemi = SOUTH;
+         break;
+
+      case 'T':
+		   //TODO: What's T
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_TD60], &Ref->RPNHead.XG[X_TDGRW], &Ref->RPNHead.XG[X_CLAT], &Ref->RPNHead.XG[X_CLON],&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
+         break;
+
+      default:
+	      App_Log(DEBUG,"%s: Grid type not supported %c\n",__func__,Ref->GRTYP[0]);
+         return(-1);
+    }
+
+   return(0);
+}
 
 //! Insert a grid entry into the list of grids managed by ezscint.  Can be used
 //! with regular and irregular ('Y', 'Z') grids, although it is not very useful
@@ -626,34 +734,140 @@ int GeoRef_RPNUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,
 //!
 //! If grtyp == 'Z' or '#', the dimensions of ax=ni and ay=nj.
 //! If grtyp == 'Y', the dimensions of ax=ay=ni*nj. 
-TGeoRef* c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
-   wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay) {
-   
-   TGeoRef* GRef;
 
-   if (grtyp[0] == '#' || grtyp[0] == 'Y' || grtyp[0] == 'Z' || grtyp[0] == 'G') {
-      GRef = c_ezidentify_irreg_grid(ni, nj, grtyp, grref, ig1, ig2, ig3, ig4, ax, ay);
-      c_ezdefxg(GRef);
-      c_ezdefaxes(GRef, ax, ay);
-   } else {
-      GRef = c_ezidentify_reg_grid(ni, nj, grtyp, ig1, ig2, ig3, ig4);
-      c_ezdefxg(GRef);
+TGeoRef* GeoRef_RPNCreateFromMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,float* AX,float* AY) {
+   
+   TGeoRef* Ref,*fref;
+
+   Ref = GeoRef_New();
+
+   Ref->GRTYP[0] = GRTYP[0];
+   Ref->GRTYP[1] = '\0';
+   Ref->RPNHead.GRREF[0] = GRREF?GRREF[0]:'\0';
+   Ref->RPNHead.GRREF[1] = '\0';
+   Ref->NX = NI;
+   Ref->NY = NJ;
+   Ref->RPNHead.IG[X_IG1] = IG1;
+   Ref->RPNHead.IG[X_IG2] = IG2;
+   Ref->RPNHead.IG[X_IG3] = IG3;
+   Ref->RPNHead.IG[X_IG4] = IG4;
+   Ref->i1 = 1;
+   Ref->i2 = NI;
+   Ref->j1 = 1;
+   Ref->j2 = NJ;
+
+   switch (GRTYP[0]) {
+      case 'Z':
+         f77name(cigaxg)(Ref->RPNHead.GRREF,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2],&Ref->RPNHead.XGREF[X_LON2],&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+      case '#':
+      case 'Y':
+         Ref->AX = AX;
+         Ref->AY = AY;
+         break;
    }
 
-   ez_calcxpncof(GRef);
+   GeoRef_Size(Ref,0,0,NI-1,NJ-1,0);
+
+   // This georef already exists
+   // TODO: Would be more efficient to find without creating one
+   if (fref = GeoRef_Find(Ref)) {
+      free(Ref);
+      GeoRef_Incr(fref);
+      return(fref);
+   }
+
+   // This is a new georef
+   GeoRef_Add(Ref);
+
+   GeoRef_RPNDefXG(Ref);
+   c_ezdefaxes(Ref,AX,AY);
 
    // TODO: Check for sub-grids (U grids can have sub grids)
-   //GRef->NbId = grtyp[0]=='U'? (GRef->NbSub==0? 1 : GRef->NbSub) : 1;
+   //Ref->NbId = GRTYP[0]=='U'? (Ref->NbSub==0? 1 : Ref->NbSub) : 1;
 
-   GRef->Grid[0]=grtyp[0];
-   GRef->Grid[1]=grtyp[1];
-   GRef->Project=GeoRef_RPNProject;
-   GRef->UnProject=GeoRef_RPNUnProject;
-   GRef->Value=(TGeoRef_Value*)GeoRef_RPNValue;
-   GRef->Distance=GeoRef_RPNDistance;
-   GRef->Height=NULL;
+   Ref->Project=GeoRef_RPNProject;
+   Ref->UnProject=GeoRef_RPNUnProject;
+   Ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
+   Ref->Distance=GeoRef_RPNDistance;
 
-   return GRef;
+   return(Ref);
+}
+
+TGeoRef* GeoRef_RPNCreateYY(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,int NbSub,TGeoRef **Subs) {
+   int  i;
+   TGeoRef *Ref,*fref,*sub_gd;
+    
+   if (NbSub <= 1) {
+      App_Log(ERROR,"%s: NbSub given is less than 2\n",__func__);
+      return(NULL);
+   }
+   if (VerCode != 1) {
+      App_Log(ERROR,"%s: Invalid VerCode\n",__func__);
+      return(NULL);
+   }
+
+   Ref = GeoRef_New();
+  
+   if (VerCode == 1) {
+      sub_gd = Subs[0];
+
+      Ref->GRTYP[0] = GRTYP[0];
+      Ref->RPNHead.GRREF[0] = GRREF[0];
+      Ref->NX       = NI;
+      Ref->NY       = NJ;
+         
+      // To add more uniqueness to the super-grid index Yin-Yang grid, we also add the rotation of YIN
+      Ref->RPNHead.IG[X_IG1]  = sub_gd->RPNHead.IG[X_IG1];
+      Ref->RPNHead.IG[X_IG2]  = sub_gd->RPNHead.IG[X_IG2];
+      Ref->RPNHead.IG[X_IG3]  = sub_gd->RPNHead.IG[X_IG3];
+      Ref->RPNHead.IG[X_IG4]  = sub_gd->RPNHead.IG[X_IG4];
+      Ref->RPNHead.IGREF[X_IG1]=VerCode;
+      Ref->RPNHead.IGREF[X_IG2]=0;
+      Ref->RPNHead.IGREF[X_IG3]=0;
+      Ref->RPNHead.IGREF[X_IG4]=0;
+      Ref->NbSub= NbSub;
+   }
+  
+   // This georef already exists
+   if (fref=GeoRef_Find(Ref)) {
+      free(Ref);
+      GeoRef_Incr(fref);
+      return(fref);
+   }
+
+   // This is a new georef
+   GeoRef_Add(Ref);
+
+   Ref->Subs = (TGeoRef **)malloc(NbSub*sizeof(TGeoRef*));
+
+   for (i=0; i < NbSub; i++) {
+      Ref->Subs[i] = Subs[i];
+      c_ezgdef_yymask(Subs[i]);
+      App_Log(DEBUG,"%s: Grille[%p].Subs[%p] has maskgrid=%p\n",__func__,Ref,Subs[i],sub_gd->mymaskgrid);
+   }
+
+   App_Log(DEBUG,"%s: grtyp     = '%c'\n",__func__, Ref->GRTYP[0]);
+   App_Log(DEBUG,"%s: grref     = '%c'\n",__func__, Ref->RPNHead.GRREF[0]);
+   App_Log(DEBUG,"%s: ni        = %d\n",__func__,Ref->NX);
+   App_Log(DEBUG,"%s: nj        = %d\n",__func__,Ref->NY);
+   App_Log(DEBUG,"%s: ig1       = %d\n",__func__,Ref->RPNHead.IG[X_IG1]);
+   App_Log(DEBUG,"%s: ig2       = %d\n",__func__,Ref->RPNHead.IG[X_IG2]);
+   App_Log(DEBUG,"%s: ig3       = %d\n",__func__,Ref->RPNHead.IG[X_IG3]);
+   App_Log(DEBUG,"%s: ig4       = %d\n",__func__,Ref->RPNHead.IG[X_IG4]);
+   App_Log(DEBUG,"%s: ig1ref    = %d\n",__func__,Ref->RPNHead.IGREF[X_IG1]);
+   App_Log(DEBUG,"%s: ig2ref    = %d\n",__func__,Ref->RPNHead.IGREF[X_IG2]);
+   App_Log(DEBUG,"%s: ig3ref    = %d\n",__func__,Ref->RPNHead.IGREF[X_IG3]);
+   App_Log(DEBUG,"%s: ig4ref    = %d\n",__func__,Ref->RPNHead.IGREF[X_IG4]);
+   App_Log(DEBUG,"%s: NbSub     = %d\n",__func__,Ref->NbSub);
+   App_Log(DEBUG,"%s: Subs[0]   = %p\n",__func__,Ref->Subs[0]);
+   App_Log(DEBUG,"%s: Subs[1]   = %p\n",__func__,Ref->Subs[1]);
+
+   App_Log(DEBUG,"%s: RPNHead.XG[1] = %f\n",__func__,Ref->RPNHead.XG[1]);
+   App_Log(DEBUG,"%s: RPNHead.XG[2] = %f\n",__func__,Ref->RPNHead.XG[2]);
+   App_Log(DEBUG,"%s: RPNHead.XG[3] = %f\n",__func__,Ref->RPNHead.XG[3]);
+   App_Log(DEBUG,"%s: RPNHead.XG[4] = %f\n",__func__,Ref->RPNHead.XG[4]);
+
+   return(Ref);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -666,10 +880,10 @@ TGeoRef* c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
  *    <NI>      : Dimension en X
  *    <NJ>      : Dimension en Y
  *    <GRTYP>   : Type de grille
- *    <IG1_JP>     : Descripteur IG1
- *    <IG2_JP>     : Descripteur IG2
- *    <IG3_JP>     : Descripteur IG3
- *    <IG4_JP>     : Descripteur IG4
+ *    <IG1>     : Descripteur IG1
+ *    <IG2>     : Descripteur IG2
+ *    <IG3>     : Descripteur IG3
+ *    <IG4>     : Descripteur IG4
  *    <FID>     : Identificateur du fichier
  *
  * Retour       :
@@ -678,79 +892,43 @@ TGeoRef* c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-
-//wordint c_ezqkdef(wordint ni, wordint nj, char* grtyp,
-//             wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit);=c_ezgdef_ffile
-//wordint c_ezgdef_ffile(wordint ni, wordint nj, char* grtyp,
-//           wordint ig1, wordint ig2, wordint ig3, wordint ig4, wordint iunit);=GeoRef_RPNCreate
-// calls fll and fmem, get rid: wordint c_ezgdef(wordint ni, wordint nj, char* grtyp, char* grref,
-//             wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay);
-
-//wordint c_ezgdef_fll(wordint ni, wordint nj,ftnfloat* lat, ftnfloat* lon);
-//wordint c_ezgdef_fmem(wordint ni, wordint nj, char* grtyp, char* grref,
-//             wordint ig1, wordint ig2, wordint ig3, wordint ig4, ftnfloat* ax, ftnfloat* ay);
-//wordint c_ezgdef_supergrid(wordint ni, wordint nj, char* grtyp, char* grref, wordint vercode, wordint NbSub, wordint* Sub);
-//wordint c_ezgdef_yymask(TGeoRef* gr);
-
-// Replaces c_ezgdef_ffile and c_ezqkdef
-//PTR_AS_INT f77name(georef_rpncreate)(wordint *ni, wordint *nj, char *grtyp, wordint *ig1, wordint *ig2, wordint *ig3, wordint *ig4, wordint *iunit, F2Cl lengrtyp){
-// 
-//  char cgrtyp[2];
-//
-//  cgrtyp[0] = grtyp[0];
-//  cgrtyp[1] = '\0';
-//
-//  return (PTR_AS_INT)GeoRef_RPNCreate(*ni, *nj, cgrtyp, *ig1, *ig2, *ig3, *ig4, *iunit));
-//}
-
-TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int ig4,int FID) {
+TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID) {
 
    TGeoRef *ref,*fref;
    int      id;
-   char     grtyp[2];
 
    ref=GeoRef_New();
 
    // If not specified, type is X
    if (GRTYP[0]==' ') GRTYP[0]='X';
+   
+   GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
+   ref->GRTYP[0]=GRTYP[0];
+   ref->GRTYP[1]=GRTYP[1];
+   ref->Project=GeoRef_RPNProject;
+   ref->UnProject=GeoRef_RPNUnProject;
+   ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
+   ref->Distance=GeoRef_RPNDistance;
+   ref->Height=NULL;
 
-   if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='O' && GRTYP[0]!='P' && GRTYP[0]!='M' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
-      grtyp[0]=GRTYP[0];
-      grtyp[1]='\0';
+   if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='P' && GRTYP[0]!='M' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
 
 #ifdef HAVE_RMN
-      // Create master gridid
       if (GRTYP[1]=='#') {
-         //TOCHECK: For tiled grids (#) we have to fudge the ig3 ang ig4 to 0 since they're used for tile limit
+         //TODO: CHECK For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
       }
 
-      if (GRTYP[0]!='#' && GRTYP[0]!='Y' && GRTYP[0]!='Z' && GRTYP[0]!='U' && GRTYP[0]!=' ') {
-         // no need to look for grid descriptors
-         return c_ezgdef_fmem(NI,NJ, grtyp, " ", ig1, ig2, ig3, ig4, NULL, NULL);
+      if (GRTYP[0]!='#' && GRTYP[0]!='Y' && GRTYP[0]!='Z' && GRTYP[0]!='O' && GRTYP[0]!='U' && GRTYP[0]!=' ') {
+         // No need to look for grid descriptors
+         return GeoRef_RPNCreateFromMemory(NI,NJ,GRTYP," ",IG1,IG2,IG3,IG4,NULL,NULL);
       }
   
-      ref->grtyp[0]=grtyp[0];
-      ref->grtyp[1]=grtyp[1];
-      ref->ni = NI;
-      ref->nj = NJ;
-//TODO:Do we need theses defines, does fst.ig have to be of size 16 ?
-#define IG1             0
-#define IG2             1
-#define IG3             2
-#define IG4             3
 
-      ref->fst.ig[IG1] = ig1;
-      ref->fst.ig[IG2] = ig2;
-      ref->fst.ig[IG3] = ig3;
-      ref->fst.ig[IG4] = ig4;
-      ref->idx_last_gdin = -1;
-      ref->n_gdin_for = 0;
-
-      //TODO: Merge LireEnrPositionnels with RPN_FieldReadGrid
-      if (LireEnrPositionnels(ref, FID, ig1, ig2, ig3, ig4, 0)<0) {
-         // Problems with finding grid descriptors
-         return(NULL);
-      }
+      ref->RPNHead.FID=FID;
+      ref->RPNHead.IG[X_IG1] = IG1;
+      ref->RPNHead.IG[X_IG2] = IG2;
+      ref->RPNHead.IG[X_IG3] = IG3;
+      ref->RPNHead.IG[X_IG4] = (GRTYP[0]=='#' || GRTYP[0]=='U')?IG4:0;
   
       // This georef already exists
       if (fref=GeoRef_Find(ref)) {
@@ -761,41 +939,26 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int ig1,int ig2,int ig3,int 
 
       // This is a new georef
       GeoRef_Add(ref);
-      if (LireEnrPositionnels(ref,FID,ig1,ig2,ig3,((ref->grtyp[0]=='#' || ref->grtyp[0]=='U')?ig4:0),1)<0) {
+      if (!RPN_ReadGrid(ref,&ref->RPNHead)) {
          // problems with reading grid descriptors
          return(NULL);
       }
       
-      if (grtyp[0] != 'U') {
+      if (GRTYP[0] != 'U') {
          ez_calcxpncof(ref);
          ref->i1 = 1;
-         ref->i2 = ref->ni;
+         ref->i2 = ref->NX;
          ref->j1 = 1;
-         ref->j2 = ref->nj;
-         if (grtyp[0] != 'Y') {
-            c_ezdefxg(ref);
+         ref->j2 = ref->NY;
+         if (GRTYP[0] != 'Y' && GRTYP[0] != 'O') {
+            GeoRef_RPNDefXG(ref);
             ez_calcntncof(ref);
          } else {
-            ez_calclatlon(ref);
+            GeoRef_CalcLL(ref);
          }
       }
-
-      //TODO: Check for sub-grids (U grids can have sub grids)
-      //ref->NbId = GRTYP[0]=='U'? (ref->NbSub==0? 1 : ref->NbSub) : 1;
 #endif
    }
-   GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
-   ref->IG1_JP=ig1;
-   ref->IG2_JP=ig2;
-   ref->IG3_JP=ig3;
-   ref->IG4_JP=ig4;
-   ref->Grid[0]=GRTYP[0];
-   ref->Grid[1]=GRTYP[1];
-   ref->Project=GeoRef_RPNProject;
-   ref->UnProject=GeoRef_RPNUnProject;
-   ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
-   ref->Distance=GeoRef_RPNDistance;
-   ref->Height=NULL;
 
    return(ref);
 }
@@ -907,7 +1070,7 @@ void GEM_hgrid4(float *F_xgi_8,float *F_ygi_8,int F_Grd_ni,int F_Grd_nj,float *F
  * But          : Definir le referentiel de type RPN ZE
  *
  * Parametres   :
- *    <GRef>    : Georef definition
+ *    <Ref>    : Georef definition
  *    <NI>      : Dimension en X
  *    <NJ>      : Dimension en Y
  *    <DX>      : Resolution en X
@@ -926,7 +1089,7 @@ void GEM_hgrid4(float *F_xgi_8,float *F_ygi_8,int F_Grd_ni,int F_Grd_nj,float *F
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-TGeoRef* GeoRef_RPNGridZE(TGeoRef *GRef,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2) {
+TGeoRef* GeoRef_RPNGridZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2) {
 
 #ifdef HAVE_RMN
    int    ig1,ig2,ig3,ig4;
@@ -936,38 +1099,38 @@ TGeoRef* GeoRef_RPNGridZE(TGeoRef *GRef,int NI,int NJ,float DX,float DY,float La
    double x0,x1,y0,y1;
    float latr,lonr;
 
-   if (!GRef) {
+   if (!Ref) {
       return(NULL);
    }
  
-   f77name(cxgaig)("E",&GRef->IG1_JP,&GRef->IG2_JP,&GRef->IG3_JP,&GRef->IG4_JP,&XLat1,&XLon1,&XLat2,&XLon2);
-   f77name(cigaxg)("E",&XLat1,&XLon1,&XLat2,&XLon2,&GRef->IG1_JP,&GRef->IG2_JP,&GRef->IG3_JP,&GRef->IG4_JP);
+   f77name(cxgaig)("E",&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4],&XLat1,&XLon1,&XLat2,&XLon2);
+   f77name(cigaxg)("E",&XLat1,&XLon1,&XLat2,&XLon2,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
    
    GEM_grid_param(&bsc_base,&bsc_ext1,&extension,MaxCFL,&LonR,&LatR,&NI,&NJ,&DX,&DY,&x0,&y0,&x1,&y1,-1,FALSE);
  
-   if (NI!=GRef->NX+1 || NJ!=GRef->NY+1) {
-      GRef->AX=realloc(GRef->AX,NI*sizeof(float));
-      GRef->AY=realloc(GRef->AY,NJ*sizeof(float));
+   if (NI!=Ref->NX+1 || NJ!=Ref->NY+1) {
+      Ref->AX=realloc(Ref->AX,NI*sizeof(float));
+      Ref->AY=realloc(Ref->AY,NJ*sizeof(float));
 
-      GeoRef_Size(GRef,0,0,NI-1,NJ-1,0);
+      GeoRef_Size(Ref,0,0,NI-1,NJ-1,0);
    }
 
-   //   f77name(set_gemhgrid4)(GRef->AX,GRef->AY,&NI,&NJ,&DX,&DY,&x0,&x1,&y0,&y1,FALSE);
-   GEM_hgrid4(GRef->AX,GRef->AY,NI,NJ,&DX,&DY,x0,x1,y0,y1,FALSE);
+   //   f77name(set_gemhgrid4)(Ref->AX,Ref->AY,&NI,&NJ,&DX,&DY,&x0,&x1,&y0,&y1,FALSE);
+   GEM_hgrid4(Ref->AX,Ref->AY,NI,NJ,&DX,&DY,x0,x1,y0,y1,FALSE);
            
  //TODO: Merge with EZ  
- //  GRef->Ids[0]=c_ezgdef_fmem(NI,NJ,"Z","E",GRef->IG1_JP,GRef->IG2_JP,GRef->IG3_JP,GRef->IG4_JP,GRef->AX,GRef->AY);
+ //  Ref->Ids[0]=GeoRef_RPNCreateFromMemory(NI,NJ,"Z","E",Ref->IG[X_IG1],Ref->IG[X_IG2],Ref->IG[X_IG3],Ref->IG[X_IG4],Ref->AX,Ref->AY);
    
-   GRef->NbSub=1;
-   GRef->Grid[0]='Z';
-   GRef->Grid[1]='E';
-   GRef->Grid[2]='\0';
-   GRef->Project=GeoRef_RPNProject;
-   GRef->UnProject=GeoRef_RPNUnProject;
-   GRef->Value=(TGeoRef_Value*)GeoRef_RPNValue;
-   GRef->Distance=GeoRef_RPNDistance;
-   GRef->Height=NULL;
+   Ref->NbSub=1;
+   Ref->GRTYP[0]='Z';
+   Ref->GRTYP[1]='E';
+   Ref->GRTYP[2]='\0';
+   Ref->Project=GeoRef_RPNProject;
+   Ref->UnProject=GeoRef_RPNUnProject;
+   Ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
+   Ref->Distance=GeoRef_RPNDistance;
+   Ref->Height=NULL;
  #endif
   
-   return(GRef);
+   return(Ref);
 }

@@ -37,11 +37,11 @@
 #define APP_NAME "Interpolate"
 #define APP_DESC "ECCC/CMC RPN fstd interpolation tool."
 
-int Interpolate(char *In,char *Out,char *Grid,char **Vars,char *Type) {
+int Interpolate(char *In,char *Out,char *Grid,char **Vars,TDef_InterpR Type) {
 
 #ifdef HAVE_RMN
    TRPNField *in,*grid,*idx;
-   int  fin,fout,fgrid;
+   int  fin,fout,fgrid,n=0;
    float *index=NULL;
 
    if ((fin=cs_fstouv(In,"STD+RND+R/O"))<0) {
@@ -58,18 +58,17 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,char *Type) {
       App_Log(ERROR,"Problems opening grid file %s\n",Grid);
       return(0);
    }
-
    if (!(grid=RPN_FieldRead(fgrid,-1,"",-1,-1,-1,"","GRID"))) {
       App_Log(ERROR,"Problems reading grid field\n");
       return(0);    
    }
-   RPN_FieldReadGrid(grid);
+   //RPN_FieldReadGrid(grid);
 
    if (!(in=RPN_FieldRead(fin,-1,"",-1,-1,-1,"",Vars[0]))) {
       App_Log(ERROR,"Problems reading input field\n");
       return(0);  
    }
-   RPN_FieldReadGrid(in);
+   //RPN_FieldReadGrid(in);
 
    // Create index field
    if (!(idx=RPN_FieldNew(in->Def->NIJ*100,1,1,1,TD_Float32))) {
@@ -90,15 +89,16 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,char *Type) {
    index[0]=DEF_INDEX_EMPTY;
    grid->Def->NoData=0.0;
  
-   while(in->Head.KEY>0) {
+   //fprintf(stderr,"...%c...%c...\n",grid->GRef->RPNHead.GRREF[0],in->GRef->RPNHead.GRREF[0]);
+   while(in->Head.KEY>0 && n++<10) {
       App_Log(INFO,"Processing %s %i\n",Vars[0],in->Head.KEY);
 
       // Reset result grid
       Def_Clear(grid->Def);
      
       // Proceed with interpolation
-      //     if (!(Def_EzInterp(grid->Def,in->Def,grid->GRef,in->GRef,Type,"VALUE",FALSE,index))) {
-      if (!(Def_GridInterp(grid->GRef,grid->Def,in->GRef,in->Def,Type,"VALUE",FALSE,index))) {
+      //     if (!(Def_EzInterp(grid->Def,in->Def,grid->GRef,in->GRef,Type,ER_VALUE,FALSE,index))) {
+      if (!(Def_GridInterp(grid->GRef,grid->Def,in->GRef,in->Def,Type,ER_VALUE,FALSE,index))) {
          App_Log(ERROR,"%s: EZSCINT interpolation problem",__func__);
          return(0);    
       }
@@ -133,8 +133,9 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,char *Type) {
 
 int main(int argc, char *argv[]) {
 
-   int      ok=0,code=EXIT_FAILURE;
-   char     *in=NULL,*out=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
+   TDef_InterpR interp=IR_LINEAR;
+   int          ok=0,code=EXIT_FAILURE;
+   char        *in=NULL,*out=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
 
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,   1,             "i", "input",  "Input file" },
@@ -175,7 +176,15 @@ int main(int argc, char *argv[]) {
 
    /*Launch the app*/
    App_Start();
-   ok=Interpolate(in,out,grid,vars,type);
+   switch(type[0]) {
+      case 'N': interp=IR_NEAREST; break;
+      case 'L': interp=IR_LINEAR; break;
+      case 'V': interp=IR_CUBIC; break;
+      default:
+         App_Log(ERROR,"Invalid interpolation method: %s\n",type);
+   }
+
+   ok=Interpolate(in,out,grid,vars,interp);
    code=App_End(ok?-1:EXIT_FAILURE);
    App_Free();
 

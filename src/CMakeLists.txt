@@ -1,8 +1,8 @@
 message(STATUS "Generating libgeoref librairie")
 
 file(GLOB PROJECT_INCLUDE_FILES *.h)
-file(GLOB PROJECT_C_FILES *.c ../src_ez/*.c)
-file(GLOB PROJECT_F_FILES ../src_ez/*.f90 )
+file(GLOB PROJECT_C_FILES *.c)
+file(GLOB PROJECT_F_FILES f90/*.f90 )
 
 add_library(georef SHARED ${PROJECT_INCLUDE_FILES} ${PROJECT_C_FILES} ${PROJECT_F_FILES})
 

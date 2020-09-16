@@ -35,7 +35,6 @@
 #include "App.h"
 #include "GeoRef.h"
 #include "Def.h"
-#include "EZGrid.h"
 #include "fnom.h"
 #include <glob.h>
 
@@ -157,12 +156,12 @@ int cs_fstinf(int Unit,int *NI,int *NJ,int *NK,int DateO,char *Etiket,int IP1,in
    return(err);
 }
 
-int cs_fstprm(int Idx,int *DateO,int *Deet,int *NPas,int *NI,int *NJ,int *NK,int *NBits,int *Datyp,int *IP1,int *IP2,int *IP3,char* TypVar,char *NomVar,char *Etiket,char *GrTyp,int *IG1_JP,int *IG2_JP,int *IG3_JP,int *IG4_JP,int *Swa,int *Lng,int *DLTF,int *UBC,int *EX1,int *EX2,int *EX3) {
+int cs_fstprm(int Idx,int *DateO,int *Deet,int *NPas,int *NI,int *NJ,int *NK,int *NBits,int *Datyp,int *IP1,int *IP2,int *IP3,char* TypVar,char *NomVar,char *Etiket,char *GrTyp,int *IG1,int *IG2,int *IG3,int *IG4,int *Swa,int *Lng,int *DLTF,int *UBC,int *EX1,int *EX2,int *EX3) {
 
    int err;
 
    pthread_mutex_lock(&RPNFieldMutex);
-   err=c_fstprm(Idx,DateO,Deet,NPas,NI,NJ,NK,NBits,Datyp,IP1,IP2,IP3,TypVar,NomVar,Etiket,GrTyp,IG1_JP,IG2_JP,IG3_JP,IG4_JP,Swa,Lng,DLTF,UBC,EX1,EX2,EX3);
+   err=c_fstprm(Idx,DateO,Deet,NPas,NI,NJ,NK,NBits,Datyp,IP1,IP2,IP3,TypVar,NomVar,Etiket,GrTyp,IG1,IG2,IG3,IG4,Swa,Lng,DLTF,UBC,EX1,EX2,EX3);
    pthread_mutex_unlock(&RPNFieldMutex);
 
    return(err);
@@ -204,18 +203,18 @@ int cs_fstsui(int Unit,int *NI,int *NJ,int *NK) {
 int cs_fstlukt(void *Data,int Unit,int Idx,char *GRTYP,int *NI,int *NJ,int *NK) {
 
    int    err=-1;
-   TGrid *grid;
-
+//   TGrid *grid;
+// TODO: reenable this
    if (GRTYP[0]=='#') {
-      if ((grid=EZGrid_ReadIdx(Unit,Idx,0))) {
-         if (EZGrid_TileBurnAll(grid,0,Data)) {
-            err=0;
-         }
-         EZGrid_Free(grid);
-      }
-      *NI=grid->H.NI;
-      *NJ=grid->H.NJ;
-      *NK=grid->H.NK;
+//      if ((grid=EZGrid_ReadIdx(Unit,Idx,0))) {
+//         if (EZGrid_TileBurnAll(grid,0,Data)) {
+//            err=0;
+//         }
+//         EZGrid_Free(grid);
+//      }
+//      *NI=grid->H.NI;
+//      *NJ=grid->H.NJ;
+//      *NK=grid->H.NK;
    } else {
       pthread_mutex_lock(&RPNFieldMutex);
       err=c_fstluk(Data,Idx,NI,NJ,NK);
@@ -225,76 +224,15 @@ int cs_fstlukt(void *Data,int Unit,int Idx,char *GRTYP,int *NI,int *NJ,int *NK) 
    return(err);
 }
 
-int cs_fstecr(void *Data,int NPak,int Unit, int DateO,int Deet,int NPas,int NI,int NJ,int NK,int IP1,int IP2,int IP3,char* TypVar,char *NomVar,char *Etiket,char *GrTyp,int IG1_JP,int IG2_JP,int IG3_JP,int IG4_JP,int DaTyp,int Over) {
+int cs_fstecr(void *Data,int NPak,int Unit, int DateO,int Deet,int NPas,int NI,int NJ,int NK,int IP1,int IP2,int IP3,char* TypVar,char *NomVar,char *Etiket,char *GrTyp,int IG1,int IG2,int IG3,int IG4,int DaTyp,int Over) {
    int err;
 
    pthread_mutex_lock(&RPNFieldMutex);
-   err=c_fstecr(Data,NULL,NPak,Unit,DateO,Deet,NPas,NI,NJ,NK,IP1,IP2,IP3,TypVar,NomVar,Etiket,GrTyp,IG1_JP,IG2_JP,IG3_JP,IG4_JP,DaTyp,Over);
+   err=c_fstecr(Data,NULL,NPak,Unit,DateO,Deet,NPas,NI,NJ,NK,IP1,IP2,IP3,TypVar,NomVar,Etiket,GrTyp,IG1,IG2,IG3,IG4,DaTyp,Over);
    pthread_mutex_unlock(&RPNFieldMutex);
 
    return(err);
 }
-
-/*----------------------------------------------------------------------------
- * Nom      : <RPN_IntIdNew>
- * Creation : Janvier 2012 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Wrapper autour de c_ezqkdef pour garder un compte du nombre
- *           d'allocation de chaque grille ezscint
- *
- * Parametres :
- *
- * Retour:
- *  <Id>      : Identificateur de grille ezscint
- *
- * Remarques :
- *----------------------------------------------------------------------------
- */
-//TODO: get rid off
-int RPN_IntIdNew(int NI,int NJ,char* GRTYP,int IG1_JP,int IG2_JP,int IG3_JP, int IG4_JP,int FID) {
-
-   TGeoRef *GRef;
-
-   if (GRTYP[0]!='M' && GRTYP[0]!='W' && GRTYP[0]!='V') {
-//      RPN_IntLock();
-      GRef=GeoRef_RPNCreate(NI,NJ,GRTYP,IG1_JP,IG2_JP,IG3_JP,IG4_JP,FID);
-//      RPN_IntUnlock();
-   }
-   
-   return GRef;
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <RPN_IntIdFree>
- * Creation : Janvier 2012 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Wrapper autour de c_gdrls pour garder un compte du nombre
- *           d'allocation de chaque grille ezscint
- *
- * Parametres :
- *  <Id>      : Identificateur de grille ezscint
- *
- * Retour:
- *  <n>      : Compte du nobre d'allocation de la grille ezscint
- *
- * Remarques :
- *----------------------------------------------------------------------------
- */
-//TODO: get rid off
-int RPN_IntIdFree(int Id) {
-
-   int n=-1;
-
-   if (Id<0)
-      return(n);
-//TODO:Check on grid cache
-//  RPN_IntLock();
-//         c_gdrls(Id);
-//   RPN_IntUnlock();
-
-   return(n);
-}
-
 
 TRPNField* RPN_FieldNew(int NI,int NJ,int NK,int NC,TDef_Type Type) {
 
@@ -333,13 +271,14 @@ TRPNField* RPN_FieldReadIndex(int FileId,int Index,TRPNField *Fld) {
    h.FID=FileId;
    h.KEY=Index;
    h.GRTYP[0]=h.GRTYP[1]='\0';
+   h.GRREF[0]=h.GRREF[1]='\0';
 
    strcpy(h.NOMVAR,"    ");
    strcpy(h.TYPVAR,"  ");
    strcpy(h.ETIKET,"            ");
    ok=cs_fstprm(h.KEY,&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,
          &h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
-         h.GRTYP,&h.IG1_JP,&h.IG2_JP,&h.IG3_JP,&h.IG4_JP,&h.SWA,&h.LNG,&h.DLTF,
+         h.GRTYP,&h.IG[X_IG1],&h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,
          &h.UBC,&h.EX1,&h.EX2,&h.EX3);
 
    if (ok<0) {
@@ -381,19 +320,19 @@ TRPNField* RPN_FieldReadIndex(int FileId,int Index,TRPNField *Fld) {
 
    // If a TRPNField is passed, we assume this has already been done
    if (!Fld) {
+   // TODO: Should we do this automatically or only when needed
       // Recuperer les type de niveaux et forcer ETA pour SIGMA
       lvl=ZRef_IP2Level(h.IP1,&type);
       type=type==LVL_SIGMA?LVL_ETA:type;
 
       if (h.GRTYP[0]!='W') {
-         fld->GRef=GeoRef_RPNCreate(h.NI,h.NJ,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,h.FID);
+         fld->GRef=GeoRef_RPNCreate(h.NI,h.NJ,h.GRTYP,h.IG[X_IG1],h.IG[X_IG2],h.IG[X_IG3],h.IG[X_IG4],h.FID);
       }
+      
       fld->ZRef=ZRef_Define(type,h.NK,&lvl);
-   //   if (grtyp[0]=='U') {
+   // TODO:  if (grtyp[0]=='U') {
    //      FSTD_FieldSubBuild(field);
    //   }
-
-      GeoRef_Qualify(fld->GRef);
    }
    memcpy(&fld->Head,&h,sizeof(TRPNHeader));
 
@@ -434,7 +373,8 @@ TRPNField* RPN_FieldRead(int FileId,int DateV,char *Eticket,int IP1,int IP2,int 
  *  <Ptr>     : Pointeur sur le vecteur a allouer
  *  <Var>     : Variable a lire
  *  <Grid>    : Utiliser les standard grille (1=IP<->IG,0=IP<->IP,-1=IP<->-1);
- *
+ *  <GRREF>   : Grid reference returned (Optional)
+ * 
  * Retour:
  *
  * Remarques :
@@ -443,13 +383,14 @@ TRPNField* RPN_FieldRead(int FileId,int DateV,char *Eticket,int IP1,int IP2,int 
 */
 int RPN_FieldReadComponent(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int Force) {
 
-   int key=0,ni=0,nj=0,nk=0;
+   int key=0,ni=0,nj=0,nk=0,i;
+   char c[14];
 
    if (Var && (!*Ptr || Force)) {
       if (Grid==1) {
          // Look for corresponding time and if not use any time
-         if ((key==cs_fstinf(Head->FID,&ni,&nj,&nk,Head->DATEV,"",Head->IG1_JP,Head->IG2_JP,Head->IG3_JP,"",Var))<=0) {
-            key=cs_fstinf(Head->FID,&ni,&nj,&nk,-1,"",Head->IG1_JP,Head->IG2_JP,Head->IG3_JP,"",Var);
+         if ((key==cs_fstinf(Head->FID,&ni,&nj,&nk,Head->DATEV,"",Head->IG[X_IG1],Head->IG[X_IG2],Head->IG[X_IG3],"",Var))<=0) {
+            key=cs_fstinf(Head->FID,&ni,&nj,&nk,-1,"",Head->IG[X_IG1],Head->IG[X_IG2],Head->IG[X_IG3],"",Var);
          }
       } else if (Grid==0) {
          key=cs_fstinf(Head->FID,&ni,&nj,&nk,Head->DATEV,Head->ETIKET,Head->IP1,Head->IP2,Head->IP3,Head->TYPVAR,Var);
@@ -470,6 +411,9 @@ int RPN_FieldReadComponent(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int F
             }
          }
          cs_fstluk(*Ptr,key,&ni,&nj,&nk);
+         if (Force || (Grid && (Head->GRREF[0]==' ' || Head->GRREF[0]=='\0'))) {
+            cs_fstprm(key,&i,&i,&i,&i,&i,&i,&i,&i,&i,&i,&i,c,c,c,Head->GRREF,&Head->IGREF[X_IG1],&Head->IGREF[X_IG2],&Head->IGREF[X_IG3],&Head->IGREF[X_IG4],&i,&i,&i,&i,&i,&i,&i);
+         }
       }
    }
    return(ni*nj*nk);
@@ -490,80 +434,150 @@ int RPN_FieldReadComponent(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int F
  *
  *----------------------------------------------------------------------------
 */
-int RPN_FieldReadGrid(TRPNField *Field) {
+struct TGeoRef* RPN_FieldReadGrid(TRPNField *Field) {
 
-   TRPNHeader *head=&Field->Head;
-   int         key,ni,nj,nk;
+   Field->GRef=GeoRef_RPNCreate(Field->Head.NI,Field->Head.NJ,Field->Head.GRTYP,Field->Head.IG[X_IG1],Field->Head.IG[X_IG2],Field->Head.IG[X_IG3],Field->Head.IG[X_IG4],Field->Head.FID);
+   
+   if (Field->GRef->GRTYP[0]=='V') {
+      RPN_FieldReadLevels(Field);
+   } 
+   return(Field->GRef);
+}
+
+int RPN_ReadGrid(struct TGeoRef *GRef,TRPNHeader *Head) {
+
+   int         key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety;
+   float      *ax=NULL,*ay=NULL;
+   char        grref[2];
 
    // !! -> NI==3 ### Field->Def->NI<4 || 
-   if (!Field->GRef || !(Field->GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)) || (Field->GRef->NY==1 && Field->GRef->Grid[0]!='Y' && Field->GRef->Grid[1]!='Y' && Field->GRef->Grid[0]!='M'))
-      return(0);
+//TODO:   if (!GRef || !(GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)) || (GRef->NY==1 && GRef->GRTYP[0]!='Y' && GRef->GRTYP[1]!='Y' && GRef->GRTYP[0]!='M'))
+//      return(0);
+   if ((!GRef->AY || !GRef->AX) && Head->FID>=0) {
 
-   if ((!Field->GRef->AY || !Field->GRef->AX) && head->FID>=0) {
-
-      switch(Field->GRef->Grid[0]) {
+      switch(GRef->GRTYP[0]) {
          case 'M':
-            if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,">>",1,0);
+            if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"^^",1,0);
+            if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,">>",1,0);
 
-            /* Lire le champs d'indexes*/
-            if (!Field->GRef->Idx) {
-               key=cs_fstinf(head->FID,&ni,&nj,&nk,-1,"",head->IG1_JP,head->IG2_JP,head->IG3_JP,"","##");
+            // Lire le champs d'indexes
+            if (!GRef->Idx) {
+               key=cs_fstinf(Head->FID,&ni,&nj,&nk,-1,"",Head->IG[X_IG1],Head->IG[X_IG2],Head->IG[X_IG3],"","##");
                if (key < 0) {
                   App_Log(ERROR,"%s: Could not find index field %s (c_fstinf failed)",__func__,"##");
                   return(0);
                } else {
-                  Field->GRef->NIdx=ni*nj*nk;
-                  if (!(Field->GRef->Idx=(unsigned int*)malloc(Field->GRef->NIdx*sizeof(unsigned int)))) {
+                  GRef->NIdx=ni*nj*nk;
+                  if (!(GRef->Idx=(unsigned int*)malloc(GRef->NIdx*sizeof(unsigned int)))) {
                      App_Log(ERROR,"%s: Not enough memory to read coordinates fields",__func__);
                      return(0);
                   }
-                  cs_fstluk((float*)Field->GRef->Idx,key,&ni,&nj,&nk);
+                  cs_fstluk((float*)GRef->Idx,key,&ni,&nj,&nk);
                }
-               GeoRef_BuildIndex(Field->GRef);
+               GeoRef_BuildIndex(GRef);
             }
             break;
 
          case 'W':
-            if (Field->GRef->Grid[1]=='X' || Field->GRef->Grid[1]=='Y' || Field->GRef->Grid[1]=='Z') {
-               if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"^^",1,0);
-               if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,">>",1,0);
+            if (GRef->GRTYP[1]=='X' || GRef->GRTYP[1]=='Y' || GRef->GRTYP[1]=='Z') {
+               if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"^^",1,0);
+               if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,">>",1,0);
             }
             
-            if (Field->GRef->Grid[1]=='Y') {
-               if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"LA",0,0);
-               if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,"LO",0,0);
-               if (!Field->GRef->Hgt) RPN_FieldReadComponent(head,&Field->GRef->Hgt,"ZH",0,0);
+            if (GRef->GRTYP[1]=='Y') {
+               if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"LA",0,0);
+               if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,"LO",0,0);
+               if (!GRef->Hgt) RPN_FieldReadComponent(Head,&GRef->Hgt,"ZH",0,0);
             }
             break;
 
          case 'Y':
-            if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"LA",0,0);
-            if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,"LO",0,0);
-            if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,">>",1,0);
-            if (!Field->GRef->Hgt) RPN_FieldReadComponent(head,&Field->GRef->Hgt,"ZH",0,0);
+            if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"LA",0,0);
+            if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"^^",1,0);
+            if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,"LO",0,0);
+            if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,">>",1,0);
+            if (!GRef->Hgt) RPN_FieldReadComponent(Head,&GRef->Hgt,"ZH",0,0);
             break;
 
          case 'X':
          case 'O':
-            if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,">>",1,0);
-            GeoRef_BuildIndex(Field->GRef);          
+            if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"^^",1,0);
+            if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,">>",1,0);
+            GeoRef_BuildIndex(GRef);          
             break;
 
-          case 'V':
-            if (!Field->GRef->AY) RPN_FieldReadComponent(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX) RPN_FieldReadComponent(head,&Field->GRef->AX,">>",1,0);
-            RPN_FieldReadLevels(Field);
+         case 'V':
+            if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"^^",1,0);
+            if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,">>",1,0);
+//TODO:            RPN_FieldReadLevels(Field);
             break;
+
+         case 'Z':
+            if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"^^",1,0);
+            if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,">>",1,0);
+            break;
+
+         case '#':
+            if (!GRef->AY) RPN_FieldReadComponent(Head,&ay,"^^",1,0);
+            if (!GRef->AX) RPN_FieldReadComponent(Head,&ax,">>",1,0);
+
+            if (ax && ay) {
+               GRef->AX = (float *) malloc(GRef->NX*sizeof(float));
+               GRef->AY = (float *) malloc(GRef->NY*sizeof(float));
+   // TODO: Check with LireEnrPositionel
+   //            offsetx = ip3 - 1;
+   //            offsety = ip4 - 1;
+   //            for (j=0; j < GRef->NY; j++) GRef->AY[j] = ay[j+offsety];
+   //            for (i=0; i < GRef->NX; i++) GRef->AX[i] = ax[i+offsetx];
+               free(ax);
+               free(ay);
+            }
+            break;
+         
+         case 'U':
+            if (!GRef->AX) RPN_FieldReadComponent(Head,&ax,"^>",1,0);
+
+            if (ax) {
+               GRef->NbSub=(int)ax[2];            // Number of LAM grids (YY=2)
+               ni=(int)ax[5];                            // NI size of LAM grid 
+               nj=(int)ax[6];                            // NJ size of LAM grid
+               GRef->NX = ni;                     // NI size of U grid
+               GRef->NY = nj*GRef->NbSub;  // NJ size of U grid
+               GRef->AX = (float*)malloc(ni*sizeof(float));
+               GRef->AY = (float*)malloc(nj*sizeof(float));
+               memcpy(GRef->AX,&ax[15],ni*sizeof(float));
+               memcpy(GRef->AY,&ax[15+ni],nj*sizeof(float));
+
+               // Get subgrids
+               GRef->Subs = (TGeoRef **)malloc(GRef->NbSub*sizeof(TGeoRef*));
+               strcpy(grref,"E");
+               idx=11;
+               for(s=0;s<GRef->NbSub;s++) {
+                  f77name(cxgaig)(grref,&ig1,&ig2,&ig3,&ig4,&ax[idx],&ax[idx+1],&ax[idx+2],&ax[idx+3]);
+                  GRef->Subs[s] = GeoRef_RPNCreateFromMemory(ni,nj,"Z",grref,ig1,ig2,ig3,ig4,GRef->AX,GRef->AY);
+                  //TODO: Do we need to do this here ?
+                  c_ezgdef_yymask(GRef->Subs[s]);
+                  idx+=ni+nj+10;
+               }
+               free(ax);
+            }
+      }
+
+      // Convert Longitude to 0-360
+      // TODO: Can we not do this ?
+      if (Head->GRREF[0] == 'L') {
+         for (i=0; i < GRef->NX; i++) {
+            if (GRef->AX[i] < 0.0) {
+               GRef->AX[i] += 360.0;
+            }
+         }
       }
 
       // Need to re-qualify to check AX order
-      GeoRef_Qualify(Field->GRef);
+      GeoRef_Qualify(GRef);
    }
 
-   return(Field->GRef->AY && Field->GRef->AX);
+   return(GRef->AY && GRef->AX);
 }
 
 /*----------------------------------------------------------------------------
@@ -589,7 +603,7 @@ int RPN_FieldReadLevels(TRPNField *Field) {
       free(Field->ZRef->Levels);
 
    Field->ZRef->Levels=NULL;
-//TODO   Field->ZRef->LevelNb=RPN_FieldReadComponent(&Field->Head,&Field->ZRef->Levels,Field->Spec->Extrude,1,0);
+//TODO   Field->ZRef->LevelNb=RPN_FieldReadComponent(&Field->Head,&Field->ZRef->Levels,Field->Spec->Extrude,1,0,NULL);
 
    // If we don't find any level definition, use level index
    if (!Field->ZRef->Levels) {
@@ -612,7 +626,7 @@ int RPN_FieldWrite(int FileId,TRPNField *Field) {
    c_fst_data_length(TDef_Size[Field->Def->Type]);
    ok=cs_fstecr(Field->Def->Data[0],-Field->Head.NBITS,FileId,Field->Head.DATEO,Field->Head.DEET,Field->Head.NPAS,
       Field->Head.NI,Field->Head.NJ,Field->Head.NK,Field->Head.IP1,Field->Head.IP2,Field->Head.IP3,Field->Head.TYPVAR,
-      Field->Head.NOMVAR,Field->Head.ETIKET,Field->Head.GRTYP,Field->Head.IG1_JP,Field->Head.IG2_JP,Field->Head.IG3_JP,Field->Head.IG4_JP,Field->Head.DATYP,FALSE);
+      Field->Head.NOMVAR,Field->Head.ETIKET,Field->Head.GRTYP,Field->Head.IG[X_IG1],Field->Head.IG[X_IG2],Field->Head.IG[X_IG3],Field->Head.IG[X_IG4],Field->Head.DATYP,FALSE);
 
    if (ok<0) {
       App_Log(ERROR,"%s: Could not write field data (c_fstecr failed)\n",__func__);
@@ -665,14 +679,15 @@ int RPN_CopyDesc(int FIdTo,TRPNHeader* const H) {
       strcpy(h.TYPVAR,"  ");
       strcpy(h.ETIKET,"            ");
       strcpy(h.GRTYP," ");
+      strcpy(h.GRREF," ");
 
       pthread_mutex_lock(&RPNFieldMutex);
       while((desc=RPN_Desc[d++])) {
          if (strncmp(desc,"HY  ",2)==0) {
             ip1=-1;ip2=-1;
          } else {
-            ip1=H->IG1_JP;
-            ip2=H->IG2_JP;
+            ip1=H->IG[X_IG1];
+            ip2=H->IG[X_IG2];
          }
          key=c_fstinf(FIdTo,&ni,&nj,&nk,-1,"",ip1,ip2,-1,"",desc);
          if (key<0) {
@@ -688,10 +703,10 @@ int RPN_CopyDesc(int FIdTo,TRPNHeader* const H) {
                c_fstluk(data,key,&ni,&nj,&nk);
 
                key=c_fstprm(key,&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,
-                  &h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG1_JP,
-                  &h.IG2_JP,&h.IG3_JP,&h.IG4_JP,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
+                  &h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG[X_IG1],
+                  &h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
                key=c_fstecr(data,NULL,-h.NBITS,FIdTo,h.DATEO,h.DEET,h.NPAS,h.NI,h.NJ,h.NK,h.IP1,
-                  h.IP2,H->GRTYP[0]=='#'?0:h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,h.IG1_JP,h.IG2_JP,h.IG3_JP,h.IG4_JP,h.DATYP,1);
+                  h.IP2,H->GRTYP[0]=='#'?0:h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,h.IG[X_IG1],h.IG[X_IG2],h.IG[X_IG3],h.IG[X_IG4],h.DATYP,1);
             } else if (key==-29) {
                // Input file not openned
                return(FALSE);
@@ -732,7 +747,7 @@ int RPN_IsDesc(const char* restrict Var) {
  *   <FID>     : File id
  *   <Def>     : Data definition
  *   <Head>    : RPN field Header
- *   <GRef>    : Georeference horizontale
+ *   <Ref>    : Georeference horizontale
  *   <ZRef>    : Georeference verticale
  *   <Comp>    : Component into data array
  *   <NI>      : Horizontal tile size
@@ -748,7 +763,7 @@ int RPN_IsDesc(const char* restrict Var) {
  * Remarques :
  *----------------------------------------------------------------------------
 */
-int RPN_FieldTile(int FID,TDef *Def,TRPNHeader *Head,TGeoRef *GRef,TZRef *ZRef,int Comp,int NI,int NJ,int Halo,int DATYP,int NPack,int Rewrite,int Compress) {
+int RPN_FieldTile(int FID,TDef *Def,TRPNHeader *Head,TGeoRef *Ref,TZRef *ZRef,int Comp,int NI,int NJ,int Halo,int DATYP,int NPack,int Rewrite,int Compress) {
 
    char        *tile=NULL,*data=NULL;;
    int          i,j,k,ip1,ni,nj,di,dj,pj,no,sz,key=0;
@@ -776,7 +791,7 @@ int RPN_FieldTile(int FID,TDef *Def,TRPNHeader *Head,TGeoRef *GRef,TZRef *ZRef,i
       if (!NI || !NJ || (Def->NI<NI && Def->NJ<NJ)) {
          c_fst_data_length(TDef_Size[Def->Type]);
          key=c_fstecr(data,NULL,NPack,FID,Head->DATEO,Head->DEET,Head->NPAS,Def->NI,Def->NJ,1,ip1,Head->IP2,Head->IP3,Head->TYPVAR,
-            Head->NOMVAR,Head->ETIKET,(GRef?(GRef->Grid[1]!='\0'?&GRef->Grid[1]:GRef->Grid):"X"),Head->IG1_JP,Head->IG2_JP,Head->IG3_JP,Head->IG4_JP,DATYP,Rewrite);
+            Head->NOMVAR,Head->ETIKET,(Ref?(Ref->GRTYP[1]!='\0'?&Ref->GRTYP[1]:Ref->GRTYP):"X"),Head->IG[X_IG1],Head->IG[X_IG2],Head->IG[X_IG3],Head->IG[X_IG4],DATYP,Rewrite);
       } else {
 
          // Build and save the tiles, we adjust the tile size if it is too big
@@ -801,7 +816,7 @@ int RPN_FieldTile(int FID,TDef *Def,TRPNHeader *Head,TGeoRef *GRef,TZRef *ZRef,i
                }
                c_fst_data_length(TDef_Size[Def->Type]);
                key=c_fstecr(tile,NULL,NPack,FID,Head->DATEO,Head->DEET,Head->NPAS,ni,nj,1,ip1,Head->IP2,no,Head->TYPVAR,
-                  Head->NOMVAR,Head->ETIKET,"#",Head->IG1_JP,Head->IG2_JP,di+1,dj+1,DATYP,Rewrite);
+                  Head->NOMVAR,Head->ETIKET,"#",Head->IG[X_IG1],Head->IG[X_IG2],di+1,dj+1,DATYP,Rewrite);
             }
          }
       }
@@ -901,7 +916,7 @@ int RPN_GetAllDates(int *Flds,int NbFlds,int Uniq,int **DateV,int *NbDateV) {
 
     for(i=0; i<NbFlds; ++i) {
         err=cs_fstprm(Flds[i],&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
-                h.GRTYP,&h.IG1_JP,&h.IG2_JP,&h.IG3_JP,&h.IG4_JP,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
+                h.GRTYP,&h.IG[X_IG1],&h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
         if( err ) {
             App_Log(ERROR,"(RPN_GetAllDates) Couldn't get info on field (cs_fstprm)\n");
             APP_FREE(dates);
@@ -964,7 +979,7 @@ int RPN_GetAllIps(int *Flds,int NbFlds,int IpN,int Uniq,int **Ips,int *NbIp) {
 
     for(i=0; i<NbFlds; ++i) {
         err=cs_fstprm(Flds[i],&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
-                h.GRTYP,&h.IG1_JP,&h.IG2_JP,&h.IG3_JP,&h.IG4_JP,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
+                h.GRTYP,&h.IG[X_IG1],&h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
         if( err ) {
             App_Log(ERROR,"(RPN_GetAllIps) Couldn't get info on field (cs_fstprm)\n");
             APP_FREE(ips);
@@ -997,12 +1012,12 @@ int RPN_GetAllIps(int *Flds,int NbFlds,int IpN,int Uniq,int **Ips,int *NbIp) {
  * Nom      : <RPN_GenerateIG>
  * Creation : Septembre 2016 - E. Legault-Ouellet - CMC/CMOE
  *
- * But      : Initialise des IG1_JP/2/3 à des valeurs qui se veulent uniques
+ * But      : Initialise des IG1/2/3 à des valeurs qui se veulent uniques
  *
  * Parametres :
- *  <IG1_JP>   : [OUT] IG1_JP à Initialiser
- *  <IG2_JP>   : [OUT] IG2_JP à Initialiser
- *  <IG3_JP>   : [OUT] IG3_JP à Initialiser
+ *  <IG1>   : [OUT] IG1 à Initialiser
+ *  <IG2>   : [OUT] IG2 à Initialiser
+ *  <IG3>   : [OUT] IG3 à Initialiser
  *
  * Retour   : APP_ERR si erreur, APP_OK si ok.
  *
@@ -1012,13 +1027,13 @@ int RPN_GetAllIps(int *Flds,int NbFlds,int IpN,int Uniq,int **Ips,int *NbIp) {
  *
  *----------------------------------------------------------------------------
  */
-int RPN_GenerateIG(int *IG1_JP,int *IG2_JP,int *IG3_JP) {
+int RPN_GenerateIG(int *IG1,int *IG2,int *IG3) {
     int64_t bits = (int64_t)time(NULL);
 
-    // IG1_JP, IG2_JP and IG3_JP are limited to 24 bits, but we only have 64 bits to distribute, si IG3_JP will only receive up to 16 bits
-    *IG2_JP = bits&0xffff; bits>>=16;
-    *IG1_JP = bits&0xffffff; bits>>=24;
-    *IG3_JP = bits; //Basically 0. Should turn 1 on January 19th, 2038 (so still way before my retirement)
+    // IG1, IG2 and IG3 are limited to 24 bits, but we only have 64 bits to distribute, si IG3 will only receive up to 16 bits
+    *IG2 = bits&0xffff; bits>>=16;
+    *IG1 = bits&0xffffff; bits>>=24;
+    *IG3 = bits; //Basically 0. Should turn 1 on January 19th, 2038 (so still way before my retirement)
 
     return(APP_OK);
 }

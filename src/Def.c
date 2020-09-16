@@ -47,8 +47,8 @@
 // Sizes in bytes of the different data types
 // TODO: revisit for architecture dependencies
 int         TDef_Size[]          = { 0,1,1,1,2,2,4,4,8,8,4,8 };
-const char *TDef_InterpVString[] = { "FAST","WITHIN","INTERSECT","CENTROID","ALIASED","CONSERVATIVE","NORMALIZED_CONSERVATIVE","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
-const char *TDef_InterpRString[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
+const char *TDef_InterpVString[] = { "UNDEF","FAST","WITHIN","INTERSECT","CENTROID","ALIASED","CONSERVATIVE","NORMALIZED_CONSERVATIVE","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
+const char *TDef_InterpRString[] = { "UNDEF","NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
 
 
 /*----------------------------------------------------------------------------
@@ -309,6 +309,40 @@ TDef *Def_CopyPromote(TDef *Def,TDef_Type Type){
    return(def);
 }
 
+TDef *Def_CopyData(TDef *DefTo,TDef *DefFrom){
+
+   TDef *def=DefTo;
+   int   n,alias=FALSE;
+//TODO: define Alias
+   if (!def) {
+      def=Def_Copy(DefFrom);
+   }
+
+   if (!DefFrom) {
+      App_Log(ERROR,"%s: Invalid data source\n",__func__);
+      return(NULL);
+   }
+   //TODO:Check Def COMPAT
+
+   for(n=0;n<DefFrom->NC;n++) {
+      if (DefFrom->Data[n]) {
+         if (alias) {
+            def->Data[n]=DefFrom->Data[n];
+         } else {
+            memcpy(def->Data[n],DefFrom->Data[n],FSIZE3D(DefFrom)*TDef_Size[DefFrom->Type]);
+         }
+      }
+   }
+   if (alias)
+      def->Mode=DefFrom->Mode;
+
+   if (DefFrom->Mask) {
+      def->Mask=(char*)malloc(DefFrom->NIJ);
+      memcpy(def->Mask,DefFrom->Mask,DefFrom->NIJ);
+   }
+   return (def);
+}
+
 /*----------------------------------------------------------------------------
  * Nom      : <Def_Free>
  * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
@@ -324,29 +358,30 @@ TDef *Def_CopyPromote(TDef *Def,TDef_Type Type){
  *
  *----------------------------------------------------------------------------
 */
-void Def_Free(TDef *Def){
+int Def_Free(TDef * Def) {
 
    if (Def) {
       if (!Def->Alias && !Def->Idx) {
-         if (Def->Mode && Def->Mode!=Def->Data[0]) free(Def->Mode);
-         if (Def->Data[0])                         free(Def->Data[0]);
-         if (Def->Mask)                            free(Def->Mask);
+         if (Def->Mode && Def->Mode != Def->Data[0]) free(Def->Mode);
+         if (Def->Data[0])                           free(Def->Data[0]);
+         if (Def->Mask)                              free(Def->Mask);
       }
 
-      if (Def->Buffer)             free(Def->Buffer);
-      if (Def->Aux)                free(Def->Aux);
-      if (Def->Accum)              free(Def->Accum);
-      if (Def->Sub)                free(Def->Sub);
-      if (Def->Pres>(float*)0x1)   free(Def->Pres);
-      if (Def->Height>(float*)0x1) free(Def->Height);
+      if (Def->Buffer)                free(Def->Buffer);
+      if (Def->Aux)                   free(Def->Aux);
+      if (Def->Accum)                 free(Def->Accum);
+      if (Def->Sub)                   free(Def->Sub);
+      if (Def->Pres > (float *)0x1)   free(Def->Pres);
+      if (Def->Height > (float *)0x1) free(Def->Height);
 #ifdef HAVE_GDAL
-      if (Def->Poly)               OGR_G_DestroyGeometry(Def->Poly);
+      if (Def->Poly)                  OGR_G_DestroyGeometry(Def->Poly);
 //Freed by Def->Poly      if (Def->Pick)       OGR_G_DestroyGeometry(Def->Pick);
 #endif
 //TODO      if (Def->Segments)           TList_Clear(Def->Segments,(int(*)(void*))T3DArray_Free);
 
       free(Def);
    }
+   return (TRUE);
 }
 
 /*----------------------------------------------------------------------------
@@ -531,7 +566,7 @@ int Def_Paste(TDef *DefTo,TDef *DefPaste,int X0, int Y0) {
    int           x,y,dx,dy,x0,y0,x1,y1,c,nc;
    unsigned long idxs,idxd;
    double        a=1.0,src,dst;
-
+  
    // Check limits
    x0=X0<0?-X0:0;
    y0=Y0<0?-Y0:0;
@@ -1025,7 +1060,6 @@ static int Def_GridInterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,char Mode
          }
          // Are we within
          if (Mode!='W' || OGM_Within(Def->Poly,Geom,&envp,&envg)) {
-            // TODO: check to replace by this function: Def_SetValue(TDef *Def,int X, int Y,double Value,TDef_Combine Comb)
             Def_SetValue(Def,X0,Y0,Z,val,Comb);
 
             if (Mode=='N' && Def->Buffer) {
@@ -1410,8 +1444,56 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
  *
  *---------------------------------------------------------------------------------------------------------------
 */
+int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,float *Index) {
+
+#ifdef HAVE_RMN
+   TGridSet *gset=NULL;
+   void *pf0,*pt0,*pf1,*pt1;
+   int   ok=0,k;
+
+   if (!ToRef || !FromRef || !ToDef || !FromDef) {
+      App_Log(ERROR,"%s: Source and/or target grid undefined\n",__func__);
+      return(-1);
+   }
+ 
+   // Same GeoRef
+   if (FromRef == ToRef) {
+      Def_CopyData(ToDef,FromDef);
+      return(0);
+   }
+
+   GeoRef_SetGet(ToRef,FromRef);
+
+   // Loop on vertical levels
+   for(k=0;k<ToDef->NK;k++) {
+      Def_Pointer(ToDef,0,k*FSIZE2D(ToDef),pt0);
+      Def_Pointer(FromDef,0,k*FSIZE2D(FromDef),pf0);
+
+      if (ToDef->Data[1]) {
+         // Interpolation vectorielle
+         Def_Pointer(ToDef,1,k*FSIZE2D(ToDef),pt1);
+         Def_Pointer(FromDef,1,k*FSIZE2D(FromDef),pf1);
+
+         // In case of Y grid, get the speed and dir instead of wind components
+         // since grid oriented components dont mean much
+         if (ToRef->GRTYP[0]=='Y') {
+            ok=GeoRef_InterpWD(ToRef,FromRef,pt0,pt1,pf0,pf1);
+         } else {
+            ok=GeoRef_InterpUV(ToRef,FromRef,pt0,pt1,pf0,pf1);
+         }
+      } else{
+         // Interpolation scalaire
+         ok=GeoRef_Interp(ToRef,FromRef,pt0,pf0);
+      }
+   }
+#else
+      App_Log(ERROR,"%s: RMNLIB support not included\n",__func__);
+#endif   
+   return(ok);
+}
+
 //TODO: Remove lock
-int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char *Interp,char *Extrap,char Mask,float *Index) {
+int ORIDef_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,char Mask,float *Index) {
    
 #ifdef HAVE_RMN
    void *pf0,*pt0,*pf1,*pt1;
@@ -1420,16 +1502,12 @@ int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
    GeoRef_Lock();
 
    // Set interpolation and extrapolation mode
-   switch(Interp[0]) {
-      case 'N': c_ezsetopt("INTERP_DEGREE","NEAREST"); break;
-      case 'L': c_ezsetopt("INTERP_DEGREE","LINEAR");  break;
-      case 'C': c_ezsetopt("INTERP_DEGREE","CUBIC");   break;
-   }
+   if (Interp) FromRef->Options.InterpDegree=Interp;
+   if (Extrap) FromRef->Options.ExtrapDegree=Extrap;
    
-   if (Extrap[0]=='V') {
-      c_ezsetval("EXTRAP_VALUE",ToDef->NoData);
+   if (FromRef->Options.ExtrapDegree==ER_VALUE) {
+      FromRef->Options.ExtrapValue=ToDef->NoData;
    }
-   c_ezsetopt("EXTRAP_DEGREE",(char*)Extrap);
 
    if (ok<0) {
       App_Log(ERROR,"%s: EZSCINT internal error, could not define gridset\n",__func__);
@@ -1448,16 +1526,16 @@ int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
 
          // In case of Y grid, get the speed and dir instead of wind components
          // since grid oriented components dont mean much
-         if (ToRef->Grid[0]=='Y') {
-            ok=c_ezwdint(pt0, pt1, pf0, pf1, ToRef, FromRef);
+         if (ToRef->GRTYP[0]=='Y') {
+            ok=GeoRef_InterpWD(ToRef,FromRef,pt0,pt1,pf0,pf1);
          } else {
-            ok=c_ezuvint(pt0, pt1, pf0, pf1, ToRef, FromRef);
+            ok=GeoRef_InterpUV(ToRef,FromRef,pt0,pt1,pf0,pf1);
          }
       } else{
          // Interpolation scalaire
          Def_Pointer(ToDef,0,k*FSIZE2D(ToDef),pt0);
          Def_Pointer(FromDef,0,k*FSIZE2D(FromDef),pf0);
-         ok=c_ezsint(pt0, pf0, ToRef, FromRef);
+         ok=GeoRef_Interp(ToRef,FromRef,pt0,pf0);
       }
    }
    GeoRef_Unlock();
@@ -1467,7 +1545,7 @@ int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
    return(TRUE);
 }
          
-int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char *Interp,char *Extrap,char Mask,float *Index) {
+int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,char Mask,float *Index) {
    
    double     val,dir,lat,lon,di,dj,dval;
    int        ok=-1,idx,i,j,k,gotidx;
@@ -1515,7 +1593,7 @@ int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
                   *(ip++)=dj;
                }
             }
-            if (di>=I0 && di<=I1 && dj>=J0 && dj<=J1 && FromRef->Value(FromRef,FromDef,Interp[0],0,di,dj,k,&val,&dir)) {
+            if (di>=I0 && di<=I1 && dj>=J0 && dj<=J1 && FromRef->Value(FromRef,FromDef,Interp,0,di,dj,k,&val,&dir)) {
                if (ToDef->Data[1]) {
                   // Have to reproject vector
                   dir=DEG2RAD(dir)+GeoRef_GeoDir(ToRef,i,j);
@@ -1526,7 +1604,7 @@ int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
                } else {
                   Def_Set(ToDef,0,idx,val);
                } 
-            } else if (Extrap[0]=='V') {
+            } else if (Extrap==ER_VALUE) {
                Def_Set(ToDef,0,idx,ToDef->NoData);
                if (ToDef->Data[1]) {
                   Def_Set(ToDef,1,idx,ToDef->NoData); 
@@ -1542,7 +1620,7 @@ int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char 
    return(TRUE);
 }
 
-int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char *Interp,char *Extrap,char Mask,float *Index) {
+int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,char Mask,float *Index) {
 
    double val,lat,lon,di,dj;
    int    ezto=1,ezfrom=1,idx,c,i,j,k,gotidx;
@@ -1556,6 +1634,14 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,cha
    if (!FromRef || !FromDef) {
       App_Log(ERROR,"%s: Invalid source\n",__func__);
       return(0);
+   }
+
+   // Set interpolation and extrapolation mode
+   if (Interp) FromRef->Options.InterpDegree=Interp;
+   if (Extrap) FromRef->Options.ExtrapDegree=Extrap;
+   
+   if (FromRef->Options.ExtrapDegree==ER_VALUE) {
+      FromRef->Options.ExtrapValue=ToDef->NoData;
    }
 
    // If grids are the same, copy the data
@@ -1572,23 +1658,23 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,cha
          ezfrom=0;
       }
 
-      if (FromRef->Grid[0]=='R' || FromRef->Grid[0]=='W' || FromRef->Grid[0]=='X' || FromRef->Grid[0]=='O' || FromRef->Grid[0]=='M') {
+      if (FromRef->GRTYP[0]=='R' || FromRef->GRTYP[0]=='W' || FromRef->GRTYP[0]=='x' || FromRef->GRTYP[0]=='M') {
          ezfrom=0;
       }
 
-      if (ToRef->Grid[0]=='R' || ToRef->Grid[0]=='W' || ToRef->Grid[0]=='X' || FromRef->Grid[0]=='O' || ToRef->Grid[0]=='Y' || ToRef->Grid[0]=='M' || ToRef->Hgt) {
+      if (ToRef->GRTYP[0]=='R' || ToRef->GRTYP[0]=='W' || ToRef->GRTYP[0]=='x' || ToRef->GRTYP[0]=='Y' || ToRef->GRTYP[0]=='M' || ToRef->Hgt) {
          ezto=0;
       }
          
       // Use ezscint
       if (ezto && ezfrom) {
-	      if (!Def_EZInterp(ToRef,ToDef,FromRef,FromDef,Interp,Extrap,Mask,Index)) {
-            App_Log(ERROR,"%s: EZSCINT interpolation problem",__func__);
+	      if (Def_EZInterp(ToRef,ToDef,FromRef,FromDef,Index)) {
+            App_Log(ERROR,"%s: EZSCINT interpolation problem\n",__func__);
             return(FALSE);
          }
       } else { 
          if (!Def_JPInterp(ToRef,ToDef,FromRef,FromDef,Interp,Extrap,Mask,Index)) {
-            App_Log(ERROR,"%s: Interpolation problem",__func__);
+            App_Log(ERROR,"%s: Interpolation problem\n",__func__);
             return(FALSE);
          }
       }
@@ -2064,7 +2150,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
          }
       }
 
-      if (ToRef->Grid[0]=='Y') {
+      if (ToRef->GRTYP[0]=='Y') {
          // Point cloud interpolations
          for(idxt=0;idxt<nij;idxt++) {
             if (FromRef->UnProject(FromRef,&di0,&dj0,ToRef->AY[idxt],ToRef->AX[idxt],0,1)) {
@@ -2149,7 +2235,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
          n2=ToDef->NI>>1;
          dy=((y1-y0)*(x1-x0))>4194304?0:(y1-y0);
          for(y=y0;y<=y1;y+=(dy+1)) {
-            if (!(s=GeoScan_Get(&gscan,ToRef,NULL,FromRef,FromDef,x0,y,x1,y+dy,FromDef->CellDim,NULL))) {
+            if (!(s=GeoScan_Get(&gscan,ToRef,NULL,FromRef,FromDef,x0,y,x1,y+dy,FromDef->CellDim,IR_UNDEF))) {
                App_Log(ERROR,"%s: Unable to allocate coordinate scanning buffer\n",__func__);
                return(0);
             }

@@ -44,12 +44,12 @@ libgeoref.c_ezqkdef.argtypes = (
 libgeoref.c_ezqkdef.restype = ct.c_int
 c_ezqkdef = libgeoref.c_ezqkdef
 
-libgeoref.c_ezsint.argtypes = (
+libgeoref.GeoRef_Interp.argtypes = (
     npc.ndpointer(dtype=np.float32),
     npc.ndpointer(dtype=np.float32)
     )
-libgeoref.c_ezsint.restype = ct.c_int
-c_ezsint = libgeoref.c_ezsint
+libgeoref.GeoRef_Interp.restype = ct.c_int
+GeoRef_Interp = libgeoref.GeoRef_Interp
 
 libgeoref.c_gdll.argtypes = (
     ct.c_int,

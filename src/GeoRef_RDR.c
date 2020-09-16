@@ -36,11 +36,11 @@
 #include "Def.h"
 #include "Vertex.h"
 
-double   GeoRef_RDRHeight(TGeoRef *GRef,TZRef *ZRef,double Azimuth,double Bin,double Sweep);
-double   GeoRef_RDRDistance(TGeoRef *GRef,double X0,double Y0,double X1, double Y1);
-int      GeoRef_RDRValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double Azimuth,double Bin,double Sweep,double *Length,double *ThetaXY);
-int      GeoRef_RDRProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
-int      GeoRef_RDRUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
+double   GeoRef_RDRHeight(TGeoRef *Ref,TZRef *ZRef,double Azimuth,double Bin,double Sweep);
+double   GeoRef_RDRDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
+int      GeoRef_RDRValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double Azimuth,double Bin,double Sweep,double *Length,double *ThetaXY);
+int      GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
+int      GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
 TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,double ResA);
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,d
  * But          : Calculer la hauteur en MAGL d<une coordonnee RADAR.
  *
  * Parametres    :
- *   <GRef>      : Pointeur sur la reference geographique
+ *   <Ref>      : Pointeur sur la reference geographique
  *   <ZRef>      : Pointeur sur la reference verticale
  *   <Azimuth>   : coordonnee en X dans la projection/grille
  *   <Bin>       : coordonnee en Y dans la projection/grille
@@ -62,10 +62,10 @@ TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,d
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-double GeoRef_RDRHeight(TGeoRef *GRef,TZRef *ZRef,double Azimuth,double Bin,double Sweep) {
+double GeoRef_RDRHeight(TGeoRef *Ref,TZRef *ZRef,double Azimuth,double Bin,double Sweep) {
 
-   if (Bin>=0 && Bin<GRef->R && Sweep>=0 && Sweep<ZRef->LevelNb) {
-      return(GRef->Loc.Elev+sin(DEG2RAD(ZRef->Levels[(int)Sweep]))*((int)Bin*GRef->ResR));
+   if (Bin>=0 && Bin<Ref->R && Sweep>=0 && Sweep<ZRef->LevelNb) {
+      return(Ref->Loc.Elev+sin(DEG2RAD(ZRef->Levels[(int)Sweep]))*((int)Bin*Ref->ResR));
    } else {
       return(0);
    }
@@ -78,7 +78,7 @@ double GeoRef_RDRHeight(TGeoRef *GRef,TZRef *ZRef,double Azimuth,double Bin,doub
  * But          : Calculer la distance entre deux points.
  *
  * Parametres    :
- *   <GRef>      : Pointeur sur la reference geographique
+ *   <Ref>      : Pointeur sur la reference geographique
  *   <X0>        : coordonnee en X dans la projection/grille
  *   <Y0>        : coordonnee en Y dans la projection/grille
  *   <X0>        : coordonnee en X dans la projection/grille
@@ -90,7 +90,7 @@ double GeoRef_RDRHeight(TGeoRef *GRef,TZRef *ZRef,double Azimuth,double Bin,doub
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-double GeoRef_RDRDistance(TGeoRef *GRef,double X0,double Y0,double X1, double Y1) {
+double GeoRef_RDRDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1) {
 
    return(0.0);
 }
@@ -102,9 +102,9 @@ double GeoRef_RDRDistance(TGeoRef *GRef,double X0,double Y0,double X1, double Y1
  * But          : Extraire la valeur d'une matrice de donnees.
  *
  * Parametres    :
- *   <GRef>      : Pointeur sur la reference geographique
+ *   <Ref>      : Pointeur sur la reference geographique
  *   <Def>       : Pointeur sur la definition de la donnee
- *   <Mode>      : Mode d'interpolation (N=NEAREST,L=LINEAR);
+ *   <Interp>    : Mode d'interpolation;
  *   <C>         : Composante
  *   <X>         : coordonnee en X dans la projection/grille
  *   <Y>         : coordonnee en Y dans la projection/grille
@@ -118,21 +118,21 @@ double GeoRef_RDRDistance(TGeoRef *GRef,double X0,double Y0,double X1, double Y1
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_RDRValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double Azimuth,double Bin,double Sweep,double *Length,double *ThetaXY){
+int GeoRef_RDRValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double Azimuth,double Bin,double Sweep,double *Length,double *ThetaXY){
 
    int      valid=0,mem,ix,iy;
 
    *Length=Def->NoData;
 
    /*Si on est a l'interieur de la grille ou que l'extrapolation est activee*/
-   if (C<Def->NC && Bin<=GRef->R) {
+   if (C<Def->NC && Bin<=Ref->R) {
 
       mem=Def->NI*Def->NJ*(int)Sweep;
 
       ix=ROUND(Azimuth);
       iy=ROUND(Bin);
 
-      if (Def->Type<=9 || Mode=='N' || (Azimuth==ix && Bin==iy)) {
+      if (Def->Type<=9 || Interp==IR_NEAREST || (Azimuth==ix && Bin==iy)) {
          mem+=iy*Def->NI+ix;
          Def_Get(Def,C,mem,*Length);
       } else {
@@ -150,7 +150,7 @@ int GeoRef_RDRValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double Azimuth,doubl
  * But          : Projeter une coordonnee de projection en latlon.
  *
  * Parametres    :
- *   <GRef>      : Pointeur sur la reference geographique
+ *   <Ref>      : Pointeur sur la reference geographique
  *   <X>         : coordonnee en X dans la projection/grille
  *   <Y>         : coordonnee en Y dans la projection/grille
  *   <Lat>       : Latitude
@@ -164,25 +164,25 @@ int GeoRef_RDRValue(TGeoRef *GRef,TDef *Def,char Mode,int C,double Azimuth,doubl
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_RDRProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
+int GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
 
    Coord loc0;
    double x,d;
 
-   if (Y>GRef->R && !Extrap) {
+   if (Y>Ref->R && !Extrap) {
       *Lat=-999.0;
       *Lon=-999.0;
       return(0);
    }
 
-   loc0.Lat=DEG2RAD(GRef->Loc.Lat);
-   loc0.Lon=DEG2RAD(GRef->Loc.Lon);
+   loc0.Lat=DEG2RAD(Ref->Loc.Lat);
+   loc0.Lon=DEG2RAD(Ref->Loc.Lon);
 
-   X*=GRef->ResA;
-   Y*=GRef->ResR;
+   X*=Ref->ResA;
+   Y*=Ref->ResR;
 
    x=DEG2RAD(X);
-   d=M2RAD(Y*GRef->CTH);
+   d=M2RAD(Y*Ref->CTH);
 
    if (Transform) {
       *Lat=asin(sin(loc0.Lat)*cos(d)+cos(loc0.Lat)*sin(d)*cos(x));
@@ -204,7 +204,7 @@ int GeoRef_RDRProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
  * But          : Projeter une latlon en position grille.
  *
  * Parametres    :
- *   <GRef>      : Pointeur sur la reference geographique
+ *   <Ref>      : Pointeur sur la reference geographique
  *   <X>         : coordonnee en X dans la projection/grille
  *   <Y>         : coordonnee en Y dans la projection/grille
  *   <Lat>       : Latitude
@@ -218,27 +218,27 @@ int GeoRef_RDRProject(TGeoRef *GRef,double X,double Y,double *Lat,double *Lon,in
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_RDRUnProject(TGeoRef *GRef,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
+int GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
 
    Coord loc0;
    double x,d;
 
-   loc0.Lat=DEG2RAD(GRef->Loc.Lat);
-   loc0.Lon=DEG2RAD(GRef->Loc.Lon);
+   loc0.Lat=DEG2RAD(Ref->Loc.Lat);
+   loc0.Lon=DEG2RAD(Ref->Loc.Lon);
    Lat=DEG2RAD(Lat);
    Lon=DEG2RAD(Lon);
 
    d=fabs(DIST(0.0,loc0.Lat,loc0.Lon,Lat,Lon));
    x=-RAD2DEG(COURSE(loc0.Lat,loc0.Lon,Lat,Lon));
    *X=x<0.0?x+360.0:x;
-   *Y=d/GRef->CTH;
+   *Y=d/Ref->CTH;
 
    if (Transform) {
-      *X/=GRef->ResA;
-      *Y/=GRef->ResR;
+      *X/=Ref->ResA;
+      *Y/=Ref->ResR;
    }
 
-   if (*Y>GRef->Y1) {
+   if (*Y>Ref->Y1) {
       if (!Extrap) {
          *X=-1.0;
          *Y=-1.0;
@@ -274,7 +274,7 @@ TGeoRef* GeoRef_RDRCreate(double Lat,double Lon,double Height,int R,double ResR,
 
    ref=GeoRef_New();
 
-   ref->Grid[0]='R';
+   ref->GRTYP[0]='R';
    ref->Loc.Lat=Lat;
    ref->Loc.Lon=Lon;
    ref->Loc.Elev=Height;

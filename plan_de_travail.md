@@ -15,7 +15,7 @@
 
 - interpoler de grille ORCA à [RPN L](https://science:science@collaboration.cmc.ec.gc.ca/science/si/eng/si/misc/grilles.html#LatLon) avec [API de SPI](https://wiki.cmc.ec.gc.ca/wiki/SPI/Documentation#Developer_documentation) (suite)
 - [configurer ThinLinc pour travail à distance](https://1drv.ms/w/s!AmH_Shsw9Hrnvyo9b08sRvWJyE7v)
-- remplacer [appel à `rmn.ezsint`](https://github.com/jeixav/stage_2020/blob/5c2c86459d920a2866b46d8af58fd886be200ac3/test/demo_a_grid.py#L71) par [`libgeoref.c_ezsint`](https://github.com/jeixav/stage_2020/blob/5c2c86459d920a2866b46d8af58fd886be200ac3/src/ezsint.c#L33-L145)
+- remplacer [appel à `rmn.ezsint`](https://github.com/jeixav/stage_2020/blob/5c2c86459d920a2866b46d8af58fd886be200ac3/test/demo_a_grid.py#L71) par [`libgeoref.GeoRef_Interp`](https://github.com/jeixav/stage_2020/blob/5c2c86459d920a2866b46d8af58fd886be200ac3/src/ezsint.c#L33-L145)
   - utilise [Python ctypes](https://docs.python.org/3/library/ctypes.html)
   - référence: [librmn avec python-RPN](https://github.com/meteokid/python-rpn/tree/master/lib/rpnpy/librmn)
 
@@ -27,15 +27,15 @@
   - [refactoring du code de vérification des résultats](https://github.com/jeixav/stage_2020/pull/9)
 - tester programme C `interpolate.c`
 - [relecture de la demande de fusion de la branche feat/move_to_ppp3_4](https://github.com/jeixav/stage_2020/pull/10)
-- remplacer appel à `rmn.ezsint` par `libgeoref.c_ezsint` (suite)
+- remplacer appel à `rmn.ezsint` par `libgeoref.GeoRef_Interp` (suite)
   - [diagnostic d'erreur de segmentation](https://github.com/jeixav/stage_2020/issues/6)
 
 # Semaine 5
 
-- remplacer appel à `rmn.ezsint` par `libgeoref.c_ezsint` (suite)
+- remplacer appel à `rmn.ezsint` par `libgeoref.GeoRef_Interp` (suite)
 - générer automatiquement de la documentation avec Doxygen
-- adapter `c_ezsint` pour grille ORCA
-  - identifier où `c_ezsint` échoue avec grille ORCA
+- adapter `GeoRef_Interp` pour grille ORCA
+  - identifier où `GeoRef_Interp` échoue avec grille ORCA
   - utilisation du débogueur [TotalView](https://portal.science.gc.ca/confluence/x/14Lr)
 
 # Semaines 6 & 7

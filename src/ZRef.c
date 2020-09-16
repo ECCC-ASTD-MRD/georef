@@ -319,12 +319,12 @@ int ZRef_DecodeRPN(TZRef *ZRef,int Unit) {
    // Check for toctoc (field !!)   
    key=c_fstinf(Unit,&h.NI,&h.NJ,&h.NK,-1,"",-1,-1,-1,"X","!!");
    if (key>=0) {
-      cd=c_fstprm(key,&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG1_JP,
-                     &h.IG2_JP,&h.IG3_JP,&h.IG4_JP,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
+      cd=c_fstprm(key,&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG[X_IG1],
+                     &h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
       if (cd>=0) {
-         ZRef->Version=h.IG1_JP;
+         ZRef->Version=h.IG[X_IG1];
          ZRef->PRef=10.0;
-         ZRef->PTop=h.IG2_JP/10.0;
+         ZRef->PTop=h.IG[X_IG2]/10.0;
          ZRef->ETop=0.0;
          ZRef->RCoef[0]=0.0f;
          ZRef->RCoef[1]=0.0f;
@@ -379,13 +379,13 @@ int ZRef_DecodeRPN(TZRef *ZRef,int Unit) {
       // Check fo regular hybrid (field HY)
       key = c_fstinf(Unit,&h.NI,&h.NJ,&h.NK,-1,"",-1,-1,-1,"X","HY");
       if (key>=0) {
-         cd=c_fstprm(key,&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG1_JP,
-                     &h.IG2_JP,&h.IG3_JP,&h.IG4_JP,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
+         cd=c_fstprm(key,&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG[X_IG1],
+                     &h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
          if (cd>=0) {
             ZRef->PTop=ZRef_IP2Level(h.IP1,&kind);
-            ZRef->RCoef[0]=h.IG2_JP/1000.0f;
+            ZRef->RCoef[0]=h.IG[X_IG2]/1000.0f;
             ZRef->RCoef[1]=0.0f;
-            ZRef->PRef=h.IG1_JP;
+            ZRef->PRef=h.IG[X_IG1];
 //            ZRef->Type=LVL_HYBRID;
          } else {
             App_Log(WARNING,"%s: Could not get info on HY field (c_fstprm).\n",__func__);
@@ -528,7 +528,7 @@ int ZRef_GetLevels(TZRef *ZRef,const TRPNHeader* restrict const H,int Order) {
       for(k=k2=0;k<h.NK;k++) {
          key=c_fstprm(idlst[k],&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&kx,&h.NBITS,
                &h.DATYP,&ip1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
-               h.GRTYP,&h.IG1_JP,&h.IG2_JP,&h.IG3_JP,&h.IG4_JP,&h.SWA,&h.LNG,&h.DLTF,
+               h.GRTYP,&h.IG[X_IG1],&h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,
                &h.UBC,&h.EX1,&h.EX2,&h.EX3);
 
          ZRef->Levels[k2]=ZRef_IP2Level(ip1,&l);
