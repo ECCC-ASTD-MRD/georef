@@ -1,4 +1,4 @@
-   subroutine ez_applywgts(outfld, wts, idxs, infld, x, y, masque, ni_src, nj_src, ni_dst, nj_dst, n_wts)
+   subroutine ez_applywgts(outfld, wts, idxs, infld, masque, ni_src, nj_src, ni_dst, nj_dst, n_wts)
 
    implicit none
    integer ni_src, nj_src, ni_dst, nj_dst, n_wts, n

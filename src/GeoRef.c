@@ -1096,11 +1096,13 @@ TGeoRef* GeoRef_New() {
    ref->Options.ExtrapDegree=ER_UNDEF;
    ref->Options.ExtrapValue=0.0; 
    ref->Options.Transform=TRUE;
+   ref->Options.CIndex=FALSE;
    ref->Options.Symmetric=FALSE;  
    ref->Options.WeightNum=16; 
    ref->Options.PolarCorrect=TRUE; 
    ref->Options.VectorMode=FALSE;
    ref->Options.SubGrid=0;
+   ref->Options.DistTreshold=10.0;
 
    // RPN Specific
    memset(&ref->RPNHead,0x0,sizeof(TRPNHeader));

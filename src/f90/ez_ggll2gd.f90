@@ -35,20 +35,26 @@
       external ez_cherche
 
       integer i,j,guess,hem,indy
-      real tmplat, dellat, dellon, xlat0, xlon0
+      real tmplon,tmplat, dellat, dellon, xlat0, xlon0
       
       dellon = 360.0 / real(ni)
       xlon0 = 0.0
-      
-      do 10 i = 1, npts
-         x(i) = (xlon(i) - xlon0)/dellon + 1.0
- 10   continue
-      
+            
       do i=1,npts
-         indy = ez_cherche(xlat(i),lroots,nj)
-         if (indy .ge. nj) indy = nj - 1
+            tmplon=xlon(i)
+            if (tmplon.eq.-180.0) then
+               if (tmplon.gt.180.0) then
+                  tmplon = tmplon - 360.0
+               endif
+            else if (tmplon.lt.0.0) then
+                  tmplon = tmplon + 360.0
+            endif
+            x(i) = (tmplon - xlon0)/dellon + 1.0
+
+            indy = ez_cherche(xlat(i),lroots,nj)
+            if (indy .ge. nj) indy = nj - 1
          
-         y(i)= real(indy)+(xlat(i)-lroots(indy))/         (lroots(indy+1)-lroots(indy))
+            y(i)= real(indy)+(xlat(i)-lroots(indy))/(lroots(indy+1)-lroots(indy))
       enddo
       return
       end

@@ -40,7 +40,7 @@
       real rinc
 
       call cigaxg(grtyp,xlat1,xlon1,xlat2,xlon2,ig1,ig2,ig3,ig4)
-      call ez_gfxyfll(xlon,xlat,xlongf,xlatgf,npts,      xlat1,xlon1,xlat2,xlon2)
+      call ez_gfxyfll(xlon,xlat,xlongf,xlatgf,npts,xlat1,xlon1,xlat2,xlon2)
 
       if (grtyp.eq.'E') then
          dellon = 360.0 / real(ni-1)
@@ -49,7 +49,7 @@
          dellat = 180.0 / real(nj)
          xlat0 = -90. + 0.5*dellat
 
-         call ez_llll2gd(px,py,xlatgf,xlongf,npts,         xlat0,xlon0,dellat,dellon, 0.0)
+         call ez_llll2gd(px,py,xlatgf,xlongf,npts,xlat0,xlon0,dellat,dellon, 0.0)
       endif
 
       return

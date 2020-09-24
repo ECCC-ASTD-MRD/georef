@@ -79,12 +79,7 @@
          if (ig1 .eq. SUD) then
             dellat = 90.0 / real(nj)
             xlat0 = -90.0 + dellat * 0.5
-         endif
-         
-         do i=1,npts
-            if (xlon(i).lt.0.0) xlon(i) = xlon(i) + 360.0
-         enddo
-         
+         endif         
          
          call ez_llll2gd(px,py,xlat,xlon,npts,xlat0, xlon0, dellat, dellon, 0.0)
          return
@@ -108,9 +103,6 @@
             xlat0 = -90.0
          endif
          
-         do i=1,npts
-            if (xlon(i).lt.0.0) xlon(i) = xlon(i) + 360.0
-         enddo
          call ez_llll2gd(px,py,xlat,xlon,npts,xlat0, xlon0, dellat, dellon, 0.0)
          return
       endif
@@ -118,9 +110,7 @@
       if (grtyp .eq. 'G') then
          dellon = 360.0 / real(ni)
          xlon0 = 0.0
-         do i=1,npts
-            if (xlon(i).lt.0.0) xlon(i) = xlon(i) + 360.0
-         enddo
+
          if (ig1.eq.GLOBAL) then
             call ez_ggll2gd(px,py,xlat,xlon,npts,ni,nj,ig1,lroots)
          else if  (ig1 .eq. NORD) then
@@ -138,13 +128,14 @@
       if (grtyp .eq. 'L') then
          call cigaxg(grtyp,xlat0,xlon0,dellat,dellon,ig1,ig2,ig3,ig4)
          
-         do 10 i=1,npts
-            if (xlon(i).lt.xlon0) then
-               xlon(i) = xlon(i) + 360.0
-            endif
-            if (xlon(i).gt.(xlon0 + ni*dellon)) then
-               xlon(i) = xlon(i) - 360.0
-            endif
+! TODO: Check for xlon0 limits
+!         do 10 i=1,npts
+!            if (xlon(i).lt.xlon0) then
+!               xlon(i) = xlon(i) + 360.0
+!            endif
+!            if (xlon(i).gt.(xlon0 + ni*dellon)) then
+!               xlon(i) = xlon(i) - 360.0
+!            endif
             
  10      continue
          

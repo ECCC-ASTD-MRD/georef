@@ -39,7 +39,7 @@ int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,float
 
    if (RefFrom->Type&GRID_EXPAND) {
      lxzin = (float *) malloc(2*RefFrom->NX*RefFrom->NY*sizeof(float));
-     GeoRef_ExpandGrid(RefFrom, lxzin, lzin);
+     GeoRef_GridGetExpanded(RefFrom,lxzin,lzin);
    } else  {
      lxzin = lzin;
    }
@@ -58,7 +58,7 @@ int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,float
 /*   if (Opt->PolarCorrect == TRUE && !Opt->VectorMode)
      {
      ier = ez_defzones(&gset);
-     ier = ez_corrval(RefTo,RefFrom,zout, lxzin, &gset);
+     ier = GeoRef_CorrectValue(RefTo,RefFrom,zout, lxzin, &gset);
      }*/
 
 
@@ -138,8 +138,8 @@ int GeoRef_XYUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
             tmpy[j]=y[j];
          }
       }
-      icode = GeoRef_XYUVValN(yin_gd,uuyin,vvyin,uuin,vvin,x,tmpy,n);
-      icode = GeoRef_XYUVValN(yan_gd,uuyan,vvyan,&uuin[ni*nj],&vvin[ni*nj],x,tmpy,n);
+      icode = GeoRef_XYUVVal(yin_gd,uuyin,vvyin,uuin,vvin,x,tmpy,n);
+      icode = GeoRef_XYUVVal(yan_gd,uuyan,vvyan,&uuin[ni*nj],&vvin[ni*nj],x,tmpy,n);
  
       for (j=0; j < n; j++) {
          if (y[j] > yin_gd->NY) {
@@ -155,20 +155,14 @@ int GeoRef_XYUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       free(uuyin); free(vvyin);
       return(icode);
    } else {
-      icode = GeoRef_XYUVValN(Ref,uuout,vvout,uuin,vvin,x,y,n);
-      return(icode);
+      Ref->Options.VectorMode = TRUE;
+      Ref->Options.Symmetric = TRUE;
+      GeoRef_XYInterp(NULL,Ref,uuout,uuin,x,y,n);
+      Ref->Options.Symmetric = FALSE;
+      GeoRef_XYInterp(NULL,Ref,vvout,vvin,x,y,n);
+      Ref->Options.Symmetric = TRUE;
+      Ref->Options.VectorMode = FALSE;
    }
-}
-
-int GeoRef_XYUVValN(TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,float *x,float *y,int n) {
-
-   RefFrom->Options.VectorMode = TRUE;
-   RefFrom->Options.Symmetric = TRUE;
-   GeoRef_XYInterp(NULL,RefFrom,uuout,uuin,x,y,n);
-   RefFrom->Options.Symmetric = FALSE;
-   GeoRef_XYInterp(NULL,RefFrom,vvout,vvin,x,y,n);
-   RefFrom->Options.Symmetric = TRUE;
-   RefFrom->Options.VectorMode = FALSE;
 
    return(0);
 }
@@ -203,13 +197,13 @@ int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
             tmpy[j]=y[j];
          }
       }
-      icode = GeoRef_XYUVValN(yin_gd, tmpuu, tmpvv, uuin, vvin, x, tmpy, n);
-      icode = GeoRef_XY2LLN (yin_gd, tmplat, tmplon, x, tmpy, n,FALSE);
-      icode = GeoRef_UV2WD (yin_gd, uuyin,vvyin,tmpuu,tmpvv,tmplat,tmplon,n);
+      icode = GeoRef_XYUVVal(yin_gd, tmpuu, tmpvv, uuin, vvin, x, tmpy, n);
+      icode = GeoRef_XY2LL(yin_gd,tmplat,tmplon,x,tmpy,n);
+      icode = GeoRef_UV2WD(yin_gd, uuyin,vvyin,tmpuu,tmpvv,tmplat,tmplon,n);
 
-      icode = GeoRef_XYUVValN(yan_gd, tmpuu, tmpvv, &uuin[(lni*lnj)], &vvin[(lni*lnj)], x, tmpy, n);
-      icode = GeoRef_XY2LLN (yan_gd, tmplat, tmplon, x, tmpy, n,FALSE);
-      icode = GeoRef_UV2WD (yan_gd, uuyan,vvyan,tmpuu,tmpvv,tmplat,tmplon,n);
+      icode = GeoRef_XYUVVal(yan_gd, tmpuu, tmpvv, &uuin[(lni*lnj)], &vvin[(lni*lnj)], x, tmpy, n);
+      icode = GeoRef_XY2LL(yan_gd,tmplat,tmplon,x,tmpy,n);
+      icode = GeoRef_UV2WD(yan_gd, uuyan,vvyan,tmpuu,tmpvv,tmplat,tmplon,n);
 
       for (j=0; j< n; j++) {
          if (y[j] > yin_gd->NY) {
@@ -225,7 +219,7 @@ int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       free(tmpy);
    } else {
       ier = GeoRef_XYUVVal(Ref,tmpuu,tmpvv,uuin,vvin,x,y,n);
-      ier = GeoRef_XY2LLN(Ref,tmplat,tmplon,x,y,n,FALSE);
+      ier = GeoRef_XY2LL(Ref,tmplat,tmplon,x,y,n);
       ier = GeoRef_UV2WD(Ref,uuout,vvout,tmpuu,tmpvv,tmplat,tmplon,n);
    }
 

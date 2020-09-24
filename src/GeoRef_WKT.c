@@ -187,52 +187,6 @@ int GeoRef_WKTValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,do
    return(valid);
 }
 
-static inline int GeoRef_WKTRotate(TRotationTransform *T,double *Lat,double *Lon) {
-
-   double lat,lon,x,y,z,xr,yr,zr;
-   
-   lon = DEG2RAD(*Lon);
-   lat = DEG2RAD(*Lat);
-
-   // Convert from spherical to cartesian coordinates
-   x = cos(lon)*cos(lat); 
-   y = sin(lon)*cos(lat);
-   z = sin(lat);
-
-   xr = T->CosTheta*T->CosPhi*x + T->CosTheta*T->SinPhi*y + T->SinTheta*z;
-   yr = -T->SinPhi*x + T->CosPhi*y;
-   zr = -T->SinTheta*T->CosPhi*x - T->SinTheta*T->SinPhi*y + T->CosTheta*z;
-      
-   // Convert cartesian back to spherical coordinates
-   *Lon = RAD2DEG(atan2(yr,xr)); 
-   *Lat = RAD2DEG(asin(zr));
-   
-   return(TRUE);
-}
-
-static inline int GeoRef_WKTUnRotate(TRotationTransform *T,double *Lat,double *Lon) {
-
-   double lat,lon,x,y,z,xr,yr,zr;
-   
-   lon = DEG2RAD(*Lon);
-   lat = DEG2RAD(*Lat);
-
-   // Convert from spherical to cartesian coordinates
-   x = cos(lon)*cos(lat); 
-   y = sin(lon)*cos(lat);
-   z = sin(lat);
-
-   xr = T->CosTheta*T->CosPhi*x + -T->SinPhi*y + -T->SinTheta*T->CosPhi*z;
-   yr = -T->CosTheta*-T->SinPhi*x + T->CosPhi*y - -T->SinTheta*-T->SinPhi*z;
-   zr = T->SinTheta*x + T->CosTheta*z;
-      
-   // Convert cartesian back to spherical coordinates
-   *Lon = RAD2DEG(atan2(yr,xr)); 
-   *Lat = RAD2DEG(asin(zr));
-
-   return(TRUE);
-}
-
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_WKTProject>
  * Creation     : Mars 2005 J.P. Gauthier - CMC/CMOE
@@ -256,100 +210,10 @@ static inline int GeoRef_WKTUnRotate(TRotationTransform *T,double *Lat,double *L
 */
 int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
 
-#ifdef HAVE_GDAL
-   double d,dx,dy,x,y,z=0.0;
-   int    sx,sy,s,ok,gidx;
-
-   d=1.0;
-
-   if( !Extrap && (X>(Ref->X1+d) || Y>(Ref->Y1+d) || X<(Ref->X0-d) || Y<(Ref->Y0-d)) ) {
-      *Lon=-999.0;
-      *Lat=-999.0;
-      return(0);
-   }
-
-   // GRTYP cell are corner defined 
-   if (Ref->Type&GRID_CORNER) {
-      X+=0.5;
-      Y+=0.5;
-   }
-
-   // Because some grids are defined as WZ and others as ZW, this makes sure we catch the other letter
-   gidx = Ref->GRTYP[0]=='W' ? 1 : 0;
-
-   // In case of non-uniform grid, figure out where in the position vector we are
-   if (Ref->GRTYP[gidx]=='Z') {
-      if (Ref->AX && Ref->AY) {
-         // X
-         if( X < Ref->X0 )      { sx=Ref->X0; X=Ref->AX[sx]-(Ref->AX[sx]-Ref->AX[sx+1])*(X-sx); }
-         else if( X > Ref->X1 ) { sx=Ref->X1; X=Ref->AX[sx]+(Ref->AX[sx]-Ref->AX[sx-1])*(X-sx); }
-         else                    { sx=floor(X); X=sx==X?Ref->AX[sx]:ILIN(Ref->AX[sx],Ref->AX[sx+1],X-sx); }
-
-         // Y
-         s=Ref->NX;
-         if( Y < Ref->Y0 )      { sy=Ref->Y0; Y=Ref->AY[sy*s]-(Ref->AY[sy*s]-Ref->AY[(sy+1)*s])*(Y-sy); }
-         else if( Y > Ref->Y1 ) { sy=Ref->Y1; Y=Ref->AY[sy*s]+(Ref->AY[sy*s]-Ref->AY[(sy-1)*s])*(Y-sy); }
-         else                    { sy=floor(Y); Y=sy==Y?Ref->AY[sy*s]:ILIN(Ref->AY[sy*s],Ref->AY[(sy+1)*s],Y-sy); }
-      }
-   } else if (Ref->GRTYP[gidx]=='X' || Ref->GRTYP[gidx]=='Y') {
-      if (Ref->AX && Ref->AY) {
-         sx=floor(X);sx=CLAMP(sx,Ref->X0,Ref->X1);
-         sy=floor(Y);sy=CLAMP(sy,Ref->Y0,Ref->Y1);
-         dx=X-sx;;
-         dy=Y-sy;
-
-         s=sy*Ref->NX+sx;
-         X=Ref->AX[s];
-         Y=Ref->AY[s];
-
-         if (++sx<=Ref->X1) {
-            s=sy*Ref->NX+sx;
-            X+=(Ref->AX[s]-X)*dx;
-         }
-
-         if (++sy<=Ref->Y1) {
-            s=sy*Ref->NX+(sx-1);
-            Y+=(Ref->AY[s]-Y)*dy;
-         }
-      }
-   }
-
-   // Transform the point into georeferenced coordinates 
-   x=X;
-   y=Y;
-   if (Transform) {
-      if (Ref->Transform) {
-         x=Ref->Transform[0]+Ref->Transform[1]*X+Ref->Transform[2]*Y;
-         y=Ref->Transform[3]+Ref->Transform[4]*X+Ref->Transform[5]*Y;
-      } else if (Ref->GCPTransform) {
-         GDALGCPTransform(Ref->GCPTransform,FALSE,1,&x,&y,&z,&ok);
-      } else if (Ref->TPSTransform) {
-         GDALGCPTransform(Ref->TPSTransform,FALSE,1,&x,&y,&z,&ok);
-      } else if (Ref->RPCTransform) {
-         GDALGCPTransform(Ref->RPCTransform,FALSE,1,&x,&y,&z,&ok);
-      }
-   }
-   
-   // Transform to latlon
-   if (Ref->Function) {
-      if (!OCTTransform(Ref->Function,1,&x,&y,NULL)) {
-         *Lon=-999.0;
-         *Lat=-999.0;
-         return(0);
-      }
-   }
-
-   *Lon=x;
-   *Lat=y;
-   
-   if (Ref->RotTransform) 
-      GeoRef_WKTUnRotate(Ref->RotTransform,Lat,Lon);
-   
-   return(1);
-#else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
-   return(0);
+#ifdef HAVE_RMN
+//TODO   GeoRef_LL2XY(REFGET(Ref),&X,&Y,Lat,Lon,1);
 #endif
+
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -383,7 +247,7 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
    Vect3d b;
    
    if (Ref->RotTransform) 
-      GeoRef_WKTRotate(Ref->RotTransform,&Lat,&Lon);
+//TODO: Transfer to InterpCoords      GeoRef_WKTRotate(Ref->RotTransform,&Lat,&Lon);
 
    if (Lat<=90.0 && Lat>=-90.0 && Lon!=-999.0) {
 

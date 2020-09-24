@@ -31,7 +31,6 @@
 
 #include "App.h"
 #include "GeoRef.h"
-#include "Vertex.h"
 
 void GeoRef_SetZoneFree(TGridSet *GSet) {
 
@@ -70,7 +69,7 @@ int GeoRef_SetZoneDefinePole(TGeoRef *RefFrom,TGridSet *GSet,int Zone) {
    } else {
       latpole = (Zone==NORTH)?90.0:-90.0;
       lonpole = 0.0;
-      GeoRef_LL2XYN(RefFrom,&xpole,&ypole,&latpole,&lonpole,1,FALSE);
+      GeoRef_LL2XY(RefFrom,&xpole,&ypole,&latpole,&lonpole,1);
    }
   
    for (i=0; i < zone->npts; i++) {
@@ -262,135 +261,10 @@ int GeoRef_SetZoneDefine(TGeoRef *RefTo,TGeoRef *RefFrom) {
     return(0);
 }
 
-int GeoRef_CalcXY_M(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) {
- 
-   TQTree *node;
-   Vect3d  b;
-   int     n,d,idx;
-
-   for(d=0;d<Nb;d++) {
-      if (Ref->QTree) {
-         // If there's an index use it
-         if ((node=QTree_Find(Ref->QTree,Lon[d],Lat[d])) && node->NbData) {
-            
-            // Loop on this nodes data payload
-            for(n=0;n<node->NbData;n++) {
-               idx=(intptr_t)node->Data[n].Ptr-1; // Remove false pointer increment
-
-               if (Bary_Get(b,Ref->Wght?Ref->Wght[idx/3]:0.0,Lon[d],Lat[d],Ref->AX[Ref->Idx[idx]],Ref->AY[Ref->Idx[idx]],
-                  Ref->AX[Ref->Idx[idx+1]],Ref->AY[Ref->Idx[idx+1]],Ref->AX[Ref->Idx[idx+2]],Ref->AY[Ref->Idx[idx+2]])) {
-                  
-                  // Return coordinate as triangle index + barycentric coefficient
-                  X[d]=idx+b[0];
-                  Y[d]=idx+b[1];
-                  return(TRUE);
-               }
-            }
-         }
-      } else {
-         // Otherwise loop on all
-         for(idx=0;idx<Ref->NIdx-3;idx+=3) {
-            if (Bary_Get(b,Ref->Wght?Ref->Wght[idx/3]:0.0,Lon[d],Lat[d],Ref->AX[Ref->Idx[idx]],Ref->AY[Ref->Idx[idx]],
-               Ref->AX[Ref->Idx[idx+1]],Ref->AY[Ref->Idx[idx+1]],Ref->AX[Ref->Idx[idx+2]],Ref->AY[Ref->Idx[idx+2]])) {
-
-               // Return coordinate as triangle index + barycentric coefficient
-               X[d]=idx+b[0];
-               Y[d]=idx+b[1];
-               return(TRUE);
-            }
-         }
-      }            
-   } 
-   return(TRUE);
-}
-
-int GeoRef_CalcXY_O(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) {
-
-   int     out=0;
-   int     x,y,n,nd,d,dx,dy,idx,idxs[8];
-   double  dists[8],xx,yy;
-   Vect2d  pts[4],pt;
-
-   for(d=0;d<Nb;d++) {
-
-      X[d]=-1.0;
-      Y[d]=-1.0;
-
-      if ((nd=GeoRef_Nearest(Ref,Lon[d],Lat[d],idxs,dists,8))) {
-     
-         pt[0]=Lon[d];
-         pt[1]=Lat[d];
-
-         // Find which cell includes coordinates
-         for(n=0;n<nd;n++) {
-            idx=idxs[n];
-
-            // Find within which quad
-            dx=-1;dy=-1;
-            if (!GeoRef_WithinCell(Ref,pt,pts,idx-Ref->NX-1,idx-1,idx,idx-Ref->NX)) {
-            
-               dx=0;dy=-1;
-               if (!GeoRef_WithinCell(Ref,pt,pts,idx-Ref->NX,idx,idx+1,idx-Ref->NX+1)) {
-                  
-                  dx=-1;dy=0;
-                  if (!GeoRef_WithinCell(Ref,pt,pts,idx-1,idx+Ref->NX-1,idx+Ref->NX,idx)) {
-               
-                     dx=0;dy=0;
-                     if (!GeoRef_WithinCell(Ref,pt,pts,idx,idx+Ref->NX,idx+Ref->NX+1,idx+1)) {
-                        idx=-1;
-                     }
-                  }
-               }
-            }
-            
-            // If found, exit loop
-            if (idx!=-1) {
-               break;
-            }
-         }
-
-         if (idx!=-1) {
-            // Map coordinates to grid
-            Vertex_Map(pts,&xx,&yy,Lon[d],Lat[d]);
-            X[d]=xx;Y[d]=yy;
-
-            if (!ISNAN(X[d]) && !ISNAN(Y[d])) {
-               y=idx/Ref->NX;
-               x=idx-y*Ref->NX;
-               Y[d]+=y+dy+1;
-               X[d]+=x+dx+1; 
-            } else {
-               App_Log(ERROR,"%s: Invalid coordinate (NAN): ll(%f,%f) xy(%f,%f) %i\n",__func__,Lat[d],Lon[d],X[d],Y[d],idx);
-               X[d]=-1,0;
-               Y[d]=-1.0;
-               out++;
-            }
-         } else {
- //           App_Log(ERROR,"%s: Point not found: %f %f %i\n",__func__,Lat[d],Lon[d],idx);
-            out++;
-         }
-
-         // Si on est a l'interieur de la grille
-//         if (X[d]>(Ref->X1+0.5) || Y[d]>(Ref->Y1+0.5) || X[d]<(Ref->X0-0.5) || Y[d]<(Ref->Y0-0.5)) {
-//            X[d]=-1.0;
-//            Y[d]=-1.0;
-//            out++;
-//         }
-      } 
-   }
-   fprintf(stderr,"---- %i\n",out);
-   return(out);
-}
-
 int GeoRef_SetCalcXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
 
    TGridSet *gset=NULL;
-   int coordonnee, ni_in, nj_in, ni_out, nj_out, ninj_in, ninj_out;
-   int i,j,ier;
-   int npts, previous_val_polar_correction;
-
-   _ygrid *ygrid;
-   float *gdout_lat, *gdout_lon;
+   int       ninj_out;
 
    gset=GeoRef_SetGet(RefTo,RefFrom);
 
@@ -398,84 +272,13 @@ int GeoRef_SetCalcXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       return(0);
    }
 
-   // Dans un premier temps on calcule la position x-y de tous les points sur la grille
-
-   ni_in =  RefFrom->NX;
-   nj_in =  RefFrom->NY;
-   ninj_in = ni_in * nj_in;
-
-   ni_out = RefTo->NX;
-   nj_out = RefTo->NY;
-   ninj_out = ni_out * nj_out;
+   ninj_out = RefTo->NX*RefTo->NY;
 
    gset->x = (float *)malloc(ninj_out*sizeof(float));
    gset->y = (float *)malloc(ninj_out*sizeof(float));
 
-   switch(RefFrom->GRTYP[0]) {
-      case 'A':
-      case 'B':
-      case 'E':
-      case 'L':
-      case 'N':
-      case 'S':
-      case 'T':
-      case '!':
-         f77name(ez_ll2rgd)(gset->x,gset->y,RefTo->Lat,RefTo->Lon,&ninj_out,&ni_in,&nj_in,&RefFrom->GRTYP,&RefFrom->RPNHead.IG[X_IG1],&RefFrom->RPNHead.IG[X_IG2],&RefFrom->RPNHead.IG[X_IG3],&RefFrom->RPNHead.IG[X_IG4],&RefFrom->Options.Symmetric,RefFrom->AY);
-         break;
-
-      case '#':
-      case 'Z':
-      case 'G':
-         coordonnee = RELATIVE;
-         f77name(ez_ll2igd)(gset->x,gset->y,RefTo->Lat,RefTo->Lon,&ninj_out,&ni_in,&nj_in,&RefFrom->GRTYP,&RefFrom->RPNHead.GRREF,&RefFrom->RPNHead.IGREF[X_IG1],&RefFrom->RPNHead.IGREF[X_IG2],&RefFrom->RPNHead.IGREF[X_IG3],&RefFrom->RPNHead.IGREF[X_IG4],RefFrom->AX,RefFrom->AY,&coordonnee);
-         if (RefFrom->GRTYP[0] == 'G') {
-            if (RefFrom->RPNHead.IG[X_IG1] == NORTH) {
-               for (j=0; j < ni_out*nj_out; j++) {
-                  gset->y[j] -= nj_in;
-               }
-            }
-         }
-         break;
-
-      case 'O':
-         GeoRef_CalcXY_O(RefFrom,gset->x,gset->y,RefTo->Lat,RefTo->Lon,ninj_out);
-         break;
-
-      case 'M':
-         GeoRef_CalcXY_M(RefFrom,gset->x,gset->y,RefTo->Lat,RefTo->Lon,ninj_out);
-         break;
-         
-      case 'Y':
-         previous_val_polar_correction = RefFrom->Options.PolarCorrect;
-         RefFrom->Options.PolarCorrect = FALSE;
-         gset->ygrid.n_wts = RefFrom->Options.WeightNum;
-         ygrid = &(gset->ygrid);
-         ygrid->lat =  (float *) malloc(ninj_in*sizeof(float));
-         ygrid->lon =  (float *) malloc(ninj_in*sizeof(float));
-         gdout_lat =  (float *) malloc(ninj_out*sizeof(float));
-         gdout_lon =  (float *) malloc(ninj_out*sizeof(float));
-         ygrid->wts =  (float *) malloc(ninj_out * RefFrom->Options.WeightNum*sizeof(float));
-         ygrid->idx =  (int *) malloc(ninj_out * RefFrom->Options.WeightNum*sizeof(int));
-         ygrid->mask = (int *) malloc(ninj_out*sizeof(int));
-         ier = GeoRef_GetLL(RefFrom, ygrid->lat, ygrid->lon);
-         ier = GeoRef_GetLL(RefTo, gdout_lat, gdout_lon);
-
-         if (RefFrom->mask == NULL) {
-            f77name(ez_calcxy_y)(ygrid->wts,ygrid->idx,gset->x,gset->y,gdout_lat,gdout_lon,ygrid->lat,ygrid->lon,ygrid->mask,&ni_in,&nj_in,&ni_out,&nj_out,&(RefFrom->Options.WeightNum));
-         } else {
-            f77name(ez_calcxy_y_m)(ygrid->wts,ygrid->idx,gset->x,gset->y,gdout_lat,gdout_lon,ygrid->mask,ygrid->lat,ygrid->lon,RefFrom->mask,&ni_in,&nj_in,&ni_out,&nj_out,&(RefFrom->Options.WeightNum));
-         }
-
-         RefFrom->Options.PolarCorrect = previous_val_polar_correction;
-         free(gdout_lat);
-         free(gdout_lon);
-      break;
-
-      default:
-         App_Log(ERROR,"%s: Invalid grid type: %c\n",__func__,RefFrom->GRTYP[0]);
-         break;
-   }
-
+   GeoRef_LL2XY(RefFrom,gset->x,gset->y,RefTo->Lat,RefTo->Lon,ninj_out);
+   
    return(0);
 }
 
@@ -561,8 +364,8 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       gset->yin2yin_y = (float *) malloc(yincount_yin*sizeof(float));
       gset->yan2yin_x = (float *) malloc(yancount_yin*sizeof(float));
       gset->yan2yin_y = (float *) malloc(yancount_yin*sizeof(float));
-      icode = GeoRef_LL2XYN(yin_gdin,gset->yin2yin_x,gset->yin2yin_y,yin2yin_lat,yin2yin_lon,yincount_yin,FALSE);
-      icode = GeoRef_LL2XYN(yan_gdin,gset->yan2yin_x,gset->yan2yin_y,yan2yin_lat,yan2yin_lon,yancount_yin,FALSE);
+      icode = GeoRef_LL2XY(yin_gdin,gset->yin2yin_x,gset->yin2yin_y,yin2yin_lat,yin2yin_lon,yincount_yin);
+      icode = GeoRef_LL2XY(yan_gdin,gset->yan2yin_x,gset->yan2yin_y,yan2yin_lat,yan2yin_lon,yancount_yin);
    }
 
    if (yyout == 1) { 
@@ -588,8 +391,8 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       gset->yin2yin_y = (float *) malloc(yincount_yin*sizeof(float));
       gset->yan2yin_x = (float *) malloc(yancount_yin*sizeof(float));
       gset->yan2yin_y = (float *) malloc(yancount_yin*sizeof(float));
-      icode = GeoRef_LL2XYN(yin_gdin,gset->yin2yin_x,gset->yin2yin_y,yin2yin_lat,yin2yin_lon,yincount_yin,FALSE);
-      icode = GeoRef_LL2XYN(yan_gdin,gset->yan2yin_x,gset->yan2yin_y,yan2yin_lat,yan2yin_lon,yancount_yin,FALSE);
+      icode = GeoRef_LL2XY(yin_gdin,gset->yin2yin_x,gset->yin2yin_y,yin2yin_lat,yin2yin_lon,yincount_yin);
+      icode = GeoRef_LL2XY(yan_gdin,gset->yan2yin_x,gset->yan2yin_y,yan2yin_lat,yan2yin_lon,yancount_yin);
       
       /* create mask (Yin priority) with src Yin,src Yang onto dest Yang and store x,y pos */
 
@@ -612,8 +415,8 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       gset->yin2yan_y = (float *) malloc(yincount_yan*sizeof(float));
       gset->yan2yan_x = (float *) malloc(yancount_yan*sizeof(float));
       gset->yan2yan_y = (float *) malloc(yancount_yan*sizeof(float));
-      icode = GeoRef_LL2XYN(yin_gdin,gset->yin2yan_x,gset->yin2yan_y,yin2yan_lat,yin2yan_lon,yincount_yan,FALSE);
-      icode = GeoRef_LL2XYN(yan_gdin,gset->yan2yan_x,gset->yan2yan_y,yan2yan_lat,yan2yan_lon,yancount_yan,FALSE);
+      icode = GeoRef_LL2XY(yin_gdin,gset->yin2yan_x,gset->yin2yan_y,yin2yan_lat,yin2yan_lon,yincount_yan);
+      icode = GeoRef_LL2XY(yan_gdin,gset->yan2yan_x,gset->yan2yan_y,yan2yan_lat,yan2yan_lon,yancount_yan);
    }
 
    free(yin2yin_lat);

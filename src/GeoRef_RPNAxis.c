@@ -23,7 +23,7 @@
 #include "GeoRef.h"
 #include <math.h>
 
-void GeoRef_ExpandGrid(TGeoRef *Ref, float *zout, float *zin) {   
+void GeoRef_GridGetExpanded(TGeoRef *Ref,float *zout,float *zin) {   
 
    switch (Ref->GRTYP[0]) {
       case 'A':
@@ -40,7 +40,7 @@ void GeoRef_ExpandGrid(TGeoRef *Ref, float *zout, float *zin) {
    }
 }
 
-void ez_calcntncof(TGeoRef* Ref) {
+void GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref) {
 
    int nni,nnj;
  
@@ -55,7 +55,7 @@ void ez_calcntncof(TGeoRef* Ref) {
    }  
 }
 
-void ez_calcxpncof(TGeoRef* Ref) {
+void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
 
    Ref->i1 = 1;
    Ref->i2 = Ref->NX;
@@ -145,9 +145,9 @@ void ez_calcxpncof(TGeoRef* Ref) {
    }
 }
 
-int c_gdgaxes(TGeoRef *Ref, float *ax, float *ay) {
+int GeoRef_AxisGet(TGeoRef *Ref,float *AX, float *AY) {
 
-   int nix, njy;
+   int nix,njy;
    
    switch(Ref->GRTYP[0]) {
       case 'Y':
@@ -159,11 +159,11 @@ int c_gdgaxes(TGeoRef *Ref, float *ax, float *ay) {
         nix = Ref->NX;
         njy = Ref->NY;
         break;
-      }
+   }
    
    if (Ref->AX) {
-      memcpy(ax, Ref->AX, nix*sizeof(float));
-      memcpy(ay, Ref->AY, njy*sizeof(float));
+      memcpy(AX,Ref->AX, nix*sizeof(float));
+      memcpy(AY,Ref->AY, njy*sizeof(float));
    } else {
       App_Log(ERROR,"%s: Descriptor not found\n",__func__);
       return(-1);
@@ -171,7 +171,7 @@ int c_gdgaxes(TGeoRef *Ref, float *ax, float *ay) {
    return(0);
 }
 
-void c_ezdefaxes(TGeoRef* Ref, float *ax, float *ay) {
+void GeoRef_AxisDefine(TGeoRef* Ref,float *AX,float *AY) {
   
   int i,j;
   float *temp, dlon;
@@ -186,19 +186,19 @@ void c_ezdefaxes(TGeoRef* Ref, float *ax, float *ay) {
       Ref->AX = (float *) malloc(Ref->NX*sizeof(float));
       Ref->AY = (float *) malloc(Ref->NY*sizeof(float));
 
-      memcpy(Ref->AX,ax,Ref->NX*sizeof(float));
-      memcpy(Ref->AY,ay,Ref->NY*sizeof(float));
-      ez_calcxpncof(Ref);
-      ez_calcntncof(Ref);
+      memcpy(Ref->AX,AX,Ref->NX*sizeof(float));
+      memcpy(Ref->AY,AY,Ref->NY*sizeof(float));
+      GeoRef_AxisCalcExpandCoeff(Ref);
+      GeoRef_AxisCalcNewtonCoeff(Ref);
       break;
 
     case 'Y':
       Ref->AX = (float *) malloc(Ref->NX*Ref->NY*sizeof(float));
       Ref->AY = (float *) malloc(Ref->NX*Ref->NY*sizeof(float));
-      memcpy(Ref->AX,ax,Ref->NX*Ref->NY*sizeof(float));
-      memcpy(Ref->AY,ay,Ref->NX*Ref->NY*sizeof(float));
+      memcpy(Ref->AX,AX,Ref->NX*Ref->NY*sizeof(float));
+      memcpy(Ref->AY,AY,Ref->NX*Ref->NY*sizeof(float));
 
-      ez_calcxpncof(Ref);
+      GeoRef_AxisCalcExpandCoeff(Ref);
       break;
 
     case 'G':
@@ -217,7 +217,7 @@ void c_ezdefaxes(TGeoRef* Ref, float *ax, float *ay) {
 	    }
 
       zero = 0;
-      ez_calcxpncof(Ref);
+      GeoRef_AxisCalcExpandCoeff(Ref);
 
       switch (Ref->RPNHead.IG[X_IG1]) {
 	      case GLOBAL:
@@ -238,16 +238,16 @@ void c_ezdefaxes(TGeoRef* Ref, float *ax, float *ay) {
 	      }
 
 
-      ez_calcntncof(Ref);
+      GeoRef_AxisCalcNewtonCoeff(Ref);
       break;
 
     default:
-      ez_calcxpncof(Ref);
+      GeoRef_AxisCalcExpandCoeff(Ref);
       break;
     }
 }
 
-int c_gdgxpndaxes(TGeoRef* Ref, float *ax, float *ay) {
+int GeoRef_AxisGetExpanded(TGeoRef* Ref, float *AX, float *AY) {
   
    int nix, njy;
    int istart, jstart;
@@ -265,8 +265,8 @@ int c_gdgxpndaxes(TGeoRef* Ref, float *ax, float *ay) {
    switch(Ref->GRTYP[0]) {
       case 'Y':
          nix = Ref->NX * Ref->NY;
-         memcpy(ax, Ref->AX, nix*sizeof(float));
-         memcpy(ay, Ref->AY, nix*sizeof(float));
+         memcpy(AX, Ref->AX, nix*sizeof(float));
+         memcpy(AY, Ref->AY, nix*sizeof(float));
          break;
       
       default:
@@ -279,18 +279,18 @@ int c_gdgxpndaxes(TGeoRef* Ref, float *ax, float *ay) {
          if (Ref->j2 == (njy+1)) jstart = 1;
          if (Ref->j2 == (njy+2)) jstart = 2;
          if (Ref->j2 == (njy))   jstart = 0;
-         memcpy(&ax[istart],Ref->AX, nix*sizeof(float));
-         memcpy(&ay[jstart],Ref->AY, njy*sizeof(float));
+         memcpy(&AX[istart],Ref->AX, nix*sizeof(float));
+         memcpy(&AY[jstart],Ref->AY, njy*sizeof(float));
       
          if (Ref->i2 == (Ref->NX+1)) {
-            ax[0] = Ref->AX[nix-2] - 360.0; 
-            ax[nix] = ax[2];
+            AX[0] = Ref->AX[nix-2] - 360.0; 
+            AX[nix] = AX[2];
          }
       
          if (Ref->i2 == (Ref->NX+2)) {
-            ax[0] = Ref->AX[nix-1] - 360.0; 
-            ax[nix] = Ref->AX[1]+360.0;
-            ax[nix+1] = Ref->AX[2]+360.0;
+            AX[0] = Ref->AX[nix-1] - 360.0; 
+            AX[nix] = Ref->AX[1]+360.0;
+            AX[nix+1] = Ref->AX[2]+360.0;
          }
    }
    return(0);

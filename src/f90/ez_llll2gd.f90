@@ -26,26 +26,19 @@
 
       integer npts
       real x(npts), y(npts), dlat(npts), dlon(npts)
-      real xlat0, xlon0, dellat, dellon, lonref
+      real xlat0, xlon0, dellat, dellon, lonref, tmplon
       integer i
 
-      if (lonref.eq.-180.0) then
-         do i=1,npts
-            if (dlon(i).gt.180.0) then
-               dlon(i) = dlon(i) - 360.0
-            endif
-         enddo
-      else
-!    mai 2015 -correction by JP Gauthier
-         do i=1,npts
-            if (dlon(i).lt.0.0) then
-               dlon(i) = dlon(i) + 360.0
-            endif
-         enddo
-      endif
-
       do 10 i=1,npts
-         x(i) = (dlon(i) - xlon0)/dellon + 1.0
+         tmplon=dlon(i)
+         if (lonref.eq.-180.0) then
+            if (tmplon.gt.180.0) then
+               tmplon = tmplon - 360.0
+            endif
+         else if (tmplon.lt.0.0) then
+               tmplon = tmplon + 360.0
+         endif
+         x(i) = (tmplon - xlon0)/dellon + 1.0
          y(i) = (dlat(i) - xlat0)/dellat + 1.0
  10   continue
 

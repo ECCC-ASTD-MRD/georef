@@ -166,33 +166,9 @@ int GeoRef_RDRValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double Azim
 */
 int GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
 
-   Coord loc0;
-   double x,d;
-
-   if (Y>Ref->R && !Extrap) {
-      *Lat=-999.0;
-      *Lon=-999.0;
-      return(0);
-   }
-
-   loc0.Lat=DEG2RAD(Ref->Loc.Lat);
-   loc0.Lon=DEG2RAD(Ref->Loc.Lon);
-
-   X*=Ref->ResA;
-   Y*=Ref->ResR;
-
-   x=DEG2RAD(X);
-   d=M2RAD(Y*Ref->CTH);
-
-   if (Transform) {
-      *Lat=asin(sin(loc0.Lat)*cos(d)+cos(loc0.Lat)*sin(d)*cos(x));
-      *Lon=fmod(loc0.Lon+(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(*Lat)))+M_PI,M_2PI)-M_PI;
-      *Lat=RAD2DEG(*Lat);
-      *Lon=RAD2DEG(*Lon);
-   } else {
-      *Lat=d;
-      *Lon=x;
-   }
+#ifdef HAVE_RMN
+//TODO   GeoRef_LL2XY(REFGET(Ref),&X,&Y,Lat,Lon,1);
+#endif
 
    return(1);
 }
@@ -220,31 +196,10 @@ int GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
 */
 int GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
 
-   Coord loc0;
-   double x,d;
+#ifdef HAVE_RMN
+//TODO   GeoRef_XY2LL(REFGET(Ref),Lat,Lon,&X,&Y,1);
+#endif
 
-   loc0.Lat=DEG2RAD(Ref->Loc.Lat);
-   loc0.Lon=DEG2RAD(Ref->Loc.Lon);
-   Lat=DEG2RAD(Lat);
-   Lon=DEG2RAD(Lon);
-
-   d=fabs(DIST(0.0,loc0.Lat,loc0.Lon,Lat,Lon));
-   x=-RAD2DEG(COURSE(loc0.Lat,loc0.Lon,Lat,Lon));
-   *X=x<0.0?x+360.0:x;
-   *Y=d/Ref->CTH;
-
-   if (Transform) {
-      *X/=Ref->ResA;
-      *Y/=Ref->ResR;
-   }
-
-   if (*Y>Ref->Y1) {
-      if (!Extrap) {
-         *X=-1.0;
-         *Y=-1.0;
-      }
-      return(0);
-   }
    return(1);
 }
 
