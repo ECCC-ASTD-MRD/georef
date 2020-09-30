@@ -167,7 +167,7 @@ int GeoRef_RDRValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double Azim
 int GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
 
 #ifdef HAVE_RMN
-//TODO   GeoRef_LL2XY(REFGET(Ref),&X,&Y,Lat,Lon,1);
+   GeoRef_LL2XY(REFGET(Ref),&X,&Y,Lat,Lon,1);
 #endif
 
    return(1);

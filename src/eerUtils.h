@@ -119,6 +119,7 @@
 #define ILADD(SIDE,F)                     (SIDE?1.0f-F:F)
 #define FARENOUGH(DT,X0,Y0,X1,Y1)         (hypot((Y1-Y0),(X1-X0))>DT)
 #define LOG2(V)                           (log10(V)/0.301029995663981198017)
+#define SIGN(A,B)                         (B<0?-abs(A):abs(A))                                       ///< Returns the value of A with the sign of B
 
 #define FSIZE2D(D)                        ((unsigned long)(D->NI)*D->NJ)
 #define FSIZE3D(D)                        ((unsigned long)(D->NI)*D->NJ*D->NK)

@@ -64,7 +64,7 @@ int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double 
 double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1) {
 
 #ifdef HAVE_RMN
-   float i[2],j[2],lat[2],lon[2];
+   double i[2],j[2],lat[2],lon[2];
 
    if (Ref->Type&GRID_EZ) {
       i[0]=X0+1.0;
@@ -112,7 +112,8 @@ double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
 int GeoRef_RPNValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY) {
 
    Vect3d       b,v;
-   float        x,y,valf,valdf;
+   double       x,y;
+   float        valf,valdf;
    void        *p0,*p1;
    int          mem,ix,iy,n;
    unsigned int idx;
@@ -312,7 +313,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,do
 int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
 
 #ifdef HAVE_RMN
-   GeoRef_XY2LL(REFGET(Ref),Lat,Lon,&X,&Y,1);
+//TODO: double   GeoRef_XY2LL(REFGET(Ref),Lat,Lon,&X,&Y,1);
 #endif
 
    return(1);
@@ -341,12 +342,8 @@ int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
 */                     
 int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
 
-   float   i,j,lat,lon;
-   int     x,y,n,nd,dx,dy,idx,idxs[8];
+   int     idx,idxs[8];
    double  dists[8];
-   Vect2d  pts[4],pt;
-   Vect3d  b;
-   TQTree *node;
 
    *X=-1.0;
    *Y=-1.0;
@@ -362,7 +359,7 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       if (Ref->AX && Ref->AY) {
          if (Ref->GRTYP[0]=='Y') {
             // Get nearest point
-            if (GeoRef_Nearest(Ref,Lon,Lat,&idx,dists,1)) {
+            if (GeoRef_Nearest(Ref,Lon,Lat,&idx,dists,1,0.0)) {
                if (dists[0]<1.0) {
                   *Y=(int)(idx/Ref->NX);
                   *X=idx-(*Y)*Ref->NX;
@@ -374,11 +371,8 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       return(FALSE);
    } else {
 
-      lon=Lon;
-      lat=Lat;
-
       // Extraire la valeur du point de grille
-      GeoRef_LL2XY(REFGET(Ref),&i,&j,&lat,&lon,1);
+      GeoRef_LL2XY(REFGET(Ref),X,Y,&Lat,&Lon,1);
 
 //TODO: Set CIndex default to 1
 

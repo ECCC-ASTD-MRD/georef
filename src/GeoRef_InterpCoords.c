@@ -25,7 +25,7 @@
 
 //int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
 
-void  c_ezgfllfxy2(float *lat,float *lon,wordint *npts,float *xlat1,float *xlon1,float *xlat2,float *xlon2) {
+void  c_ezgfllfxy2(double *Lat,double *Lon,wordint *npts,float *xlat1,float *xlon1,float *xlat2,float *xlon2) {
 
    double *cart,*carot,latr,lonr,cosdar;
    int i,k,n,c;
@@ -37,8 +37,8 @@ void  c_ezgfllfxy2(float *lat,float *lon,wordint *npts,float *xlat1,float *xlon1
    f77name(ez_crot)(r,ri,xlon1,xlat1,xlon2,xlat2);
 
    for(n=0;n<*npts;n++) {
-      latr=DEG2RAD(lat[n]);
-      lonr=DEG2RAD(lon[n]);
+      latr=DEG2RAD(Lat[n]);
+      lonr=DEG2RAD(Lon[n]);
       cosdar = cos(latr);
       c=n*3;
       cart[c]   = cosdar*cos(lonr);
@@ -49,15 +49,15 @@ void  c_ezgfllfxy2(float *lat,float *lon,wordint *npts,float *xlat1,float *xlon1
       carot[c+1] = ri[1][0]*cart[c+0]+ri[1][1]*cart[c+1]+ri[1][2]*cart[c+2];
       carot[c+2] = ri[2][0]*cart[c+0]+ri[2][1]*cart[c+1]+ri[2][2]*cart[c+2];
       
-      lat[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[c+2]))));
-      lon[n]=RAD2DEG(atan2(carot[c+1],carot[c]));
-      lon[n]=fmod(lon[n],360.0);
-      if (lon[n]<0.0) lon[n]=lon[n]+360.0;
+      Lat[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[c+2]))));
+      Lon[n]=RAD2DEG(atan2(carot[c+1],carot[c]));
+      Lon[n]=fmod(Lon[n],360.0);
+      if (Lon[n]<0.0) Lon[n]+=360.0;
    }
    free(cart);
 }
 
-int GeoRef_XY2LL_R(TGeoRef *Ref,float *Lat,float *Lon,float *X,float *Y,int Nb) {
+int GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
 
    Coord loc0;
    double x,y,d;
@@ -179,14 +179,14 @@ int GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
    return(0);
 }
 
-int GeoRef_XY2LL(TGeoRef *Ref,float *Lat,float *Lon,float *X,float *Y,int Nb) {
+int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
 
    TGeoRef *yin_gd,*yan_gd;
    int      j,icode;
-   float   *latyin,*lonyin,*latyan,*lonyan;
+   double   *latyin,*lonyin,*latyan,*lonyan;
    float    xlat1, xlon1, xlat2, xlon2;
    int      i, npts, un;
-   float   *tmpx, *tmpy, *ytmp=NULL;
+   double   *tmpx, *tmpy, *ytmp=NULL;
    float    delxx, delyy;
    float    dlat, dlon, swlat, swlon;
    int      s,sx,sy,indx, indy;
@@ -199,7 +199,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,float *Lat,float *Lon,float *X,float *Y,int Nb) {
       yin_gd=Ref->Subs[0];
       yan_gd=Ref->Subs[1];
       j=0;
-      tmpy = (float*)malloc(5*Nb*sizeof(float));
+      tmpy = (double*)malloc(5*Nb*sizeof(double));
       latyin = &tmpy[j+=Nb];
       lonyin = &tmpy[j+=Nb];
       latyan = &tmpy[j+=Nb];
@@ -246,7 +246,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,float *Lat,float *Lon,float *X,float *Y,int Nb) {
             for (i=0; i < Nb; i++) {
                Lat[i] = (Y[i]-1.0)*Ref->RPNHead.XG[X_DLAT]+Ref->RPNHead.XG[X_SWLAT];
                Lon[i] = (X[i]-1.0)*Ref->RPNHead.XG[X_DLON]+Ref->RPNHead.XG[X_SWLON];
-               Lon[i] = (float) (fmod((double) (Lon[i] + 360.0), (double) 360.0));
+               Lon[i] = (fmod((double) (Lon[i] + 360.0), (double) 360.0));
             }
             break;
 
@@ -266,7 +266,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,float *Lat,float *Lon,float *X,float *Y,int Nb) {
          case 'L':
             for (i=0; i < Nb; i++) {
                Lon[i] = (X[i]-1.0)*Ref->RPNHead.XG[X_DLON]+Ref->RPNHead.XG[X_SWLON];
-               Lon[i] = (float) (fmod((double) (Lon[i] + 360.0), (double) 360.0));
+               Lon[i] = (fmod((double) (Lon[i] + 360.0), (double) 360.0));
                Lat[i] = (Y[i]-1.0)*Ref->RPNHead.XG[X_DLAT]+Ref->RPNHead.XG[X_SWLAT];
             }
             break;
@@ -275,7 +275,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,float *Lat,float *Lon,float *X,float *Y,int Nb) {
          case 'S':
             f77name(ez_vllfxy)(Lat,Lon,X,Y,&npts,&un,&Ref->RPNHead.XG[X_D60],&Ref->RPNHead.XG[X_DGRW],&Ref->RPNHead.XG[X_PI],&Ref->RPNHead.XG[X_PJ],&Ref->Hemi);
             for (i=0; i < Nb; i++) {
-               Lon[i] = (float) (fmod((double) (Lon[i] + 360.0), (double) 360.0));
+               Lon[i] = (fmod((double) (Lon[i] + 360.0), (double) 360.0));
             }
             break;
 
@@ -305,7 +305,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,float *Lat,float *Lon,float *X,float *Y,int Nb) {
                   break;
 
                case 'W':
-                  tmpx = (float *) malloc(2*Nb*sizeof(float));
+                  tmpx = (double*)malloc(2*Nb*sizeof(double));
                   tmpy = &tmpx[Nb];
 
                   for (i=0; i < Nb; i++) {
@@ -349,7 +349,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,float *Lat,float *Lon,float *X,float *Y,int Nb) {
          case '#':
          case 'Z':
          case 'G':
-            tmpx = (float *) malloc(3*Nb*sizeof(float));
+            tmpx = (double*)malloc(3*Nb*sizeof(double));
             tmpy = &tmpx[Nb];
             ytmp = &tmpx[Nb*2];
             for (i=0; i < Nb; i++) {
@@ -411,65 +411,8 @@ int GeoRef_XY2LL(TGeoRef *Ref,float *Lat,float *Lon,float *X,float *Y,int Nb) {
    return(0);
 }
 
-//TODO: not used
-int c_gdllfxyz(TGeoRef* Ref,float *lat,float *lon,float *x,float *y,int n) {
 
-   int i,npts, hem, un;
-   npts = n;
-  
-   switch(Ref->GRTYP[0]) {
-      case 'A':
-      case 'B':
-      case 'G':
-      case 'L':
-      case 'N':
-      case 'S':
-      case 'T':
-      case '!':
-         GeoRef_XY2LL(Ref,lat,lon,x,y,n);
-      break;
-      
-      case 'Y':
-         App_Log(ERROR,"%s: This operation is not supported for 'Y' grids\n",__func__);
-         break;
-      
-      case '#':
-      case 'Z':
-         switch (Ref->RPNHead.GRREF[0]) {
-            case 'E':
-               f77name(ez_gfllfxy)(lon,lat,x,y,&npts,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2],&Ref->RPNHead.XGREF[X_LON2]);
-               break;
-              
-            case 'S':
-            case 'N':
-               if (Ref->RPNHead.GRREF[0] == 'N') {
-                   hem = 1;
-               } else {
-                  hem = 2;
-               }
-               un = 1;
-               f77name(ez_vllfxy)(lat,lon,x,y,&npts,&un,&Ref->RPNHead.XGREF[X_D60],&Ref->RPNHead.XGREF[X_DGRW], &Ref->RPNHead.XGREF[X_PI], &Ref->RPNHead.XGREF[X_PJ],&Ref->Hemi);
-               break;
-              
-            case 'L':
-               for (i=0; i < n; i++) {
-                  lat[i] = (y[i])*Ref->RPNHead.XGREF[X_DLAT]+ Ref->RPNHead.XGREF[X_SWLAT];
-                  lon[i] = (x[i])*Ref->RPNHead.XGREF[X_DLON]+ Ref->RPNHead.XGREF[X_SWLON];
-                  lon[i] = lon[i] < 0.0 ? lon[i] + 360.0 : lon[i];
-               }
-               break;
-              
-            default:
-               App_Log(ERROR,"%s: Undefined reference grid type: %s\n",__func__,Ref->RPNHead.GRREF[0]);
-               break;
-         }
-         break;
-   }
-  
-   return(0); 
-}
-
-int GeoRef_LL2XY_R(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) {
+int GeoRef_LL2XY_R(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
    Coord  loc0;
    double x,d,lat,lon;
@@ -495,7 +438,7 @@ int GeoRef_LL2XY_R(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) 
    return(0);
 }
 
-int GeoRef_LL2XY_M(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) {
+int GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
  
    TQTree *node;
    Vect3d  b;
@@ -517,8 +460,8 @@ int GeoRef_LL2XY_M(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) 
                   Ref->AX[Ref->Idx[idx+1]],Ref->AY[Ref->Idx[idx+1]],Ref->AX[Ref->Idx[idx+2]],Ref->AY[Ref->Idx[idx+2]])) {
                   
                   // Return coordinate as triangle index + barycentric coefficient
-                  X[d]=idx+b[0];
-                  Y[d]=idx+b[1];
+                  X[d]=idx+b[0]+1;
+                  Y[d]=idx+b[1]+1;
                   break;
                }
             }
@@ -530,8 +473,8 @@ int GeoRef_LL2XY_M(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) 
                Ref->AX[Ref->Idx[idx+1]],Ref->AY[Ref->Idx[idx+1]],Ref->AX[Ref->Idx[idx+2]],Ref->AY[Ref->Idx[idx+2]])) {
 
                // Return coordinate as triangle index + barycentric coefficient
-               X[d]=idx+b[0];
-               Y[d]=idx+b[1];
+               X[d]=idx+b[0]+1;
+               Y[d]=idx+b[1]+1;
                break;
             }
          }
@@ -540,7 +483,7 @@ int GeoRef_LL2XY_M(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) 
    return(0);
 }
 
-int GeoRef_LL2XY_O(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) {
+int GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
    int     out=0;
    int     x,y,n,nd,d,dx,dy,idx,idxs[8];
@@ -552,7 +495,7 @@ int GeoRef_LL2XY_O(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) 
       X[d]=-1.0;
       Y[d]=-1.0;
 
-      if ((nd=GeoRef_Nearest(Ref,Lon[d],Lat[d],idxs,dists,8))) {
+      if ((nd=GeoRef_Nearest(Ref,Lon[d],Lat[d],idxs,dists,8,0.0))) {
      
          pt[0]=Lon[d];
          pt[1]=Lat[d];
@@ -612,17 +555,19 @@ int GeoRef_LL2XY_O(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) 
    return(0);
 }
 
-int GeoRef_LL2XY_RG(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) {
-   f77name(ez_ll2rgd)(X,Y,Lat,Lon,&Nb,&Ref->NX,&Ref->NY,&Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4],&Ref->Options.Symmetric,Ref->AY);
+int GeoRef_LL2XY_RG(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+   //TODO: use double
+   f77name(ez8_ll2rgd)(X,Y,Lat,Lon,&Nb,&Ref->NX,&Ref->NY,&Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4],&Ref->Options.Symmetric,Ref->AY);
    return(0);
 }
 
-int GeoRef_LL2XY_IRG(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) {
+int GeoRef_LL2XY_IRG(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
    int j,coordonnee;
 
    coordonnee = RELATIVE;
-   f77name(ez_ll2igd)(X,Y,Lat,Lon,&Nb,&Ref->NX,&Ref->j2,&Ref->GRTYP,&Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4],Ref->AX,Ref->AY,&coordonnee);
+   //TODO: use double
+   f77name(ez8_ll2igd)(X,Y,Lat,Lon,&Nb,&Ref->NX,&Ref->j2,&Ref->GRTYP,&Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4],Ref->AX,Ref->AY,&coordonnee);
    if (Ref->GRTYP[0] == 'G') {
       if (Ref->RPNHead.IG[X_IG1] == 1) {
          for (j=0; j < Nb; j++) Y[j] = Y[j] - Ref->j2;
@@ -634,105 +579,107 @@ int GeoRef_LL2XY_IRG(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb
    return(0);
 }
 
-int GeoRef_LL2XY_Y(TGeoRef *Ref,TGridSet *Set,float *X,float *Y,float *Lat,float *Lon,int Nb) {
+int GeoRef_LL2XY_Y(TGeoRef *Ref,TGridSet *Set,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
-   float    tmpwgts[GOPT_MAXWEIGHTNUM];
-   int      i,idx,idxz,tmp_idxs[GOPT_MAXWEIGHTNUM][2],previous_val_polar_correction;
+   double   tmpwgts[GOPT_MAXWEIGHTNUM],total_wgt;
+   int      locmax,i,iz,idx,idxz,tmp_idxs[GOPT_MAXWEIGHTNUM][2],previous_val_polar_correction;
    TPoint2D bbox[2];
 
    previous_val_polar_correction = Ref->Options.PolarCorrect;
    Ref->Options.PolarCorrect = FALSE;
 //TODO: finish this func
-//    ygrid = &(Set->ygrid);
-//    ygrid.n_wts = MIN(Ref->Options.WeightNum,GOPT_MAXWEIGHTNUM);
-//    ygrid->wts =  (float *) malloc(Nb * Set->ygrid.n_wts*sizeof(float));
-//    ygrid->idx =  (int *) malloc(Nb*Set->ygrid.n_wts*sizeof(int));
-//    ygrid->mask = (int *) malloc(Nb*sizeof(int));
-//    GeoRef_CalcLL(Ref);
+   Set->n_wts = MIN(Ref->Options.WeightNum,GOPT_MAXWEIGHTNUM);
+   Set->wts =  (double *) malloc(Nb * Set->n_wts*sizeof(float));
+   Set->idx =  (int *) calloc(Nb,Set->n_wts*sizeof(int));
+   Set->mask = (int *) malloc(Nb*sizeof(int));
+   GeoRef_CalcLL(Ref);
 
-//    // Find bbox
-//    bbox[0].X=bbox[0].Y=1e30;
-//    bbox[1].X=bbox[1].Y=-1e30;
+   // Find bbox
+   bbox[0].X=bbox[0].Y=1e30;
+   bbox[1].X=bbox[1].Y=-1e30;
 
-//    for(i=0;i<Nb;i++) {
-//       bbox[0].Y=FMIN(Lat[i],bbox[0].Y);
-//       bbox[0].X=FMIN(Lon[i],bbox[0].X);
-//       bbox[1].Y=FMAX(Lat[i],bbox[1].Y);
-//       bbox[1].X=FMAX(Lon[i],bbox[1].X);
-//    }
+   for(i=0;i<Nb;i++) {
+      bbox[0].Y=FMIN(Lat[i],bbox[0].Y);
+      bbox[0].X=FMIN(Lon[i],bbox[0].X);
+      bbox[1].Y=FMAX(Lat[i],bbox[1].Y);
+      bbox[1].X=FMAX(Lon[i],bbox[1].X);
+   }
 
-//    // Initialize weights
-//    for(i=0;i<Nb*Set->ygrid.n_wts;i++) {
-//       tmpwgts[i] = 1.0e30;
-//       idxs[i] = 0;
-//    }
+   // Initialize weights
+   for(i=0;i<Nb*Set->n_wts;i++) {
+      tmpwgts[i] = 1.0e30;
+   }
 
-//    for (idx=0;idx<Nb;idx++) {
-//       X[idx]=-1.0;
-//       Y[idx]=-1.0;
-//       idxz=idx*Set->ygrid.n_wts;
-//       locmax=1;
-//       for(i=0;iGOPT_MAXWEIGHTNUM;i++) tmpwgts[i] = 1.0e30;
-//       memset(tmp_idxs,0x0,GOPT_MAXWEIGHTNUM*2]);
+   for (idx=0;idx<Nb;idx++) {
+      X[idx]=-1.0;
+      Y[idx]=-1.0;
+      idxz=idx*Set->n_wts;
+      locmax=1;
+      for(i=0;i<GOPT_MAXWEIGHTNUM;i++) tmpwgts[i] = 1.0e30;
+      memset(tmp_idxs,0x0,GOPT_MAXWEIGHTNUM*2);
 
-//       if (GeoRef_Nearest(Ref,Lon,Lat,&ygrid->idx[idxz],ygrid->wts[idxz],1)) {
-//          if (ygrid->idx[idxz]<RefFrom->Option.DistTreshold) {
-// //                  if (gdin_masque(ii,jj) == 1) then
-//             if (ygrid->wts[idxz] < tmpwgts[locmax]) {
-//                tmpwgts[locmax] = dist
-//                ygrid->idx(idx,locmax) = ygrid->idx[idxz];
-//                tmp_idxs[locmax][0] = ygrid->idx[idxz];
-//                tmp_idxs[locmax][1] = 1;
-//                locmax = maxloc(tmpwgts,1)
-//             }
-// //               endif
-//          }
-//       }
-//       FWITHIN(0,bbox[0].Y,bbox[0].X,bbox[1].Y,bbox[1].X,Y,X)
-//       if (ygrid->mask[idx]) {
-//          (f77name)inside_or_outside(&ygrid->mask[idx],&Set->x[idx],&Set->y[idx],&Lat[idx],&Lon[idx],Ref->Lat,Ref->Lon,&Ref->NX,&Ref->NY,tmpwgts,tmp_idxs,&Set->ygrid.n_wts;
-//       }
+      if (GeoRef_Nearest(Ref,Lon[idx],Lat[idx],&Set->idx[idxz],&Set->wts[idxz],1,Ref->Options.DistTreshold)) {
+         if (Set->idx[idxz]<Ref->Options.DistTreshold) {
+            if (!Ref->mask || Ref->mask[Set->idx[idxz]]==1) {
+               if (Set->wts[idxz] < tmpwgts[locmax]) {
+   //TODO: finalise (ez_calcxy_y)
+   //               tmpwgts[locmax] = Set->wts[idxz];
+   //               Set->idx(idx,locmax) = Set->idx[idxz];
+   //               tmp_idxs[locmax][0] = Set->idx[idxz];
+   //               tmp_idxs[locmax][1] = 1;
+   //               locmax = maxloc(tmpwgts,1)
+               }
+            }
+         }
+      }
+      FWITHIN(0,bbox[0].Y,bbox[0].X,bbox[1].Y,bbox[1].X,Y[idx],X[idx]);
+      if (Set->mask[idx]) {
+//         (f77name)inside_or_outside(&Set->mask[idx],&Set->x[idx],&Set->y[idx],&Lat[idx],&Lon[idx],Ref->Lat,Ref->Lon,&Ref->NX,&Ref->NY,tmpwgts,tmp_idxs,&Set->n_wts;
+      }
 
-//       if (ygrid->mask[idx]) {
-//          for(iz=0;iz<Set->ygrid.n_wts;iz++) {
-//             idxz=idx*Nb+iz;
-//             wts[idxz] = tmpwgts[iz];
-//          }
-//          if (wts(i,j,1) > 6371000.0) {
-//             wts(i,j,1:Set->ygrid.n_wts) = 1.0e30
-//             ygrid->mask[idx] = 0;
-//          } else {
-//             total_wgt = 0.0;
-//             for (iz=0;iz<Set->ygrid.n_wts;iz++) {
-//                idxz=idx*Nb+iz;
-//                wts[idxz] = fmax(wts[idxz],1.0e-10);
-//                wts[idxz] = 1.0 / wts[idxz];
-//                total_wgt+=wts[idxz];
-//             }
-//             for (iz=0;iz<Set->ygrid.n_wts;iz++) {
-//                idxz=idx*Nb+iz;
-//                wts[idxz]/=total_wgt;
-//             }
-//          }
-//       }
-//    }
+      if (Set->mask[idx]) {
+         for(iz=0;iz<Set->n_wts;iz++) {
+            idxz=idx*Nb+iz;
+            Set->wts[idxz] = tmpwgts[iz];
+         }
+         idxz=idx*Nb;
+         if (Set->wts[idxz] > 6371000.0) {
+            for(iz=0;iz>Set->n_wts;iz++) { 
+               Set->wts[idxz+iz] = 1.0e30;
+            }
+            Set->mask[idx] = 0;
+         } else {
+            total_wgt = 0.0;
+            for (iz=0;iz<Set->n_wts;iz++) {
+               idxz=idx*Nb+iz;
+               Set->wts[idxz] = fmax(Set->wts[idxz],1.0e-10);
+               Set->wts[idxz] = 1.0 / Set->wts[idxz];
+               total_wgt+=Set->wts[idxz];
+            }
+            for (iz=0;iz<Set->n_wts;iz++) {
+               idxz=idx*Nb+iz;
+               Set->wts[idxz]/=total_wgt;
+            }
+         }
+      }
+   }
 
    Ref->Options.PolarCorrect = previous_val_polar_correction;
    return(0);
 }
 
-int GeoRef_LL2XY(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) {
+int GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
    TGeoRef *yin_gd,*yan_gd;
    int     j,icode,maxni,maxnj;
-   float  *xyin,*xyan,*yyin,*yyan;
+   double  *xyin,*xyan,*yyin,*yyan;
 
    if (Ref->NbSub > 0 ) {
       yin_gd=Ref->Subs[0];
       yan_gd=Ref->Subs[1];
       maxni= yin_gd->NX;
       maxnj= yin_gd->NY;
-      xyin = (float *) malloc(4*Nb*sizeof(float));
+      xyin = (double*) malloc(4*Nb*sizeof(float));
       xyan = &xyin[Nb];
       yyin = &xyin[Nb*2];
       yyan = &xyin[Nb*3];
@@ -801,7 +748,7 @@ int GeoRef_LL2XY(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) {
       }
    }
 
-   // Check for grid insidness of extrapolation enabled
+   // Check for grid insidness or extrapolation enabled
    if (!Ref->Options.ExtrapDegree) {
       for(j=0;j<Nb;j++) {
          if (X[j]>(Ref->X1+0.5) || Y[j]>(Ref->Y1+0.5) || X[j]<(Ref->X0-0.5) || Y[j]<(Ref->Y0-0.5)) {
@@ -811,53 +758,12 @@ int GeoRef_LL2XY(TGeoRef *Ref,float *X,float *Y,float *Lat,float *Lon,int Nb) {
          }
       }
    }
-   if (!Ref->Options.CIndex) {
+
+   if (Ref->Options.CIndex) {
       for(j=0;j<Nb;j++) {
          X[j]-=1.0;
          Y[j]-=1.0;
       }
    }
    return(Nb);
-}
-
-//TODO: not used
-int c_gdxyzfll(TGeoRef *Ref, float *x, float *y, float *lat, float *lon, int n) {
-
-   int ni_in, nj_in;
-   int coordonnee;
-   int npts;
-
-   npts = n;
-              
-   ni_in =  Ref->NX;
-   nj_in =  Ref->NY;
-   
-   switch(Ref->GRTYP[0]) {
-      case 'A':
-      case 'B':
-      case 'E':
-      case 'G':
-      case 'L':
-      case 'N':
-      case 'S':
-      case 'T':
-      case '!':
-	       GeoRef_LL2XY(Ref,x,y,lat,lon,n);
-         break;
-        
-      case 'Y':
-         App_Log(ERROR,"%s: This operation is not supported for 'Y' grids\n",__func__);
-         break;
-	
-      case '#':
-      case 'Z':
-	       coordonnee = ABSOLUTE;
-         f77name(ez_ll2igd)(x,y,lat,lon,&npts,&ni_in,&nj_in,&Ref->GRTYP,&Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4],Ref->AX,Ref->AY,&coordonnee);
-         break;
-
-      default:
-        break;
-   }
-
-   return(0);
 }

@@ -20,7 +20,7 @@
 
 #include "GeoRef.h"
 
-int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,float *x,float *y,int npts) {
+int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,double *X,double *Y,int npts) {
 
    TGridSet *gset;
    int ier;
@@ -44,7 +44,7 @@ int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,float
      lxzin = lzin;
    }
 
-   ier = GeoRef_InterpFinally(RefTo,RefFrom,zout,lxzin,x,y,npts);
+   ier = GeoRef_InterpFinally(RefTo,RefFrom,zout,lxzin,X,Y,npts);
 
 /*   gset.gdin = gdin;
    gset.gdout = gdout;
@@ -75,74 +75,75 @@ int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,float
    return(0);
 }
 
-int GeoRef_XYVal(TGeoRef *Ref,float *zout,float *zin,float *x,float *y,int n) {
+int GeoRef_XYVal(TGeoRef *Ref,float *zout,float *zin,double *X,double *Y,int n) {
 
    TGeoRef *yin_gd, *yan_gd;
    int j, icode, ni, nj;
    float *zoutyin, *zoutyan;
-   float *tmpy;
+   double *tmpy;
 
    if (Ref->NbSub > 0) {
       yin_gd=Ref->Subs[0];
       yan_gd=Ref->Subs[1];
       ni = yin_gd->NX;
       nj = yin_gd->NY;
-      tmpy = (float *) malloc(n*sizeof(float));
-      zoutyin = (float *) malloc(n*sizeof(float));
-      zoutyan = (float *) malloc(n*sizeof(float));
+      tmpy = (double*) malloc(n*sizeof(double));
+      zoutyin = (float *) malloc(2*n*sizeof(float));
+      zoutyan = &zoutyin[n];
       for (j=0; j< n; j++) {
-         if (y[j] > yin_gd->NY) {
-            tmpy[j]=y[j]-yin_gd->NY;
+         if (Y[j] > yin_gd->NY) {
+            tmpy[j]=Y[j]-yin_gd->NY;
          } else {
-            tmpy[j]=y[j];
+            tmpy[j]=Y[j];
          }
       }
-      icode = GeoRef_XYInterp(NULL,yin_gd,zoutyin,zin,x,tmpy,n);
-      icode = GeoRef_XYInterp(NULL,yan_gd,zoutyan,&zin[ni*nj],x,tmpy,n);
+      icode = GeoRef_XYInterp(NULL,yin_gd,zoutyin,zin,X,tmpy,n);
+      icode = GeoRef_XYInterp(NULL,yan_gd,zoutyan,&zin[ni*nj],X,tmpy,n);
       for (j=0; j < n; j++) {
-         if (y[j] > yin_gd->NY) {
+         if (Y[j] > yin_gd->NY) {
            zout[j]=zoutyan[j];
          } else {
            zout[j]=zoutyin[j];
          }
       }
       free(tmpy);
-      free(zoutyan); free(zoutyin);
+      free(zoutyan);
       return(icode);
    } else {
-      icode = GeoRef_XYInterp(NULL,Ref,zout,zin,x,y,n);
+      icode = GeoRef_XYInterp(NULL,Ref,zout,zin,X,Y,n);
       return(icode);
    }
 }
 
-int GeoRef_XYUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,float *x,float *y,int n) {
+int GeoRef_XYUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *X,double *Y,int n) {
 
    TGeoRef *yin_gd, *yan_gd;
    int j, icode, ni, nj;
-   float *uuyin, *vvyin, *uuyan, *vvyan, *tmpy;
+   float *uuyin, *vvyin, *uuyan, *vvyan;
+   double *tmpy;
 
    if (Ref->NbSub > 0) {
       yin_gd=Ref->Subs[0];
       yan_gd=Ref->Subs[1];
       ni = yin_gd->NX;
       nj = yin_gd->NY;
-      tmpy = (float *) malloc(n*sizeof(float));
-      uuyin = (float *) malloc(n*sizeof(float));
-      vvyin = (float *) malloc(n*sizeof(float));
-      uuyan = (float *) malloc(n*sizeof(float));
-      vvyan = (float *) malloc(n*sizeof(float));
+      tmpy = (double*) malloc(n*sizeof(double));
+      uuyin = (float *) malloc(4*n*sizeof(float));
+      vvyin = &uuyin[n];
+      uuyan = &uuyin[n*2];
+      vvyan = &uuyin[n*3];
       for (j=0; j< n; j++) {
-         if (y[j] > yin_gd->NY) {
-            tmpy[j]=y[j]-yin_gd->NY;
+         if (Y[j] > yin_gd->NY) {
+            tmpy[j]=Y[j]-yin_gd->NY;
          } else {
-            tmpy[j]=y[j];
+            tmpy[j]=Y[j];
          }
       }
-      icode = GeoRef_XYUVVal(yin_gd,uuyin,vvyin,uuin,vvin,x,tmpy,n);
-      icode = GeoRef_XYUVVal(yan_gd,uuyan,vvyan,&uuin[ni*nj],&vvin[ni*nj],x,tmpy,n);
+      icode = GeoRef_XYUVVal(yin_gd,uuyin,vvyin,uuin,vvin,X,tmpy,n);
+      icode = GeoRef_XYUVVal(yan_gd,uuyan,vvyan,&uuin[ni*nj],&vvin[ni*nj],X,tmpy,n);
  
       for (j=0; j < n; j++) {
-         if (y[j] > yin_gd->NY) {
+         if (Y[j] > yin_gd->NY) {
             uuout[j]=uuyan[j];
             vvout[j]=vvyan[j];
          } else {
@@ -150,16 +151,15 @@ int GeoRef_XYUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
            vvout[j]=vvyin[j];
          }
       }
-      free(tmpy);
-      free(uuyan); free(vvyan); 
-      free(uuyin); free(vvyin);
+      free(tmpy); 
+      free(uuyin);
       return(icode);
    } else {
       Ref->Options.VectorMode = TRUE;
       Ref->Options.Symmetric = TRUE;
-      GeoRef_XYInterp(NULL,Ref,uuout,uuin,x,y,n);
+      GeoRef_XYInterp(NULL,Ref,uuout,uuin,X,Y,n);
       Ref->Options.Symmetric = FALSE;
-      GeoRef_XYInterp(NULL,Ref,vvout,vvin,x,y,n);
+      GeoRef_XYInterp(NULL,Ref,vvout,vvin,X,Y,n);
       Ref->Options.Symmetric = TRUE;
       Ref->Options.VectorMode = FALSE;
    }
@@ -167,16 +167,16 @@ int GeoRef_XYUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
    return(0);
 }
 
-int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,float *x,float *y,int n) {
+int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *X,double *Y,int n) {
 
    TGeoRef *yin_gd, *yan_gd;
    int ier, j, icode, lni, lnj;
-   float *tmplat, *tmplon, *tmpy;
+   double *tmplat, *tmplon, *tmpy;
    float *uuyin, *vvyin, *uuyan, *vvyan;
    float *tmpuu, *tmpvv;
   
-   tmplat = (float *) malloc(n * sizeof(float));
-   tmplon = (float *) malloc(n * sizeof(float));
+   tmplat = (double*) malloc(n*sizeof(double));
+   tmplon = (double*) malloc(n*sizeof(double));
    tmpuu = (float *) malloc(n * sizeof(float));
    tmpvv = (float *) malloc(n * sizeof(float));
   
@@ -185,28 +185,28 @@ int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       yan_gd=Ref->Subs[1];
       lni = yin_gd->NX;
       lnj = yin_gd->NY;
-      tmpy = (float *) malloc(n*sizeof(float));
+      tmpy = (double *) malloc(n*sizeof(double));
       uuyin = (float *) malloc(n*sizeof(float));
       vvyin = (float *) malloc(n*sizeof(float));
       uuyan = (float *) malloc(n*sizeof(float));
       vvyan = (float *) malloc(n*sizeof(float));
       for (j=0; j< n; j++) {
-         if (y[j] > yin_gd->NY) {
-            tmpy[j]=y[j]-yin_gd->NY;
+         if (Y[j] > yin_gd->NY) {
+            tmpy[j]=Y[j]-yin_gd->NY;
          } else {
-            tmpy[j]=y[j];
+            tmpy[j]=Y[j];
          }
       }
-      icode = GeoRef_XYUVVal(yin_gd, tmpuu, tmpvv, uuin, vvin, x, tmpy, n);
-      icode = GeoRef_XY2LL(yin_gd,tmplat,tmplon,x,tmpy,n);
+      icode = GeoRef_XYUVVal(yin_gd, tmpuu, tmpvv, uuin, vvin, X, tmpy, n);
+      icode = GeoRef_XY2LL(yin_gd,tmplat,tmplon,X,tmpy,n);
       icode = GeoRef_UV2WD(yin_gd, uuyin,vvyin,tmpuu,tmpvv,tmplat,tmplon,n);
 
-      icode = GeoRef_XYUVVal(yan_gd, tmpuu, tmpvv, &uuin[(lni*lnj)], &vvin[(lni*lnj)], x, tmpy, n);
-      icode = GeoRef_XY2LL(yan_gd,tmplat,tmplon,x,tmpy,n);
+      icode = GeoRef_XYUVVal(yan_gd, tmpuu, tmpvv, &uuin[(lni*lnj)], &vvin[(lni*lnj)], X, tmpy, n);
+      icode = GeoRef_XY2LL(yan_gd,tmplat,tmplon,X,tmpy,n);
       icode = GeoRef_UV2WD(yan_gd, uuyan,vvyan,tmpuu,tmpvv,tmplat,tmplon,n);
 
       for (j=0; j< n; j++) {
-         if (y[j] > yin_gd->NY) {
+         if (Y[j] > yin_gd->NY) {
             uuout[j]=uuyan[j];
             vvout[j]=vvyan[j];
          } else {
@@ -218,8 +218,8 @@ int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       free(uuyan); free(vvyan);
       free(tmpy);
    } else {
-      ier = GeoRef_XYUVVal(Ref,tmpuu,tmpvv,uuin,vvin,x,y,n);
-      ier = GeoRef_XY2LL(Ref,tmplat,tmplon,x,y,n);
+      ier = GeoRef_XYUVVal(Ref,tmpuu,tmpvv,uuin,vvin,X,Y,n);
+      ier = GeoRef_XY2LL(Ref,tmplat,tmplon,X,Y,n);
       ier = GeoRef_UV2WD(Ref,uuout,vvout,tmpuu,tmpvv,tmplat,tmplon,n);
    }
 

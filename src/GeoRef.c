@@ -228,11 +228,11 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
             if (x<=X1 && y<=Y1) {
                Scan->V[Scan->N++]=idx;
             }
-            ((float*)Scan->X)[n]=dd?x+0.5:x+1.0;
-            ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
+            Scan->X[n]=dd?x+0.5:x+1.0;
+            Scan->Y[n]=dd?y+0.5:y+1.0;
          }
       }
-      GeoRef_XY2LL(REFGET(FromRef),(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
+      GeoRef_XY2LL(REFGET(FromRef),Scan->Y,Scan->X,Scan->X,Scan->Y,n);
 
       d=dd?2:1;
       sz=4;
@@ -339,8 +339,8 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             if (x<=X1 && y<=Y1) {
                Scan->V[Scan->N++]=idx;
             }
-            ((float*)Scan->X)[n]=FromRef->AX[idx];
-            ((float*)Scan->Y)[n]=FromRef->AY[idx];
+            Scan->X[n]=FromRef->AX[idx];
+            Scan->Y[n]=FromRef->AY[idx];
          }
       }
       d=1;
@@ -355,11 +355,11 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             if (x<=X1 && y<=Y1) {
                Scan->V[Scan->N++]=idx;
             }
-            ((float*)Scan->X)[n]=dd?x+0.5:x+1.0;
-            ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
+            Scan->X[n]=dd?x+0.5:x+1.0;
+            Scan->Y[n]=dd?y+0.5:y+1.0;
          }
       }
-      GeoRef_XY2LL(REFGET(FromRef),(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
+      GeoRef_XY2LL(REFGET(FromRef),Scan->Y,Scan->X,Scan->X,Scan->Y,n);
 
       d=dd?2:1;
       sz=4;
@@ -372,14 +372,9 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
    if (ToRef->GRTYP[0]=='W' || ToRef->GRTYP[0]=='M') {
 #ifdef HAVE_GDAL
       for(x=n-1;x>=0;x--) {
-         if (sz==4) {
-            x0=(double)((float*)Scan->X)[x];
-            y0=(double)((float*)Scan->Y)[x];
-         } else {
-            x0=Scan->X[x];
-            y0=Scan->Y[x];
+         x0=Scan->X[x];
+         y0=Scan->Y[x];
 
-         }
          if (ToDef) {
             Scan->D[x]=ToDef->NoData;
          }
@@ -393,13 +388,6 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
       }
 
 /*
-         if (sz==4) {
-            for(x=n-1;x>=0;x--) {
-               Scan->X[x]=(double)((float*)Scan->X)[x];
-               Scan->Y[x]=(double)((float*)Scan->Y)[x];
-            }
-         }
-
          if (ToRef->Function)
             OCTTransform(ToRef->InvFunction,n,Scan->X,Scan->Y,NULL);
 
@@ -415,29 +403,20 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
 #endif
    } else {
 #ifdef HAVE_RMN
-      if (sz==8) {
-         for(x=0;x<n;x++) {
-            // RPN functions go from 0 to 360 instead of -180 to 180
-            x0=Scan->X[x]<0?Scan->X[x]+360:Scan->X[x];
-            y0=Scan->Y[x];
-            ((float*)Scan->X)[x]=x0;
-            ((float*)Scan->Y)[x]=y0;
-         }
-      }
-      GeoRef_LL2XY(REFGET(ToRef),(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
+      GeoRef_LL2XY(REFGET(ToRef),Scan->X,Scan->Y,Scan->Y,Scan->X,n);
 //EZFIX
       // If we have the data of source and they're float, get it's values right now
       if (ToDef && ToDef->Type==TD_Float32) {
          if (Degree)
             ToRef->Options.InterpDegree=Degree;
          
-         GeoRef_XYVal(REFGET(ToRef),Scan->D,(float*)ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);         
+         GeoRef_XYVal(REFGET(ToRef),Scan->D,(float*)ToDef->Mode,Scan->X,Scan->Y,n);         
       }
 
       // Cast back to double (Start from end since type is double, not to overlap values
       for(x=n-1;x>=0;x--) {
-         Scan->X[x]=(double)((float*)Scan->X)[x]-1.0;
-         Scan->Y[x]=(double)((float*)Scan->Y)[x]-1.0;
+         Scan->X[x]=Scan->X[x]-1.0;
+         Scan->Y[x]=Scan->Y[x]-1.0;
 
          if (ToDef) {
             ix = lrint(Scan->X[x]);
@@ -1264,6 +1243,7 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
  *   <Idxs>   : Pointer to neighbors index found
  *   <Dists>  : Squared distances from the neighbors found
  *   <NbNear> : Number of nearest neighbors to find
+ *   <MaxDist>: Maximum distance to find (0.0 = don't care)
  *
  * Retour     :
  *   <nbnear> : Nombre de points trouvé trié du plus près vers le plus loin
@@ -1272,7 +1252,7 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,double *Dists,int NbNear) {
+int GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,double *Dists,int NbNear,double MaxDist) {
 
    double       dx,dy,l;
    unsigned int n,nn,nr,nnear;
@@ -1340,7 +1320,7 @@ int GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,dou
                   // Loop on number of nearest to find
                   for(nn=0;nn<NbNear;nn++) {
                      // If this is closer
-                     if (l<Dists[nn]) {
+                     if ((MaxDist==0.0 || l<=MaxDist) && l<Dists[nn]) {
                            
                         // Move farther nearest in order
                         for(nr=NbNear-1;nr>nn;nr--) {
@@ -1946,7 +1926,7 @@ int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_Coords(TGeoRef *Ref,float *Lat,float *Lon) {
+int GeoRef_Coords(TGeoRef *Ref,double *Lat,double *Lon) {
 
 #ifdef HAVE_RMN
    int x,y,nxy;
@@ -1957,8 +1937,8 @@ int GeoRef_Coords(TGeoRef *Ref,float *Lat,float *Lon) {
    nxy=Ref->NX*Ref->NY;
 //TODO: Check func ez_calclatlon 
    if (!Ref->Lat) {
-      Ref->Lat=(float*)malloc(nxy*sizeof(float));
-      Ref->Lon=(float*)malloc(nxy*sizeof(float));
+      Ref->Lat=(double*)malloc(nxy*sizeof(double));
+      Ref->Lon=(double*)malloc(nxy*sizeof(double));
    
       nxy=0;
       for(y=Ref->Y0;y<=Ref->Y1;y++) {
@@ -2003,7 +1983,7 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
 
    unsigned int i,gi,j,gj,nid,pnid,pidx,idx,*tidx;
    int          ig, nx, ny;
-   float        di[4],dj[4],dlat[4],dlon[4];
+   double       di[4],dj[4],dlat[4],dlon[4];
    double       fx,fy,fz,dx[4],dy[4],s,a,b,c;
    char         grtyp[2];
    TGeoRef *gr;

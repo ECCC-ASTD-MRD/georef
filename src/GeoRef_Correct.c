@@ -305,7 +305,8 @@ int GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin)
 int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float *vvin, int ni, int nj, TGeoRef *RefFrom) {
   
    int k1, k2;
-   float *polar_wd, *polar_spd,*polar_lat,*polar_lon,*polar_lat_gem, *polar_lon_gem, *polar_x, *polar_y, *polar_uu, *polar_vv;
+   float *polar_wd, *polar_spd, *polar_uu, *polar_vv;
+   double *polar_lat,*polar_lon,*polar_lat_gem, *polar_lon_gem, *polar_x, *polar_y;
    char grtypn[2],grtypa[2];
    float xlat1, xlat2, xlon1, xlon2;
    int ig1n, ig2n, ig3n, ig4n;
@@ -313,16 +314,16 @@ int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
    int i,j,ier;
    TGeoRef *gda, *gdps;
    float uupole, vvpole;
-   float quatrevingtdix, zero;
+   double quatrevingtdix, zero;
 
    polar_uu  = (float *) malloc(ni*sizeof(float));
    polar_vv  = (float *) malloc(ni*sizeof(float));
    polar_wd  = (float *) malloc(ni*sizeof(float));
    polar_spd = (float *) malloc(ni*sizeof(float));
-   polar_lat = (float *) malloc(ni*sizeof(float));
-   polar_lon = (float *) malloc(ni*sizeof(float));
-   polar_x   = (float *) malloc(ni*sizeof(float));
-   polar_y   = (float *) malloc(ni*sizeof(float));
+   polar_lat = (double*)malloc(4*ni*sizeof(double));
+   polar_lon = &polar_lat[ni];
+   polar_x   = &polar_lat[ni*2];
+   polar_y   = &polar_lat[ni*3];
 
    for (i=0; i < ni; i++) {
       polar_x[i] = 1.0 * (i+1);
@@ -332,8 +333,8 @@ int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
    GeoRef_XY2LL(RefFrom, polar_lat, polar_lon, polar_x, polar_y, ni);
 
    if (RefFrom->GRTYP[0] == 'Z' && RefFrom->RPNHead.GRREF[0] == 'E') {
-      polar_lat_gem   = (float *) malloc(ni*sizeof(float));
-      polar_lon_gem   = (float *) malloc(ni*sizeof(float));
+      polar_lat_gem   = (double*) malloc(2*ni*sizeof(double));
+      polar_lon_gem   = &polar_lat_gem[ni];
     
       for (i=0; i < ni; i++) {
          polar_lat_gem[i] = polar_lat[i];
@@ -390,14 +391,16 @@ int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
      polar_vv_in[k1] = polar_vv[i];
    }
 
-   free(polar_y);
-   free(polar_x);
    free(polar_lat);
-   free(polar_lon);
+
    free(polar_spd);
    free(polar_wd);
    free(polar_vv);
    free(polar_uu);
+
+   if (RefFrom->GRTYP[0] == 'Z' && RefFrom->RPNHead.GRREF[0] == 'E' && polar_lat_gem != NULL)  {
+     free(polar_lat_gem);
+   }
 
    ier = GeoRef_Free(gdps);
    return(0);
@@ -406,7 +409,8 @@ int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
 int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float *vvin, int ni, int nj, TGeoRef *RefFrom) {
 
    int k1, k2;
-   float *polar_wd, *polar_spd,*polar_lat,*polar_lon,*polar_lat_gem, *polar_lon_gem,*polar_x,*polar_y,*polar_uu,*polar_vv;
+   float *polar_wd, *polar_spd,*polar_uu,*polar_vv;
+   double *polar_lat,*polar_lon,*polar_lat_gem, *polar_lon_gem, *polar_x, *polar_y;
    char grtyps[2],grtypa[2];
    float xlat1, xlat2, xlon1, xlon2;
    int ig1n, ig2n, ig3n, ig4n;
@@ -414,18 +418,16 @@ int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
    int i,j,ier;
    TGeoRef *gda, *gdps;
    float uupole, vvpole;
-   float quatrevingtdix, zero;
+   double quatrevingtdix, zero;
 
    polar_uu  = (float *) malloc(ni*sizeof(float));
    polar_vv  = (float *) malloc(ni*sizeof(float));
    polar_wd  = (float *) malloc(ni*sizeof(float));
    polar_spd = (float *) malloc(ni*sizeof(float));
-   polar_lat = (float *) malloc(ni*sizeof(float));
-   polar_lon = (float *) malloc(ni*sizeof(float));
-   polar_x   = (float *) malloc(ni*sizeof(float));
-   polar_y   = (float *) malloc(ni*sizeof(float));
-   polar_lat_gem = NULL;
-   polar_lon_gem = NULL;
+   polar_lat = (double*)malloc(4*ni*sizeof(double));
+   polar_lon = &polar_lat[ni];
+   polar_x   = &polar_lat[ni*2];
+   polar_y   = &polar_lat[ni*3];
 
    for (i=0; i < ni; i++) {
       polar_x[i] = 1.0 * (i+1);
@@ -435,8 +437,8 @@ int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
    GeoRef_XY2LL(RefFrom, polar_lat, polar_lon, polar_x, polar_y, ni);
 
    if (RefFrom->GRTYP[0] == 'Z' && RefFrom->RPNHead.GRREF[0] == 'E') {
-     polar_lat_gem   = (float *) malloc(ni*sizeof(float));
-     polar_lon_gem   = (float *) malloc(ni*sizeof(float));
+      polar_lat_gem   = (double*) malloc(2*ni*sizeof(double));
+      polar_lon_gem   = &polar_lat_gem[ni];
     
      for (i=0; i < ni; i++) {
         polar_lat_gem[i] = polar_lat[i];
@@ -502,7 +504,6 @@ int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
 
    if (RefFrom->GRTYP[0] == 'Z' && RefFrom->RPNHead.GRREF[0] == 'E' && polar_lat_gem != NULL)  {
      free(polar_lat_gem);
-     free(polar_lon_gem);
    }
 
    ier = GeoRef_Free(gdps);

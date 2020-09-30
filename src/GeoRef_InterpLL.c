@@ -21,6 +21,118 @@
 #include "RPN.h"
 #include "GeoRef.h"
 
+/**----------------------------------------------------------------------------
+ * @brief  Get latitude and longitudes of a 2d point (Copy of fortran function, but using double precision)
+ * @author J.D. HENDERSON
+ * @date   February 1975
+ *    @param[out]  Lat     Latitude in degrees 
+ *    @param[out]  Lon     Longitude in degrees
+ *    @param[in]   X       X coordinate
+ *    @param[in]   Y       Y coordinate
+ *    @param[in]   D60     Distance in meters between the gridpoints at 60 degree latitude
+ *    @param[in]   DGRW    Angle between  the X axis and the Greenwich meridian
+ *    @param[in]   HEM     Side of the hemisphere (1=North, 2=South)
+ * 
+ */
+static inline void llfxy(double *Lat,double *Lon,double X,double Y,double D60,double DGRW,int HEM) {
+
+   double re,re2,r2;
+
+   re=1.866025*EARTHRADIUS/D60;
+   re2=re*re;
+
+   // If point is at pole set coords to (0.,90.)
+
+   *Lat=90.0;
+   *Lon=0.0;
+
+   if (X!=0.0 || Y!=0.0) {
+
+      // Calculate longitude in map coordinates
+
+      if (X==0.0) *Lon=SIGN(90.0,Y);
+      if (X!=0.0) *Lon=RAD2DEG(atan(Y/X));
+      if (X<0.0)  *Lon=*Lon+SIGN(180.0,Y);
+
+      // Adjust for grid orientation
+
+      *Lon-=DGRW;
+      if(*Lon > 180.0)  *Lon-=360.0;
+      if(*Lon < -180.0) *Lon+=360.0;
+
+      // Calculate latitude
+      r2=X*X+Y*Y;
+      *Lat=(re2-r2)/(re2+r2);
+      *Lat=RAD2DEG(asin(*Lat));
+
+   }
+   // Change sign if in southern hemisphere
+   if (HEM==2) {
+      *Lat=-*Lat;
+      *Lon=-*Lon;
+   }
+}
+
+/**----------------------------------------------------------------------------
+ * @brief  Get latitude and longitudes of each gridpoints of a LatLon grid (Copy of fortran function, but using double precision)
+ * @author Michel Valin
+ * @date   Janvier 1982
+ *    @param[out]  Lat     Latitude stream
+ *    @param[out]  Lon     Longitude stream
+ *    @param[in]   NI      Size in x
+ *    @param[in]   NJ      Size in y
+ *    @param[in]   Lat0    Lower left corner latitude
+ *    @param[in]   Lon0    Lower left corner longitude
+ *    @param[in]   DLat    Latitude spacing in degrees
+ *    @param[in]   Dlon    Longitudr spacing in degrees
+ * 
+ */
+static inline void grll(double *Lat,double *Lon,int NI,int NJ,double Lat0,double Lon0,double DLat,double DLon) {
+
+   int    i,j,idx=0;
+   double lat;
+
+   for(j=0;j<NJ;j++){
+      lat=Lat0+j*DLat;
+      for(i=0;i<NI;i++) {
+         Lat[idx]=lat;
+         Lon[idx]=fmod(Lon0+i*DLon,360.0);
+         idx++;
+      }
+   }
+}
+
+/**----------------------------------------------------------------------------
+ * @brief  Get latitude and longitudes of each gridpoints of a PS grid (Copy of fortran function, but using double precision)
+ * @author Michel Valin
+ * @date   Janvier 1982
+ *    @param[out]  Lat     Latitude stream
+ *    @param[out]  Lon     Longitude stream
+ *    @param[in]   NI      Size in x
+ *    @param[in]   NJ      Size in y
+ *    @param[in]   PI      X Pole coordinate
+ *    @param[in]   PJ      Y Pole coordinate
+ *    @param[in]   D60     Distance in meters between the gridpoints at 60 degree latitude
+ *    @param[in]   DGRW    Angle between  the X axis and the Greenwich meridian
+ *    @param[in]   HEM     Side of the hemisphere (1=North, 2=South)
+ * 
+ */
+static inline void grps(double *Lat,double *Lon,int NI,int NJ,double PI,double PJ,double D60,double DGRW,int HEM) {
+
+   int    i,j,idx=0;
+   double lat,lon,x,y;
+
+   for(j=0;j<NJ;j++){
+      y=j-PJ;
+      for(i=0;i<NI;i++) {
+         x=i-PI;
+         llfxy(&lat,&lon,x,y,D60,DGRW,HEM);
+         Lat[idx]=lat;
+         Lon[idx]=(lon<0?lon+360:lon);
+      }
+   }
+}
+
 int GeoRef_CalcLL(TGeoRef* Ref) {
 
    float  xlat00, xlon00, dlat, dlon;
@@ -32,13 +144,13 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
       nj = Ref->NY;
       npts = ni*nj;
 
-      Ref->Lat = (float *)malloc(npts*sizeof(float));
-      Ref->Lon = (float *)malloc(npts*sizeof(float));
+      Ref->Lat = (double*)malloc(npts*sizeof(double));
+      Ref->Lon = (double*)malloc(npts*sizeof(double));
 
       switch(Ref->GRTYP[0]) {
          case 'A':
          case 'B':
-            f77name(grll)(Ref->Lat,Ref->Lon,&ni,&nj,&Ref->RPNHead.XG[X_SWLAT],&Ref->RPNHead.XG[X_SWLON], &Ref->RPNHead.XG[X_DLAT], &Ref->RPNHead.XG[X_DLON]);
+            grll(Ref->Lat,Ref->Lon,ni,nj,Ref->RPNHead.XG[X_SWLAT],Ref->RPNHead.XG[X_SWLON],Ref->RPNHead.XG[X_DLAT],Ref->RPNHead.XG[X_DLON]);
             break;
 
          case 'E':
@@ -47,7 +159,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
             xlon00 = 0.0;
             xlat00 = -90. + 0.5*dlat;
 
-            f77name(grll)(Ref->Lat,Ref->Lon,&ni,&nj,&xlat00,&xlon00,&dlat,&dlon);
+            grll(Ref->Lat,Ref->Lon,ni,nj,xlat00,xlon00,dlat,dlon);
             f77name(cigaxg)(Ref->GRTYP, &Ref->RPNHead.XG[X_LAT1], &Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2], &Ref->RPNHead.XG[X_LON2],&Ref->RPNHead.IG[X_IG1],  &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
             latp = (float *)malloc(2*npts*sizeof(float));
             lonp = &latp[npts];
@@ -58,7 +170,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
             break;
 
          case 'L':
-            f77name(grll)(Ref->Lat,Ref->Lon,&ni,&nj,&Ref->RPNHead.XG[X_SWLAT],&Ref->RPNHead.XG[X_SWLON],&Ref->RPNHead.XG[X_DLAT], &Ref->RPNHead.XG[X_DLON]);
+            grll(Ref->Lat,Ref->Lon,ni,nj,Ref->RPNHead.XG[X_SWLAT],Ref->RPNHead.XG[X_SWLON],Ref->RPNHead.XG[X_DLAT],Ref->RPNHead.XG[X_DLON]);
             break;
 
          case 'N':
@@ -68,7 +180,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
 	         } else {
                hemisphere = 2;
             }
-            f77name(grps)(Ref->Lat,Ref->Lon,&ni,&nj,&Ref->RPNHead.XG[X_PI],&Ref->RPNHead.XG[X_PJ],&Ref->RPNHead.XG[X_D60], &Ref->RPNHead.XG[X_DGRW], &hemisphere);
+            grps(Ref->Lat,Ref->Lon,ni,nj,Ref->RPNHead.XG[X_PI],Ref->RPNHead.XG[X_PJ],Ref->RPNHead.XG[X_D60],Ref->RPNHead.XG[X_DGRW],hemisphere);
             break;
 
          case 'T':
@@ -215,7 +327,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
    return(0);
 }
 
-int GeoRef_GetLL(TGeoRef *Ref,float *Lat,float *Lon) {
+int GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
 
    int n;
 
@@ -238,12 +350,12 @@ int GeoRef_GetLL(TGeoRef *Ref,float *Lat,float *Lon) {
    return(0);
 }
 
-int GeoRef_LLVal(TGeoRef *Ref,float *zout,float *zin,float *Lat,float *Lon,int Nb) { 
+int GeoRef_LLVal(TGeoRef *Ref,float *zout,float *zin,double *Lat,double *Lon,int Nb) { 
 
-   float *x,*y;
+   double *x,*y;
    int ier;
 
-   x = (float *)malloc(2*Nb*sizeof(float));
+   x = (double*)malloc(2*Nb*sizeof(double));
    y = &x[Nb];
    
    ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb);
@@ -254,9 +366,9 @@ int GeoRef_LLVal(TGeoRef *Ref,float *zout,float *zin,float *Lat,float *Lon,int N
    return(0);
 }
 
-int GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,float *Lat,float *Lon,int Nb) {
+int GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
 
-   float *x, *y;
+   double *x, *y;
    int ier;
    
    if (Ref->NbSub > 0) {
@@ -264,7 +376,7 @@ int GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       return(-1);
    } else {
 
-      x = (float *)malloc(2*Nb*sizeof(float));
+      x = (double*)malloc(2*Nb*sizeof(double));
       y = &x[Nb];
    
       ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb);
@@ -276,20 +388,20 @@ int GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
    }
 }
 
-int GeoRef_LLWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,float *Lat,float *Lon,int Nb) {
+int GeoRef_LLWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
 
    TGeoRef *yin_gd, *yan_gd;
    int ier,j;
-   float *x, *y;
-   float *uuyin, *vvyin, *uuyan, *vvyan;
+   double *x,*y;
+   float  *uuyin, *vvyin, *uuyan, *vvyan;
 
    if (Ref->NbSub > 0) {
-      x = (float *) malloc(6*Nb*sizeof(float));
+      x = (double*) malloc(2*Nb*sizeof(double));
       y = &x[Nb];
-      uuyin = &x[Nb*2];
-      vvyin = &x[Nb*3];
-      uuyan = &x[Nb*4];
-      vvyan = &x[Nb*5];
+      uuyin = (float*) malloc(6*Nb*sizeof(float));
+      vvyin = &uuyin[Nb];
+      uuyan = &uuyin[Nb*2];
+      vvyan = &uuyin[Nb*3];
       ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb);
       ier = GeoRef_XYUVVal(Ref,uuout,vvout,uuin,vvin,x,y,Nb);
       yin_gd=Ref->Subs[0];
@@ -306,6 +418,7 @@ int GeoRef_LLWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
          }
       }
       free(x);
+      free(uuyin);
    } else {
       ier = GeoRef_LLUVVal(Ref,uuout,vvout,uuin,vvin,Lat,Lon,Nb);
       ier = GeoRef_UV2WD(Ref,uuout,vvout,uuout,vvout,Lat,Lon,Nb);
