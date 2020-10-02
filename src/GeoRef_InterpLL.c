@@ -137,7 +137,8 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
 
    float  xlat00, xlon00, dlat, dlon;
    int    i,j,k,ni, nj, npts, hemisphere;
-   float *lonp,*latp,*xp,*yp,*x,*y;
+   float *x,*y;
+   double *lonp,*latp,*xp,*yp;
 
    if (!Ref->Lat) {
       ni = Ref->NX;
@@ -161,11 +162,11 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
 
             grll(Ref->Lat,Ref->Lon,ni,nj,xlat00,xlon00,dlat,dlon);
             f77name(cigaxg)(Ref->GRTYP, &Ref->RPNHead.XG[X_LAT1], &Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2], &Ref->RPNHead.XG[X_LON2],&Ref->RPNHead.IG[X_IG1],  &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
-            latp = (float *)malloc(2*npts*sizeof(float));
+            latp = (double *)malloc(2*npts*sizeof(double));
             lonp = &latp[npts];
-            f77name(ez_gfllfxy)(lonp,latp,Ref->Lon,Ref->Lat,&npts,&Ref->RPNHead.XG[X_LAT1], &Ref->RPNHead.XG[X_LON1], &Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
-            memcpy(Ref->Lat,latp,npts*sizeof(float));
-            memcpy(Ref->Lon,lonp,npts*sizeof(float));
+            f77name(ez8_gfllfxy)(lonp,latp,Ref->Lon,Ref->Lat,&npts,&Ref->RPNHead.XG[X_LAT1], &Ref->RPNHead.XG[X_LON1], &Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
+            memcpy(Ref->Lat,latp,npts*sizeof(double));
+            memcpy(Ref->Lon,lonp,npts*sizeof(double));
             free(latp);
             break;
 
@@ -184,7 +185,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
             break;
 
          case 'T':
-            xp = (float *) malloc(2*npts*sizeof(float));
+            xp = (double *) malloc(2*npts*sizeof(double));
             yp = &yp[npts];
             for (j=0; j < nj; j++) {
                for (i=0; i < ni; i++) {
@@ -194,7 +195,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                }
             }
 
-            f77name(ez_vtllfxy)(Ref->Lat,Ref->Lon,xp,yp,&Ref->RPNHead.XG[X_CLAT], &Ref->RPNHead.XG[X_CLON],&Ref->RPNHead.XG[X_TD60],&Ref->RPNHead.XG[X_TDGRW],&ni,&nj,&npts);
+            f77name(ez8_vtllfxy)(Ref->Lat,Ref->Lon,xp,yp,&Ref->RPNHead.XG[X_CLAT], &Ref->RPNHead.XG[X_CLON],&Ref->RPNHead.XG[X_TD60],&Ref->RPNHead.XG[X_TDGRW],&ni,&nj,&npts);
             free(xp);
             break;
 
@@ -246,16 +247,16 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
             switch (Ref->RPNHead.GRREF[0]) {
 	            case 'N':
 	            case 'S':
-	               latp = (float *) malloc(2*npts*sizeof(float));
+	               latp = (double *) malloc(2*npts*sizeof(double));
 	               lonp = &latp[npts];
-	               f77name(ez_vllfxy)(latp,lonp,Ref->Lon,Ref->Lat,&ni,&nj,&Ref->RPNHead.XGREF[X_D60],&Ref->RPNHead.XGREF[X_DGRW],&Ref->RPNHead.XGREF[X_PI], &Ref->RPNHead.XGREF[X_PJ], &Ref->Hemi);
+	               f77name(ez8_vllfxy)(latp,lonp,Ref->Lon,Ref->Lat,&ni,&nj,&Ref->RPNHead.XGREF[X_D60],&Ref->RPNHead.XGREF[X_DGRW],&Ref->RPNHead.XGREF[X_PI], &Ref->RPNHead.XGREF[X_PJ], &Ref->Hemi);
 
 	               for (i=0; i < npts; i++) {
 		               if (lonp[i] < 0.0) lonp[i] += 360.0;
 		            }
 
-                  memcpy(Ref->Lon, lonp, npts*sizeof(float));
-                  memcpy(Ref->Lat, latp, npts*sizeof(float));
+                  memcpy(Ref->Lon, lonp, npts*sizeof(double));
+                  memcpy(Ref->Lat, latp, npts*sizeof(double));
                   free(latp);
                   break;
 
@@ -275,11 +276,11 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                   break;
 
                case 'E':
-                  latp = (float *) malloc(2*npts*sizeof(float));
+                  latp = (double *) malloc(2*npts*sizeof(double));
                   lonp = &latp[npts];
-                  f77name(ez_gfllfxy)(lonp,latp,Ref->Lon,Ref->Lat,&npts,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1], &Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2]);
-                  memcpy(Ref->Lon,lonp,npts*sizeof(float));
-                  memcpy(Ref->Lat,latp,npts*sizeof(float));
+                  f77name(ez8_gfllfxy)(lonp,latp,Ref->Lon,Ref->Lat,&npts,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1], &Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2]);
+                  memcpy(Ref->Lon,lonp,npts*sizeof(double));
+                  memcpy(Ref->Lat,latp,npts*sizeof(double));
                   free(latp);
                   break;
             }
