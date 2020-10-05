@@ -565,7 +565,7 @@ int GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
 int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float *vvllin,double *Lat,double *Lon,int Nb) {
 
    int   ni,nj;
-   float *lat_true,*lon_true;
+   double *lat_true,*lon_true;
   
    if (Ref->NbSub > 0 ) {
       App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
@@ -577,9 +577,9 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
 //TODO: Convert double
    switch (Ref->GRTYP[0]) {
       case 'E':
-         lat_true=(float *)(malloc(2*Nb*sizeof(float)));
+         lat_true=(double *)(malloc(2*Nb*sizeof(double)));
          lon_true=&lat_true[Nb];
-         f77name(ez_gfxyfll)(lon_true,lat_true,Lon,Lat,&ni,&Ref->RPNHead.XG[X_LAT1],&Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
+         f77name(ez8_gfxyfll)(lon_true,lat_true,Lon,Lat,&ni,&Ref->RPNHead.XG[X_LAT1],&Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
          c_ezgfwfllw(uugdout,vvgdout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
          free(lat_true);
          return(0);
@@ -590,9 +590,9 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
       case 'Z':
          switch(Ref->RPNHead.GRREF[0]) {
             case 'E':
-               lat_true=(float *)(malloc(2*Nb*sizeof(float)));
+               lat_true=(double *)(malloc(2*Nb*sizeof(double)));
                lon_true=&lat_true[Nb];
-               f77name(ez_gfxyfll)(Lon,Lat,lon_true,lat_true,&ni,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2],&Ref->RPNHead.XGREF[X_LON2]);         
+               f77name(ez8_gfxyfll)(Lon,Lat,lon_true,lat_true,&ni,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2],&Ref->RPNHead.XGREF[X_LON2]);         
                c_ezgfwfllw(uugdout,vvgdout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
                free(lat_true);
                return(0);
@@ -614,7 +614,7 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
 int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
 
    int    ni,nj;
-   float *lat_rot,*lon_rot;
+   double *lat_rot,*lon_rot;
    
    if (Ref->NbSub > 0 ) {
       App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
@@ -627,9 +627,9 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
 //TODO: Convert double
    switch (Ref->GRTYP[0]) {
       case 'E':
-         lat_rot=(float *)(malloc(2*Nb*sizeof(float)));
+         lat_rot=(double *)(malloc(2*Nb*sizeof(double)));
          lon_rot=&lat_rot[Nb];
-         f77name(ez_gfxyfll)(Lon,Lat,lon_rot,lat_rot,&ni,&Ref->RPNHead.XG[X_LAT1],&Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
+         f77name(ez8_gfxyfll)(Lon,Lat,lon_rot,lat_rot,&ni,&Ref->RPNHead.XG[X_LAT1],&Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
          c_ezllwfgfw(spd_out,wd_out,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
          free(lat_rot);
          return(0);  
@@ -640,9 +640,9 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
       case 'Z':
          switch(Ref->RPNHead.GRREF[0]) {
 	         case 'E':
-               lat_rot=(float *)(malloc(2*Nb*sizeof(float)));
+               lat_rot=(double *)(malloc(2*Nb*sizeof(double)));
                lon_rot=&lat_rot[Nb];
-	            f77name(ez_gfxyfll)(Lon,Lat,lon_rot,lat_rot,&ni,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2],&Ref->RPNHead.XGREF[X_LON2]);
+	            f77name(ez8_gfxyfll)(Lon,Lat,lon_rot,lat_rot,&ni,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2],&Ref->RPNHead.XGREF[X_LON2]);
 	            c_ezllwfgfw(spd_out,wd_out,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
 	            free(lat_rot);
 	            return(0);
@@ -669,7 +669,7 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
     latin, lonin sont les latlons vraies
     xlatingf, xloningf sont les latlons sur la grille tournee
   */
-void c_ezgfwfllw(float *uullout,float *vvllout,double *Lat,double *Lon,float *xlatingf,float *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4) {
+void c_ezgfwfllw(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4) {
 
    int zero = 0;
    int npts = *ni * *nj;

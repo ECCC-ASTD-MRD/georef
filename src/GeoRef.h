@@ -455,6 +455,7 @@ void f77name(ez8_ll2igd)();
 void f77name(ez8_ll2rgd)();
 void f77name(ez_llwfgdw)();
 void f77name(ez_gfxyfll)();
+void f77name(ez8_gfxyfll)();
 void f77name(ez_gdwfllw)();
 void f77name(ez8_vllfxy)();
 void f77name(ez8_vtllfxy)();
