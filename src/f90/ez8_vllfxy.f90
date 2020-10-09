@@ -68,7 +68,7 @@
 !     calculate longitude in map coordinates.                         
 !     
             if(x1 .eq. 0.0d0) rlon=sign(90.d0,y1)                      
-            if(x1 .ne. 0.0d0) rlon=datan(y1/x1)*dble(rdtodg)
+            if(x1 .ne. 0.0d0) rlon=atan(y1/x1)*dble(rdtodg)
             if(x1.lt. 0.0d0) rlon=rlon+sign(180.d0,y1)  
 !     
 !     * adjust longitude for grid orientation.                          
@@ -83,7 +83,7 @@
             r2=x1*x1+y1*y1
             rlat=(re2-r2)/(re2+r2)
             rlat=max(-1.0d0, min(rlat, 1.0d0))
-            rlat= dasin(rlat)*dble(rdtodg)
+            rlat= asin(rlat)*dble(rdtodg)
 !     change signs if in southern hemisphere.                         
 !     
             if(nhem .eq. 2) then

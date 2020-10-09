@@ -78,8 +78,8 @@
             if (indx .ge. ni) indx = ni - 1
             if (indy .ge. nj) indy = nj - 1
             
-            px(i) = real(indx)+(px(i)-ax(indx))/(ax(indx+1)-ax(indx))
-            py(i) = real(indy)+(py(i)-ay(indy))/(ay(indy+1)-ay(indy))
+            px(i) = dble(indx)+(px(i)-ax(indx))/(ax(indx+1)-ax(indx))
+            py(i) = dble(indy)+(py(i)-ay(indy))/(ay(indy+1)-ay(indy))
  10      continue
 
       endif

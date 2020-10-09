@@ -22,8 +22,8 @@
 #include "RPN.h"
 #include "GeoRef.h"
 
-void c_ezgfwfllw(float *uullout,float *vvllout,double *Lat,double *Lon,float *xlatingf,float *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
-void c_ezllwfgfw(float *uullout,float *vvllout,double *Lat,double *Lon,float *xlatingf,float *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
+void c_ezgfwfllw(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
+void c_ezllwfgfw(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
 
 int GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin) {
    
@@ -599,12 +599,12 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
                break;
 	    
             default:
-               f77name(ez_gdwfllw)(uugdout,vvgdout,Lon,&ni,&nj,&Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4], 1);
+               f77name(ez8_gdwfllw)(uugdout,vvgdout,Lon,&ni,&nj,&Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4], 1);
                break;
          }
         
       default:
-         f77name(ez_gdwfllw)(uugdout,vvgdout,Lon,&ni,&nj,&Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4], 1);
+         f77name(ez8_gdwfllw)(uugdout,vvgdout,Lon,&ni,&nj,&Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4], 1);
          break;
    }
    
@@ -649,13 +649,13 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
 	            break;
 	   
 	         default:
-	            f77name(ez_llwfgdw)(spd_out,wd_out,Lon,&ni,&nj,Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+	            f77name(ez8_llwfgdw)(spd_out,wd_out,Lon,&ni,&nj,Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
 	            break;
 	      }
          break;
        
       default:
-         f77name(ez_llwfgdw)(spd_out,wd_out,Lon,&ni,&nj,&Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
+         f77name(ez8_llwfgdw)(spd_out,wd_out,Lon,&ni,&nj,&Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
          break;
    }
       
@@ -669,6 +669,7 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
     latin, lonin sont les latlons vraies
     xlatingf, xloningf sont les latlons sur la grille tournee
   */
+// TODO Maude: ez_uvacart, ez_cartauv
 void c_ezgfwfllw(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4) {
 
    int zero = 0;
@@ -684,7 +685,7 @@ void c_ezgfwfllw(float *uullout,float *vvllout,double *Lat,double *Lon,double *x
    f77name(cigaxg)(grtyp, &xlat1, &xlon1, &xlat2, &xlon2, ig1, ig2, ig3, ig4);
    f77name(ez_crot)(r, ri, &xlon1, &xlat1, &xlon2, &xlat2);
    grtypl[0] = 'L';
-   f77name(ez_gdwfllw)(uullout,vvllout,Lon,ni,nj,grtypl, &zero, &zero, &zero, &zero, 1);
+   f77name(ez8_gdwfllw)(uullout,vvllout,Lon,ni,nj,grtypl, &zero, &zero, &zero, &zero, 1);
    f77name(ez_uvacart)(xyz, uullout, vvllout, Lon, Lat, ni, nj);
    f77name(mxm)(r, &trois, xyz, &trois, uvcart, &npts);
    f77name(ez_cartauv)(uullout, vvllout, uvcart, xloningf, xlatingf, ni, nj);
@@ -699,7 +700,7 @@ void c_ezgfwfllw(float *uullout,float *vvllout,double *Lat,double *Lon,double *x
     latin, lonin sont les latlons vraies
     xlatingf, xloningf sont les latlons sur la grille tournee
   */
-void c_ezllwfgfw(float *uullout,float *vvllout,double *Lat,double *Lon,float *xlatingf,float *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4) {
+void c_ezllwfgfw(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4) {
 
    int zero = 0;
    int npts = *ni * *nj;
@@ -718,7 +719,7 @@ void c_ezllwfgfw(float *uullout,float *vvllout,double *Lat,double *Lon,float *xl
    f77name(mxm)(ri, &trois, xyz, &trois, uvcart, &npts);
    f77name(ez_cartauv)(uullout, vvllout, uvcart, Lon, Lat, ni, nj); 
    grtypl[0] = 'L';
-   f77name(ez_llwfgdw)(uullout,vvllout,xloningf,ni,nj,grtypl, &zero, &zero, &zero, &zero, 1);
+   f77name(ez8_llwfgdw)(uullout,vvllout,xloningf,ni,nj,grtypl, &zero, &zero, &zero, &zero, 1);
 
    free(uvcart);
 }

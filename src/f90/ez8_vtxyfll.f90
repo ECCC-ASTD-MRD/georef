@@ -17,7 +17,7 @@
 ! * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ! * Boston, MA 02111-1307, USA.
 ! */
-      subroutine testprojt
+      subroutine ez8_testprojt
 
       implicit none
 
@@ -139,7 +139,7 @@
 
             
          endif
-         lon(i) = mod(mod(lon(i),360.0)+360.0,360.0)
+         lon(i) = mod(mod(lon(i),360.0d0)+360.0,360.0d0)
       enddo
       
       return

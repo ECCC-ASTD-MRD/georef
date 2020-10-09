@@ -37,7 +37,7 @@
       integer i,j,guess,hem,indy
       real tmplat, dellat, dellon, xlat0, xlon0
       real*8 tmplon
-      
+
       dellon = 360.0 / real(ni)
       xlon0 = 0.0
             
@@ -51,11 +51,11 @@
                   tmplon = tmplon + 360.0
             endif
             x(i) = (tmplon - xlon0)/dellon + 1.0
-
+            ! TODO Maude: convert to double
             indy = ez_cherche(xlat(i),lroots,nj)
             if (indy .ge. nj) indy = nj - 1
          
-            y(i)= real(indy)+(xlat(i)-lroots(indy))/(lroots(indy+1)-lroots(indy))
+            y(i)= dble(indy)+(xlat(i)-lroots(indy))/(lroots(indy+1)-lroots(indy))
       enddo
       return
       end
