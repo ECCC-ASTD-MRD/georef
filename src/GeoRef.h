@@ -440,17 +440,17 @@ static inline double GeoRef_GeoDir(TGeoRef* __restrict const Ref,double X, doubl
    return(dir);
 }
 
-void f77name(ez_rgdint_0)();
-void f77name(ez_rgdint_1_w)();
+void f77name(ez8_rgdint_0)();
+void f77name(ez8_rgdint_1_w)();
 void f77name(ez8_rgdint_1_nw)();
-void f77name(ez_rgdint_3_w)();
-void f77name(ez_rgdint_3_nw)();
-void f77name(ez_rgdint_3_wnnc)();
-void f77name(ez_irgdint_1_w)();
+void f77name(ez8_rgdint_3_w)();
+void f77name(ez8_rgdint_3_nw)();
+void f77name(ez8_rgdint_3_wnnc)();
+void f77name(ez8_irgdint_1_w)();
 void f77name(ez8_irgdint_1_nw)();
-void f77name(ez_irgdint_3_w)();
-void f77name(ez_irgdint_3_nw)();
-void f77name(ez_irgdint_3_wnnc)();
+void f77name(ez8_irgdint_3_w)();
+void f77name(ez8_irgdint_3_nw)();
+void f77name(ez8_irgdint_3_wnnc)();
 void f77name(ez8_ll2igd)();
 void f77name(ez8_ll2rgd)();
 void f77name(ez8_llwfgdw)();
