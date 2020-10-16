@@ -80,7 +80,7 @@ typedef struct OGR_Layer {
    OGR_File        *File;                // Layer's file provenance
    OGR_Sort         Sort;                // Sorting parameters
    char            *Select;              // List of features selection flag
-   Coord           *Loc;                 // List of feature's centroid
+   TCoord          *Loc;                 // List of feature's centroid
    Vect3d           Vr[2];               // Layer extent in projected coordinates
    double           Min,Max;             // Layer's min-max of the currently mapped field
    int              Update;              // Do we need to update the internale OGR

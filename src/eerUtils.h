@@ -140,37 +140,8 @@
 #define FMIN(X,Y)                         (X<Y?X:Y)
 #define FMAX(X,Y)                         (X>Y?X:Y)
 #define FWITHIN(DL,LA0,LO0,LA1,LO1,LA,LO) ((LA>=LA0 && LA<=LA1) && (DL<=180?(LO>=LO0 && LO<=LO1):((LO<=LO0 && DL>-180) || (LO>=LO1 && DL<180))))
-
-// Geographical related constants and functions
-//#define EARTHRADIUS          6378140.0                          ///Rayon de la terre en metres
-#define EARTHRADIUS          6371000.0                          // Rayon de la terre en metres (Utilise par RPN)
-
-#define DIST(E,A0,O0,A1,O1)  ((E+EARTHRADIUS)*acos(sin(A0)*sin(A1)+cos(O0-O1)*cos(A0)*cos(A1)))
-#define COURSE(A0,O0,A1,O1)  (fmod(atan2(sin(O0-O1)*cos(A1),cos(A0)*sin(A1)-sin(A0)*cos(A1)*cos(O0-O1)),M_2PI))
-#define RAD2DEG(R)           ((double)(R)*57.295779513082322864647721871734)
-#define DEG2RAD(D)           ((double)(D)*0.017453292519943295474371680598)
-#define M2RAD(M)             ((double)(M)*0.00000015706707756635)
-#define M2DEG(M)             ((double)(M)*8.9992806450057884399546578634955e-06)
-#define RAD2M(R)             ((double)(R)*6.36670701949370745569e+06)
-#define DEG2M(D)             ((double)(D)*1.11119992746859911778451e+05)
-#define CLAMPLAT(LAT)        (LAT=LAT>90.0?90.0:(LAT<-90.0?-90.0:LAT))
-#define CLAMPLON(LON)        (LON=LON>180?LON-360:(LON<-180?LON+360:LON))
-#define CLAMPLONRAD(LON)     (LON=(LON>M_PI?(fmod(LON+M_PI,M_2PI)-M_PI):(LON<=-M_PI?(fmod(LON-M_PI,M_2PI)+M_PI):LON)))
-
-#define COORD_CLEAR(C)       (C.Lat=C.Lon=C.Elev=-999.0)
-
-//Structure pour les coordonees
-typedef struct TGridCoord {
-   float Lat,Lon,I,J;
-} TGridCoord;
-
-typedef struct TGridPoint {
-   float I,J;
-} TGridPoint;
-
-typedef struct TCoord {
-   double Lon,Lat,Elev;
-} TCoord;
+#define RAD2DEG(R)                        ((double)(R)*57.295779513082322864647721871734)                                             ///< Convert radians to degrees
+#define DEG2RAD(D)                        ((double)(D)*0.017453292519943295474371680598)                                              ///< Convert degrees to radians
 
 typedef struct TPoint2D {
   double X;

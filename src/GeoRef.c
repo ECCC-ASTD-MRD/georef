@@ -38,30 +38,31 @@
 #include "RPN.h"
 #include "List.h"
 
-static TList *GeoRef_List=NULL;
-static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;
+static TList *GeoRef_List=NULL;                                     ///< Global list of known geo references
+static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;      ///< Thread lock on geo reference access
 
+/**----------------------------------------------------------------------------
+ * @brief  Apply thread lock on GeoRef access
+ * @author Jean-Philippe Gauthier
+ * @date   February 2008
+*/
 void GeoRef_Lock() {
    pthread_mutex_lock(&GeoRef_Mutex);
 }
+/**----------------------------------------------------------------------------
+ * @brief  Remove thread lock on GeoRef access
+ * @author Jean-Philippe Gauthier
+ * @date   February 2008
+*/
 void GeoRef_Unlock() {
    pthread_mutex_unlock(&GeoRef_Mutex);
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoScan_Clear>
- * Creation     : Fevrier 2008 J.P. Gauthier - CMC/CMOE
- *
- * But          : Reinitialiser le buffer de reprojection
- *
- * Parametres   :
- *  <Scan>      : Buffer de reprojection
- *
- * Retour       :
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
+/**----------------------------------------------------------------------------
+ * @brief  Re-initialise reprojection buffer
+ * @author Jean-Philippe Gauthier
+ * @date   February 2008
+ *    @param[in]  Scan     Reprojection buffer
 */
 void GeoScan_Clear(TGeoScan *Scan) {
 
@@ -78,7 +79,18 @@ void GeoScan_Clear(TGeoScan *Scan) {
    }
 }
 
-void GeoScan_Init(TGeoScan *Scan) {
+/**----------------------------------------------------------------------------
+ * @brief  Initialiser la structure App
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2017
+ *    @param[in]  Type     App type (APP_MASTER=single independent process, APP_THREAD=threaded co-process)
+ *    @param[in]  Name     Application name
+ *    @param[in]  Version  Application version
+ *    @param[in]  Desc     Application description
+ *    @param[in]  Stamp    TimeStamp
+ *
+ *    @return              Parametres de l'application initialisee
+*/void GeoScan_Init(TGeoScan *Scan) {
 
    if (Scan) {
       Scan->X=Scan->Y=NULL;
@@ -88,32 +100,23 @@ void GeoScan_Init(TGeoScan *Scan) {
    }
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoScan_Get>
- * Creation     : Fevrier 2008 J.P. Gauthier - CMC/CMOE
+/**----------------------------------------------------------------------------
+ * @brief  Reproject a stream of coordinates and extracte values
+ * @author Jean-Philippe Gauthier
+ * @date   February 2008
+ *    @param[in]  Scan     Reprojection buffer
+ *    @param[in]  ToRef    Destination geo reference
+ *    @param[in]  ToDef    Destination data definition
+ *    @param[in]  FromRef  Source geo reference   
+ *    @param[in]  FromDef  Destination data definition  
+ *    @param[in]  X0       Lower x limit
+ *    @param[in]  Y0       Lower y limiy
+ *    @param[in]  X1       Higher x limit
+ *    @param[in]  Y1       Higher y limit
+ *    @param[in]  Dim      Grid cell dimension (1=point, 2=area)
+ *    @param[in]  Degree   Interpolation degree 
  *
- * But          : Reprojeter et extraire les valeurs a ces points
- *
- * Parametres   :
- *  <Scan>      : Buffer de reprojection
- *  <ToRef>     : Georeference destination
- *  <ToDef>     : Data definition destination
- *  <FromRef>   : Georeference source
- *  <FromDef>   : Data definition source
- *  <X0>        : Limite inferieure en X
- *  <Y0>        : Limite inferieure en Y
- *  <X1>        : Limite superieure en X
- *  <Y1>        : Limite superieure en Y
- *  <Dim>       : Dimension dee cellules de grilles (1=point, 2=area)
- *  <Degree>    : Interpolation degree
- *  <To>        : Georeference destination
- *  <From>      : Georeference source
- *
- * Retour       : Dimension des resultats
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
+ *    @return              Size of results
 */
 int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int X0,int Y0,int X1,int Y1,int Dim,TDef_InterpR Degree) {
 
@@ -439,153 +442,17 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
    return(d);
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoFunc_RadialPointRatio>
- * Creation     : Fevrier 2008 J.P. Gauthier - CMC/CMOE
- *
- * But          : Interpoler la position d'un point sur un grand cercle
- *
- * Parametres   :
- *  <C1>        : Coordonne du premier point
- *  <C2>        : Coordonne du deuxieme point
- *  <C3>        : Coordonne du point a localier sur le grand cercle
- *
- * Retour       : Ratio de distance
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-double GeoFunc_RadialPointRatio(Coord C1,Coord C2,Coord C3) {
-
-   Coord cr;
-   double d0,d1,d2;
-
-   GeoFunc_RadialPointOn(C1,C2,C3,&cr);
-
-   d0=DIST(0,C1.Lat,C1.Lon,C2.Lat,C2.Lon);
-   d1=DIST(0,C1.Lat,C1.Lon,cr.Lat,cr.Lon);
-   d2=DIST(0,C2.Lat,C2.Lon,cr.Lat,cr.Lon);
-
-   if(d2>d0) {
-      return(-(d2-d0)/d0);
-   } else {
-      return(d1/d0);
-   }
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoFunc_RadialPointOn>
- * Creation     : Fevrier 2008 J.P. Gauthier - CMC/CMOE
- *
- * But          : Calculer le point d'intersection en tracant un angle droit d'un point sur un grand cercle
- *
- * Parametres   :
- *  <C1>        : Coordonne du premier point
- *  <C2>        : Coordonne du deuxieme point
- *  <C3>        : Coordonne du point a localier sur le grand cercle
- *  <CR>        : Coordonne du point localise
- *
- * Retour       : Intersection existe
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-int GeoFunc_RadialPointOn(Coord C1,Coord C2,Coord C3,Coord *CR) {
-
-   double crs12,crs13,crs3x;
-
-   /*Calculates 90 degree course crossing*/
-   crs12=COURSE(C1.Lat,C1.Lon,C2.Lat,C2.Lon);
-   crs13=COURSE(C1.Lat,C1.Lon,C3.Lat,C3.Lon);
-   crs3x=crs13>crs12?crs12-M_PI2:crs12+M_PI2;
-
-   return(GeoFunc_RadialIntersect(C1,C3,crs12,crs3x,CR));
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoFunc_RadialIntersect>
- * Creation     : Fevrier 2008 J.P. Gauthier - CMC/CMOE
- *
- * But          : Calculer le point d'intersection de deux grand cercle
- *
- * Parametres   :
- *  <C1>        : Coordonne du premier point
- *  <C2>        : Coordonne du deuxieme point
- *  <CRS13>     : Direction entre le premier et le troisieme point
- *  <CRS23>     : Direction entre le deuxieme et troisieme point
- *  <C3>        : Point d'intersection
- *
- * Retour       : Intersection existe
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-int GeoFunc_RadialIntersect(Coord C1,Coord C2,double CRS13,double CRS23,Coord *C3) {
-
-   double dst13,dst12,crs12,crs21,ang1,ang2,ang3;
-
-   Coord sinc2,cosc2,sinc1,cosc1;
-
-   sinc1.Lat=sin(C1.Lat);sinc1.Lon=sin(C1.Lon);
-   cosc1.Lat=cos(C1.Lat);cosc1.Lon=cos(C1.Lon);
-   sinc2.Lat=sin(C2.Lat);sinc2.Lon=sin(C2.Lon);
-   cosc2.Lat=cos(C2.Lat);cosc2.Lon=cos(C2.Lon);
-
-   dst12=2*asin(sqrt(pow((sin((C1.Lat-C2.Lat)/2)),2) + cosc1.Lat*cosc2.Lat*pow(sin((C1.Lon-C2.Lon)/2),2)));
-
-   if (sin(C2.Lon-C1.Lon)<0) {
-      crs12=acos((sinc2.Lat-sinc1.Lat*cos(dst12))/(sin(dst12)*cosc1.Lat));
-   } else {
-      crs12=2.0*M_PI-acos((sinc2.Lat-sinc1.Lat*cos(dst12))/(sin(dst12)*cosc1.Lat));
-   }
-
-   if (sin(C1.Lon-C2.Lon)<0) {
-      crs21=acos((sinc1.Lat-sinc2.Lat*cos(dst12))/(sin(dst12)*cosc2.Lat));
-   } else {
-      crs21=M_2PI-acos((sinc1.Lat-sinc2.Lat*cos(dst12))/(sin(dst12)*cosc2.Lat));
-   }
-
-   ang1=fmod(CRS13-crs12+M_PI,M_2PI)-M_PI;
-   ang2=fmod(crs21-CRS23+M_PI,M_2PI)-M_PI;
-
-   if (sin(ang1)*sin(ang2)<=sqrt(10e-15)) {
-      /*No intersection*/
-      return(0);
-   } else {
-      ang1=fabs(ang1);
-      ang2=fabs(ang2);
-      ang3=acos(-cos(ang1)*cos(ang2)+sin(ang1)*sin(ang2)*cos(dst12));
-      dst13=asin(sin(ang2)*sin(dst12)/sin(ang3));
-      C3->Lat=asin(sinc1.Lat*cos(dst13)+cosc1.Lat*sin(dst13)*cos(CRS13));
-      C3->Lon=fmod(C1.Lon-asin(sin(CRS13)*sin(dst13)/cos(C3->Lat))+M_PI,M_2PI)-M_PI;
-   }
-
-   return(1);
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_Size>
- * Creation     : Juillet 2005 J.P. Gauthier
- *
- * But          : Initialiser les limites d'un georef.
- *
- * Parametres   :
- *   <Ref>      : Pointeur sur la reference geographique
- *   <X0>       : Coordonnee X minimale
- *   <Y0>       : Coordonnee Y minimale
- *   <X1>       : Coordonnee X maximale
- *   <Y1>       : Coordonnee Y maximale
- *   <BD>       : Bordure
- *
- * Retour       : Code de retour standard TCL
- *
- * Remarques :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
+/**----------------------------------------------------------------------------
+ * @brief  Initialise the georeference grid limits
+ * @author Jean-Philippe Gauthier
+ * @date   July 2005
+ *    @param[in]  Ref   Pointer to geo reference
+ *    @param[in]  X0    X lower limit
+ *    @param[in]  Y0    Y lower limit
+ *    @param[in]  X1    X higher limit
+ *    @param[in]  Y0    Y higher limit
+ *    @param[in]  BD    Border width
+ */
 void GeoRef_Size(TGeoRef *Ref,int X0,int Y0,int X1,int Y1,int BD) {
 
    Ref->X0=X0;
@@ -597,21 +464,15 @@ void GeoRef_Size(TGeoRef *Ref,int X0,int Y0,int X1,int Y1,int BD) {
    Ref->NY=Y1-Y0+1;
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_Free>
- * Creation     : Juillet 2005 J.P. Gauthier
+/**----------------------------------------------------------------------------
+ * @brief  Free the geo reference resources
+ * @author Jean-Philippe Gauthier
+ * @date   July 2005
+ *    @param[in]  Ref   Pointer to geo reference
  *
- * But          : Liberer les resources alloeur par un georef.
- *
- * Parametres   :
- *   <Ref>      : Pointeur sur la reference geographique
- *
- * Retour       : Code de retour standard TCL
- *
- * Remarques :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
+ *    @return           Freed code (0=not freed, 1=freed)
+ * 
+ */
 int GeoRef_Free(TGeoRef *Ref) {
 
   if (!Ref)
@@ -637,6 +498,14 @@ int GeoRef_Free(TGeoRef *Ref) {
    return(1);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Increment reference count
+ * @author Jean-Philippe Gauthier
+ * @date   July 2005
+ *    @param[in]  Ref   Pointer to geo reference
+ *
+ *    @return           New reference count
+*/
 int GeoRef_Incr(TGeoRef *Ref) {
 
    if (Ref) {
@@ -646,21 +515,12 @@ int GeoRef_Incr(TGeoRef *Ref) {
    }
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_Clear>
- * Creation     : Mars 2005 J.P. Gauthier - CMC/CMOE
- *
- * But          : Liberer une structure de projection WKT.
- *
- * Parametres  :
- *   <Ref>     : Pointeur sur la reference geographique
- *   <New>     : Nouveau georef
- *
- * Retour       : Un code d'erreur Tcl standard.
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
+/**----------------------------------------------------------------------------
+ * @brief  Initialiser la structure App
+ * @author Jean-Philippe Gauthier
+ * @date   July 2005
+ *    @param[in]  Ref   Pointer to geo reference
+ *    @param[in]  New   Clear the name associated
 */
 void GeoRef_Clear(TGeoRef *Ref,int New) {
 
@@ -747,9 +607,15 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
    }
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Define qualifying flags for the geo refrence
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2015
+ *    @param[in]  Ref   Pointer to geo reference
+ */
 void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
 
-   Coord  co[2];
+   TCoord co[2];
    double d[2];
    int    x;
 
@@ -833,6 +699,15 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
    }
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Test two GeoRef for equality
+ * @author Jean-Philippe Gauthier
+ * @date   July 2005
+ *    @param[in]  Ref0    First geo reference
+ *    @param[in]  Ref1    Second geo reference
+ *
+ *    @return             Equality (1=True 0=False)
+*/
 int GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) {
 
    if (!Ref0 || !Ref1) {
@@ -886,12 +761,28 @@ int GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) 
    return(1);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Copy a GeoRef only by incrementing the reference count
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2015
+ *    @param[in]  Ref     Pointeur sur la reference
+ *
+ *    @return             Pointeur sur la copie de la reference
+*/
 TGeoRef *GeoRef_Copy(TGeoRef* __restrict const Ref) {
 
    GeoRef_Incr(Ref);
    return(Ref);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Create e new GeoRef but link it to an already existing GeoRef
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2015
+ *    @param[in]  Ref     Pointeur sur la reference
+ *
+ *    @return             Pointeur sur la copie de la reference
+*/
 TGeoRef *GeoRef_Reference(TGeoRef* __restrict const Ref) {
 
    TGeoRef *ref;
@@ -917,6 +808,14 @@ TGeoRef *GeoRef_Reference(TGeoRef* __restrict const Ref) {
    return(ref);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Make a hard(real) copy of the GeoRef structure, not just a reference count increment
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2015
+ *    @param[in]  Ref     Pointeur sur la reference
+ *
+ *    @return             Pointeur sur la copie de la reference
+*/
 TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
 
    TGeoRef *ref;
@@ -967,6 +866,16 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
    return(ref);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Resize a geo reference
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2015
+ *    @param[in]  Ref     Pointeur sur la reference
+ *    @param[in]  NI      New x size
+ *    @param[in]  NJ      New y size
+ *
+ *    @return             Pointer to the new geo reference
+*/
 TGeoRef *GeoRef_Resize(TGeoRef* __restrict const Ref,int NI,int NJ) {
 
    TGeoRef *ref;
@@ -1016,7 +925,15 @@ int GeoRef_UnProject(TGeoRef* __restrict const Ref,double *X,double *Y,double La
    return(1);
 }
 
- TGeoRef* GeoRef_Add(TGeoRef *Ref) {
+/**----------------------------------------------------------------------------
+ * @brief  Add a geo reference to the list of known geo reference
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2019
+ *    @param[in]  Ref     Pointeur sur la reference
+ *
+ *    @return             Pointer to the new head of the list
+*/
+TGeoRef* GeoRef_Add(TGeoRef *Ref) {
 
    TList *head;
 
@@ -1027,8 +944,16 @@ int GeoRef_UnProject(TGeoRef* __restrict const Ref,double *X,double *Y,double La
    GeoRef_Unlock();
 
    return((TGeoRef*)(head?head->Data:NULL));
- }
+}
 
+/**----------------------------------------------------------------------------
+ * @brief  Find a geo reference
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2015
+ *    @param[in]  Ref     Pointeur sur la reference
+ *
+ *    @return             Pointer to found geo reference (NULL if not found)
+*/
 TGeoRef* GeoRef_Find(TGeoRef *Ref) {
 
    TList *item;
@@ -1043,6 +968,13 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
    return(NULL);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Create new geo reference
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2015
+ *
+ *    @return              New geo reference pointer
+*/
 TGeoRef* GeoRef_New() {
 
    TGeoRef *ref=malloc(sizeof(TGeoRef));
@@ -1122,20 +1054,13 @@ TGeoRef* GeoRef_New() {
    return(ref);
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_BuildIndex>
- * Creation     : Janvier 2016 J.P. Gauthier - CMC/CMOE
+/**----------------------------------------------------------------------------
+ * @brief  Create spatial index
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2016
+ *    @param[in]  Ref     Pointeur sur la reference
  *
- * But          : Creer un index spatial (QTree)
- *
- * Parametres   :
- *   <Ref>      : Pointeur sur la reference geographique
- *
- * Retour       : Quad tree index
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
+ *    @return             Quad tree spatial index
 */
 TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
 
@@ -1230,27 +1155,19 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
    return(Ref->QTree);
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_Nearest>
- * Creation     : Janvier 2015 J.P. Gauthier - CMC/CMOE
+/**----------------------------------------------------------------------------
+ * @brief  Find closest point(s) to a grid position
+ * @author Jean-Philippe Gauthier
+ * @date   Janvier 2015
+ *    @param[in]  Ref     Pointeur sur la reference
+ *    @param[in]  X       X coordinate
+ *    @param[in]  Y       Y coordinate
+ *    @param[out] Idxs    Pointer to neighbors index found
+ *    @param[out] Dists   Squared distances from the neighbors found
+ *    @param[in]  NbNear  Number of nearest neighbors to find
+ *    @param[in]  MaxDist Maximum distance to find (0.0 = don't care)
  *
- * But          : Trouver le(s) point(s) de grille les plus proches.
- *
- * Parametres :
- *   <Ref>    : Pointeur sur la reference geographique
- *   <X>      : X Position
- *   <Y>      : Y Position
- *   <Idxs>   : Pointer to neighbors index found
- *   <Dists>  : Squared distances from the neighbors found
- *   <NbNear> : Number of nearest neighbors to find
- *   <MaxDist>: Maximum distance to find (0.0 = don't care)
- *
- * Retour     :
- *   <nbnear> : Nombre de points trouvé trié du plus près vers le plus loin
- *
- * Remarques  :
- *
- *---------------------------------------------------------------------------------------------------------------
+ *    @return             Nombre de points trouvé trié du plus près vers le plus loin
 */
 int GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,double *Dists,int NbNear,double MaxDist) {
 
@@ -1381,24 +1298,19 @@ int GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,dou
    return(nnear>NbNear?NbNear:nnear);
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_Intersect>
- * Creation     : Aout 2006 J.P. Gauthier - CMC/CMOE
+/**----------------------------------------------------------------------------
+ * @brief  Check for intersection of 2 gep reference
+ * @author Jean-Philippe Gauthier
+ * @date   Aout 2006 
+ *    @param[in]  Ref0     Pointeur sur la reference 0
+ *    @param[in]  Ref1     Pointeur sur la reference 1
+ *    @param[out] X0       First x corner limit of Ref1 in Ref0
+ *    @param[out] Y0       First y corner limit of Ref1 in Ref0
+ *    @param[out] X1       Second x corner limit of Ref1 in Ref0
+ *    @param[out] Y1       Second y corner limit of Ref1 in Ref0
+ *    @param[in]  BD       Include border flag
  *
- * But          : Verifier l'intersection de deux georeference, Ref0 dans Ref1.
- *
- * Parametres  :
- *   <Ref0>     : Pointeur sur la reference geographique 1
- *   <Ref1>     : Pointeur sur la reference geographique 2
- *   <X0,Y0,...>: Limites dans le Ref 1 du Ref 0
- *   <BD>       : Include border
- *
- * Retour       :
- *   <Inter>    : Booleen indiquant l'intersection
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
+ *    @return              Intersection (True or False)
 */
 int GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1,int *X0,int *Y0,int *X1,int *Y1,int BD) {
 
@@ -1512,25 +1424,17 @@ int GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Re
    return(in);
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_Limits>
- * Creation     : Aout 2006 J.P. Gauthier - CMC/CMOE
+/**----------------------------------------------------------------------------
+ * @brief  Calculates geographical limits of a geo reference
+ * @author Jean-Philippe Gauthier
+ * @date   Aout 2006
+ *    @param[in]  Ref      Pointeur sur la reference
+ *    @param[out] Lat0     Latitude of first corner
+ *    @param[out] Lon0     Longitude of first corner
+ *    @param[out] Lat1     Latitude of second corner
+ *    @param[out] Lon1     Longitude of second corner
  *
- * But          : Calculer les limites en latlon de la couverture d'une georeference.
- *
- * Parametres  :
- *   <Ref>     : Pointeur sur la reference geographique
- *   <Lat0>    : Latitude inferieure
- *   <Lon0>    : Longitude inferieure
- *   <Lat1>    : Latitude superieure
- *   <Lon1>    : Longitude superieure
- *
- * Retour       :
- *   <valid>    : Booleen indiquant la validite
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
+ *    @return              Error code
 */
 int GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1) {
 
@@ -1593,6 +1497,15 @@ int GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double
    return(1);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Check if a georef is within another
+ * @author Jean-Philippe Gauthier
+ * @date   February 2009
+ *    @param[in]  Ref0     Pointeur sur la reference inclusive
+ *    @param[in]  Ref1     Pointeur sur la reference a tester
+  *
+ *    @return              True or False
+*/
 int GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) {
 
    double lat,lon,di,dj;
@@ -1630,7 +1543,20 @@ int GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1)
    }
    return(1);
 }
-
+                    
+/**----------------------------------------------------------------------------
+ * @brief  Check if a geographic range is within a georef
+ * @author Jean-Philippe Gauthier
+ * @date   February 2009
+ *    @param[in]  Ref      Pointeur sur la reference
+ *    @param[in]  Lat0     Latitude of first corner
+ *    @param[in]  Lon0     Longitude of first corner
+ *    @param[in]  Lat1     Latitude of second corner
+ *    @param[in]  Lon1     Longitude of second corner
+ *    @param[in]  In       Check ofr inside or outside
+ * 
+ *    @return              True or False
+*/
 int GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,int In) {
 
    double lat[4],lon[4],dl;
@@ -1728,6 +1654,22 @@ int GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int Idx0,int Idx1,int
    return(0);
 }
                      
+/**----------------------------------------------------------------------------
+ * @brief  Project a latlon geographic bounding box into grid coordinates
+ * @author Jean-Philippe Gauthier
+ * @date   February 2009
+ *    @param[in]  Ref      Pointeur sur la reference
+ *    @param[in]  Lat0     Latitude of first corner
+ *    @param[in]  Lon0     Longitude of first corner
+ *    @param[in]  Lat1     Latitude of second corner
+ *    @param[in]  Lon1     Longitude of second corner
+ *    @param[out] I0       X coordinate of first corner
+ *    @param[out] J0       Y coordinate of first corner
+ *    @param[out] I1       X coordinate of seconf corner
+ *    @param[out] J1       Y coordinate of second corner
+ *
+ *    @return              Error code
+*/
 int GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,double *I0,double *J0,double *I1,double *J1) {
 
    double di,dj;
@@ -1778,25 +1720,18 @@ int GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,dou
    return(1);
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_Valid>
- * Creation     : Fevrier 2009. Gauthier - CMC/CMOE
+/**----------------------------------------------------------------------------
+ * @brief  Verifier la validite d'une georeference
+ * @remark On projete la bounding box et si les latitudes sont en dehors de -90,90 alors c'est pas bon
+ * @author Jean-Philippe Gauthier
+ * @date   Fevrier 2009
+ *    @param[in]  Ref      Pointeur sur la reference
  *
- * But          : Verifier la validite d'une georeference.
- *
- * Parametres  :
- *   <Ref>      : Pointeur sur la reference
- *
- * Retour       :
- *   <valid>    : Booleen indiquant la validite
- *
- * Remarques   :
- *    - On projete la bounding box et si les latitudes sont en dehors de -90 90 alors c'est pas bon
- *---------------------------------------------------------------------------------------------------------------
+ *    @return              Booleen indiquant la validite
 */
 int GeoRef_Valid(TGeoRef* __restrict const Ref) {
 
-   Coord co[2];
+   TCoord co[2];
 
    if (!Ref) return(0);
    
@@ -1809,23 +1744,15 @@ int GeoRef_Valid(TGeoRef* __restrict const Ref) {
    return(1);
 }
 
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_Positional>
- * Creation     : Mars 2010 J.P. Gauthier - CMC/CMOE
+/**----------------------------------------------------------------------------
+ * @brief  Assigner des vecteurs de positions X et Y
+ * @author Jean-Philippe Gauthier
+ * @date   Mars 2010 
+ *    @param[in]  Ref      Pointeur sur la reference
+ *    @param[in]  XDef     Data definition des positions en X
+ *    @param[in]  YDef     Data definition des positions en X
  *
- * But          : Assigner des vecteurs de positions X et Y
- *
- * Parametres   :
- *   <Ref>      : Pointeur sur la reference
- *   <XDef>     : Data definition des positions en X
- *   <YDef>     : Data definition des positions en Y
- *
- * Retour       : Dimension des resultats
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
+ *    @return              Dimension des resultats
 */
 int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
 
@@ -1909,22 +1836,15 @@ int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
    return(1);
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_Coords>
- * Creation     : June 2015 J.P. Gauthier - CMC/CMOE
- *
- * But          : Calculer la position latlon de tous les points de grille.
- *
- * Parametres    :
- *   <Ref>       : Pointeur sur la reference geographique
- *   <Lat>       : Latitude array
- *   <Lon>       : Longitude array
- *
- * Retour       : Number of coordinates
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
+/**----------------------------------------------------------------------------
+ * @brief  Calculer la position latlon de tous les points de grille.
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Pointeur sur la reference geographique
+ *    @param[out] Lat     Latitude array
+ *    @param[out] Lon     Longitude array
+ 
+ *    @return             Number of coordinates
 */
 int GeoRef_Coords(TGeoRef *Ref,double *Lat,double *Lon) {
 
@@ -1957,27 +1877,19 @@ int GeoRef_Coords(TGeoRef *Ref,double *Lat,double *Lon) {
 #endif
 }
 
-
-/*----------------------------------------------------------------------------
- * Nom      : <GeoRef_CellDims>
- * Creation : Avril 2010 - J.P. Gauthier - CMC/CMOE
+/**----------------------------------------------------------------------------
+ * @brief  Obtenir les valeurs de distance en X et Y ainsi que l'aire
+ *         pour chaque cellule de la grille
+ * @remark Si un des tableau est NULL, il ne sera pas remplie
+ * @author Jean-Philippe Gauthier
+ * @date   Avril 2010 
+ *    @param[in]  Grid     Grille
+ *    @param[in]  Invert   Invert (1/area)
+ *    @param[out] DX       Valeurs de distance en X
+ *    @param[out] DY       Valeurs de distance en y
+ *    @param[out] DA       Valeurs de l'aire
  *
- * But      : Obtenir les valeurs de distance en X et Y ainsi que l'aire
- *            pour chaque cellule de la grille
- *
- * Parametres :
- *   <Grid>       : Grille
- *   <Invert>     : Invert (1/area)
- *   <DX>         : Valeurs de distance en X
- *   <DY>         : Valeurs de distance en Y
- *   <DA>         : Valeurs de l'aire
- *
- * Retour:
- *   <int>       : Code d'erreur (0=erreur, 1=ok)
- *
- * Remarques :
- *    - Si un des tableau est NULL, il ne sera pas remplie
- *----------------------------------------------------------------------------
+ *    @return              Code d'erreur (0=erreur, 1=ok)
 */
 int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
 

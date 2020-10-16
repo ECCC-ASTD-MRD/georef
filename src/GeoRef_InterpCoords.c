@@ -59,7 +59,7 @@ void  c_ezgfllfxy2(double *Lat,double *Lon,wordint *npts,float *xlat1,float *xlo
 
 int GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
 
-   Coord loc0;
+   TCoord loc0;
    double x,y,d;
    int    n;
 
@@ -414,9 +414,9 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
 
 int GeoRef_LL2XY_R(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
-   Coord  loc0;
-   double x,d,lat,lon;
-   int    n;
+   TCoord  loc0;
+   double  x,d,lat,lon;
+   int     n;
 
    for(n=0;n<Nb;n++) {
       loc0.Lat=DEG2RAD(Ref->Loc.Lat);

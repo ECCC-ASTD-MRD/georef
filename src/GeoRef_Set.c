@@ -36,7 +36,7 @@ void GeoRef_SetZoneFree(TGridSet *GSet) {
 
   int i;
 
-  for (i=0; i < NZONES; i++) {
+  for (i=0; i < SET_NZONES; i++) {
      if (GSet->zones[i].npts > 0) {
         free(GSet->zones[i].idx);
         free(GSet->zones[i].x);
@@ -222,7 +222,7 @@ int GeoRef_SetZoneDefine(TGeoRef *RefTo,TGeoRef *RefFrom) {
          break;
    }
   
-   for (i=0; i < NZONES; i++) {
+   for (i=0; i < SET_NZONES; i++) {
       gset->zones[i].npts = 0;
    }
   
@@ -444,7 +444,7 @@ TGridSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom) {
    }
 
    if (!RefTo->Sets) {
-      RefTo->Sets=(TGridSet*)calloc(sizeof(TGridSet),MAXSETS);
+      RefTo->Sets=(TGridSet*)calloc(sizeof(TGridSet),SET_MAX);
    }
 
    // Check for last set (most cases)
@@ -452,7 +452,7 @@ TGridSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom) {
       return(RefTo->LastSet);
    }
 
-   if (RefTo->NbSet>=MAXSETS) {
+   if (RefTo->NbSet>=SET_MAX) {
       for (i=0; i< RefTo->NbSet; i++) {
          if (RefTo->Sets[i].RefFrom!=NULL) {
             GeoRef_SetFree(&RefTo->Sets[i]);

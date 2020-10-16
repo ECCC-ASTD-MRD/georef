@@ -1133,7 +1133,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
    int      fld=-1,pi,pj;
    char     mode,type;
    float   *ip=NULL;
-   Coord    co;
+   TCoord   co;
    Vect3d   vr;
 
    OGRSpatialReferenceH          srs=NULL;

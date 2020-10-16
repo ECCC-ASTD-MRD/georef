@@ -56,14 +56,29 @@
 #include "ogr_stub.h"
 #endif
 
+// Geographical related constants and functions
+//#define EARTHRADIUS          6378140.0                                                                                   ///< Rayon de la terre en metres
+#define EARTHRADIUS          6371000.0                                                                                   ///< Rayon de la terre en metres (Utilise par RPN)
+
+#define DIST(E,A0,O0,A1,O1)  ((E+EARTHRADIUS)*acos(sin(A0)*sin(A1)+cos(O0-O1)*cos(A0)*cos(A1)))                          ///< Calculates great circle distance on earth at a specific elevation between tow set of coordinates (in radian)
+#define COURSE(A0,O0,A1,O1)  (fmod(atan2(sin(O0-O1)*cos(A1),cos(A0)*sin(A1)-sin(A0)*cos(A1)*cos(O0-O1)),M_2PI))          ///< Calculates true course between 2 set of coordinates (in radian)
+#define M2RAD(M)             ((double)(M)*0.00000015706707756635)                                                        ///< Convert meters to radians
+#define M2DEG(M)             ((double)(M)*8.9992806450057884399546578634955e-06)                                         ///< Convert meters to degrees
+#define RAD2M(R)             ((double)(R)*6.36670701949370745569e+06)                                                    ///< Convert radians to meters
+#define DEG2M(D)             ((double)(D)*1.11119992746859911778451e+05)                                                 ///< Convert degrees to meters
+#define CLAMPLAT(LAT)        (LAT=LAT>90.0?90.0:(LAT<-90.0?-90.0:LAT))                                                   ///< Clamp latitude between -90 and 90
+#define CLAMPLON(LON)        (LON=LON>180?LON-360:(LON<-180?LON+360:LON))                                                ///< Clamp longitude between -180 and 180
+#define CLAMPLONRAD(LON)     (LON=(LON>M_PI?(fmod(LON+M_PI,M_2PI)-M_PI):(LON<=-M_PI?(fmod(LON-M_PI,M_2PI)+M_PI):LON)))   ///< Clamp longitude in radians -PI and PI
+#define COORD_CLEAR(C)       (C.Lat=C.Lon=C.Elev=-999.0)                                                                 ///< Clear the coordinates values to -999 (undefined)
+
 #define BITPOS(i)     (i - ((i >> 5) << 5))
 #define GETMSK(fld,i) ((fld[i >> 5]  & (1 << BITPOS(i))) >> BITPOS(i))
 #define SETMSK(fld,i) (fld[i >> 5] | (fld[i] << BITPOS(i)))
 
-#define SET_ZONES   0x1
-#define SET_YYXY    0x4
-#define NZONES      5
-#define MAXSETS     256
+#define SET_ZONES   0x1          ///< Flag for set zone definitions
+#define SET_YYXY    0x4          ///< Flag for set YinYang calculations
+#define SET_NZONES  5            ///< Number of zone per set
+#define SET_MAX     256          ///< Maximum number of sets
 
 #define GLOBAL     0
 #define OUTSIDE    0
@@ -75,7 +90,7 @@
 #define ABSOLUTE 0
 #define RELATIVE 1
 
-#define GRID_NONE     0x0
+#define GRID_NONE     0x0        ///< No flags defined
 #define GRID_REGULAR  0x1        ///< Regular grid
 #define GRID_VARIABLE 0x2        ///< Variable grid resolution
 #define GRID_WRAP     0x4        ///< Wrap around globe
@@ -193,13 +208,22 @@ typedef enum {
 #define GeoRef_Lon(R,L) (((L)>180 && R->Type&GRID_NEGLON)?(L)-360.0:((L)<0 && !(R->Type&GRID_NEGLON))?(L)+360.0:(L))
 
 // Structure pour les coordonees latlon
-typedef struct Coord {
+//Structure pour les coordonees
+typedef struct TCoord {
    double Lon,Lat,Elev;
-} Coord;
+} TCoord;
+
+typedef struct TGridCoord {
+   float Lat,Lon,I,J;
+} TGridCoord;
+
+typedef struct TGridPoint {
+   float I,J;
+} TGridPoint;
 
 typedef union {
    Vect3d V;
-   Coord  C;
+   TCoord C;
 } GeoVect;
 
 struct TZRef;
@@ -243,7 +267,7 @@ typedef struct {
 
 typedef struct {
    struct TGeoRef* RefFrom;
-   TGeoZone zones[NZONES];
+   TGeoZone zones[SET_NZONES];
    int flags;
    double *x, *y;
    int *mask_in, *mask_out;
@@ -291,7 +315,7 @@ typedef struct TGeoRef {
    OGRCoordinateTransformationH  Function,InvFunction;    ///< Projection functions
    OGRSpatialReferenceH          Spatial;                 ///< Spatial reference
 
-   Coord  Loc;                                            ///< (Radar) Localisation du centre de reference
+   TCoord  Loc;                                           ///< (Radar) Localisation du centre de reference
    double CTH,STH;                                        ///< (Radar) sin and cos of sweep angle
    double ResR,ResA;                                      ///< (Radar) Resolutions en distance et azimuth
    int    R;                                              ///< (Radar) Rayon autour du centre de reference en bin
@@ -419,9 +443,9 @@ void GeoScan_Init(TGeoScan *Scan);
 void GeoScan_Clear(TGeoScan *Scan);
 int  GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,struct TDef *ToDef,TGeoRef *FromRef,struct TDef *FromDef,int X0,int Y0,int X1,int Y1,int Dim,TDef_InterpR Degree);
 
-double GeoFunc_RadialPointRatio(Coord C1,Coord C2,Coord C3);
-int    GeoFunc_RadialPointOn(Coord C1,Coord C2,Coord C3,Coord *CR);
-int    GeoFunc_RadialIntersect(Coord C1,Coord C2,double CRS13,double CRS23,Coord *C3);
+double GeoFunc_RadialPointRatio(TCoord C1,TCoord C2,TCoord C3);
+int    GeoFunc_RadialPointOn(TCoord C1,TCoord C2,TCoord C3,TCoord *CR);
+int    GeoFunc_RadialIntersect(TCoord C1,TCoord C2,double CRS13,double CRS23,TCoord *C3);
 
 static inline double GeoRef_GeoDir(TGeoRef* __restrict const Ref,double X, double Y) {
    

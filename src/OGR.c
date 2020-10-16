@@ -112,7 +112,7 @@ void OGM_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
 
    OGRGeometryH geom;
    Vect3d       vr;
-   Coord        co;
+   TCoord       co;
    int          n;
 
    if (FromRef!=ToRef) {
