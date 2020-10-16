@@ -23,7 +23,8 @@
       subroutine ez8_gdwfllw(z1,z2,xlon,li,lj,grtyp,ig1,ig2,ig3,ig4)
       implicit none
       integer li,lj
-      real*8 z1(li,lj), z2(li,lj), xlon(li,lj)
+      real z1(li,lj), z2(li,lj)
+      real*8 xlon(li,lj)
       character*1 grtyp
       integer ig1,ig2,ig3,ig4
 

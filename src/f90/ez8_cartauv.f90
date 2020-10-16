@@ -23,7 +23,8 @@
       SUBROUTINE ez8_CARTAUV(U, V, UVCART, LON, LAT, NI, NJ)
       implicit none
       INTEGER NI, NJ 
-      REAL*8    UVCART(3,NI*NJ), U(NI,NJ), V(NI,NJ), LON(NI,nj), LAT(ni,NJ)
+      REAL    U(NI,NJ), V(NI,NJ)
+      REAL*8  UVCART(3,NI*NJ), LON(NI,nj), LAT(ni,NJ)
 !
 !author michel roch - april 90
 !

@@ -171,7 +171,7 @@ extern int  f77name(fstunl)      (int *list,int *size);
 extern int  f77name(hyb_to_pres) (ftnfloat *pres,ftnfloat *hyb,ftnfloat *ptop,ftnfloat *rcoef,ftnfloat *pref,int *kind,ftnfloat *ps,int *NI,int *NJ,int *NK);
 extern void f77name(grll)        (ftnfloat *xlat,ftnfloat *xlon,int *ni,int *nj,ftnfloat *xla0,ftnfloat *xlon0,ftnfloat *dla0,ftnfloat *dlon0);
 extern void f77name(grps)        (ftnfloat *xlat,ftnfloat *xlon,int *ni,int *nj,ftnfloat *pi,ftnfloat *pj,ftnfloat *d60,ftnfloat *dgrw,int *hem);
-extern void f77name(mxm)         (ftnfloat *a,int *nar,ftnfloat *b,int *nac,ftnfloat *c,int *nbc);
+extern void f77name(ez_mxm)      (ftnfloat *a,int *nar,ftnfloat *b,int *nac,ftnfloat *c,int *nbc);
 
 // RPN 1d interpolation functions
 extern void f77name (interp1d_findpos) ();

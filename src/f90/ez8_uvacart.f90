@@ -24,7 +24,8 @@
       SUBROUTINE EZ8_UVACART( XYZ, U, V, LON, LAT, NI, NJ)
       implicit none
       INTEGER NI, NJ 
-      REAL*8  U(NI,NJ), V(NI,NJ), XYZ(3,NI*NJ), LON(NI,NJ), LAT(NI,NJ)
+      REAL  U(NI,NJ), V(NI,NJ)
+      REAL*8  XYZ(3,NI*NJ), LON(NI,NJ), LAT(NI,NJ)
 !
 !author michel roch - april 90
 !
