@@ -62,17 +62,17 @@ int ez_corrval_aunord(float *zout, float *zin, TGeoRef *RefFrom, TGeoRef *RefTo)
                      ay[1] = RefFrom->AY[RefFrom->j2-3];
                      ay[2] = RefFrom->AY[RefFrom->j2-2];
                      ay[3] = RefFrom->AY[RefFrom->j2-1];
-                     f77name(ez_irgdint_3_wnnc)(vals,gset->zones[NORTH].x, gset->zones[NORTH].y,&npts,RefFrom->AX, ay, temp,&ni, &j1, &j2, &(RefFrom->Extension));
+                     f77name(ez8_irgdint_3_wnnc)(vals,gset->zones[NORTH].x, gset->zones[NORTH].y,&npts,RefFrom->AX, ay, temp,&ni, &j1, &j2, &(RefFrom->Extension));
                   } else {
                      ay[0] = RefFrom->AY[RefFrom->j2-3];
                      ay[1] = RefFrom->AY[RefFrom->j2-2];
                      ay[2] = RefFrom->AY[RefFrom->j2-1];
                      ay[3] = 90.0;
-                     f77name(ez_irgdint_3_wnnc)(vals,gset->zones[NORTH].x,gset->zones[NORTH].y,&npts,RefFrom->AX, ay, temp,&ni, &j1, &j2, &(RefFrom->Extension));
+                     f77name(ez8_irgdint_3_wnnc)(vals,gset->zones[NORTH].x,gset->zones[NORTH].y,&npts,RefFrom->AX, ay, temp,&ni, &j1, &j2, &(RefFrom->Extension));
                   }
 	                break;
 	             default:
-	                f77name(ez_rgdint_3_wnnc)(vals,gset->zones[NORTH].x,gset->zones[NORTH].y,&npts,temp,&ni, &j1, &j2, &(RefFrom->Extension));
+	                f77name(ez8_rgdint_3_wnnc)(vals,gset->zones[NORTH].x,gset->zones[NORTH].y,&npts,temp,&ni, &j1, &j2, &(RefFrom->Extension));
 	                break;
 	          }
    	        break;
@@ -82,7 +82,7 @@ int ez_corrval_aunord(float *zout, float *zin, TGeoRef *RefFrom, TGeoRef *RefTo)
 	          for (i=0; i < npts; i++) {
                temp_y[i] = gset->zones[NORTH].y[i] - (1.0 * (RefFrom->j2-3));
 	          }
-	          f77name(ez_rgdint_1_w)(vals,gset->zones[NORTH].x,temp_y,&npts,temp,&ni, &un, &quatre, &(RefFrom->Extension));
+	          f77name(ez8_rgdint_1_w)(vals,gset->zones[NORTH].x,temp_y,&npts,temp,&ni, &un, &quatre, &(RefFrom->Extension));
 	          free(temp_y);
 	          break;
 
@@ -91,7 +91,7 @@ int ez_corrval_aunord(float *zout, float *zin, TGeoRef *RefFrom, TGeoRef *RefTo)
 	          for (i=0; i < npts; i++) {
 	             temp_y[i] = gset->zones[NORTH].y[i] - (1.0 * (RefFrom->j2-3));
 	          }
-	          f77name(ez_rgdint_0)(vals,gset->zones[NORTH].x,temp_y,&npts,temp,&ni, &un, &quatre);
+	          f77name(ez8_rgdint_0)(vals,gset->zones[NORTH].x,temp_y,&npts,temp,&ni, &un, &quatre);
 	          free(temp_y);
 	          break;
       }
@@ -145,18 +145,18 @@ int ez_corrval_ausud(float *zout, float *zin, TGeoRef *RefFrom, TGeoRef *RefTo) 
                      ay[1] = RefFrom->AY[1];
                      ay[2] = RefFrom->AY[2];
                      ay[3] = RefFrom->AY[3];
-                     f77name(ez_irgdint_3_wnnc)(vals,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,RefFrom->AX,ay,temp,&ni,&j1,&j2,&RefFrom->Extension);
+                     f77name(ez8_irgdint_3_wnnc)(vals,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,RefFrom->AX,ay,temp,&ni,&j1,&j2,&RefFrom->Extension);
                   } else {
                      ay[0] = -90.0;
                      ay[1] = RefFrom->AY[0];
                      ay[2] = RefFrom->AY[1];
                      ay[3] = RefFrom->AY[2];
-                     f77name(ez_irgdint_3_wnnc)(vals,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,RefFrom->AX,ay,temp,&ni,&j1,&j2,&RefFrom->Extension);
+                     f77name(ez8_irgdint_3_wnnc)(vals,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,RefFrom->AX,ay,temp,&ni,&j1,&j2,&RefFrom->Extension);
                   }
 	                break;
 
 	             default:
-	                f77name(ez_rgdint_3_wnnc)(vals,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,temp,&ni, &j1, &j2, &RefFrom->Extension);
+	                f77name(ez8_rgdint_3_wnnc)(vals,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,temp,&ni, &j1, &j2, &RefFrom->Extension);
 	                break;
 	          }
 	          break;
@@ -168,7 +168,7 @@ int ez_corrval_ausud(float *zout, float *zin, TGeoRef *RefFrom, TGeoRef *RefTo) 
 	     temp_y[i] = gset->zones[SOUTH].y[i] - (1.0*j1);
 	     }
 	   f77name(ez_rgdint_1_nw)(vals,gset->zones[SOUTH].x,temp_y,&npts,temp,&ni, &un, &quatre);*/
-   	        f77name(ez_rgdint_1_w)(vals,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,temp,&ni, &j1, &j2,&RefFrom->Extension);
+   	        f77name(ez8_rgdint_1_w)(vals,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,temp,&ni, &j1, &j2,&RefFrom->Extension);
 	          free(temp_y);
 	          break;
 
@@ -178,7 +178,7 @@ int ez_corrval_ausud(float *zout, float *zin, TGeoRef *RefFrom, TGeoRef *RefTo) 
 	     {
 	     temp_y[i] = gset->zones[SOUTH].y[i] - (1.0*j1);
 	     }*/
-	        f77name(ez_rgdint_0)(vals,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,temp,&ni, &j1, &j2);
+	        f77name(ez8_rgdint_0)(vals,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,temp,&ni, &j1, &j2);
 	        free(temp_y);
 	        break;
       }
@@ -342,7 +342,7 @@ int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
       }
     
      f77name(cigaxg)(RefFrom->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &RefFrom->RPNHead.IGREF[X_IG1], &RefFrom->RPNHead.IGREF[X_IG2], &RefFrom->RPNHead.IGREF[X_IG3], &RefFrom->RPNHead.IGREF[X_IG4]);
-     f77name(ez_gfxyfll)(polar_lon_gem, polar_lat_gem, polar_lon, polar_lat, &ni, &xlat1, &xlon1, &xlat2, &xlon2);
+     f77name(ez8_gfxyfll)(polar_lon_gem, polar_lat_gem, polar_lon, polar_lat, &ni, &xlat1, &xlon1, &xlat2, &xlon2);
    }
 
    grtypa[0] = 'A';
@@ -446,7 +446,7 @@ int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
      }
     
      f77name(cigaxg)(RefFrom->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &RefFrom->RPNHead.IGREF[X_IG1], &RefFrom->RPNHead.IGREF[X_IG2], &RefFrom->RPNHead.IGREF[X_IG3], &RefFrom->RPNHead.IGREF[X_IG4]);
-     f77name(ez_gfxyfll)(polar_lon_gem, polar_lat_gem, polar_lon, polar_lat, &ni, &xlat1, &xlon1, &xlat2, &xlon2);
+     f77name(ez8_gfxyfll)(polar_lon_gem, polar_lat_gem, polar_lon, polar_lat, &ni, &xlat1, &xlon1, &xlat2, &xlon2);
    }
 
    grtypa[0] = 'A';
@@ -549,13 +549,13 @@ int ez_corrvec_aunord(float *uuout, float *vvout, float *uuin, float *vvin, TGeo
                ay[1] = RefFrom->AY[RefFrom->j2-2];
                ay[2] = RefFrom->AY[RefFrom->j2-1];
                ay[3] = 90.0;
-	             f77name(ez_irgdint_3_wnnc)(corr_uus,gset->zones[NORTH].x,gset->zones[NORTH].y,&npts,RefFrom->AX,ay,polar_uu_in,&ni,&j1,&j2,&RefFrom->Extension);
-	             f77name(ez_irgdint_3_wnnc)(corr_vvs,gset->zones[NORTH].x,gset->zones[NORTH].y,&npts,RefFrom->AX,ay,polar_vv_in,&ni,&j1,&j2,&RefFrom->Extension);
+	             f77name(ez8_irgdint_3_wnnc)(corr_uus,gset->zones[NORTH].x,gset->zones[NORTH].y,&npts,RefFrom->AX,ay,polar_uu_in,&ni,&j1,&j2,&RefFrom->Extension);
+	             f77name(ez8_irgdint_3_wnnc)(corr_vvs,gset->zones[NORTH].x,gset->zones[NORTH].y,&npts,RefFrom->AX,ay,polar_vv_in,&ni,&j1,&j2,&RefFrom->Extension);
 	             break;
 
 	          default:
-	             f77name(ez_rgdint_3_wnnc)(corr_uus,gset->zones[NORTH].x,gset->zones[NORTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&RefFrom->Extension);
-	             f77name(ez_rgdint_3_wnnc)(corr_vvs,gset->zones[NORTH].x,gset->zones[NORTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&RefFrom->Extension);
+	             f77name(ez8_rgdint_3_wnnc)(corr_uus,gset->zones[NORTH].x,gset->zones[NORTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&RefFrom->Extension);
+	             f77name(ez8_rgdint_3_wnnc)(corr_vvs,gset->zones[NORTH].x,gset->zones[NORTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&RefFrom->Extension);
 	             break;
 	      }
 
@@ -564,8 +564,8 @@ int ez_corrvec_aunord(float *uuout, float *vvout, float *uuin, float *vvin, TGeo
          for (i=0; i < npts; i++) {
             temp_y[i] = gset->zones[NORTH].y[i] - (1.0 * (RefFrom->j2-3));
 	       }
-         f77name(ez_rgdint_1_w)(corr_uus,gset->zones[NORTH].x,temp_y,&npts,polar_uu_in,&ni, &un, &quatre, &RefFrom->Extension);
-         f77name(ez_rgdint_1_w)(corr_vvs,gset->zones[NORTH].x,temp_y,&npts,polar_vv_in,&ni, &un, &quatre, &RefFrom->Extension);
+         f77name(ez8_rgdint_1_w)(corr_uus,gset->zones[NORTH].x,temp_y,&npts,polar_uu_in,&ni, &un, &quatre, &RefFrom->Extension);
+         f77name(ez8_rgdint_1_w)(corr_vvs,gset->zones[NORTH].x,temp_y,&npts,polar_vv_in,&ni, &un, &quatre, &RefFrom->Extension);
          free(temp_y);
          
          break;
@@ -575,8 +575,8 @@ int ez_corrvec_aunord(float *uuout, float *vvout, float *uuin, float *vvin, TGeo
          for (i=0; i < npts; i++) {
             temp_y[i] = gset->zones[NORTH].y[i] - (1.0 * (RefFrom->j2-3));
 	       }
-         f77name(ez_rgdint_0)(corr_uus,gset->zones[NORTH].x,temp_y,&npts,polar_uu_in,&ni, &un, &quatre);
-         f77name(ez_rgdint_0)(corr_vvs,gset->zones[NORTH].x,temp_y,&npts,polar_vv_in,&ni, &un, &quatre);
+         f77name(ez8_rgdint_0)(corr_uus,gset->zones[NORTH].x,temp_y,&npts,polar_uu_in,&ni, &un, &quatre);
+         f77name(ez8_rgdint_0)(corr_vvs,gset->zones[NORTH].x,temp_y,&npts,polar_vv_in,&ni, &un, &quatre);
          free(temp_y);
          break;
    }
@@ -631,25 +631,25 @@ int ez_corrvec_ausud(float *uuout, float *vvout,float *uuin, float *vvin,TGeoRef
                ay[1] = RefFrom->AY[0];
                ay[2] = RefFrom->AY[1];
                ay[3] = RefFrom->AY[2];
-               f77name(ez_irgdint_3_wnnc)(corr_uus,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,RefFrom->AX,ay,polar_uu_in,&ni,&j1,&j2,&RefFrom->Extension);
-               f77name(ez_irgdint_3_wnnc)(corr_vvs,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,RefFrom->AX,ay,polar_vv_in,&ni,&j1,&j2,&RefFrom->Extension);
+               f77name(ez8_irgdint_3_wnnc)(corr_uus,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,RefFrom->AX,ay,polar_uu_in,&ni,&j1,&j2,&RefFrom->Extension);
+               f77name(ez8_irgdint_3_wnnc)(corr_vvs,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,RefFrom->AX,ay,polar_vv_in,&ni,&j1,&j2,&RefFrom->Extension);
                break;
 
             default:
-               f77name(ez_rgdint_3_wnnc)(corr_uus,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&RefFrom->Extension);
-               f77name(ez_rgdint_3_wnnc)(corr_vvs,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&RefFrom->Extension);
+               f77name(ez8_rgdint_3_wnnc)(corr_uus,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&RefFrom->Extension);
+               f77name(ez8_rgdint_3_wnnc)(corr_vvs,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&RefFrom->Extension);
                break;
             }
       break;
 
       case IR_LINEAR:
-         f77name(ez_rgdint_1_w)(corr_uus,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&RefFrom->Extension);
-         f77name(ez_rgdint_1_w)(corr_vvs,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&RefFrom->Extension);
+         f77name(ez8_rgdint_1_w)(corr_uus,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&RefFrom->Extension);
+         f77name(ez8_rgdint_1_w)(corr_vvs,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&RefFrom->Extension);
          break;
 
       case IR_NEAREST:
-         f77name(ez_rgdint_0)(corr_uus,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2);
-         f77name(ez_rgdint_0)(corr_vvs,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2);
+         f77name(ez8_rgdint_0)(corr_uus,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2);
+         f77name(ez8_rgdint_0)(corr_vvs,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2);
          break;
    }
 

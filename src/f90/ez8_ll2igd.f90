@@ -25,7 +25,7 @@
 
       integer coordflag
 
-      external cigaxg,ez_vxyfll,ez8_llll2gd,permut
+      external cigaxg,ez8_vxyfll,ez8_llll2gd,permut
       
       integer i, npts, ni, nj
       real*8 px(npts),py(npts),xlat(npts),xlon(npts)
@@ -43,12 +43,12 @@
       
       if (grref .eq. 'N') then
          call cigaxg(grref,  PI, PJ, D60, DGRW, ig1, ig2, ig3, ig4)
-         call ez_vxyfll(px, py, xlat, xlon, npts, d60,dgrw,pi,pj,1)
+         call ez8_vxyfll(px, py, xlat, xlon, npts, d60,dgrw,pi,pj,1)
       endif
 
       if (grref .eq. 'S') then
          call cigaxg(grref,  PI, PJ, D60, DGRW, ig1, ig2, ig3, ig4)
-         call ez_vxyfll(px, py, xlat, xlon, npts, d60,dgrw,pi,pj,2)
+         call ez8_vxyfll(px, py, xlat, xlon, npts, d60,dgrw,pi,pj,2)
       endif
 
       if (grref.eq.'L') then
@@ -67,7 +67,7 @@
 
       if (grref.eq.'E') then
          call cigaxg(grref,xlat1,xlon1,xlat2,xlon2,ig1,ig2,ig3,ig4)
-         call ez_gfxyfll(xlon,xlat,px,py,npts,xlat1,xlon1,xlat2,xlon2)
+         call ez8_gfxyfll(xlon,xlat,px,py,npts,xlat1,xlon1,xlat2,xlon2)
       endif
       
       if (coordflag .eq. relatif) then
@@ -78,8 +78,8 @@
             if (indx .ge. ni) indx = ni - 1
             if (indy .ge. nj) indy = nj - 1
             
-            px(i) = real(indx)+(px(i)-ax(indx))/(ax(indx+1)-ax(indx))
-            py(i) = real(indy)+(py(i)-ay(indy))/(ay(indy+1)-ay(indy))
+            px(i) = dble(indx)+(px(i)-ax(indx))/(ax(indx+1)-ax(indx))
+            py(i) = dble(indy)+(py(i)-ay(indy))/(ay(indy+1)-ay(indy))
  10      continue
 
       endif

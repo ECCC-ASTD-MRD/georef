@@ -26,7 +26,7 @@
 #include "pi.cdk"
 #include "ez_qqqxtrp.cdk"
 
-      external cigaxg,ez_vxyfll,ez8_llll2gd,permut
+      external cigaxg,ez8_vxyfll,ez8_llll2gd,permut
       
       integer npts, ni, nj
       real*8 px(npts),py(npts),xlat(npts),xlon(npts)
@@ -46,20 +46,20 @@
       
       if (grtyp.eq.'N') then
          call cigaxg(grtyp,pi,pj,d60,dgrw,ig1,ig2,ig3,ig4)
-         call ez_vxyfll(px,py,xlat,xlon,npts,d60,dgrw,pi,pj,NORD)
+         call ez8_vxyfll(px,py,xlat,xlon,npts,d60,dgrw,pi,pj,NORD)
          return
       endif
       
       
       if (grtyp.eq.'S')  then
          call cigaxg(grtyp,pi,pj,d60,dgrw,ig1,ig2,ig3,ig4)
-         call ez_vxyfll(px,py,xlat,xlon,npts,d60,dgrw,pi,pj,SUD)
+         call ez8_vxyfll(px,py,xlat,xlon,npts,d60,dgrw,pi,pj,SUD)
          return
       endif
       
       if (grtyp.eq.'T') then
          call cigaxg(grtyp,d60,dgrw,clat,clon,ig1,ig2,ig3,ig4)
-         call ez_vtxyfll(px,py, xlat, xlon, clat, clon, d60, dgrw, ni, nj, npts)
+         call ez8_vtxyfll(px,py, xlat, xlon, clat, clon, d60, dgrw, ni, nj, npts)
          return
       endif
       
@@ -112,7 +112,7 @@
          xlon0 = 0.0
 
          if (ig1.eq.GLOBAL) then
-            call ez_ggll2gd(px,py,xlat,xlon,npts,ni,nj,ig1,lroots)
+            call ez8_ggll2gd(px,py,xlat,xlon,npts,ni,nj,ig1,lroots)
          else if  (ig1 .eq. NORD) then
             dellat = 90.0 / real(nj)
             xlat0 =  dellat * 0.5
@@ -143,7 +143,7 @@
       endif
 
       if (grtyp.eq.'E') then
-         call ez_ll2ergd(px,py,xlat,xlon,npts,ni,nj,grtyp,ig1,ig2,ig3,ig4)
+         call ez8_ll2ergd(px,py,xlat,xlon,npts,ni,nj,grtyp,ig1,ig2,ig3,ig4)
          return
       endif
 

@@ -273,7 +273,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
 
          case 'N':
          case 'S':
-            f77name(ez_vllfxy)(Lat,Lon,X,Y,&npts,&un,&Ref->RPNHead.XG[X_D60],&Ref->RPNHead.XG[X_DGRW],&Ref->RPNHead.XG[X_PI],&Ref->RPNHead.XG[X_PJ],&Ref->Hemi);
+            f77name(ez8_vllfxy)(Lat,Lon,X,Y,&npts,&un,&Ref->RPNHead.XG[X_D60],&Ref->RPNHead.XG[X_DGRW],&Ref->RPNHead.XG[X_PI],&Ref->RPNHead.XG[X_PJ],&Ref->Hemi);
             for (i=0; i < Nb; i++) {
                Lon[i] = (fmod((double) (Lon[i] + 360.0), (double) 360.0));
             }
@@ -339,7 +339,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
             break;
 
          case 'T':
-            f77name(ez_vtllfxy)(Lat,Lon,X,Y, &Ref->RPNHead.XG[X_CLAT], &Ref->RPNHead.XG[X_CLON], &Ref->RPNHead.XG[X_TD60], &Ref->RPNHead.XG[X_TDGRW], &Ref->NX, &Ref->NY, &npts);
+            f77name(ez8_vtllfxy)(Lat,Lon,X,Y, &Ref->RPNHead.XG[X_CLAT], &Ref->RPNHead.XG[X_CLON], &Ref->RPNHead.XG[X_TD60], &Ref->RPNHead.XG[X_TDGRW], &Ref->NX, &Ref->NY, &npts);
             break;
 
          case '!':
@@ -373,12 +373,12 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
             switch (Ref->RPNHead.GRREF[0]) {
                case 'E':
                   f77name(cigaxg)(Ref->RPNHead.GRREF,&xlat1,&xlon1,&xlat2,&xlon2,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
-                  f77name(ez_gfllfxy)(Lon, Lat, tmpx, tmpy, &npts, &Ref->RPNHead.XGREF[X_LAT1], &Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2]);
+                  f77name(ez8_gfllfxy)(Lon, Lat, tmpx, tmpy, &npts, &Ref->RPNHead.XGREF[X_LAT1], &Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2]);
                   break;
 
                case 'S':
                case 'N':
-                  f77name(ez_vllfxy)(Lat,Lon,tmpx,tmpy,&npts,&un,&Ref->RPNHead.XGREF[X_D60],&Ref->RPNHead.XGREF[X_DGRW],&Ref->RPNHead.XGREF[X_PI],&Ref->RPNHead.XGREF[X_PJ],&Ref->Hemi);
+                  f77name(ez8_vllfxy)(Lat,Lon,tmpx,tmpy,&npts,&un,&Ref->RPNHead.XGREF[X_D60],&Ref->RPNHead.XGREF[X_DGRW],&Ref->RPNHead.XGREF[X_PI],&Ref->RPNHead.XGREF[X_PJ],&Ref->Hemi);
                   for (i=0; i < Nb; i++) {
                      Lon[i] = (float) (fmod((double) (Lon[i] + 360.0), (double) 360.0));
                   }
