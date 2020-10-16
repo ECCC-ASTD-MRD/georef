@@ -679,7 +679,7 @@ void c_ezgfwfllw(double *uullout,double *vvllout,double *Lat,double *Lon,double 
    double *uvcart, *xyz;
    char grtypl[2];
 
-   uvcart = (float *)malloc(2*3*npts*sizeof(float));
+   uvcart = (double *)malloc(2*3*npts*sizeof(double));
    xyz    = &uvcart[3*npts];
   
    f77name(cigaxg)(grtyp, &xlat1, &xlon1, &xlat2, &xlon2, ig1, ig2, ig3, ig4);
@@ -711,7 +711,7 @@ void c_ezllwfgfw(double *uullout,double *vvllout,double *Lat,double *Lon,double 
    char grtypl[2];
 
  
-   uvcart = (float *) malloc(2*3*npts*sizeof(float));
+   uvcart = (double *) malloc(2*3*npts*sizeof(double));
    xyz    = &uvcart[3*npts];  
   
    f77name(cigaxg)(grtyp, &xlat1, &xlon1, &xlat2, &xlon2, ig1, ig2, ig3, ig4);
