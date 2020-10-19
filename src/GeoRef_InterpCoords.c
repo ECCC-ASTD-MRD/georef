@@ -23,18 +23,37 @@
 #include "GeoRef.h"
 #include "Vertex.h"
 
-void  c_ezgfxyfll(double *Lat,double *Lon,double *X,double *Y,wordint *npts,float *xlat1,float *xlon1,float *xlat2,float *xlon2) {
+static inline void c_ezll2gd(double *X,double *Y,double *Lat,double *Lon,int Nb,float Lat0,float Lon0,float DLat,float DLon,float LonRef) {
+
+   int    i;
+   double tmplon;
+   
+   for(i=0;i<Nb;i++) {
+      tmplon=Lon[i];
+      if (LonRef==-180.0f) {
+         if (tmplon>180.0) {
+            tmplon-=360.0;
+         }
+      } else if (tmplon<0.0) {
+         tmplon +=360.0;
+      }
+      X[i] = (tmplon-Lon0)/DLon + 1.0;
+      Y[i] = (Lat[i]-Lat0)/DLat + 1.0;
+   }
+}
+
+void  c_ezgfxyfll(double *Lat,double *Lon,double *X,double *Y,int npts,float xlat1,float xlon1,float xlat2,float xlon2) {
 
    double *cart,*carot,latr,lonr,cosdar;
    int i,k,n,c;
    float r[3][3],ri[3][3];
 
-   cart  = (double*)malloc(6* *npts*sizeof(double));
-   carot = &cart[3**npts];
+   cart  = (double*)malloc(6*npts*sizeof(double));
+   carot = &cart[3*npts];
 
-   f77name(ez_crot)(r,ri,xlon1,xlat1,xlon2,xlat2);
+   f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
-   for(n=0;n<*npts;n++) {
+   for(n=0;n<npts;n++) {
       latr=DEG2RAD(Lat[n]);
       lonr=DEG2RAD(Lon[n]);
       cosdar = cos(latr);
@@ -54,18 +73,18 @@ void  c_ezgfxyfll(double *Lat,double *Lon,double *X,double *Y,wordint *npts,floa
    }
    free(cart);
 }
-void  c_ezgfllfxy(double *Lat,double *Lon,double *X,double *Y,wordint *npts,float *xlat1,float *xlon1,float *xlat2,float *xlon2) {
+void  c_ezgfllfxy(double *Lat,double *Lon,double *X,double *Y,int npts,float xlat1,float xlon1,float xlat2,float xlon2) {
 
    double *cart,*carot,latr,lonr,cosdar;
    int i,k,n,c;
    float r[3][3],ri[3][3];
 
-   cart  = (double*)malloc(6* *npts*sizeof(double));
-   carot = &cart[3**npts];
+   cart  = (double*)malloc(6*npts*sizeof(double));
+   carot = &cart[3*npts];
 
-   f77name(ez_crot)(r,ri,xlon1,xlat1,xlon2,xlat2);
+   f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
-   for(n=0;n<*npts;n++) {
+   for(n=0;n<npts;n++) {
       latr=DEG2RAD(Y[n]);
       lonr=DEG2RAD(X[n]);
       cosdar = cos(latr);
@@ -290,7 +309,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
                Lat[i] = (Y[i]-1.0)*dlat+swlat;
             }
 
-            c_ezgfllfxy(Lat,Lon,Lon,Lat,&Nb,&Ref->RPNHead.XG[X_LAT1],&Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
+            c_ezgfllfxy(Lat,Lon,Lon,Lat,Nb,Ref->RPNHead.XG[X_LAT1],Ref->RPNHead.XG[X_LON1],Ref->RPNHead.XG[X_LAT2],Ref->RPNHead.XG[X_LON2]);
             break;
 
          case 'L':
@@ -403,7 +422,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
             switch (Ref->RPNHead.GRREF[0]) {
                case 'E':
                   f77name(cigaxg)(Ref->RPNHead.GRREF,&xlat1,&xlon1,&xlat2,&xlon2,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
-                  c_ezgfllfxy(Lat,Lon,tmpx,tmpy,&npts,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2]);
+                  c_ezgfllfxy(Lat,Lon,tmpx,tmpy,npts,Ref->RPNHead.XGREF[X_LAT1],Ref->RPNHead.XGREF[X_LON1],Ref->RPNHead.XGREF[X_LAT2],Ref->RPNHead.XGREF[X_LON2]);
                   break;
 
                case 'S':
@@ -586,16 +605,168 @@ int GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
 }
 
 int GeoRef_LL2XY_RG(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
-   f77name(ez8_ll2rgd)(X,Y,Lat,Lon,&Nb,&Ref->NX,&Ref->NY,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4],&Ref->Options.Symmetric,Ref->AY);
+
+   float pi,pj,dgrw,d60,clat,clon,dellat,dellon,xlat0,xlon0,xlat1,xlon1,xlat2,xlon2;      
+   int hemi;
+
+   switch(Ref->GRTYP[0]) {
+      case 'N':
+         f77name(cigaxg)(Ref->GRTYP,&pi,&pj,&d60,&dgrw,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
+         hemi=NORTH;
+         f77name(ez8_vxyfll)(X,Y,Lat,Lon,&Nb,&d60,&dgrw,&pi,&pj,&hemi);
+         break;
+      
+      case 'S':
+         hemi=SOUTH;
+         f77name(cigaxg)(Ref->GRTYP,&pi,&pj,&d60,&dgrw,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
+         f77name(ez8_vxyfll)(X,Y,Lat,Lon,&Nb,&d60,&dgrw,&pi,&pj,&hemi);
+         break;
+      
+      case 'T':
+         f77name(cigaxg)(Ref->GRTYP,&d60,&dgrw,&clat,&clon,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
+         f77name(ez8_vtxyfll)(X,Y,Lat,Lon,&clat,&clon,&d60,&dgrw,&Ref->NX,&Ref->NY,&Nb);
+         break;
+      
+      case 'A':
+         dellon = 360.0 / Ref->NX;
+         xlon0 = 0.0;
+         if (Ref->RPNHead.IG[X_IG1]==GLOBAL) {
+            dellat = 180.0 / Ref->NY;
+            xlat0 = -90.0 + dellat * 0.5;
+         }
+         
+         if (Ref->RPNHead.IG[X_IG1]==NORTH) {
+            dellat = 90.0 / Ref->NY;
+            xlat0 =  dellat * 0.5;
+         }
+         
+         if (Ref->RPNHead.IG[X_IG1]==SOUTH) {
+            dellat = 90.0 / Ref->NY;
+            xlat0 = -90.0 + dellat * 0.5;
+         }        
+         
+         c_ezll2gd(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
+         break;
+      
+      case 'B':
+         dellon = 360.0 / (Ref->NX-1);
+         xlon0 = 0.0;
+         if (Ref->RPNHead.IG[X_IG1]==GLOBAL) {
+            dellat = 180.0 / (Ref->NY-1);
+            xlat0 = -90.0;
+         }
+         
+         if (Ref->RPNHead.IG[X_IG1]==NORTH) {
+            dellat = 90.0 / (Ref->NY-1);
+            xlat0 =  0.0;
+         }
+         
+         if (Ref->RPNHead.IG[X_IG1]==SOUTH) {
+            dellat = 90.0 / (Ref->NY-1);
+            xlat0 = -90.0;
+         }
+         
+         c_ezll2gd(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
+         break;
+      
+      case 'G':
+         dellon = 360.0 / Ref->NX;
+         xlon0 = 0.0;
+
+         if (Ref->RPNHead.IG[X_IG1]==GLOBAL) {
+            f77name(ez8_ggll2gd)(X,Y,Lat,Lon,&Nb,&Ref->NX,&Ref->NX,&Ref->RPNHead.IG[X_IG1],Ref->AX);
+         } else if  (Ref->RPNHead.IG[X_IG1]==NORTH) {
+            dellat = 90.0 / Ref->NY;
+            xlat0 =  dellat * 0.5;
+            c_ezll2gd(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
+         } else {
+            dellat = 90.0 / Ref->NY;
+            xlat0 = -90.0 + dellat * 0.5;
+            c_ezll2gd(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
+         }
+         break;
+      
+      case 'L':
+         f77name(cigaxg)(Ref->GRTYP,&xlat0,&xlon0,&dellat,&dellon,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);         
+// TODO: Check for xlon0 limits
+//         do 10 i=1,npts
+//            if (xlon(i).lt.xlon0) then
+//               xlon(i) = xlon(i) + 360.0
+//            endif
+//            if (xlon(i).gt.(xlon0 + ni*dellon)) then
+//               xlon(i) = xlon(i) - 360.0
+//            endif     
+         c_ezll2gd(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
+         break;
+
+      case 'E':
+         f77name(cigaxg)(Ref->GRTYP,&xlat1,&xlon1,&xlat2,&xlon2,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);         
+         c_ezgfxyfll(Lat,Lon,X,Y,Nb,xlat1,xlon1,xlat2,xlon2);
+
+         dellon = 360.0 / (Ref->NX-1);
+         xlon0 = 0.0;
+
+         dellat = 180.0 / (Ref->NY);
+         xlat0 = -90. + 0.5*dellat;
+
+         c_ezll2gd(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
+         break;
+
+      case '!':
+         f77name(ez_lambfll)(X,Y,Lat,Lon,&Nb,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
+         break;
+
+      default:
+         App_Log(ERROR,"%s: Invalid grid type: %c\n",__func__,Ref->GRTYP[0]);   
+   }
+
    return(0);
 }
 
 int GeoRef_LL2XY_IRG(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
-   int j,coordonnee;
+   int   i,j,indx,indy,hemi;
+   float pi,pj,dgrw,d60,dlat,dlon,xlat0,xlon0,xlat1,xlon1,xlat2,xlon2;
+      
+   switch(Ref->RPNHead.GRREF[0]) {
+      case 'N':
+         f77name(cigaxg)(Ref->RPNHead.GRREF,&pi,&pj,&d60,&dgrw,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+         hemi=NORTH;
+         f77name(ez8_vxyfll)(X,Y,Lat,Lon,&Nb,&d60,&dgrw,&pi,&pj,&hemi);
+         break;
 
-   coordonnee = RELATIVE;
-   f77name(ez8_ll2igd)(X,Y,Lat,Lon,&Nb,&Ref->NX,&Ref->j2,Ref->GRTYP,Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4],Ref->AX,Ref->AY,&coordonnee);
+      case 'S':
+         f77name(cigaxg)(Ref->RPNHead.GRREF,&pi,&pj,&d60,&dgrw,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+         hemi=SOUTH;
+         f77name(ez8_vxyfll)(X,Y,Lat,Lon,&Nb,&d60,&dgrw,&pi,&pj,&hemi);
+         break;
+
+      case 'L':
+         f77name(cigaxg)(Ref->RPNHead.GRREF,&xlat0,&xlon0,&dlat,&dlon,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+         c_ezll2gd(X,Y,Lat,Lon,Nb,xlat0,xlon0,dlat,dlon,(Ref->AX[0]<0.0)?-180.0:0.0);
+         for(i=0;i<Nb;i++) {
+            X[i]-=1.0;
+            Y[i]-=1.0;
+         }
+         break;
+
+      case 'E':
+         f77name(cigaxg)(Ref->RPNHead.GRREF,&xlat1,&xlon1,&xlat2,&xlon2,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+         c_ezgfxyfll(Lat,Lon,X,Y,Nb,xlat1,xlon1,xlat2,xlon2);
+         break;
+   }
+   for(i=0;i<Nb;i++) {
+      //TODO: ez_cherche
+      indx = GeoRef_XFind(X[i],Ref->AX,Ref->NX);
+      indy = GeoRef_XFind(Y[i],Ref->AY,Ref->j2);
+      
+      if (indx >= Ref->NX) indx = Ref->NX - 1;
+      if (indy >= Ref->j2) indy = Ref->j2 - 1;
+      
+      X[i] = indx+(X[i]-Ref->AX[indx])/(Ref->AX[indx+1]-Ref->AX[indx]);
+      Y[i] = indy+(Y[i]-Ref->AY[indy])/(Ref->AY[indy+1]-Ref->AY[indy]);
+   } 
+
    if (Ref->GRTYP[0] == 'G') {
       if (Ref->RPNHead.IG[X_IG1] == 1) {
          for (j=0; j < Nb; j++) Y[j] = Y[j] - Ref->j2;

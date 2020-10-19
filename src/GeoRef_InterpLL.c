@@ -155,14 +155,14 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
             break;
 
          case 'E':
-            dlon = 360. /(ni-1);
-            dlat = 180./(nj);
+            dlon = 360.0/(ni-1);
+            dlat = 180.0/(nj);
             xlon00 = 0.0;
             xlat00 = -90. + 0.5*dlat;
 
             grll(Ref->Lat,Ref->Lon,ni,nj,xlat00,xlon00,dlat,dlon);
             f77name(cigaxg)(Ref->GRTYP, &Ref->RPNHead.XG[X_LAT1], &Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2], &Ref->RPNHead.XG[X_LON2],&Ref->RPNHead.IG[X_IG1],  &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
-            c_ezgfllfxy(Ref->Lat,Ref->Lon,Ref->Lon.Ref->Lat,&npts,&Ref->RPNHead.XG[X_LAT1], &Ref->RPNHead.XG[X_LON1], &Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
+            c_ezgfllfxy(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHead.XG[X_LAT1],Ref->RPNHead.XG[X_LON1],Ref->RPNHead.XG[X_LAT2],Ref->RPNHead.XG[X_LON2]);
             break;
 
          case 'L':
@@ -266,7 +266,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                   break;
 
                case 'E':
-                  c_ezgfllfxy(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,&npts,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1], &Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2]);
+                  c_ezgfllfxy(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHead.XGREF[X_LAT1],Ref->RPNHead.XGREF[X_LON1],Ref->RPNHead.XGREF[X_LAT2],Ref->RPNHead.XGREF[X_LON2]);
                   break;
             }
             break;

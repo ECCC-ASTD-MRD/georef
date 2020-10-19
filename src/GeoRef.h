@@ -295,7 +295,7 @@ typedef struct TGeoRef {
    int     NX,NY,X0,Y0,X1,Y1;                             ///< Grid size and limits
    int     Extension;                                     ///< related to the newtonian coefficient
    char    GRTYP[3];                                      ///< Type de grille
-   char    Hemi;                                          ///< Hemisphere side (0=GLOBAL,1=NORTH,2=SOUTH)
+   int     Hemi;                                          ///< Hemisphere side (0=GLOBAL,1=NORTH,2=SOUTH)
    int     NbSet;                                         ///< Nombre de set d'interpolation
    TGridSet *Sets,*LastSet;                               ///< Tableau de set d'interpolation et du dernier utilise
 
@@ -438,6 +438,8 @@ int       GeoRef_CorrectVector(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout, flo
 int c_ezyymint(TGeoRef *RefTo,TGeoRef *RefFrom,int ni,int nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int *yyincount,double *yanlat,double *yanlon,int *yyancount);
 int c_ezsint_mask(TGeoRef *RefTo,TGeoRef *RefFrom,int *mask_out, int *mask_in);
 int c_ezgdef_yymask(TGeoRef *Ref);
+void  c_ezgfllfxy(double *Lat,double *Lon,double *X,double *Y,int npts,float xlat1,float xlon1,float xlat2,float xlon2);
+void  c_ezgfxyfll(double *Lat,double *Lon,double *X,double *Y,int npts,float xlat1,float xlon1,float xlat2,float xlon2);
 
 void GeoScan_Init(TGeoScan *Scan);
 void GeoScan_Clear(TGeoScan *Scan);
@@ -447,6 +449,7 @@ double GeoFunc_RadialPointRatio(TCoord C1,TCoord C2,TCoord C3);
 int    GeoFunc_RadialPointOn(TCoord C1,TCoord C2,TCoord C3,TCoord *CR);
 int    GeoFunc_RadialIntersect(TCoord C1,TCoord C2,double CRS13,double CRS23,TCoord *C3);
 
+// Reproject vector directions geographically
 static inline double GeoRef_GeoDir(TGeoRef* __restrict const Ref,double X, double Y) {
    
    double latd[2],lond[2],dir=0.0;
@@ -464,6 +467,26 @@ static inline double GeoRef_GeoDir(TGeoRef* __restrict const Ref,double X, doubl
    return(dir);
 }
 
+// Grid descriptor search
+static inline int GeoRef_XFind(float Value,float *Table,int Nb) {
+
+   int start,mid,end;
+
+	start=0;
+	end=Nb;
+	mid=(start+end)>>1;
+
+   while(mid!=start) {
+      if (Value <= Table[mid]) {
+	      end   = mid;
+      } else {
+	      start = mid;
+      }
+      mid = (start+end)>>1;
+   }
+	return(mid);
+}
+
 void f77name(ez8_rgdint_0)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2);
 void f77name(ez8_rgdint_1_w)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
 void f77name(ez8_rgdint_1_nw)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2);
@@ -475,15 +498,17 @@ void f77name(ez8_irgdint_1_nw)(ftnfloat *zo,double *px,double *py,wordint *npts,
 void f77name(ez8_irgdint_3_w)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *cx,ftnfloat *cy,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
 void f77name(ez8_irgdint_3_nw)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *cx,ftnfloat *cy,ftnfloat *z,wordint *i1,wordint *i2,wordint *j1,wordint *j2);
 void f77name(ez8_irgdint_3_wnnc)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
-void f77name(ez8_ll2igd)(double *px,double *py,double *xlat,double *xlon,wordint *npts,wordint *ni,wordint *nj,char *grtyp,char *grref,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4,ftnfloat *ax,ftnfloat *ay,wordint *coordflag);
-// TODO Maude: type of sym ?
-void f77name(ez8_ll2rgd)(double *px,double *py,double *xlat,double *xlon,wordint *npts,wordint *ni,wordint *nj,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4,bool *sym,ftnfloat *lroots);
+
 void f77name(ez8_llwfgdw)(ftnfloat *z1,ftnfloat *z2,double *xlon,wordint *li,wordint *lj,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4,wordint sz);
 void f77name(ez8_gdwfllw)(ftnfloat *z1,ftnfloat *z2,double *xlon,wordint *li,wordint *lj,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4,wordint sz);
 void f77name(ez8_vllfxy)(double *dlat,double *dlon,double *x,double *y,wordint *ni,wordint *nj,ftnfloat *d60,ftnfloat *dgrw,ftnfloat *pi,ftnfloat *pj,wordint *nhem);
 void f77name(ez8_vtllfxy)(double *lat,double *lon,double *x,double *y,ftnfloat *clat,ftnfloat *clon,ftnfloat *d60,ftnfloat *dgrw,wordint *ni,wordint *nj,wordint *n);
-extern void f77name(ez8_mxm)(ftnfloat *a,int *nar,double *b,int *nac,double *c,int *nbc);
+void f77name(ez8_vxyfll)(double *x,double *y,double *dlat,double *dlon,wordint *nb,ftnfloat *d60,ftnfloat *dgrw,ftnfloat *pi,ftnfloat *pj,wordint *nhem);
+void f77name(ez8_vtxyfll)(double *x,double *y,double *dlat,double *dlon,ftnfloat *clat,ftnfloat *clon,ftnfloat *d60,ftnfloat *dgrw,wordint *ni,wordint *nj,wordint *nhem);
+void f77name(ez8_mxm)(ftnfloat *a,int *nar,double *b,int *nac,double *c,int *nbc);
 void f77name(ez_llflamb)();
+void f77name(ez_lambfll)(double *x,double *y,double *xlat,double *xlon,wordint *npts,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4);
+void f77name(ez8_ggll2gd)(double *x,double *y,double *xlat,double *xlon,wordint *npts,wordint *ni,wordint *nj,wordint *hem,ftnfloat *lroots);
 void f77name(ez_avg)();
 void f77name(ez_avg_sph)();
 void f77name(ez_applywgts)();
