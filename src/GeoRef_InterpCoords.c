@@ -440,7 +440,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
 
    // Adjust for Longitude reference
    for (i=0; i < Nb; i++) {
-      Lon[i]=(CLAMPLONREF(Lon[i],Ref->Options.LonRef);
+      Lon[i]=(CLAMPLONREF(Lon[i],Ref->Options.LonRef));
    }
 
    return(0);

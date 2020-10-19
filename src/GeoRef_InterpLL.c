@@ -133,6 +133,25 @@ static inline void grps(double *Lat,double *Lon,int NI,int NJ,double PI,double P
    }
 }
 
+void Permut(double *Z,int NI,int NJ) {
+
+   int    i,j,ncc,idx,idxn;
+   double t;
+
+   ncc = NJ>>1;
+
+   for(j=0;j<ncc;j++) { 
+      for(i=0;i<NI;i++) { 
+          idx=(NJ+1-j)+NI+i;
+          idxn=j*NI+i;
+
+          t = Z[idx];
+          Z[idx] = Z[idxn];
+          Z[idxn] = t;
+      }
+   }
+}
+
 int GeoRef_CalcLL(TGeoRef* Ref) {
 
    float  xlat00, xlon00, dlat, dlon;
@@ -295,7 +314,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
          case 'B':
          case 'A':
          if (Ref->RPNHead.IG[X_IG2] == 1) {
-            f77name(permut)(Ref->Lat, &Ref->NX, &Ref->NY);
+            Permut(Ref->Lat,Ref->NX,Ref->NY);
          }
          break;
 
