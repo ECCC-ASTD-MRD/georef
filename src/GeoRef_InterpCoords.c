@@ -26,18 +26,9 @@
 static inline void c_ezll2gd(double *X,double *Y,double *Lat,double *Lon,int Nb,float Lat0,float Lon0,float DLat,float DLon,float LonRef) {
 
    int    i;
-   double tmplon;
    
    for(i=0;i<Nb;i++) {
-      tmplon=Lon[i];
-      if (LonRef==-180.0f) {
-         if (tmplon>180.0) {
-            tmplon-=360.0;
-         }
-      } else if (tmplon<0.0) {
-         tmplon +=360.0;
-      }
-      X[i] = (tmplon-Lon0)/DLon + 1.0;
+      X[i] = (CLAMPLONREF(Lon[i],LonRef)-Lon0)/DLon + 1.0;
       Y[i] = (Lat[i]-Lat0)/DLat + 1.0;
    }
 }
@@ -99,8 +90,6 @@ void  c_ezgfllfxy(double *Lat,double *Lon,double *X,double *Y,int npts,float xla
       
       Lat[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[c+2]))));
       Lon[n]=RAD2DEG(atan2(carot[c+1],carot[c]));
-      Lon[n]=fmod(Lon[n],360.0);
-      if (Lon[n]<0.0) Lon[n]+=360.0;
    }
    free(cart);
 }
@@ -295,7 +284,6 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
             for (i=0; i < Nb; i++) {
                Lat[i] = (Y[i]-1.0)*Ref->RPNHead.XG[X_DLAT]+Ref->RPNHead.XG[X_SWLAT];
                Lon[i] = (X[i]-1.0)*Ref->RPNHead.XG[X_DLON]+Ref->RPNHead.XG[X_SWLON];
-               Lon[i] = (fmod((double) (Lon[i] + 360.0), (double) 360.0));
             }
             break;
 
@@ -315,7 +303,6 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
          case 'L':
             for (i=0; i < Nb; i++) {
                Lon[i] = (X[i]-1.0)*Ref->RPNHead.XG[X_DLON]+Ref->RPNHead.XG[X_SWLON];
-               Lon[i] = (fmod((double) (Lon[i] + 360.0), (double) 360.0));
                Lat[i] = (Y[i]-1.0)*Ref->RPNHead.XG[X_DLAT]+Ref->RPNHead.XG[X_SWLAT];
             }
             break;
@@ -323,9 +310,6 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
          case 'N':
          case 'S':
             f77name(ez8_vllfxy)(Lat,Lon,X,Y,&npts,&un,&Ref->RPNHead.XG[X_D60],&Ref->RPNHead.XG[X_DGRW],&Ref->RPNHead.XG[X_PI],&Ref->RPNHead.XG[X_PJ],&Ref->Hemi);
-            for (i=0; i < Nb; i++) {
-               Lon[i] = (fmod((double) (Lon[i] + 360.0), (double) 360.0));
-            }
             break;
 
          case 'O':
@@ -428,16 +412,12 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
                case 'S':
                case 'N':
                   f77name(ez8_vllfxy)(Lat,Lon,tmpx,tmpy,&npts,&un,&Ref->RPNHead.XGREF[X_D60],&Ref->RPNHead.XGREF[X_DGRW],&Ref->RPNHead.XGREF[X_PI],&Ref->RPNHead.XGREF[X_PJ],&Ref->Hemi);
-                  for (i=0; i < Nb; i++) {
-                     Lon[i] = (float) (fmod((double) (Lon[i] + 360.0), (double) 360.0));
-                  }
                   break;
 
                case 'L':
                   for (i=0; i < Nb; i++) {
                      Lat[i] = (tmpy[i])*Ref->RPNHead.XGREF[X_DLAT]+Ref->RPNHead.XGREF[X_SWLAT];
                      Lon[i] = (tmpx[i])*Ref->RPNHead.XGREF[X_DLON]+Ref->RPNHead.XGREF[X_SWLON];
-                     Lon[i] = (float) (fmod((double) (Lon[i] + 360.0), (double) 360.0));
                   }
                   break;
 
@@ -457,6 +437,12 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
             break;
       }
    }
+
+   // Adjust for Longitude reference
+   for (i=0; i < Nb; i++) {
+      Lon[i]=(CLAMPLONREF(Lon[i],Ref->Options.LonRef);
+   }
+
    return(0);
 }
 
@@ -606,8 +592,9 @@ int GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
 
 int GeoRef_LL2XY_RG(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
-   float pi,pj,dgrw,d60,clat,clon,dellat,dellon,xlat0,xlon0,xlat1,xlon1,xlat2,xlon2;      
-   int hemi;
+   float  pi,pj,dgrw,d60,clat,clon,dellat,dellon,xlat0,xlon0,xlat1,xlon1,xlat2,xlon2;
+   double tmplon;      
+   int    i,indy,hemi;
 
    switch(Ref->GRTYP[0]) {
       case 'N':
@@ -673,8 +660,15 @@ int GeoRef_LL2XY_RG(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int
          dellon = 360.0 / Ref->NX;
          xlon0 = 0.0;
 
-         if (Ref->RPNHead.IG[X_IG1]==GLOBAL) {
-            f77name(ez8_ggll2gd)(X,Y,Lat,Lon,&Nb,&Ref->NX,&Ref->NX,&Ref->RPNHead.IG[X_IG1],Ref->AX);
+         if (Ref->RPNHead.IG[X_IG1]==GLOBAL) {                  
+            for(i=0;i<Nb;i++) {
+               X[i] = (CLAMPLONREF(Lon[i],Ref->Options.LonRef) - xlon0)/dellon + 1.0;
+               indy = GeoRef_XFind(Lat[i],Ref->AX,Ref->NX);
+               if (indy>Ref->NY) indy = Ref->NY - 2;
+               
+               Y[i]= indy+(Lat[i]-Ref->AX[indy])/(Ref->AX[indy+1]-Ref->AX[indy]);
+            }
+
          } else if  (Ref->RPNHead.IG[X_IG1]==NORTH) {
             dellat = 90.0 / Ref->NY;
             xlat0 =  dellat * 0.5;
@@ -688,14 +682,6 @@ int GeoRef_LL2XY_RG(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int
       
       case 'L':
          f77name(cigaxg)(Ref->GRTYP,&xlat0,&xlon0,&dellat,&dellon,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);         
-// TODO: Check for xlon0 limits
-//         do 10 i=1,npts
-//            if (xlon(i).lt.xlon0) then
-//               xlon(i) = xlon(i) + 360.0
-//            endif
-//            if (xlon(i).gt.(xlon0 + ni*dellon)) then
-//               xlon(i) = xlon(i) - 360.0
-//            endif     
          c_ezll2gd(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
          break;
 
@@ -756,7 +742,6 @@ int GeoRef_LL2XY_IRG(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
          break;
    }
    for(i=0;i<Nb;i++) {
-      //TODO: ez_cherche
       indx = GeoRef_XFind(X[i],Ref->AX,Ref->NX);
       indy = GeoRef_XFind(Y[i],Ref->AY,Ref->j2);
       

@@ -58,18 +58,19 @@
 
 // Geographical related constants and functions
 //#define EARTHRADIUS          6378140.0                                                                                   ///< Rayon de la terre en metres
-#define EARTHRADIUS          6371000.0                                                                                   ///< Rayon de la terre en metres (Utilise par RPN)
+#define EARTHRADIUS          6371000.0                                                                                    ///< Rayon de la terre en metres (Utilise par RPN)
 
-#define DIST(E,A0,O0,A1,O1)  ((E+EARTHRADIUS)*acos(sin(A0)*sin(A1)+cos(O0-O1)*cos(A0)*cos(A1)))                          ///< Calculates great circle distance on earth at a specific elevation between tow set of coordinates (in radian)
-#define COURSE(A0,O0,A1,O1)  (fmod(atan2(sin(O0-O1)*cos(A1),cos(A0)*sin(A1)-sin(A0)*cos(A1)*cos(O0-O1)),M_2PI))          ///< Calculates true course between 2 set of coordinates (in radian)
-#define M2RAD(M)             ((double)(M)*0.00000015706707756635)                                                        ///< Convert meters to radians
-#define M2DEG(M)             ((double)(M)*8.9992806450057884399546578634955e-06)                                         ///< Convert meters to degrees
-#define RAD2M(R)             ((double)(R)*6.36670701949370745569e+06)                                                    ///< Convert radians to meters
-#define DEG2M(D)             ((double)(D)*1.11119992746859911778451e+05)                                                 ///< Convert degrees to meters
-#define CLAMPLAT(LAT)        (LAT=LAT>90.0?90.0:(LAT<-90.0?-90.0:LAT))                                                   ///< Clamp latitude between -90 and 90
-#define CLAMPLON(LON)        (LON=LON>180?LON-360:(LON<-180?LON+360:LON))                                                ///< Clamp longitude between -180 and 180
-#define CLAMPLONRAD(LON)     (LON=(LON>M_PI?(fmod(LON+M_PI,M_2PI)-M_PI):(LON<=-M_PI?(fmod(LON-M_PI,M_2PI)+M_PI):LON)))   ///< Clamp longitude in radians -PI and PI
-#define COORD_CLEAR(C)       (C.Lat=C.Lon=C.Elev=-999.0)                                                                 ///< Clear the coordinates values to -999 (undefined)
+#define DIST(E,A0,O0,A1,O1)  ((E+EARTHRADIUS)*acos(sin(A0)*sin(A1)+cos(O0-O1)*cos(A0)*cos(A1)))                           ///< Calculates great circle distance on earth at a specific elevation between tow set of coordinates (in radian)
+#define COURSE(A0,O0,A1,O1)  (fmod(atan2(sin(O0-O1)*cos(A1),cos(A0)*sin(A1)-sin(A0)*cos(A1)*cos(O0-O1)),M_2PI))           ///< Calculates true course between 2 set of coordinates (in radian)
+#define M2RAD(M)             ((double)(M)*0.00000015706707756635)                                                         ///< Convert meters to radians
+#define M2DEG(M)             ((double)(M)*8.9992806450057884399546578634955e-06)                                          ///< Convert meters to degrees
+#define RAD2M(R)             ((double)(R)*6.36670701949370745569e+06)                                                     ///< Convert radians to meters
+#define DEG2M(D)             ((double)(D)*1.11119992746859911778451e+05)                                                  ///< Convert degrees to meters
+#define CLAMPLAT(LAT)        (LAT=LAT>90.0?90.0:(LAT<-90.0?-90.0:LAT))                                                    ///< Clamp latitude between -90 and 90
+#define CLAMPLON(LON)        (LON=LON>180?LON-360:(LON<-180?LON+360:LON))                                                 ///< Clamp longitude between -180 and 180
+#define CLAMPLONRAD(LON)     (LON=(LON>M_PI?(fmod(LON+M_PI,M_2PI)-M_PI):(LON<=-M_PI?(fmod(LON-M_PI,M_2PI)+M_PI):LON)))    ///< Clamp longitude in radians -PI and PI
+#define CLAMPLONREF(LON,REF) (LON>(360.0+REF)?(LON-360.0):LON<REF?(LON+360.0):LON)                                        ///< Clamp longitude between -180 and 180
+#define COORD_CLEAR(C)       (C.Lat=C.Lon=C.Elev=-999.0)                                                                  ///< Clear the coordinates values to -999 (undefined)
 
 #define BITPOS(i)     (i - ((i >> 5) << 5))
 #define GETMSK(fld,i) ((fld[i >> 5]  & (1 << BITPOS(i))) >> BITPOS(i))
@@ -251,6 +252,7 @@ typedef struct TGeoOptions {
    char         PolarCorrect;   ///< Apply polar corrections
    char         VectorMode;     ///< Process data as vector
    float        DistTreshold;   ///< Distance treshold for point clouds
+   float        LonRef;         ///< Longitude referential (-180.0,0.0)
 // int msg_pt_tol;
 //  float msg_dist_thresh;
 } TGeoOptions;
@@ -435,9 +437,9 @@ int       GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float
 int       GeoRef_CorrectVector(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout, float *vvout, float *uuin, float *vvin);
 
 // Still to be figured out
-int c_ezyymint(TGeoRef *RefTo,TGeoRef *RefFrom,int ni,int nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int *yyincount,double *yanlat,double *yanlon,int *yyancount);
-int c_ezsint_mask(TGeoRef *RefTo,TGeoRef *RefFrom,int *mask_out, int *mask_in);
-int c_ezgdef_yymask(TGeoRef *Ref);
+int   c_ezyymint(TGeoRef *RefTo,TGeoRef *RefFrom,int ni,int nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int *yyincount,double *yanlat,double *yanlon,int *yyancount);
+int   c_ezsint_mask(TGeoRef *RefTo,TGeoRef *RefFrom,int *mask_out, int *mask_in);
+int   c_ezgdef_yymask(TGeoRef *Ref);
 void  c_ezgfllfxy(double *Lat,double *Lon,double *X,double *Y,int npts,float xlat1,float xlon1,float xlat2,float xlon2);
 void  c_ezgfxyfll(double *Lat,double *Lon,double *X,double *Y,int npts,float xlat1,float xlon1,float xlat2,float xlon2);
 

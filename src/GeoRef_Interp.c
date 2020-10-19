@@ -264,8 +264,8 @@ int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) {
    }
 
    if (RefFrom->NbSub > 0 || RefTo->NbSub > 0) {
-     // get the subgrids and interpolate accordingly
-     ier=GeoRef_InterpYY(RefTo,RefFrom,zout,zin);
+      // get the subgrids and interpolate accordingly
+      ier=GeoRef_InterpYY(RefTo,RefFrom,zout,zin);
    } else {
       gset=GeoRef_SetGet(RefTo,RefFrom);
 
