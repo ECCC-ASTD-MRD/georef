@@ -464,25 +464,25 @@ static inline double GeoRef_GeoDir(TGeoRef* __restrict const Ref,double X, doubl
    return(dir);
 }
 
-// Fortran function prototypes
-void f77name(ez8_rgdint_0)();
-void f77name(ez8_rgdint_1_w)();
-void f77name(ez8_rgdint_1_nw)();
-void f77name(ez8_rgdint_3_w)();
-void f77name(ez8_rgdint_3_nw)();
-void f77name(ez8_rgdint_3_wnnc)();
-void f77name(ez8_irgdint_1_w)();
-void f77name(ez8_irgdint_1_nw)();
-void f77name(ez8_irgdint_3_w)();
-void f77name(ez8_irgdint_3_nw)();
-void f77name(ez8_irgdint_3_wnnc)();
-void f77name(ez8_ll2igd)();
-void f77name(ez8_ll2rgd)();
+void f77name(ez8_rgdint_0)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2);
+void f77name(ez8_rgdint_1_w)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
+void f77name(ez8_rgdint_1_nw)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2);
+void f77name(ez8_rgdint_3_w)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
+void f77name(ez8_rgdint_3_nw)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2);
+void f77name(ez8_rgdint_3_wnnc)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
+void f77name(ez8_irgdint_1_w)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
+void f77name(ez8_irgdint_1_nw)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *z,wordint *ni,wordint *nj);
+void f77name(ez8_irgdint_3_w)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *cx,ftnfloat *cy,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
+void f77name(ez8_irgdint_3_nw)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *cx,ftnfloat *cy,ftnfloat *z,wordint *i1,wordint *i2,wordint *j1,wordint *j2);
+void f77name(ez8_irgdint_3_wnnc)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
+void f77name(ez8_ll2igd)(double *px,double *py,double *xlat,double *xlon,wordint *npts,wordint *ni,wordint *nj,char *grtyp,char *grref,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4,ftnfloat *ax,ftnfloat *ay,wordint *coordflag);
+// TODO Maude: type of sym ?
+void f77name(ez8_ll2rgd)(double *px,double *py,double *xlat,double *xlon,wordint *npts,wordint *ni,wordint *nj,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4,bool *sym,ftnfloat *lroots);
 void f77name(ez8_llwfgdw)(ftnfloat *z1,ftnfloat *z2,double *xlon,wordint *li,wordint *lj,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4,wordint sz);
 void f77name(ez8_gdwfllw)(ftnfloat *z1,ftnfloat *z2,double *xlon,wordint *li,wordint *lj,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4,wordint sz);
-void f77name(ez8_vllfxy)();
-void f77name(ez8_vtllfxy)();
-extern void f77name(ez8_mxm)  (ftnfloat *a,int *nar,double *b,int *nac,double *c,int *nbc);
+void f77name(ez8_vllfxy)(double *dlat,double *dlon,double *x,double *y,wordint *ni,wordint *nj,ftnfloat *d60,ftnfloat *dgrw,ftnfloat *pi,ftnfloat *pj,wordint *nhem);
+void f77name(ez8_vtllfxy)(double *lat,double *lon,double *x,double *y,ftnfloat *clat,ftnfloat *clon,ftnfloat *d60,ftnfloat *dgrw,wordint *ni,wordint *nj,wordint *n);
+extern void f77name(ez8_mxm)(ftnfloat *a,int *nar,double *b,int *nac,double *c,int *nbc);
 void f77name(ez_llflamb)();
 void f77name(ez_avg)();
 void f77name(ez_avg_sph)();
