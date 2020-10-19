@@ -74,7 +74,8 @@
 
       call cigaxg(grtyp,xlat1,xlon1,xlat2,xlon2,ig1,ig2,ig3,ig4)
       call ez_crot( r, ri, xlon1, xlat1, xlon2, xlat2 )
-      call ez8_gfxyfll(xlon,xlat,xlongf,xlatgf,li*lj,xlat1,xlon1,xlat2,xlon2)
+      ! TODO Maude: Convert to double
+      call ez_gfxyfll(xlon,xlat,xlongf,xlatgf,li*lj,xlat1,xlon1,xlat2,xlon2)
       call ez8_vrotf2(spd,dir,xlon,xlat,xlongf,xlatgf,ri,xyz,uvcart,li,lj)
       call ez8_llwfgdw(spd,dir,xlongf,li,lj,'L',0,0,0,0)
 
