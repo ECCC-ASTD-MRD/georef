@@ -523,7 +523,7 @@ void f77name(ez_calcxy_y_m)();
 void f77name(ez_aminmax)();
 void f77name(ez_corrbgd)();
 void f77name(ez_glat)();
-void f77name(ez_genpole)();
+void f77name(ez8_genpole)(ftnfloat *vpolnor,ftnfloat *vpolsud,ftnfloat *fld,wordint *ni,wordint *nj,bool *vecteur,char *grtyp,wordint *hem,double *x,double *y,ftnfloat *z,double *lat,double *lon,ftnfloat *glat,wordint *ordint);
 void f77name(ez_crot)();
 void f77name(ez_lac)();
 void f77name(ez_cal)();
