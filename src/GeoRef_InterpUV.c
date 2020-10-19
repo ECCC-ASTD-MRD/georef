@@ -577,12 +577,11 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
    memcpy(uugdout, uullin, Nb*sizeof(ftnfloat));
    memcpy(vvgdout, vvllin, Nb*sizeof(ftnfloat));
  
-//TODO: Convert double
    switch (Ref->GRTYP[0]) {
       case 'E':
          lat_true=(double *)(malloc(2*Nb*sizeof(double)));
          lon_true=&lat_true[Nb];
-         f77name(ez8_gfxyfll)(lon_true,lat_true,Lon,Lat,&ni,&Ref->RPNHead.XG[X_LAT1],&Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
+         c_ezgfxyfll(lat_true,lon_true,Lon,Lat,ni,Ref->RPNHead.XG[X_LAT1],Ref->RPNHead.XG[X_LON1],Ref->RPNHead.XG[X_LAT2],Ref->RPNHead.XG[X_LON2]);
          c_ezgfwfllw(uugdout,vvgdout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
          free(lat_true);
          return(0);
@@ -595,7 +594,7 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
             case 'E':
                lat_true=(double *)(malloc(2*Nb*sizeof(double)));
                lon_true=&lat_true[Nb];
-               f77name(ez8_gfxyfll)(Lon,Lat,lon_true,lat_true,&ni,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2],&Ref->RPNHead.XGREF[X_LON2]);         
+               c_ezgfxyfll(Lat,Lon,lon_true,lat_true,ni,Ref->RPNHead.XGREF[X_LAT1],Ref->RPNHead.XGREF[X_LON1],Ref->RPNHead.XGREF[X_LAT2],Ref->RPNHead.XGREF[X_LON2]);         
                c_ezgfwfllw(uugdout,vvgdout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
                free(lat_true);
                return(0);
@@ -630,12 +629,11 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
    memcpy(spd_out, uuin, Nb*sizeof(ftnfloat));
    memcpy(wd_out, vvin, Nb*sizeof(ftnfloat));
 
-//TODO: Convert double
    switch (Ref->GRTYP[0]) {
       case 'E':
          lat_rot=(double *)(malloc(2*Nb*sizeof(double)));
          lon_rot=&lat_rot[Nb];
-         f77name(ez8_gfxyfll)(Lon,Lat,lon_rot,lat_rot,&ni,&Ref->RPNHead.XG[X_LAT1],&Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
+         c_ezgfxyfll(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHead.XG[X_LAT1],Ref->RPNHead.XG[X_LON1],Ref->RPNHead.XG[X_LAT2],Ref->RPNHead.XG[X_LON2]);
          c_ezllwfgfw(spd_out,wd_out,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
          free(lat_rot);
          return(0);  
@@ -648,7 +646,7 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
 	         case 'E':
                lat_rot=(double *)(malloc(2*Nb*sizeof(double)));
                lon_rot=&lat_rot[Nb];
-	            f77name(ez8_gfxyfll)(Lon,Lat,lon_rot,lat_rot,&ni,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2],&Ref->RPNHead.XGREF[X_LON2]);
+	            c_ezgfxyfll(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHead.XGREF[X_LAT1],Ref->RPNHead.XGREF[X_LON1],Ref->RPNHead.XGREF[X_LAT2],Ref->RPNHead.XGREF[X_LON2]);
 	            c_ezllwfgfw(spd_out,wd_out,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
 	            free(lat_rot);
 	            return(0);

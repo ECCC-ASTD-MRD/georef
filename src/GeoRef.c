@@ -1014,6 +1014,7 @@ TGeoRef* GeoRef_New() {
    ref->Options.VectorMode=FALSE;
    ref->Options.SubGrid=0;
    ref->Options.DistTreshold=10.0;
+   ref->Options.LonRef=0.0;
 
    // RPN Specific
    memset(&ref->RPNHead,0x0,sizeof(TRPNHeader));

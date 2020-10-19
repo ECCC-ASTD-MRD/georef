@@ -155,19 +155,14 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
             break;
 
          case 'E':
-            dlon = 360. /(ni-1);
-            dlat = 180./(nj);
+            dlon = 360.0/(ni-1);
+            dlat = 180.0/(nj);
             xlon00 = 0.0;
             xlat00 = -90. + 0.5*dlat;
 
             grll(Ref->Lat,Ref->Lon,ni,nj,xlat00,xlon00,dlat,dlon);
             f77name(cigaxg)(Ref->GRTYP, &Ref->RPNHead.XG[X_LAT1], &Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2], &Ref->RPNHead.XG[X_LON2],&Ref->RPNHead.IG[X_IG1],  &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
-            latp = (double *)malloc(2*npts*sizeof(double));
-            lonp = &latp[npts];
-            f77name(ez8_gfllfxy)(lonp,latp,Ref->Lon,Ref->Lat,&npts,&Ref->RPNHead.XG[X_LAT1], &Ref->RPNHead.XG[X_LON1], &Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
-            memcpy(Ref->Lat,latp,npts*sizeof(double));
-            memcpy(Ref->Lon,lonp,npts*sizeof(double));
-            free(latp);
+            c_ezgfllfxy(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHead.XG[X_LAT1],Ref->RPNHead.XG[X_LON1],Ref->RPNHead.XG[X_LAT2],Ref->RPNHead.XG[X_LON2]);
             break;
 
          case 'L':
@@ -250,11 +245,6 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
 	               latp = (double *) malloc(2*npts*sizeof(double));
 	               lonp = &latp[npts];
 	               f77name(ez8_vllfxy)(latp,lonp,Ref->Lon,Ref->Lat,&ni,&nj,&Ref->RPNHead.XGREF[X_D60],&Ref->RPNHead.XGREF[X_DGRW],&Ref->RPNHead.XGREF[X_PI], &Ref->RPNHead.XGREF[X_PJ], &Ref->Hemi);
-
-	               for (i=0; i < npts; i++) {
-		               if (lonp[i] < 0.0) lonp[i] += 360.0;
-		            }
-
                   memcpy(Ref->Lon, lonp, npts*sizeof(double));
                   memcpy(Ref->Lat, latp, npts*sizeof(double));
                   free(latp);
@@ -276,12 +266,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                   break;
 
                case 'E':
-                  latp = (double *) malloc(2*npts*sizeof(double));
-                  lonp = &latp[npts];
-                  f77name(ez8_gfllfxy)(lonp,latp,Ref->Lon,Ref->Lat,&npts,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1], &Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2]);
-                  memcpy(Ref->Lon,lonp,npts*sizeof(double));
-                  memcpy(Ref->Lat,latp,npts*sizeof(double));
-                  free(latp);
+                  c_ezgfllfxy(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHead.XGREF[X_LAT1],Ref->RPNHead.XGREF[X_LON1],Ref->RPNHead.XGREF[X_LAT2],Ref->RPNHead.XGREF[X_LON2]);
                   break;
             }
             break;
@@ -295,6 +280,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                   y[C_TO_FTN(i,j,ni)] = (float) (j+1.0);
                }
             }
+            //TODO : use double
             f77name(ez_llflamb)(Ref->Lat,Ref->Lon,x,y,&npts,&Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4],1);
             for (i=0; i < npts; i++) {
                if (Ref->Lon[i] < 0.0) {

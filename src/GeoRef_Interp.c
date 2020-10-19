@@ -264,25 +264,25 @@ int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) {
    }
 
    if (RefFrom->NbSub > 0 || RefTo->NbSub > 0) {
-     // get the subgrids and interpolate accordingly
-     ier=GeoRef_InterpYY(RefTo,RefFrom,zout,zin);
+      // get the subgrids and interpolate accordingly
+      ier=GeoRef_InterpYY(RefTo,RefFrom,zout,zin);
    } else {
       gset=GeoRef_SetGet(RefTo,RefFrom);
 
       if (RefFrom->Type&GRID_YINVERT) {
-      lzin = (float *)malloc(RefFrom->NX * RefFrom->NY * sizeof(float));
-      memcpy(lzin,zin,RefFrom->NX*RefFrom->NY*sizeof(float));
-      f77name(permut)(lzin,&RefFrom->NX,&RefFrom->NY);
+         lzin = (float *)malloc(RefFrom->NX * RefFrom->NY * sizeof(float));
+         memcpy(lzin,zin,RefFrom->NX*RefFrom->NY*sizeof(float));
+         f77name(permut)(lzin,&RefFrom->NX,&RefFrom->NY);
       } else {
-      lzin = zin;
+         lzin = zin;
       }
 
       if (RefFrom->Type&GRID_EXPAND) {
 
-      lxzin = (float *)malloc(2*RefFrom->NX*RefFrom->NY*sizeof(float));
-      GeoRef_GridGetExpanded(RefFrom,lxzin,lzin);
+         lxzin = (float *)malloc(2*RefFrom->NX*RefFrom->NY*sizeof(float));
+         GeoRef_GridGetExpanded(RefFrom,lxzin,lzin);
       } else {
-      lxzin = lzin;
+         lxzin = lzin;
       }
 
       ier += GeoRef_CalcLL(RefTo);

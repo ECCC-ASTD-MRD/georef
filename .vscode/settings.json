@@ -3,7 +3,8 @@
       "*.extension": "language",
       "*.hf": "fortran",
       "*.ftn90": "fortran",
-      "*.cuh": "c"
+      "*.cuh": "c",
+      "complex": "c"
    },
    "C_Cpp.errorSquiggles": "Disabled"
 }

@@ -26,7 +26,8 @@ int ez_corrval_aunord(float *zout, float *zin, TGeoRef *RefFrom, TGeoRef *RefTo)
    TGridSet *gset=NULL;
    int i;
    int npts;
-   float *temp, *vals, *temp_y;
+   float *temp, *vals;
+   double *temp_y;
    float ay[4], poleval;
    int ni, nj, i1, i2, j1, j2;
    int un = 1;
@@ -78,7 +79,7 @@ int ez_corrval_aunord(float *zout, float *zin, TGeoRef *RefFrom, TGeoRef *RefTo)
    	        break;
 
          case IR_LINEAR:
-	          temp_y = (float *) malloc(npts*sizeof(float));
+	          temp_y = (double*) malloc(npts*sizeof(double));
 	          for (i=0; i < npts; i++) {
                temp_y[i] = gset->zones[NORTH].y[i] - (1.0 * (RefFrom->j2-3));
 	          }
@@ -87,7 +88,7 @@ int ez_corrval_aunord(float *zout, float *zin, TGeoRef *RefFrom, TGeoRef *RefTo)
 	          break;
 
          case IR_NEAREST:
-	          temp_y = (float *) malloc(npts*sizeof(float));
+	          temp_y = (double*) malloc(npts*sizeof(double));
 	          for (i=0; i < npts; i++) {
 	             temp_y[i] = gset->zones[NORTH].y[i] - (1.0 * (RefFrom->j2-3));
 	          }
@@ -342,7 +343,7 @@ int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
       }
     
      f77name(cigaxg)(RefFrom->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &RefFrom->RPNHead.IGREF[X_IG1], &RefFrom->RPNHead.IGREF[X_IG2], &RefFrom->RPNHead.IGREF[X_IG3], &RefFrom->RPNHead.IGREF[X_IG4]);
-     f77name(ez8_gfxyfll)(polar_lon_gem, polar_lat_gem, polar_lon, polar_lat, &ni, &xlat1, &xlon1, &xlat2, &xlon2);
+     c_ezgfxyfll(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
    }
 
    grtypa[0] = 'A';
@@ -446,7 +447,7 @@ int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
      }
     
      f77name(cigaxg)(RefFrom->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &RefFrom->RPNHead.IGREF[X_IG1], &RefFrom->RPNHead.IGREF[X_IG2], &RefFrom->RPNHead.IGREF[X_IG3], &RefFrom->RPNHead.IGREF[X_IG4]);
-     f77name(ez8_gfxyfll)(polar_lon_gem, polar_lat_gem, polar_lon, polar_lat, &ni, &xlat1, &xlon1, &xlat2, &xlon2);
+     c_ezgfxyfll(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
    }
 
    grtypa[0] = 'A';
@@ -513,11 +514,12 @@ int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
 int ez_corrvec_aunord(float *uuout, float *vvout, float *uuin, float *vvin, TGeoRef *RefFrom, TGeoRef *RefTo) {
 
    TGridSet *gset=NULL;
-   float uupole, vvpole;
-   float *polar_uu_in, *polar_vv_in, *polar_uu_out, *polar_vv_out, *corr_uus, *corr_vvs, *temp_y,ay[4];
-   int ni, nj, i1, i2, j1, j2, degree,npts,i;
-   int quatre = 4;
-   int un = 1;
+   float     uupole, vvpole;
+   float    *polar_uu_in, *polar_vv_in, *polar_uu_out, *polar_vv_out, *corr_uus, *corr_vvs,ay[4];
+   double   *temp_y;
+   int       ni, nj, i1, i2, j1, j2, degree,npts,i;
+   int       quatre = 4;
+   int       un = 1;
 
    gset=GeoRef_SetGet(RefTo,RefFrom);
 
@@ -560,7 +562,7 @@ int ez_corrvec_aunord(float *uuout, float *vvout, float *uuin, float *vvin, TGeo
 	      }
 
       case IR_LINEAR:
-         temp_y = (float *) malloc(npts*sizeof(float));
+         temp_y = (double*) malloc(npts*sizeof(double));
          for (i=0; i < npts; i++) {
             temp_y[i] = gset->zones[NORTH].y[i] - (1.0 * (RefFrom->j2-3));
 	       }
@@ -571,7 +573,7 @@ int ez_corrvec_aunord(float *uuout, float *vvout, float *uuin, float *vvin, TGeo
          break;
 
       case IR_NEAREST:
-         temp_y = (float *) malloc(npts*sizeof(float));
+         temp_y = (double*) malloc(npts*sizeof(double));
          for (i=0; i < npts; i++) {
             temp_y[i] = gset->zones[NORTH].y[i] - (1.0 * (RefFrom->j2-3));
 	       }
