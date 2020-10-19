@@ -38,8 +38,8 @@
       real lonref
 
       integer indx, indy
-      integer ez_cherche
-      external ez_cherche
+      integer ez8_cherche
+      external ez8_cherche
       
       if (grref .eq. 'N') then
          call cigaxg(grref,  PI, PJ, D60, DGRW, ig1, ig2, ig3, ig4)
@@ -72,8 +72,8 @@
       
       if (coordflag .eq. relatif) then
          do 10 i=1,npts
-            indx = ez_cherche(px(i),ax,ni)
-            indy = ez_cherche(py(i),ay,nj)
+            indx = ez8_cherche(px(i),ax,ni)
+            indy = ez8_cherche(py(i),ay,nj)
             
             if (indx .ge. ni) indx = ni - 1
             if (indy .ge. nj) indy = nj - 1

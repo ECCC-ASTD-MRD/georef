@@ -693,7 +693,6 @@ void c_ezgfwfllw(float *uullout,float *vvllout,double *Lat,double *Lon,double *x
    grtypl[0] = 'L';
    f77name(ez8_gdwfllw)(uullout,vvllout,Lon,ni,nj,grtypl, &zero, &zero, &zero, &zero, 1);
    f77name(ez8_uvacart)(xyz, uullout, vvllout, Lon, Lat, ni, nj);
-   // TODO Maude: where is this function
    f77name(ez8_mxm)(r, &trois, xyz, &trois, uvcart, &npts);
    f77name(ez8_cartauv)(uullout, vvllout, uvcart, xloningf, xlatingf, ni, nj);
 

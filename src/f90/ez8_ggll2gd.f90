@@ -31,8 +31,8 @@
       real*8 x(npts), y(npts), xlat(npts), xlon(npts)
       real lroots(nj)
       real abs,del,epsphi
-      integer ez_cherche
-      external ez_cherche
+      integer ez8_cherche
+      external ez8_cherche
 
       integer i,j,guess,hem,indy
       real tmplat, dellat, dellon, xlat0, xlon0
@@ -51,8 +51,7 @@
                   tmplon = tmplon + 360.0
             endif
             x(i) = (tmplon - xlon0)/dellon + 1.0
-            ! TODO Maude: convert to double
-            indy = ez_cherche(xlat(i),lroots,nj)
+            indy = ez8_cherche(xlat(i),lroots,nj)
             if (indy .ge. nj) indy = nj - 1
          
             y(i)= dble(indy)+(xlat(i)-lroots(indy))/(lroots(indy+1)-lroots(indy))
