@@ -577,7 +577,6 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
    memcpy(uugdout, uullin, Nb*sizeof(ftnfloat));
    memcpy(vvgdout, vvllin, Nb*sizeof(ftnfloat));
  
-//TODO: Convert double
    switch (Ref->GRTYP[0]) {
       case 'E':
          lat_true=(double *)(malloc(2*Nb*sizeof(double)));
@@ -630,7 +629,6 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
    memcpy(spd_out, uuin, Nb*sizeof(ftnfloat));
    memcpy(wd_out, vvin, Nb*sizeof(ftnfloat));
 
-//TODO: Convert double
    switch (Ref->GRTYP[0]) {
       case 'E':
          lat_rot=(double *)(malloc(2*Nb*sizeof(double)));
@@ -693,7 +691,6 @@ void c_ezgfwfllw(float *uullout,float *vvllout,double *Lat,double *Lon,double *x
    grtypl[0] = 'L';
    f77name(ez8_gdwfllw)(uullout,vvllout,Lon,ni,nj,grtypl, &zero, &zero, &zero, &zero, 1);
    f77name(ez8_uvacart)(xyz, uullout, vvllout, Lon, Lat, ni, nj);
-   // TODO Maude: where is this function
    f77name(ez8_mxm)(r, &trois, xyz, &trois, uvcart, &npts);
    f77name(ez8_cartauv)(uullout, vvllout, uvcart, xloningf, xlatingf, ni, nj);
 

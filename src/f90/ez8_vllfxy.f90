@@ -89,8 +89,8 @@
             if(nhem .eq. 2) then
                rlat=-rlat
                rlon=-rlon   
-               if(rlon.lt.0.0d0) rlon=rlon+360.0d0
             endif
+            if(rlon.lt.0.0d0) rlon=rlon+360.0d0
             dlat(i,j)=rlat
             dlon(i,j)=rlon
          enddo

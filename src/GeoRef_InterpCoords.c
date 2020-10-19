@@ -23,9 +23,7 @@
 #include "GeoRef.h"
 #include "Vertex.h"
 
-//int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
-
-void  c_ezgfllfxy2(double *Lat,double *Lon,wordint *npts,float *xlat1,float *xlon1,float *xlat2,float *xlon2) {
+void  c_ezgfxyfll(double *Lat,double *Lon,double *X,double *Y,wordint *npts,float *xlat1,float *xlon1,float *xlat2,float *xlon2) {
 
    double *cart,*carot,latr,lonr,cosdar;
    int i,k,n,c;
@@ -45,6 +43,37 @@ void  c_ezgfllfxy2(double *Lat,double *Lon,wordint *npts,float *xlat1,float *xlo
       cart[c+1] = cosdar*sin(lonr);
       cart[c+2] = sin(latr);
 
+      carot[c]   = r[0][0]*cart[c+0]+r[0][1]*cart[c+1]+r[0][2]*cart[c+2];
+      carot[c+1] = r[1][0]*cart[c+0]+r[1][1]*cart[c+1]+r[1][2]*cart[c+2];
+      carot[c+2] = r[2][0]*cart[c+0]+r[2][1]*cart[c+1]+r[2][2]*cart[c+2];
+      
+      Y[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[c+2]))));
+      X[n]=RAD2DEG(atan2(carot[c+1],carot[c]));
+      X[n]=fmod(X[n],360.0);
+      if (X[n]<0.0) X[n]+=360.0;
+   }
+   free(cart);
+}
+void  c_ezgfllfxy(double *Lat,double *Lon,double *X,double *Y,wordint *npts,float *xlat1,float *xlon1,float *xlat2,float *xlon2) {
+
+   double *cart,*carot,latr,lonr,cosdar;
+   int i,k,n,c;
+   float r[3][3],ri[3][3];
+
+   cart  = (double*)malloc(6* *npts*sizeof(double));
+   carot = &cart[3**npts];
+
+   f77name(ez_crot)(r,ri,xlon1,xlat1,xlon2,xlat2);
+
+   for(n=0;n<*npts;n++) {
+      latr=DEG2RAD(Y[n]);
+      lonr=DEG2RAD(X[n]);
+      cosdar = cos(latr);
+      c=n*3;
+      cart[c]   = cosdar*cos(lonr);
+      cart[c+1] = cosdar*sin(lonr);
+      cart[c+2] = sin(latr);
+
       carot[c]   = ri[0][0]*cart[c+0]+ri[0][1]*cart[c+1]+ri[0][2]*cart[c+2];
       carot[c+1] = ri[1][0]*cart[c+0]+ri[1][1]*cart[c+1]+ri[1][2]*cart[c+2];
       carot[c+2] = ri[2][0]*cart[c+0]+ri[2][1]*cart[c+1]+ri[2][2]*cart[c+2];
@@ -56,6 +85,7 @@ void  c_ezgfllfxy2(double *Lat,double *Lon,wordint *npts,float *xlat1,float *xlo
    }
    free(cart);
 }
+
 
 int GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
 
@@ -260,7 +290,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
                Lat[i] = (Y[i]-1.0)*dlat+swlat;
             }
 
-            c_ezgfllfxy2(Lat,Lon,&Nb,&Ref->RPNHead.XG[X_LAT1],&Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
+            c_ezgfllfxy(Lat,Lon,Lon,Lat,&Nb,&Ref->RPNHead.XG[X_LAT1],&Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2]);
             break;
 
          case 'L':
@@ -291,7 +321,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
              break;
 
          case 'W':
-//TODO: When double             GeoRef_XY2LL_W(Ref,Lat,Lon,X,Y,Nb);
+             GeoRef_XY2LL_W(Ref,Lat,Lon,X,Y,Nb);
              break;
 
          case 'Y':
@@ -328,7 +358,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
                         tmpy[i]+=(Ref->AY[s]-tmpy[i])*dy;
                      }
                   }
-//TODO: When double                  GeoRef_XY2LL_W(Ref,Lat,Lon,tmpx,tmpy,Nb);
+                  GeoRef_XY2LL_W(Ref,Lat,Lon,tmpx,tmpy,Nb);
                   free(tmpx);
                   break;
 
@@ -373,7 +403,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
             switch (Ref->RPNHead.GRREF[0]) {
                case 'E':
                   f77name(cigaxg)(Ref->RPNHead.GRREF,&xlat1,&xlon1,&xlat2,&xlon2,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
-                  f77name(ez8_gfllfxy)(Lon, Lat, tmpx, tmpy, &npts, &Ref->RPNHead.XGREF[X_LAT1], &Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2]);
+                  c_ezgfllfxy(Lat,Lon,tmpx,tmpy,&npts,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2]);
                   break;
 
                case 'S':
@@ -393,7 +423,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
                   break;
 
                case 'W':
-//TODO::When double                  GeoRef_XY2LL_W(Ref,Lat,Lon,tmpx,tmpy,Nb);
+                  GeoRef_XY2LL_W(Ref,Lat,Lon,tmpx,tmpy,Nb);
                   break;
 
                default:
@@ -556,8 +586,7 @@ int GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
 }
 
 int GeoRef_LL2XY_RG(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
-   //TODO: use double
-   f77name(ez8_ll2rgd)(X,Y,Lat,Lon,&Nb,&Ref->NX,&Ref->NY,&Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4],&Ref->Options.Symmetric,Ref->AY);
+   f77name(ez8_ll2rgd)(X,Y,Lat,Lon,&Nb,&Ref->NX,&Ref->NY,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4],&Ref->Options.Symmetric,Ref->AY);
    return(0);
 }
 
@@ -566,8 +595,7 @@ int GeoRef_LL2XY_IRG(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
    int j,coordonnee;
 
    coordonnee = RELATIVE;
-   //TODO: use double
-   f77name(ez8_ll2igd)(X,Y,Lat,Lon,&Nb,&Ref->NX,&Ref->j2,&Ref->GRTYP,&Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4],Ref->AX,Ref->AY,&coordonnee);
+   f77name(ez8_ll2igd)(X,Y,Lat,Lon,&Nb,&Ref->NX,&Ref->j2,Ref->GRTYP,Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4],Ref->AX,Ref->AY,&coordonnee);
    if (Ref->GRTYP[0] == 'G') {
       if (Ref->RPNHead.IG[X_IG1] == 1) {
          for (j=0; j < Nb; j++) Y[j] = Y[j] - Ref->j2;
