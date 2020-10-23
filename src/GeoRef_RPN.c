@@ -532,67 +532,68 @@ int GeoRef_RPNDefXG(TGeoRef* Ref) {
 //! If grtyp == 'Z' or '#', the dimensions of ax=ni and ay=nj.
 //! If grtyp == 'Y', the dimensions of ax=ay=ni*nj. 
 
-TGeoRef* GeoRef_RPNCreateFromMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,float* AX,float* AY) {
+TGeoRef* GeoRef_RPNCreateInMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,float* AX,float* AY) {
    
-   TGeoRef* Ref,*fref;
+   TGeoRef* ref,*fref;
 
-   Ref = GeoRef_New();
+   ref = GeoRef_New();
 
-   Ref->GRTYP[0] = GRTYP[0];
-   Ref->GRTYP[1] = '\0';
-   Ref->RPNHead.GRREF[0] = GRREF?GRREF[0]:'\0';
-   Ref->RPNHead.GRREF[1] = '\0';
-   Ref->NX = NI;
-   Ref->NY = NJ;
-   Ref->RPNHead.IG[X_IG1] = IG1;
-   Ref->RPNHead.IG[X_IG2] = IG2;
-   Ref->RPNHead.IG[X_IG3] = IG3;
-   Ref->RPNHead.IG[X_IG4] = IG4;
-   Ref->i1 = 1;
-   Ref->i2 = NI;
-   Ref->j1 = 1;
-   Ref->j2 = NJ;
+   ref->RPNHead.GRTYP[0]=ref->GRTYP[0] = GRTYP[0];
+   ref->RPNHead.GRTYP[1]=ref->GRTYP[1] = '\0';
+   ref->RPNHead.GRREF[0] = GRREF?GRREF[0]:'\0';
+   ref->RPNHead.GRREF[1] = '\0';
+   ref->RPNHead.NI=ref->NX = NI;
+   ref->RPNHead.NJ=ref->NY = NJ;
+   ref->RPNHead.IG[X_IG1] = IG1;
+   ref->RPNHead.IG[X_IG2] = IG2;
+   ref->RPNHead.IG[X_IG3] = IG3;
+   ref->RPNHead.IG[X_IG4] = IG4;
+   ref->i1 = 1;
+   ref->i2 = NI;
+   ref->j1 = 1;
+   ref->j2 = NJ;
 
    switch (GRTYP[0]) {
       case 'Z':
-         f77name(cigaxg)(Ref->RPNHead.GRREF,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2],&Ref->RPNHead.XGREF[X_LON2],&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+         f77name(cigaxg)(ref->RPNHead.GRREF,&ref->RPNHead.XGREF[X_LAT1],&ref->RPNHead.XGREF[X_LON1],&ref->RPNHead.XGREF[X_LAT2],&ref->RPNHead.XGREF[X_LON2],&ref->RPNHead.IGREF[X_IG1],&ref->RPNHead.IGREF[X_IG2],&ref->RPNHead.IGREF[X_IG3],&ref->RPNHead.IGREF[X_IG4]);
       case '#':
       case 'Y':
-         Ref->AX = AX;
-         Ref->AY = AY;
+         ref->AX = AX;
+         ref->AY = AY;
          break;
    }
 
-   GeoRef_Size(Ref,0,0,NI-1,NJ-1,0);
+   GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
 
-   // This georef already exists
    // TODO: Would be more efficient to find without creating one
-   if (fref = GeoRef_Find(Ref)) {
-      free(Ref);
+   if (fref = GeoRef_Find(ref)) {
+      // This georef already exists
+      free(ref);
       GeoRef_Incr(fref);
       return(fref);
    }
 
    // This is a new georef
-   GeoRef_Add(Ref);
+   GeoRef_Add(ref);
 
-   GeoRef_RPNDefXG(Ref);
-   GeoRef_AxisDefine(Ref,AX,AY);
+   GeoRef_RPNDefXG(ref);
+   GeoRef_AxisDefine(ref,AX,AY);
 
    // TODO: Check for sub-grids (U grids can have sub grids)
-   //Ref->NbId = GRTYP[0]=='U'? (Ref->NbSub==0? 1 : Ref->NbSub) : 1;
+   //ref->NbId = GRTYP[0]=='U'? (ref->NbSub==0? 1 : ref->NbSub) : 1;
 
-   Ref->Project=GeoRef_RPNProject;
-   Ref->UnProject=GeoRef_RPNUnProject;
-   Ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
-   Ref->Distance=GeoRef_RPNDistance;
+   ref->Project=GeoRef_RPNProject;
+   ref->UnProject=GeoRef_RPNUnProject;
+   ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
+   ref->Distance=GeoRef_RPNDistance;
 
-   return(Ref);
+   return(ref);
 }
 
 TGeoRef* GeoRef_RPNCreateYY(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,int NbSub,TGeoRef **Subs) {
+
    int  i;
-   TGeoRef *Ref,*fref,*sub_gd;
+   TGeoRef *ref,*fref,*sub_gd;
     
    if (NbSub <= 1) {
       App_Log(ERROR,"%s: NbSub given is less than 2\n",__func__);
@@ -603,68 +604,68 @@ TGeoRef* GeoRef_RPNCreateYY(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,in
       return(NULL);
    }
 
-   Ref = GeoRef_New();
+   ref = GeoRef_New();
   
    if (VerCode == 1) {
       sub_gd = Subs[0];
 
-      Ref->GRTYP[0] = GRTYP[0];
-      Ref->RPNHead.GRREF[0] = GRREF[0];
-      Ref->NX       = NI;
-      Ref->NY       = NJ;
+      ref->RPNHead.GRTYP[0]=ref->GRTYP[0] = GRTYP[0];
+      ref->RPNHead.GRREF[0] = GRREF[0];
+      ref->NX       = NI;
+      ref->NY       = NJ;
          
       // To add more uniqueness to the super-grid index Yin-Yang grid, we also add the rotation of YIN
-      Ref->RPNHead.IG[X_IG1]  = sub_gd->RPNHead.IG[X_IG1];
-      Ref->RPNHead.IG[X_IG2]  = sub_gd->RPNHead.IG[X_IG2];
-      Ref->RPNHead.IG[X_IG3]  = sub_gd->RPNHead.IG[X_IG3];
-      Ref->RPNHead.IG[X_IG4]  = sub_gd->RPNHead.IG[X_IG4];
-      Ref->RPNHead.IGREF[X_IG1]=VerCode;
-      Ref->RPNHead.IGREF[X_IG2]=0;
-      Ref->RPNHead.IGREF[X_IG3]=0;
-      Ref->RPNHead.IGREF[X_IG4]=0;
-      Ref->NbSub= NbSub;
+      ref->RPNHead.IG[X_IG1]  = sub_gd->RPNHead.IG[X_IG1];
+      ref->RPNHead.IG[X_IG2]  = sub_gd->RPNHead.IG[X_IG2];
+      ref->RPNHead.IG[X_IG3]  = sub_gd->RPNHead.IG[X_IG3];
+      ref->RPNHead.IG[X_IG4]  = sub_gd->RPNHead.IG[X_IG4];
+      ref->RPNHead.IGREF[X_IG1]=VerCode;
+      ref->RPNHead.IGREF[X_IG2]=0;
+      ref->RPNHead.IGREF[X_IG3]=0;
+      ref->RPNHead.IGREF[X_IG4]=0;
+      ref->NbSub= NbSub;
    }
   
    // This georef already exists
-   if (fref=GeoRef_Find(Ref)) {
-      free(Ref);
+   if (fref=GeoRef_Find(ref)) {
+      free(ref);
       GeoRef_Incr(fref);
       return(fref);
    }
 
    // This is a new georef
-   GeoRef_Add(Ref);
+   GeoRef_Add(ref);
 
-   Ref->Subs = (TGeoRef **)malloc(NbSub*sizeof(TGeoRef*));
+   ref->Subs = (TGeoRef **)malloc(NbSub*sizeof(TGeoRef*));
 
    for (i=0; i < NbSub; i++) {
-      Ref->Subs[i] = Subs[i];
+      ref->Subs[i] = Subs[i];
       c_ezgdef_yymask(Subs[i]);
-      App_Log(DEBUG,"%s: Grille[%p].Subs[%p] has maskgrid=%p\n",__func__,Ref,Subs[i],sub_gd->mymaskgrid);
+      App_Log(DEBUG,"%s: Grille[%p].Subs[%p] has maskgrid=%p\n",__func__,ref,Subs[i],sub_gd->mymaskgrid);
    }
 
-   App_Log(DEBUG,"%s: grtyp     = '%c'\n",__func__, Ref->GRTYP[0]);
-   App_Log(DEBUG,"%s: grref     = '%c'\n",__func__, Ref->RPNHead.GRREF[0]);
-   App_Log(DEBUG,"%s: ni        = %d\n",__func__,Ref->NX);
-   App_Log(DEBUG,"%s: nj        = %d\n",__func__,Ref->NY);
-   App_Log(DEBUG,"%s: ig1       = %d\n",__func__,Ref->RPNHead.IG[X_IG1]);
-   App_Log(DEBUG,"%s: ig2       = %d\n",__func__,Ref->RPNHead.IG[X_IG2]);
-   App_Log(DEBUG,"%s: ig3       = %d\n",__func__,Ref->RPNHead.IG[X_IG3]);
-   App_Log(DEBUG,"%s: ig4       = %d\n",__func__,Ref->RPNHead.IG[X_IG4]);
-   App_Log(DEBUG,"%s: ig1ref    = %d\n",__func__,Ref->RPNHead.IGREF[X_IG1]);
-   App_Log(DEBUG,"%s: ig2ref    = %d\n",__func__,Ref->RPNHead.IGREF[X_IG2]);
-   App_Log(DEBUG,"%s: ig3ref    = %d\n",__func__,Ref->RPNHead.IGREF[X_IG3]);
-   App_Log(DEBUG,"%s: ig4ref    = %d\n",__func__,Ref->RPNHead.IGREF[X_IG4]);
-   App_Log(DEBUG,"%s: NbSub     = %d\n",__func__,Ref->NbSub);
-   App_Log(DEBUG,"%s: Subs[0]   = %p\n",__func__,Ref->Subs[0]);
-   App_Log(DEBUG,"%s: Subs[1]   = %p\n",__func__,Ref->Subs[1]);
+   App_Log(DEBUG,"%s: grtyp     = '%c'\n",__func__, ref->GRTYP[0]);
+   App_Log(DEBUG,"%s: grref     = '%c'\n",__func__, ref->RPNHead.GRREF[0]);
+   App_Log(DEBUG,"%s: ni        = %d\n",__func__,ref->NX);
+   App_Log(DEBUG,"%s: nj        = %d\n",__func__,ref->NY);
+   App_Log(DEBUG,"%s: ig1       = %d\n",__func__,ref->RPNHead.IG[X_IG1]);
+   App_Log(DEBUG,"%s: ig2       = %d\n",__func__,ref->RPNHead.IG[X_IG2]);
+   App_Log(DEBUG,"%s: ig3       = %d\n",__func__,ref->RPNHead.IG[X_IG3]);
+   App_Log(DEBUG,"%s: ig4       = %d\n",__func__,ref->RPNHead.IG[X_IG4]);
+   App_Log(DEBUG,"%s: ig1ref    = %d\n",__func__,ref->RPNHead.IGREF[X_IG1]);
+   App_Log(DEBUG,"%s: ig2ref    = %d\n",__func__,ref->RPNHead.IGREF[X_IG2]);
+   App_Log(DEBUG,"%s: ig3ref    = %d\n",__func__,ref->RPNHead.IGREF[X_IG3]);
+   App_Log(DEBUG,"%s: ig4ref    = %d\n",__func__,ref->RPNHead.IGREF[X_IG4]);
+   App_Log(DEBUG,"%s: NbSub     = %d\n",__func__,ref->NbSub);
+   App_Log(DEBUG,"%s: Subs[0]   = %p\n",__func__,ref->Subs[0]);
+   App_Log(DEBUG,"%s: Subs[1]   = %p\n",__func__,ref->Subs[1]);
 
-   App_Log(DEBUG,"%s: RPNHead.XG[1] = %f\n",__func__,Ref->RPNHead.XG[1]);
-   App_Log(DEBUG,"%s: RPNHead.XG[2] = %f\n",__func__,Ref->RPNHead.XG[2]);
-   App_Log(DEBUG,"%s: RPNHead.XG[3] = %f\n",__func__,Ref->RPNHead.XG[3]);
-   App_Log(DEBUG,"%s: RPNHead.XG[4] = %f\n",__func__,Ref->RPNHead.XG[4]);
+   App_Log(DEBUG,"%s: RPNHead.XG[1] = %f\n",__func__,ref->RPNHead.XG[1]);
+   App_Log(DEBUG,"%s: RPNHead.XG[2] = %f\n",__func__,ref->RPNHead.XG[2]);
+   App_Log(DEBUG,"%s: RPNHead.XG[3] = %f\n",__func__,ref->RPNHead.XG[3]);
+   App_Log(DEBUG,"%s: RPNHead.XG[4] = %f\n",__func__,ref->RPNHead.XG[4]);
 
-   return(Ref);
+   return(ref);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -700,8 +701,8 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int 
    if (GRTYP[0]==' ') GRTYP[0]='X';
    
    GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
-   ref->GRTYP[0]=GRTYP[0];
-   ref->GRTYP[1]=GRTYP[1];
+   ref->RPNHead.GRTYP[0]=ref->GRTYP[0]=GRTYP[0];
+   ref->RPNHead.GRTYP[0]=ref->GRTYP[1]=GRTYP[1];
    ref->Project=GeoRef_RPNProject;
    ref->UnProject=GeoRef_RPNUnProject;
    ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
@@ -717,7 +718,7 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int 
 
       if (GRTYP[0]!='#' && GRTYP[0]!='Y' && GRTYP[0]!='Z' && GRTYP[0]!='O' && GRTYP[0]!='U' && GRTYP[0]!=' ') {
          // No need to look for grid descriptors
-         return GeoRef_RPNCreateFromMemory(NI,NJ,GRTYP," ",IG1,IG2,IG3,IG4,NULL,NULL);
+         return(GeoRef_RPNCreateInMemory(NI,NJ,GRTYP," ",IG1,IG2,IG3,IG4,NULL,NULL));
       }
   
 
@@ -726,7 +727,7 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int 
       ref->RPNHead.IG[X_IG2] = IG2;
       ref->RPNHead.IG[X_IG3] = IG3;
       ref->RPNHead.IG[X_IG4] = (GRTYP[0]=='#' || GRTYP[0]=='U')?IG4:0;
-  
+ 
       // This georef already exists
       if (fref=GeoRef_Find(ref)) {
          free(ref);
@@ -758,6 +759,28 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int 
    }
 
    return(ref);
+}
+
+wordint GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,int *IG2,int *IG3,int *IG4,char *GRREF,int *IG1REF,int *IG2REF,int *IG3REF,int *IG4REF) {
+   
+   *NI     = Ref->RPNHead.NI;
+   *NJ     = Ref->RPNHead.NJ;
+
+   GRTYP[0]  = Ref->RPNHead.GRTYP[0];
+   GRTYP[1]  = '\0';
+   GRREF[0]  = Ref->RPNHead.GRREF[0];
+   GRREF[1]  = '\0';
+  
+   *IG1    = Ref->RPNHead.IG[X_IG1];
+   *IG2    = Ref->RPNHead.IG[X_IG2];
+   *IG3    = Ref->RPNHead.IG[X_IG3];
+   *IG4    = Ref->RPNHead.IG[X_IG4];
+   *IG1REF = Ref->RPNHead.IGREF[X_IG1];
+   *IG2REF = Ref->RPNHead.IGREF[X_IG2];
+   *IG3REF = Ref->RPNHead.IGREF[X_IG3];
+   *IG4REF = Ref->RPNHead.IGREF[X_IG4];
+
+   return(0);
 }
 
 int GEM_grid_param(int *F_bsc_base,int *F_bsc_ext1,int *F_extension ,int F_maxcfl,float *F_lonr,float *F_latr,int *F_ni,int *F_nj,float *F_dx,float *F_dy,double *F_x0_8,double *F_y0_8,double *F_xl_8,double *F_yl_8,int F_overlap,int F_yinyang_L) {
@@ -916,7 +939,7 @@ TGeoRef* GeoRef_RPNGridZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float Lat
    GEM_hgrid4(Ref->AX,Ref->AY,NI,NJ,&DX,&DY,x0,x1,y0,y1,FALSE);
            
  //TODO: Merge with EZ  
- //  Ref->Ids[0]=GeoRef_RPNCreateFromMemory(NI,NJ,"Z","E",Ref->IG[X_IG1],Ref->IG[X_IG2],Ref->IG[X_IG3],Ref->IG[X_IG4],Ref->AX,Ref->AY);
+ //  Ref->Ids[0]=GeoRef_RPNCreateInMemory(NI,NJ,"Z","E",Ref->IG[X_IG1],Ref->IG[X_IG2],Ref->IG[X_IG3],Ref->IG[X_IG4],Ref->AX,Ref->AY);
    
    Ref->NbSub=1;
    Ref->GRTYP[0]='Z';

@@ -343,7 +343,7 @@ int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
       }
     
      f77name(cigaxg)(RefFrom->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &RefFrom->RPNHead.IGREF[X_IG1], &RefFrom->RPNHead.IGREF[X_IG2], &RefFrom->RPNHead.IGREF[X_IG3], &RefFrom->RPNHead.IGREF[X_IG4]);
-     c_ezgfxyfll(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
+     GeoRef_gfLL2XY(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
    }
 
    grtypa[0] = 'A';
@@ -447,7 +447,7 @@ int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
      }
     
      f77name(cigaxg)(RefFrom->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &RefFrom->RPNHead.IGREF[X_IG1], &RefFrom->RPNHead.IGREF[X_IG2], &RefFrom->RPNHead.IGREF[X_IG3], &RefFrom->RPNHead.IGREF[X_IG4]);
-     c_ezgfxyfll(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
+     GeoRef_gfLL2XY(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
    }
 
    grtypa[0] = 'A';

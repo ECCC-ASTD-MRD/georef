@@ -30,6 +30,7 @@
  *
  *=========================================================
  */
+#define GEOREF_BUILD
 
 #include <pthread.h>
 #include "GeoRef.h"
@@ -38,8 +39,9 @@
 #include "RPN.h"
 #include "List.h"
 
-static TList *GeoRef_List=NULL;                                     ///< Global list of known geo references
-static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;      ///< Thread lock on geo reference access
+static TList          *GeoRef_List=NULL;                                                                                ///< Global list of known geo references
+static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                          ///< Thread lock on geo reference access
+static TGeoOptions     GeoRef_Options= { IR_CUBIC, ER_UNDEF, 0.0, 0, TRUE, FALSE, FALSE, 16, TRUE, FALSE, 10.0, 0.0 };  ///< Default options
 
 /**----------------------------------------------------------------------------
  * @brief  Apply thread lock on GeoRef access
@@ -539,6 +541,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       if (Ref->AX)           free(Ref->AX);           Ref->AX=NULL;
       if (Ref->AY)           free(Ref->AY);           Ref->AY=NULL;
       if (Ref->NCX)          free(Ref->NCX);          Ref->NCX=NULL;
+      if (Ref->NCY)          free(Ref->NCY);          Ref->NCY=NULL;
       if (Ref->Subs)         free(Ref->Subs);         Ref->Subs=NULL;
 
       // Free interpolation sets
@@ -995,6 +998,8 @@ TGeoRef* GeoRef_New() {
    ref->Idx=NULL;
    ref->AX=NULL;
    ref->AY=NULL;
+   ref->NCX=NULL;
+   ref->NCY=NULL;
    ref->RefFrom=NULL;
    ref->QTree=NULL;
    ref->GRTYP[0]='X';
@@ -1003,18 +1008,8 @@ TGeoRef* GeoRef_New() {
    ref->Sets=NULL;
    ref->LastSet=NULL;
 
-   ref->Options.InterpDegree=IR_CUBIC;
-   ref->Options.ExtrapDegree=ER_UNDEF;
-   ref->Options.ExtrapValue=0.0; 
-   ref->Options.Transform=TRUE;
-   ref->Options.CIndex=FALSE;
-   ref->Options.Symmetric=FALSE;  
-   ref->Options.WeightNum=16; 
-   ref->Options.PolarCorrect=TRUE; 
-   ref->Options.VectorMode=FALSE;
-   ref->Options.SubGrid=0;
-   ref->Options.DistTreshold=10.0;
-   ref->Options.LonRef=0.0;
+   // Assign defualt options
+   memcpy(&ref->Options,&GeoRef_Options,sizeof(TGeoOptions));
 
    // RPN Specific
    memset(&ref->RPNHead,0x0,sizeof(TRPNHeader));
