@@ -159,7 +159,43 @@ def ezqkdef(ni, nj=None, grtyp=None, ig1=None, ig2=None, ig3=None, ig4=None,
         return gdid
     raise EzscintError()
 
-def ezsint(gdidout, gdidin, zin, zout=None):
+def GeoRef_RPNCreate(ni, nj=None, grtyp=None, ig1=None, ig2=None, ig3=None, ig4=None,
+                    iunit=0):
+    if isinstance(ni, dict):
+        gridParams = ni
+        try:
+            (ni, nj) = gridParams['shape']
+        except:
+            (ni, nj) = (None, None)
+        try:
+            if not ni:
+                ni = gridParams['ni']
+            if not nj:
+                nj = gridParams['nj']
+            grtyp = gridParams['grtyp']
+            ig1 = gridParams['ig1']
+            ig2 = gridParams['ig2']
+            ig3 = gridParams['ig3']
+            ig4 = gridParams['ig4']
+        except:
+            raise TypeError('ezgdef_fmem: provided incomplete grid description')
+        try:
+            iunit = gridParams['iunit']
+        except:
+            iunit = 0
+    if (type(ni), type(nj), type(grtyp), type(ig1), type(ig2), type(ig3),
+            type(ig4), type(iunit)) != (int, int, str, int, int, int, int, int):
+        raise TypeError('ezqkdef: wrong input data type')
+    if grtyp.strip() in ('', 'X'):
+        raise EzscintError('ezqkdef: Grid type {0} Not supported'.format(grtyp))
+    if iunit <= 0 and grtyp.strip() in ('Z', '#', 'Y', 'U'):
+        raise EzscintError('ezqkdef: A valid opened file unit ({0}) is needed for Grid type {1}'.format(iunit, grtyp))
+    gdid = rp.GeoRef_RPNCreate(ni, nj, _C_WCHAR2CHAR(grtyp), ig1, ig2, ig3, ig4, iunit)
+    if gdid is not None:
+        return gdid
+    raise EzscintError()
+
+def GeoRef_Interp(gdidout, gdidin, zin, zout=None):
     gdidout = _getCheckArg(int, gdidout, gdidout, 'id')
     gdidin  = _getCheckArg(int, gdidin, gdidin, 'id')
     zin     = _getCheckArg(_np.ndarray, zin, zin, 'd')

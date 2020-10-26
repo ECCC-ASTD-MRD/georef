@@ -44,6 +44,16 @@ libgeoref.c_ezqkdef.argtypes = (
 libgeoref.c_ezqkdef.restype = ct.c_int
 c_ezqkdef = libgeoref.c_ezqkdef
 
+#TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID)
+libgeoref.GeoRef_RPNCreate.argtypes = (
+    ct.c_int, ct.c_int, ct.c_char_p,
+    ct.c_int, ct.c_int,
+    ct.c_int, ct.c_int, ct.c_int
+    )
+#TODO Maude: return pointer to TGeoRef
+libgeoref.GeoRef_RPNCreate.restype = ct.c_int
+GeoRef_RPNCreate = libgeoref.GeoRef_RPNCreate
+
 libgeoref.GeoRef_Interp.argtypes = (
     npc.ndpointer(dtype=np.float32),
     npc.ndpointer(dtype=np.float32)

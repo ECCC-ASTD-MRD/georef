@@ -85,9 +85,9 @@ def error(params, data, georef=False):
     lat0, lon0, dlat, dlon = (-80, 0, 20, 30)
 
     if georef:
-        gid = libgeoref.ezqkdef(params)
+        gid = libgeoref.GeoRef_RPNCreate(params)
         out_gid = libgeoref.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
-        out_data = libgeoref.ezsint(out_gid, gid, data)
+        out_data = libgeoref.GeoRef_Interp(out_gid, gid, data)
         out_lalo = libgeoref.gdll(out_gid)
     else:
         gid = rmn.ezqkdef(params)
