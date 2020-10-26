@@ -21,7 +21,7 @@
 #include "App.h"
 #include "GeoRef.h"
 
-int ez_corrval_aunord(float *zout, float *zin, TGeoRef *RefFrom, TGeoRef *RefTo) {
+int GeoRef_CorrValNorth(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) {
 
    TGridSet *gset=NULL;
    int i;
@@ -107,7 +107,7 @@ int ez_corrval_aunord(float *zout, float *zin, TGeoRef *RefFrom, TGeoRef *RefTo)
    return(0);
 }
 
-int ez_corrval_ausud(float *zout, float *zin, TGeoRef *RefFrom, TGeoRef *RefTo) {
+int GeoRef_CorrValSouth(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) {
 
    TGridSet *gset=NULL;
    int i;
@@ -275,11 +275,11 @@ int GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin)
    }
 
    if (gset->zones[NORTH].npts > 0) {
-      ez_corrval_aunord(zout,zin,RefFrom,RefTo);
+      GeoRef_CorrValNorth(RefTo,RefFrom,zout,zin);
    }
 
    if (gset->zones[SOUTH].npts > 0) {
-      ez_corrval_ausud(zout,zin,RefFrom,RefTo);
+      GeoRef_CorrValSouth(RefTo,RefFrom,zout,zin);
    }
 
    if (gset->zones[NORTH_POLE].npts > 0 || gset->zones[SOUTH_POLE].npts > 0) {
@@ -303,7 +303,7 @@ int GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin)
    return(ierc);
 }
 
-int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float *vvin, int ni, int nj, TGeoRef *RefFrom) {
+int GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in,float *uuin,float *vvin,int ni,int nj) {
   
    int k1, k2;
    float *polar_wd, *polar_spd, *polar_uu, *polar_vv;
@@ -331,9 +331,9 @@ int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
       polar_y[i] = 1.0 * nj;
    }
   
-   GeoRef_XY2LL(RefFrom, polar_lat, polar_lon, polar_x, polar_y, ni);
+   GeoRef_XY2LL(Ref, polar_lat, polar_lon, polar_x, polar_y, ni);
 
-   if (RefFrom->GRTYP[0] == 'Z' && RefFrom->RPNHead.GRREF[0] == 'E') {
+   if (Ref->GRTYP[0] == 'Z' && Ref->RPNHead.GRREF[0] == 'E') {
       polar_lat_gem   = (double*) malloc(2*ni*sizeof(double));
       polar_lon_gem   = &polar_lat_gem[ni];
     
@@ -342,8 +342,8 @@ int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
          polar_lon_gem[i] = polar_lon[i];
       }
     
-     f77name(cigaxg)(RefFrom->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &RefFrom->RPNHead.IGREF[X_IG1], &RefFrom->RPNHead.IGREF[X_IG2], &RefFrom->RPNHead.IGREF[X_IG3], &RefFrom->RPNHead.IGREF[X_IG4]);
-     c_ezgfxyfll(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
+     f77name(cigaxg)(Ref->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4]);
+     GeoRef_gfLL2XY(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
    }
 
    grtypa[0] = 'A';
@@ -359,8 +359,8 @@ int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
    gdps = GeoRef_RPNCreate(ni, 1, grtypn, ig1n, ig2n, ig3n, ig4n, 0);
    GeoRef_WD2UV(gdps, polar_uu, polar_vv, polar_spd,  polar_wd, polar_lat, polar_lon, ni);
 
-   f77name(ez_calcpoleval)(&uupole, polar_uu, &ni, RefFrom->AX, &RefFrom->GRTYP, &RefFrom->RPNHead.GRREF,1,1);
-   f77name(ez_calcpoleval)(&vvpole, polar_vv, &ni, RefFrom->AX, &RefFrom->GRTYP, &RefFrom->RPNHead.GRREF,1,1);
+   f77name(ez_calcpoleval)(&uupole, polar_uu, &ni, Ref->AX, &Ref->GRTYP, &Ref->RPNHead.GRREF,1,1);
+   f77name(ez_calcpoleval)(&vvpole, polar_vv, &ni, Ref->AX, &Ref->GRTYP, &Ref->RPNHead.GRREF,1,1);
 
    quatrevingtdix = 90.0;
    zero = 0.0;
@@ -399,7 +399,7 @@ int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
    free(polar_vv);
    free(polar_uu);
 
-   if (RefFrom->GRTYP[0] == 'Z' && RefFrom->RPNHead.GRREF[0] == 'E' && polar_lat_gem != NULL)  {
+   if (Ref->GRTYP[0] == 'Z' && Ref->RPNHead.GRREF[0] == 'E' && polar_lat_gem != NULL)  {
      free(polar_lat_gem);
    }
 
@@ -407,7 +407,7 @@ int ez_calcnpolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
    return(0);
 }
 
-int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float *vvin, int ni, int nj, TGeoRef *RefFrom) {
+int GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in,float *uuin,float *vvin,int ni,int nj) {
 
    int k1, k2;
    float *polar_wd, *polar_spd,*polar_uu,*polar_vv;
@@ -435,9 +435,9 @@ int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
       polar_y[i] = 1.0;
    }
   
-   GeoRef_XY2LL(RefFrom, polar_lat, polar_lon, polar_x, polar_y, ni);
+   GeoRef_XY2LL(Ref, polar_lat, polar_lon, polar_x, polar_y, ni);
 
-   if (RefFrom->GRTYP[0] == 'Z' && RefFrom->RPNHead.GRREF[0] == 'E') {
+   if (Ref->GRTYP[0] == 'Z' && Ref->RPNHead.GRREF[0] == 'E') {
       polar_lat_gem   = (double*) malloc(2*ni*sizeof(double));
       polar_lon_gem   = &polar_lat_gem[ni];
     
@@ -446,8 +446,8 @@ int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
         polar_lon_gem[i] = polar_lon[i];
      }
     
-     f77name(cigaxg)(RefFrom->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &RefFrom->RPNHead.IGREF[X_IG1], &RefFrom->RPNHead.IGREF[X_IG2], &RefFrom->RPNHead.IGREF[X_IG3], &RefFrom->RPNHead.IGREF[X_IG4]);
-     c_ezgfxyfll(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
+     f77name(cigaxg)(Ref->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4]);
+     GeoRef_gfLL2XY(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
    }
 
    grtypa[0] = 'A';
@@ -463,8 +463,8 @@ int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
    gdps = GeoRef_RPNCreate(ni, 1, grtyps, ig1n, ig2n, ig3n, ig4n, 0);
    GeoRef_WD2UV(gdps, polar_uu, polar_vv, polar_spd,  polar_wd, polar_lat, polar_lon, ni);
 
-   f77name(ez_calcpoleval)(&uupole,polar_uu,&ni,RefFrom->AX,&RefFrom->GRTYP,&RefFrom->RPNHead.GRREF,1,1);
-   f77name(ez_calcpoleval)(&vvpole,polar_vv,&ni,RefFrom->AX,&RefFrom->GRTYP,&RefFrom->RPNHead.GRREF,1,1);
+   f77name(ez_calcpoleval)(&uupole,polar_uu,&ni,Ref->AX,&Ref->GRTYP,&Ref->RPNHead.GRREF,1,1);
+   f77name(ez_calcpoleval)(&vvpole,polar_vv,&ni,Ref->AX,&Ref->GRTYP,&Ref->RPNHead.GRREF,1,1);
 
    quatrevingtdix = -90.0;
    zero = 0.0;
@@ -503,7 +503,7 @@ int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
    free(polar_vv);
    free(polar_uu);
 
-   if (RefFrom->GRTYP[0] == 'Z' && RefFrom->RPNHead.GRREF[0] == 'E' && polar_lat_gem != NULL)  {
+   if (Ref->GRTYP[0] == 'Z' && Ref->RPNHead.GRREF[0] == 'E' && polar_lat_gem != NULL)  {
      free(polar_lat_gem);
    }
 
@@ -511,7 +511,7 @@ int ez_calcspolarwind(float *polar_uu_in, float *polar_vv_in, float *uuin, float
    return(0);
 }
 
-int ez_corrvec_aunord(float *uuout, float *vvout, float *uuin, float *vvin, TGeoRef *RefFrom, TGeoRef *RefTo) {
+int GeoRef_CorrVecNorth(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin) {
 
    TGridSet *gset=NULL;
    float     uupole, vvpole;
@@ -539,7 +539,7 @@ int ez_corrvec_aunord(float *uuout, float *vvout, float *uuin, float *vvin, TGeo
    corr_uus = (float *) malloc(npts * sizeof(float));
    corr_vvs = (float *) malloc(npts * sizeof(float));
 
-   ez_calcnpolarwind(polar_uu_in, polar_vv_in, uuin, vvin, ni, nj, RefFrom);
+   GeoRef_CalcPolarWindNorth(RefFrom,polar_uu_in,polar_vv_in,uuin,vvin,ni,nj);
 
    switch (RefFrom->Options.InterpDegree) {
       case IR_CUBIC:
@@ -597,7 +597,7 @@ int ez_corrvec_aunord(float *uuout, float *vvout, float *uuin, float *vvin, TGeo
    return(0);
 }
 
-int ez_corrvec_ausud(float *uuout, float *vvout,float *uuin, float *vvin,TGeoRef *RefFrom, TGeoRef *RefTo) {
+int GeoRef_CorrVecSouth(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin) {
   
    TGridSet *gset=NULL;
    float *polar_uu_in, *polar_vv_in, *corr_uus, *corr_vvs, *temp_y, ay[4];
@@ -621,7 +621,7 @@ int ez_corrvec_ausud(float *uuout, float *vvout,float *uuin, float *vvin,TGeoRef
    corr_uus = (float *) malloc(npts * sizeof(float));
    corr_vvs = (float *) malloc(npts * sizeof(float));
 
-   ez_calcspolarwind(polar_uu_in, polar_vv_in, uuin, vvin, ni, nj, RefFrom);
+   GeoRef_CalcPolarWindSouth(RefFrom,polar_uu_in,polar_vv_in,uuin,vvin,ni,nj);
 
    switch (RefFrom->Options.InterpDegree) {
       case IR_CUBIC:
@@ -677,19 +677,19 @@ int GeoRef_CorrectVector(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvo
    gset=GeoRef_SetGet(RefTo,RefFrom);
   
    if (gset->zones[NORTH].npts > 0) {
-      ier = ez_corrvec_aunord(uuout,vvout,uuin,vvin, RefFrom, RefTo);
+      ier = GeoRef_CorrVecNorth(RefTo,RefFrom,uuout,vvout,uuin,vvin);
    }
   
    if (gset->zones[SOUTH].npts > 0) {
-     ier = ez_corrvec_ausud(uuout,vvout,uuin,vvin, RefFrom, RefTo);
+     ier = GeoRef_CorrVecSouth(RefTo,RefFrom,uuout,vvout,uuin,vvin);
    }
   
    if (gset->zones[NORTH_POLE].npts > 0) {
-     ier = ez_corrvec_aunord(uuout,vvout,uuin,vvin, RefFrom, RefTo);
+     ier = GeoRef_CorrVecNorth(RefTo,RefFrom,uuout,vvout,uuin,vvin);
    }
   
    if (gset->zones[SOUTH_POLE].npts > 0) {
-     ier = ez_corrvec_ausud(uuout,vvout,uuin,vvin, RefFrom, RefTo);
+     ier = GeoRef_CorrVecSouth(RefTo,RefFrom,uuout,vvout,uuin,vvin);
    }
       
    return(0);

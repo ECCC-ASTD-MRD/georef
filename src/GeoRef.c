@@ -30,6 +30,7 @@
  *
  *=========================================================
  */
+#define GEOREF_BUILD
 
 #include <pthread.h>
 #include "GeoRef.h"
@@ -38,8 +39,9 @@
 #include "RPN.h"
 #include "List.h"
 
-static TList *GeoRef_List=NULL;                                     ///< Global list of known geo references
-static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;      ///< Thread lock on geo reference access
+static TList          *GeoRef_List=NULL;                                                                                ///< Global list of known geo references
+static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                          ///< Thread lock on geo reference access
+static TGeoOptions     GeoRef_Options= { IR_CUBIC, ER_UNDEF, 0.0, 0, TRUE, FALSE, FALSE, 16, TRUE, FALSE, 10.0, 0.0 };  ///< Default options
 
 /**----------------------------------------------------------------------------
  * @brief  Apply thread lock on GeoRef access
@@ -539,6 +541,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       if (Ref->AX)           free(Ref->AX);           Ref->AX=NULL;
       if (Ref->AY)           free(Ref->AY);           Ref->AY=NULL;
       if (Ref->NCX)          free(Ref->NCX);          Ref->NCX=NULL;
+      if (Ref->NCY)          free(Ref->NCY);          Ref->NCY=NULL;
       if (Ref->Subs)         free(Ref->Subs);         Ref->Subs=NULL;
 
       // Free interpolation sets
@@ -995,6 +998,8 @@ TGeoRef* GeoRef_New() {
    ref->Idx=NULL;
    ref->AX=NULL;
    ref->AY=NULL;
+   ref->NCX=NULL;
+   ref->NCY=NULL;
    ref->RefFrom=NULL;
    ref->QTree=NULL;
    ref->GRTYP[0]='X';
@@ -1003,18 +1008,8 @@ TGeoRef* GeoRef_New() {
    ref->Sets=NULL;
    ref->LastSet=NULL;
 
-   ref->Options.InterpDegree=IR_CUBIC;
-   ref->Options.ExtrapDegree=ER_UNDEF;
-   ref->Options.ExtrapValue=0.0; 
-   ref->Options.Transform=TRUE;
-   ref->Options.CIndex=FALSE;
-   ref->Options.Symmetric=FALSE;  
-   ref->Options.WeightNum=16; 
-   ref->Options.PolarCorrect=TRUE; 
-   ref->Options.VectorMode=FALSE;
-   ref->Options.SubGrid=0;
-   ref->Options.DistTreshold=10.0;
-   ref->Options.LonRef=0.0;
+   // Assign defualt options
+   memcpy(&ref->Options,&GeoRef_Options,sizeof(TGeoOptions));
 
    // RPN Specific
    memset(&ref->RPNHead,0x0,sizeof(TRPNHeader));
@@ -1835,47 +1830,6 @@ int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
    }
 
    return(1);
-}
-
-/**----------------------------------------------------------------------------
- * @brief  Calculer la position latlon de tous les points de grille.
- * @author Jean-Philippe Gauthier
- * @date   June 2015
- *    @param[in]  Ref     Pointeur sur la reference geographique
- *    @param[out] Lat     Latitude array
- *    @param[out] Lon     Longitude array
- 
- *    @return             Number of coordinates
-*/
-int GeoRef_Coords(TGeoRef *Ref,double *Lat,double *Lon) {
-
-#ifdef HAVE_RMN
-   int x,y,nxy;
-   double lat,lon;
-   
-   if (!Ref) return(0);
-   
-   nxy=Ref->NX*Ref->NY;
-//TODO: Check func ez_calclatlon 
-   if (!Ref->Lat) {
-      Ref->Lat=(double*)malloc(nxy*sizeof(double));
-      Ref->Lon=(double*)malloc(nxy*sizeof(double));
-   
-      nxy=0;
-      for(y=Ref->Y0;y<=Ref->Y1;y++) {
-         for(x=Ref->X0;x<=Ref->X1;x++) {
-            Ref->Project(Ref,x,y,&lat,&lon,FALSE,TRUE);
-            Ref->Lat[nxy]=lat;
-            Ref->Lon[nxy]=lon;
-            nxy++;
-         }
-      }      
-   }
-   
-   Lat=Ref->Lat;
-   Lon=Ref->Lon;
-   return(nxy);
-#endif
 }
 
 /**----------------------------------------------------------------------------

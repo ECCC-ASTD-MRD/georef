@@ -94,7 +94,6 @@ int gd_interpm(float *zout,float *zin,float *X,float *Y,int Nb) {
 int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,double *X,double *Y,int npts) {
 
    TGridSet *gset=NULL;
-   int lnpts;
    int ier, un, j;
    int old_degre_interp;
    double *gdst_lats, tmp, real_un, real_j;
@@ -105,7 +104,6 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
       return(-1);
    }
 
-   lnpts = npts;
    old_degre_interp = RefFrom->Options.InterpDegree;
 
    ni_in =  RefFrom->NX;
@@ -133,18 +131,18 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
       case 'G':
          switch (RefFrom->Options.InterpDegree) {
          case IR_NEAREST:
-            f77name(ez8_rgdint_0)(zout,X,Y,&lnpts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
+            f77name(ez8_rgdint_0)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
             break;
 
          case IR_LINEAR:
             switch(RefFrom->Extension) {
                case 0:
-                 f77name(ez8_irgdint_1_nw)(zout,X,Y,&lnpts,RefFrom->AX,RefFrom->AY,zin,&RefFrom->NX,&RefFrom->NY);
+                 f77name(ez8_irgdint_1_nw)(zout,X,Y,&npts,RefFrom->AX,RefFrom->AY,zin,&RefFrom->NX,&RefFrom->NY);
                   break;
 
                case 1:
                case 2:
-                  f77name(ez8_irgdint_1_w)(zout,X,Y,&lnpts,RefFrom->AX,RefFrom->AY,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
+                  f77name(ez8_irgdint_1_w)(zout,X,Y,&npts,RefFrom->AX,RefFrom->AY,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
                   break;
                }
             break;
@@ -152,12 +150,12 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
          case IR_CUBIC:
             switch(RefFrom->Extension) {
                case 0:
-                  f77name(ez8_irgdint_3_nw)(zout,X,Y,&lnpts,RefFrom->AX,RefFrom->AY,RefFrom->NCX,RefFrom->NCY,zin,&RefFrom->i1,&RefFrom->i2,&RefFrom->j1,&RefFrom->j2);
+                  f77name(ez8_irgdint_3_nw)(zout,X,Y,&npts,RefFrom->AX,RefFrom->AY,RefFrom->NCX,RefFrom->NCY,zin,&RefFrom->i1,&RefFrom->i2,&RefFrom->j1,&RefFrom->j2);
                   break;
 
                case 1:
                case 2:
-                  f77name(ez8_irgdint_3_w)(zout,X,Y,&lnpts,RefFrom->AX,RefFrom->AY,RefFrom->NCX,RefFrom->NCY,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
+                  f77name(ez8_irgdint_3_w)(zout,X,Y,&npts,RefFrom->AX,RefFrom->AY,RefFrom->NCX,RefFrom->NCY,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
                   break;
                }
             break;
@@ -167,7 +165,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
             break;
 
          case 5:
-            gdst_lats = (double*) malloc(sizeof(double)*lnpts);
+            gdst_lats = (double*) malloc(sizeof(double)*npts);
             real_un = 1.0;
             for (j=0; j < RefTo->NY; j++) {
                real_j = 1.0 * (j+1);
@@ -184,39 +182,39 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
          nj_out = RefTo->NY;
          un = 1;
          if (ni_in > 1 && nj_in > 1 && RefFrom->Options.InterpDegree==IR_LINEAR) {
-            f77name(ez8_rgdint_1_nw)(zout,X,Y,&lnpts,zin,&RefFrom->NX,&un,&RefFrom->NY);
+            f77name(ez8_rgdint_1_nw)(zout,X,Y,&npts,zin,&RefFrom->NX,&un,&RefFrom->NY);
          } else {
             f77name(ez_applywgts)(zout,gset->wts,gset->idx,zin,gset->mask,&ni_in, &nj_in, &ni_out, &nj_out,&(gset->n_wts));
          }
          break;
 
-      default:
+     default:
         switch (RefFrom->Options.InterpDegree) {
             case IR_NEAREST:
-               f77name(ez8_rgdint_0)(zout,X,Y,&lnpts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
+               f77name(ez8_rgdint_0)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
                break;
 
             case IR_LINEAR:
                switch(RefFrom->Extension) {
                   case 0:
                   case 1:
-                     f77name(ez8_rgdint_1_nw)(zout,X,Y,&lnpts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
+                     f77name(ez8_rgdint_1_nw)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
                      break;
 
                   case 2:
-                    f77name(ez8_rgdint_1_w)(zout,X,Y,&lnpts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
+                   f77name(ez8_rgdint_1_w)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
                }
                break;
 
             case IR_CUBIC:
                switch(RefFrom->Extension) {
                   case 0:
-                     f77name(ez8_rgdint_3_nw)(zout,X,Y,&lnpts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
+                    f77name(ez8_rgdint_3_nw)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
                      break;
 
                   case 1:
                   case 2:
-                     f77name(ez8_rgdint_3_w)(zout,X,Y,&lnpts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
+                     f77name(ez8_rgdint_3_w)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
                    break;
                }
                break;
@@ -226,7 +224,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
                break;
 
             case 5:
-               gdst_lats = (double*) malloc(sizeof(double)*lnpts);
+               gdst_lats = (double*) malloc(sizeof(double)*npts);
                real_un = 1.0;
                for (j=0; j < RefTo->NY; j++) {
                   real_j = 1.0 * (j+1);
@@ -260,7 +258,7 @@ int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) {
 
    if (RefFrom == RefTo) {
      memcpy(zout,zin,RefFrom->NX*RefFrom->NY*sizeof(float));
-     return 1;
+     return(1);
    }
 
    if (RefFrom->NbSub > 0 || RefTo->NbSub > 0) {
@@ -498,121 +496,4 @@ int GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,float *zout,float *zin) {
   }
 
   return icode;
-}
-
-int c_ezyymint(TGeoRef *RefTo,TGeoRef *RefFrom,int ni,int nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int *yyincount,double *yanlat,double *yanlon,int *yyancount) {
-
-   TGeoRef *yin_mg;
-   TGeoOptions opt;
-   int ivalue,icode,i,j,k;
-   int yincount,yancount,yni,ynj;
-   float *yin_fld, global_extrap_value, local_extrap_value;
-   int interp_degree,extrap_degree;
-   float extrap_value,local_val;
-   char global_interp_degree[32],global_extrap_degree[32];
-  
-   yin_mg=RefFrom->mymaskgrid;
-   yni=yin_mg->NX;
-   ynj=yin_mg->NY;
-
-   yin_fld = (float *) malloc(yni*ynj*sizeof(float));
-   memset(yin_fld,0.0,yni*ynj*sizeof(float));
- 
-   // Get original options
-   memcpy(&opt,&RefFrom->Options,sizeof(TGeoOptions));
- 
-   RefFrom->Options.ExtrapValue=1.0;
-   RefFrom->Options.ExtrapDegree=ER_VALUE;
-   icode = GeoRef_Interp(RefTo,yin_mg,maskout,yin_fld);
-   // Masking is done,reset original interp options
-   memcpy(&RefFrom->Options,&opt,sizeof(TGeoOptions));
-   free(yin_fld);
-
-   // Now create the destination grids
-   yancount=0;
-   yincount=0;
-   for (j=0; j<nj; j++) {
-      for (i=0;i<ni; i++) {
-         k=(j*ni)+i; 
-         if (maskout[k] == 1.0) {
-            yanlat[yancount]=dlat[k];
-            yanlon[yancount]=dlon[k];
-            yancount++;
-         } else {
-            yinlat[yincount]=dlat[k];
-            yinlon[yincount]=dlon[k];
-            yincount++;
-         }
-      }
-   }
-   *yyincount = yincount;
-   *yyancount = yancount;
-
-   return(icode);
-}
-
-int c_ezsint_m(float *zout, float *zin){
-   App_Log(ERROR,"%s: This operation is currently not implemented\n",__func__);
-   return(0);
-} 
-
-int c_ezuvint_m(float *uuout, float *vvout, float *uuin, float *vvin){
-   App_Log(ERROR,"%s: This operation is currently not implemented\n",__func__);
-   return(0);
-}
-
-int c_ezsint_mdm(float *zout, int *mask_out, float *zin, int *mask_in, TGeoRef *RefTo, TGeoRef *RefFrom) {
-
-   int methode = 2;
-
-   if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
-      App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
-      return(-1);
-   }
- 
-   GeoRef_SetGet(RefTo,RefFrom);
-   GeoRef_Interp(RefTo,RefFrom,zout,zin);
-   c_ezsint_mask(RefTo,RefFrom,mask_out,mask_in);
-   f77name(lorenzo_mask_fill)(zout,mask_out,&RefTo->NX,&RefTo->NY,&methode);
-   return 0;
-
-}
-
-int c_ezuvint_mdm(float *uuout, float *vvout, int *mask_out, float *uuin, float *vvin, int *mask_in, TGeoRef *RefTo, TGeoRef *RefFrom) {
-
-   int methode = 2;
-
-   if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
-      App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
-      return(-1);
-   }
-
-   GeoRef_SetGet(RefTo, RefFrom);
-   c_ezsint_mask(RefTo,RefFrom,mask_out,mask_in);
-   GeoRef_InterpUV(RefTo,RefFrom,uuout,vvout,uuin,vvin);
-   f77name(lorenzo_mask_fill)(uuout,mask_out,&RefTo->NX,&RefTo->NY,&methode);
-   f77name(lorenzo_mask_fill)(vvout,mask_out,&RefTo->NX,&RefTo->NY,&methode);
-   return 0;
-}
-
-int c_ezsint_mask(TGeoRef *RefTo, TGeoRef *RefFrom,int *mask_out, int *mask_in) {
-
-   TGridSet *gset=NULL;
-   float    *x,*y;
- 
-   if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
-      App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
-      return(-1);
-   }
-
-   gset=GeoRef_SetGet(RefTo,RefFrom);
-
-   if (RefFrom->GRTYP[0] == 'Y') {
-      memcpy(mask_out,gset->mask,RefTo->NX*RefTo->NY*sizeof(int));
-   } else {
-      x = (float *) gset->x;
-      y = (float *) gset->y;
-      f77name(qqq_ezsint_mask)(mask_out,x,y,&RefTo->NX,&RefTo->NY,mask_in,&RefFrom->NX,&RefFrom->NY);
-   }
-   return(0);
 }

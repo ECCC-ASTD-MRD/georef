@@ -17,11 +17,11 @@
 ! * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ! * Boston, MA 02111-1307, USA.
 ! */
-      subroutine ez_llflamb(xlat,xlon,x,y,npts,grtyp,ig1,ig2,ig3,ig4)
+      subroutine ez8_llflamb(xlat,xlon,x,y,npts,grtyp,ig1,ig2,ig3,ig4)
       implicit none
       integer npts
-      real xlat(npts),xlon(npts)
-      real x(npts),y(npts) 
+      real*8 xlat(npts),xlon(npts)
+      real*8 x(npts),y(npts) 
       character*1 grtyp,gtypout
       integer ig1,ig2,ig3,ig4,nxg
 

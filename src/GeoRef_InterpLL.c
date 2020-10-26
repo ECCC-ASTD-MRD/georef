@@ -152,11 +152,18 @@ void Permut(double *Z,int NI,int NJ) {
    }
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Calculer la position latlon de tous les points de grille.
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Pointeur sur la reference geographique
+ *  
+ *    @return             Number of coordinates
+*/
 int GeoRef_CalcLL(TGeoRef* Ref) {
 
    float  xlat00, xlon00, dlat, dlon;
    int    i,j,k,ni, nj, npts, hemisphere;
-   float *x,*y;
    double *lonp,*latp,*xp,*yp;
 
    if (!Ref->Lat) {
@@ -181,7 +188,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
 
             grll(Ref->Lat,Ref->Lon,ni,nj,xlat00,xlon00,dlat,dlon);
             f77name(cigaxg)(Ref->GRTYP, &Ref->RPNHead.XG[X_LAT1], &Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2], &Ref->RPNHead.XG[X_LON2],&Ref->RPNHead.IG[X_IG1],  &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
-            c_ezgfllfxy(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHead.XG[X_LAT1],Ref->RPNHead.XG[X_LON1],Ref->RPNHead.XG[X_LAT2],Ref->RPNHead.XG[X_LON2]);
+            GeoRef_gfXY2LL(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHead.XG[X_LAT1],Ref->RPNHead.XG[X_LON1],Ref->RPNHead.XG[X_LAT2],Ref->RPNHead.XG[X_LON2]);
             break;
 
          case 'L':
@@ -285,22 +292,21 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                   break;
 
                case 'E':
-                  c_ezgfllfxy(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHead.XGREF[X_LAT1],Ref->RPNHead.XGREF[X_LON1],Ref->RPNHead.XGREF[X_LAT2],Ref->RPNHead.XGREF[X_LON2]);
+                  GeoRef_gfXY2LL(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHead.XGREF[X_LAT1],Ref->RPNHead.XGREF[X_LON1],Ref->RPNHead.XGREF[X_LAT2],Ref->RPNHead.XGREF[X_LON2]);
                   break;
             }
             break;
 
          case '!':
-            x = (float *) malloc(2*npts*sizeof(float));
-            y = &x[npts];
+            xp = (double*) malloc(2*npts*sizeof(double));
+            yp = &xp[npts];
             for (j=0; j < nj; j++) {
                for (i=0; i < ni; i++) {
-                  x[C_TO_FTN(i,j,ni)] = (float) (i+1.0);
-                  y[C_TO_FTN(i,j,ni)] = (float) (j+1.0);
+                  xp[C_TO_FTN(i,j,ni)] = (float) (i+1.0);
+                  yp[C_TO_FTN(i,j,ni)] = (float) (j+1.0);
                }
             }
-            //TODO : use double
-            f77name(ez_llflamb)(Ref->Lat,Ref->Lon,x,y,&npts,&Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4],1);
+            f77name(ez8_llflamb)(Ref->Lat,Ref->Lon,xp,yp,&npts,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
             for (i=0; i < npts; i++) {
                if (Ref->Lon[i] < 0.0) {
                   Ref->Lon[i] += 360.0;
@@ -330,30 +336,40 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
          App_Log(MUST,"%f %f\n",Ref->Lat[i],Ref->Lon[i]);
       }
    }
-   return(0);
+   return(npts);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Récupérer la position latlon de tous les points de grille.
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Pointeur sur la reference geographique
+ *    @param[out] Lat     Latitude array
+ *    @param[out] Lon     Longitude array
+ 
+ *    @return             Number of coordinates
+*/
 int GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
 
-   int n;
-
-   GeoRef_CalcLL(Ref);
+   int n=0,i;
 
    if (Ref->NbSub > 0) {
-      n = Ref->Subs[0]->NX*Ref->Subs[1]->NY;
+      i = Ref->Subs[0]->NX*Ref->Subs[1]->NY;
 
-      GeoRef_GetLL(Ref->Subs[0],Lat,Lon);          // Yin
-      GeoRef_GetLL(Ref->Subs[1],&Lat[n],&Lon[n]);  // Yang
+      n=GeoRef_GetLL(Ref->Subs[0],Lat,Lon);           // Yin
+      n+=GeoRef_GetLL(Ref->Subs[1],&Lat[i],&Lon[i]);  // Yang
    } else {
+      n=GeoRef_CalcLL(Ref);
+
       if (Ref->Lat) {
-         if (Lon) memcpy(Lon,Ref->Lon,Ref->NX*Ref->NY*sizeof(float));
-         if (Lat) memcpy(Lat,Ref->Lat,Ref->NX*Ref->NY*sizeof(float));
+         if (Lon) memcpy(Lon,Ref->Lon,n*sizeof(float));
+         if (Lat) memcpy(Lat,Ref->Lat,n*sizeof(float));
       } else {
          App_Log(ERROR,"%s: Missing descriptors\n",__func__);
          return(-1);
       }
    }
-   return(0);
+   return(n);
 }
 
 int GeoRef_LLVal(TGeoRef *Ref,float *zout,float *zin,double *Lat,double *Lon,int Nb) { 
