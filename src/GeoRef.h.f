@@ -167,7 +167,9 @@ module libgeoref
 !      void     GeoRef_AxisDefine(TGeoRef* Ref,float *AX,float *AY);
 !      void     GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref);
 !      void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
-      
+!      int      GeoRef_MaskInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,int *mask_out,float *zin,int *mask_in);                    // ezsint_mdm
+!      int      GeoRef_MaskInterpUV(TGeoRef *RefTo, TGeoRef *RefFrom,float *uuout,float *vvout,int *mask_out,float *uuin,float *vvin,int *mask_in);
+         
 !      TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID);
       function c_georef_rpncreate(ni,nj,grtyp,ig1,ig2,ig3,ig4,iunit) result(gref) bind(C,name='GeoRef_RPNCreate')
          import :: C_PTR, C_CHAR, C_INT
@@ -345,7 +347,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_calcll
 
-      !      int      GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon);                                                                      // gdll
+!      int      GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon);                                                                      // gdll
       function c_georef_getll(gref,lat,lon) result(status) bind(C,name='GeoRef_GetLL') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref
@@ -361,6 +363,32 @@ module libgeoref
          type(C_PTR), intent(IN), value :: gref1
          integer(C_INT)                :: status
       end function c_georef_equal
+
+!      int      GeoRef_MaskInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,int *mask_out,float *zin,int *mask_in);                    // ezsint_mdm
+      function c_georef_maskinterp(grefout,grefin,zout,maskout,zin,maskin) result(status) bind(C,name='GeoRef_MaskInterp') 
+         import :: C_PTR, C_INT
+         type(C_PTR), intent(IN), value :: grefout
+         type(C_PTR), intent(IN), value :: grefin
+         type(C_PTR), intent(IN), value :: zout
+         type(C_PTR), intent(IN), value :: maskout
+         type(C_PTR), intent(IN), value :: zin
+         type(C_PTR), intent(IN), value :: maskin
+         integer(C_INT)                :: status
+      end function c_georef_maskinterp
+
+!      int      GeoRef_MaskInterpUV(TGeoRef *RefTo, TGeoRef *RefFrom,float *uuout,float *vvout,int *mask_out,float *uuin,float *vvin,int *mask_in);
+      function c_georef_maskinterpuv(grefout,grefin,uuout,vvout,maskout,uuin,vvin,maskin) result(status) bind(C,name='GeoRef_MaskInterpUV') 
+         import :: C_PTR, C_INT
+         type(C_PTR), intent(IN), value :: grefout
+         type(C_PTR), intent(IN), value :: grefin
+         type(C_PTR), intent(IN), value :: uuout
+         type(C_PTR), intent(IN), value :: vvout
+         type(C_PTR), intent(IN), value :: maskout
+         type(C_PTR), intent(IN), value :: uuin
+         type(C_PTR), intent(IN), value :: vvin
+         type(C_PTR), intent(IN), value :: maskin
+         integer(C_INT)                :: status
+      end function c_georef_maskinterpuv
 
 !      int      GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,int *IG2,int *IG3,int *IG4,char *GRREF,int *IG1REF,int *IG2REF,int *IG3REF,int *IG4REF)  //c_ezgxprm
       function c_georef_gridgetparams(gref,ni,nj,grtyp,ig1,ig2,ig3,ig4,grref,ig1ref,ig2ref,ig3ref,ig4ref) result(status) bind(C,name='GeoRef_GridGetParams') 

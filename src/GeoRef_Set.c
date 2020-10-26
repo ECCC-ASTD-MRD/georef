@@ -324,7 +324,7 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       gset->yinlat = (double*) malloc(ni*nj*sizeof(double));
       gset->yinlon = (double*) malloc(ni*nj*sizeof(double));
       icode = GeoRef_GetLL(yin_gdout,gset->yinlat,gset->yinlon);
-      icode = c_ezyymint(yin_gdout,yin_gdin, i,nj,gset->yin_maskout,gset->yinlat,gset->yinlon,yin2yin_lat,yin2yin_lon,&yincount_yin,yan2yin_lat,yan2yin_lon,&yancount_yin);
+      icode = GeoRef_MaskYYApply(yin_gdout,yin_gdin, i,nj,gset->yin_maskout,gset->yinlat,gset->yinlon,yin2yin_lat,yin2yin_lon,&yincount_yin,yan2yin_lat,yan2yin_lon,&yancount_yin);
       /* store the lats and lons */
       gset->yincount_yin = yincount_yin;
       gset->yancount_yin = yancount_yin;
@@ -354,7 +354,7 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       gset->yinlat = (double *) malloc(ni*nj*sizeof(double));
       gset->yinlon = (double *) malloc(ni*nj*sizeof(double));
       icode = GeoRef_GetLL(yin_gdout,gset->yinlat,gset->yinlon);
-      icode = c_ezyymint(yin_gdout,yin_gdin,ni,nj,gset->yin_maskout,gset->yinlat,gset->yinlon,yin2yin_lat,yin2yin_lon,&yincount_yin,yan2yin_lat,yan2yin_lon,&yancount_yin);
+      icode = GeoRef_MaskYYApply(yin_gdout,yin_gdin,ni,nj,gset->yin_maskout,gset->yinlat,gset->yinlon,yin2yin_lat,yin2yin_lon,&yincount_yin,yan2yin_lat,yan2yin_lon,&yancount_yin);
       gset->yincount_yin = yincount_yin;
       gset->yancount_yin = yancount_yin;
       gset->yin2yin_lat = (double*) malloc(yincount_yin*sizeof(double));
@@ -378,7 +378,7 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       gset->yanlat = (double*) malloc(ni*nj*sizeof(double));
       gset->yanlon = (double*) malloc(ni*nj*sizeof(double));
       icode = GeoRef_GetLL(yan_gdout,gset->yanlat,gset->yanlon);
-      icode = c_ezyymint(yan_gdout,yin_gdin,ni,nj,gset->yan_maskout,gset->yanlat,gset->yanlon,yin2yan_lat,yin2yan_lon,&yincount_yan,yan2yan_lat,yan2yan_lon,&yancount_yan);
+      icode = GeoRef_MaskYYApply(yan_gdout,yin_gdin,ni,nj,gset->yan_maskout,gset->yanlat,gset->yanlon,yin2yan_lat,yin2yan_lon,&yincount_yan,yan2yan_lat,yan2yan_lon,&yancount_yan);
       gset->yincount_yan = yincount_yan;
       gset->yancount_yan = yancount_yan;
       gset->yin2yan_lat = (double*) malloc(yincount_yan*sizeof(double));

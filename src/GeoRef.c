@@ -1833,47 +1833,6 @@ int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
 }
 
 /**----------------------------------------------------------------------------
- * @brief  Calculer la position latlon de tous les points de grille.
- * @author Jean-Philippe Gauthier
- * @date   June 2015
- *    @param[in]  Ref     Pointeur sur la reference geographique
- *    @param[out] Lat     Latitude array
- *    @param[out] Lon     Longitude array
- 
- *    @return             Number of coordinates
-*/
-int GeoRef_Coords(TGeoRef *Ref,double *Lat,double *Lon) {
-
-#ifdef HAVE_RMN
-   int x,y,nxy;
-   double lat,lon;
-   
-   if (!Ref) return(0);
-   
-   nxy=Ref->NX*Ref->NY;
-//TODO: Check func ez_calclatlon 
-   if (!Ref->Lat) {
-      Ref->Lat=(double*)malloc(nxy*sizeof(double));
-      Ref->Lon=(double*)malloc(nxy*sizeof(double));
-   
-      nxy=0;
-      for(y=Ref->Y0;y<=Ref->Y1;y++) {
-         for(x=Ref->X0;x<=Ref->X1;x++) {
-            Ref->Project(Ref,x,y,&lat,&lon,FALSE,TRUE);
-            Ref->Lat[nxy]=lat;
-            Ref->Lon[nxy]=lon;
-            nxy++;
-         }
-      }      
-   }
-   
-   Lat=Ref->Lat;
-   Lon=Ref->Lon;
-   return(nxy);
-#endif
-}
-
-/**----------------------------------------------------------------------------
  * @brief  Obtenir les valeurs de distance en X et Y ainsi que l'aire
  *         pour chaque cellule de la grille
  * @remark Si un des tableau est NULL, il ne sera pas remplie

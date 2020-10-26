@@ -640,7 +640,7 @@ TGeoRef* GeoRef_RPNCreateYY(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,in
 
    for (i=0; i < NbSub; i++) {
       ref->Subs[i] = Subs[i];
-      c_ezgdef_yymask(Subs[i]);
+      GeoRef_MaskYYDefine(Subs[i]);
       App_Log(DEBUG,"%s: Grille[%p].Subs[%p] has maskgrid=%p\n",__func__,ref,Subs[i],sub_gd->mymaskgrid);
    }
 

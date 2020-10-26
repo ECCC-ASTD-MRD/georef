@@ -365,11 +365,11 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
             break;
 
          case 'T':
-            f77name(ez8_vtllfxy)(Lat,Lon,X,Y, &Ref->RPNHead.XG[X_CLAT], &Ref->RPNHead.XG[X_CLON], &Ref->RPNHead.XG[X_TD60], &Ref->RPNHead.XG[X_TDGRW], &Ref->NX, &Ref->NY, &npts);
+            f77name(ez8_vtllfxy)(Lat,Lon,X,Y,&Ref->RPNHead.XG[X_CLAT], &Ref->RPNHead.XG[X_CLON], &Ref->RPNHead.XG[X_TD60], &Ref->RPNHead.XG[X_TDGRW], &Ref->NX, &Ref->NY, &npts);
             break;
 
          case '!':
-            f77name(ez_llflamb)(Lat,Lon,X,Y,&npts,&Ref->GRTYP,&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4],1);
+            f77name(ez8_llflamb)(Lat,Lon,X,Y,&npts,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
             break;
 
          case '#':
@@ -692,7 +692,7 @@ int GeoRef_LL2XY_RG(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int
          break;
 
       case '!':
-         f77name(ez_lambfll)(X,Y,Lat,Lon,&Nb,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
+         f77name(ez8_lambfll)(X,Y,Lat,Lon,&Nb,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
          break;
 
       default:
