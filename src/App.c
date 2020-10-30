@@ -54,7 +54,7 @@ static TApp AppInstance;                         ///< Static App instance
 __thread TApp *App=&AppInstance;                 ///< Per thread App pointer
 static __thread char APP_ERROR[APP_ERRORSIZE];   ///< Last error is accessible through this
 
-char* App_ErrorGet(void) {
+char* App_ErrorGet(void) {                       //< Return last error
    return(APP_ERROR);
 }
 

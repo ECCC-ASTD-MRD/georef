@@ -54,7 +54,7 @@
    sequence_ok = .true.
 
    do i=1,ni-1
-      if (ax(i+1) <= ax(i)) then
+      if (ax(i+1) < ax(i)) then
          sequence_ok = .false.
          exit
       endif
@@ -68,7 +68,7 @@
    endif
 
    do j=1,nj-1
-      if (ay(j+1) <= ay(j)) then
+      if (ay(j+1) < ay(j)) then
          sequence_ok = .false.
          exit
       endif

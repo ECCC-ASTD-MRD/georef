@@ -325,9 +325,7 @@ TRPNField* RPN_FieldReadIndex(int FileId,int Index,TRPNField *Fld) {
       lvl=ZRef_IP2Level(h.IP1,&type);
       type=type==LVL_SIGMA?LVL_ETA:type;
 
-      if (h.GRTYP[0]!='W') {
-         fld->GRef=GeoRef_RPNCreate(h.NI,h.NJ,h.GRTYP,h.IG[X_IG1],h.IG[X_IG2],h.IG[X_IG3],h.IG[X_IG4],h.FID);
-      }
+      fld->GRef=GeoRef_Create(h.NI,h.NJ,h.GRTYP,h.IG[X_IG1],h.IG[X_IG2],h.IG[X_IG3],h.IG[X_IG4],h.FID);
       
       fld->ZRef=ZRef_Define(type,h.NK,&lvl);
    // TODO:  if (grtyp[0]=='U') {
@@ -436,7 +434,7 @@ int RPN_FieldReadComponent(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int F
 */
 struct TGeoRef* RPN_FieldReadGrid(TRPNField *Field) {
 
-   Field->GRef=GeoRef_RPNCreate(Field->Head.NI,Field->Head.NJ,Field->Head.GRTYP,Field->Head.IG[X_IG1],Field->Head.IG[X_IG2],Field->Head.IG[X_IG3],Field->Head.IG[X_IG4],Field->Head.FID);
+   Field->GRef=GeoRef_Create(Field->Head.NI,Field->Head.NJ,Field->Head.GRTYP,Field->Head.IG[X_IG1],Field->Head.IG[X_IG2],Field->Head.IG[X_IG3],Field->Head.IG[X_IG4],Field->Head.FID);
    
    if (Field->GRef->GRTYP[0]=='V') {
       RPN_FieldReadLevels(Field);
@@ -444,33 +442,35 @@ struct TGeoRef* RPN_FieldReadGrid(TRPNField *Field) {
    return(Field->GRef);
 }
 
-int RPN_ReadGrid(struct TGeoRef *GRef,TRPNHeader *Head) {
+int RPN_ReadGrid(struct TGeoRef *GRef) {
 
-   int         key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety;
+   int         key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,d=0;
    float      *ax=NULL,*ay=NULL;
    char        grref[2];
+   TRPNHeader *h=&GRef->RPNHead;
 
-   // !! -> NI==3 ### Field->Def->NI<4 || 
-//TODO:   if (!GRef || !(GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)) || (GRef->NY==1 && GRef->GRTYP[0]!='Y' && GRef->GRTYP[1]!='Y' && GRef->GRTYP[0]!='M'))
-//      return(0);
-   if ((!GRef->AY || !GRef->AX) && Head->FID>=0) {
+   if (GRef->GRTYP[0]=='L' || GRef->GRTYP[0]=='A' || GRef->GRTYP[0]=='B' || GRef->GRTYP[0]=='N' || GRef->GRTYP[0]=='S' || GRef->GRTYP[0]=='G') {
+      return(TRUE);
+   }
+
+   if ((!GRef->AY || !GRef->AX) && h->FID>=0) {
 
       switch(GRef->GRTYP[0]) {
          case 'M':
-            if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"^^",1,0);
-            if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,">>",1,0);
+            if (!GRef->AY) RPN_FieldReadComponent(h,&GRef->AY,"^^",1,0);
+            if (!GRef->AX) d=RPN_FieldReadComponent(h,&GRef->AX,">>",1,0);
 
             // Lire le champs d'indexes
             if (!GRef->Idx) {
-               key=cs_fstinf(Head->FID,&ni,&nj,&nk,-1,"",Head->IG[X_IG1],Head->IG[X_IG2],Head->IG[X_IG3],"","##");
+               key=cs_fstinf(h->FID,&ni,&nj,&nk,-1,"",h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],"","##");
                if (key < 0) {
                   App_Log(ERROR,"%s: Could not find index field %s (c_fstinf failed)",__func__,"##");
-                  return(0);
+                  return(FALSE);
                } else {
                   GRef->NIdx=ni*nj*nk;
                   if (!(GRef->Idx=(unsigned int*)malloc(GRef->NIdx*sizeof(unsigned int)))) {
                      App_Log(ERROR,"%s: Not enough memory to read coordinates fields",__func__);
-                     return(0);
+                     return(FALSE);
                   }
                   cs_fstluk((float*)GRef->Idx,key,&ni,&nj,&nk);
                }
@@ -479,47 +479,37 @@ int RPN_ReadGrid(struct TGeoRef *GRef,TRPNHeader *Head) {
             break;
 
          case 'W':
-            if (GRef->GRTYP[1]=='X' || GRef->GRTYP[1]=='Y' || GRef->GRTYP[1]=='Z') {
-               if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"^^",1,0);
-               if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,">>",1,0);
-            }
-            
-            if (GRef->GRTYP[1]=='Y') {
-               if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"LA",0,0);
-               if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,"LO",0,0);
-               if (!GRef->Hgt) RPN_FieldReadComponent(Head,&GRef->Hgt,"ZH",0,0);
-            }
             break;
 
          case 'Y':
-            if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"LA",0,0);
-            if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"^^",1,0);
-            if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,"LO",0,0);
-            if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,">>",1,0);
-            if (!GRef->Hgt) RPN_FieldReadComponent(Head,&GRef->Hgt,"ZH",0,0);
+            if (!GRef->AY) RPN_FieldReadComponent(h,&GRef->AY,"LA",0,0);
+            if (!GRef->AY) RPN_FieldReadComponent(h,&GRef->AY,"^^",1,0);
+            if (!GRef->AX) RPN_FieldReadComponent(h,&GRef->AX,"LO",0,0);
+            if (!GRef->AX) RPN_FieldReadComponent(h,&GRef->AX,">>",1,0);
+            if (!GRef->Hgt) RPN_FieldReadComponent(h,&GRef->Hgt,"ZH",0,0);
             break;
 
          case 'X':
          case 'O':
-            if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"^^",1,0);
-            if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,">>",1,0);
+            if (!GRef->AY) RPN_FieldReadComponent(h,&GRef->AY,"^^",1,0);
+            if (!GRef->AX) d=RPN_FieldReadComponent(h,&GRef->AX,">>",1,0);
             GeoRef_BuildIndex(GRef);          
             break;
 
          case 'V':
-            if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"^^",1,0);
-            if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,">>",1,0);
+            if (!GRef->AY) RPN_FieldReadComponent(h,&GRef->AY,"^^",1,0);
+            if (!GRef->AX) RPN_FieldReadComponent(h,&GRef->AX,">>",1,0);
 //TODO:            RPN_FieldReadLevels(Field);
             break;
 
          case 'Z':
-            if (!GRef->AY) RPN_FieldReadComponent(Head,&GRef->AY,"^^",1,0);
-            if (!GRef->AX) RPN_FieldReadComponent(Head,&GRef->AX,">>",1,0);
+            if (!GRef->AY) RPN_FieldReadComponent(h,&GRef->AY,"^^",1,0);
+            if (!GRef->AX) d=RPN_FieldReadComponent(h,&GRef->AX,">>",1,0);
             break;
 
          case '#':
-            if (!GRef->AY) RPN_FieldReadComponent(Head,&ay,"^^",1,0);
-            if (!GRef->AX) RPN_FieldReadComponent(Head,&ax,">>",1,0);
+            if (!GRef->AY) RPN_FieldReadComponent(h,&ay,"^^",1,0);
+            if (!GRef->AX) RPN_FieldReadComponent(h,&ax,">>",1,0);
 
             if (ax && ay) {
                GRef->AX = (float *) malloc(GRef->NX*sizeof(float));
@@ -535,26 +525,26 @@ int RPN_ReadGrid(struct TGeoRef *GRef,TRPNHeader *Head) {
             break;
          
          case 'U':
-            if (!GRef->AX) RPN_FieldReadComponent(Head,&ax,"^>",1,0);
+            if (!GRef->AX) RPN_FieldReadComponent(h,&ax,"^>",1,0);
 
             if (ax) {
                GRef->NbSub=(int)ax[2];            // Number of LAM grids (YY=2)
-               ni=(int)ax[5];                            // NI size of LAM grid 
-               nj=(int)ax[6];                            // NJ size of LAM grid
+               ni=(int)ax[5];                     // NI size of LAM grid 
+               nj=(int)ax[6];                     // NJ size of LAM grid
                GRef->NX = ni;                     // NI size of U grid
-               GRef->NY = nj*GRef->NbSub;  // NJ size of U grid
+               GRef->NY = nj*GRef->NbSub;         // NJ size of U grid
                GRef->AX = (float*)malloc(ni*sizeof(float));
                GRef->AY = (float*)malloc(nj*sizeof(float));
                memcpy(GRef->AX,&ax[15],ni*sizeof(float));
                memcpy(GRef->AY,&ax[15+ni],nj*sizeof(float));
 
                // Get subgrids
-               GRef->Subs = (TGeoRef **)malloc(GRef->NbSub*sizeof(TGeoRef*));
+               GRef->Subs = (TGeoRef**)malloc(GRef->NbSub*sizeof(TGeoRef*));
                strcpy(grref,"E");
                idx=11;
                for(s=0;s<GRef->NbSub;s++) {
                   f77name(cxgaig)(grref,&ig1,&ig2,&ig3,&ig4,&ax[idx],&ax[idx+1],&ax[idx+2],&ax[idx+3]);
-                  GRef->Subs[s] = GeoRef_RPNCreateInMemory(ni,nj,"Z",grref,ig1,ig2,ig3,ig4,GRef->AX,GRef->AY);
+                  GRef->Subs[s] = GeoRef_CreateInMemory(ni,nj,"Z",grref,ig1,ig2,ig3,ig4,GRef->AX,GRef->AY);
                   //TODO: Do we need to do this here ?
                   GeoRef_MaskYYDefine(GRef->Subs[s]);
                   idx+=ni+nj+10;
@@ -563,21 +553,51 @@ int RPN_ReadGrid(struct TGeoRef *GRef,TRPNHeader *Head) {
             }
       }
 
-      // Convert Longitude to 0-360
-      // TODO: Can we not do this ?
-      if (Head->GRREF[0] == 'L') {
-         for (i=0; i < GRef->NX; i++) {
-            if (GRef->AX[i] < 0.0) {
-               GRef->AX[i] += 360.0;
+      // Check for 2D AX/AY
+      if (d>GRef->RPNHead.NI) {
+         GRef->Type|=GRID_AXY2D;
+      }
+      // In case of WKT REF
+      if (GRef->GRTYP[0]=='W' || h->GRREF[0] == 'W') {
+#ifdef HAVE_GDAL
+         float  tmpv[6];
+         double mtx[6],inv[6],*tm=NULL,*im=NULL;
+         char  *proj=NULL;
+
+         if ((key=cs_fstinf(h->FID,&ni,&nj,&nk,-1,"",h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],"","PROJ"))<0) {
+            App_Log(ERROR,"%s: Could not find projection description field PROJ (c_fstinf failed)\n",__func__);
+            return(FALSE);
+         } else {
+            c_fst_data_length(1);
+            if ((proj=(char*)malloc(ni*nj*4))) {
+               cs_fstluk(proj,key,&ni,&nj,&nk);
             }
          }
+         if ((key=cs_fstinf(h->FID,&ni,&nj,&nk,-1,"",h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],"","MTRX"))<0) {
+            App_Log(ERROR,"%s: Could not find trasform matrix field MTRX (c_fstinf failed)\n",__func__);
+            return(FALSE);
+         } else {
+            cs_fstluk(tmpv,key,&ni,&nj,&nk);
+            for(i=0;i<ni;i++) {
+               mtx[i]=tmpv[i];
+            }
+            tm=mtx;
+            if (!GDALInvGeoTransform(mtx,inv)) {
+               im=NULL;
+            } else {
+               im=inv;
+            }
+         }
+         GeoRef_SetW(GRef,proj,tm,im,NULL);
+         if (proj) free(proj);
+#else
+   App_Log(ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);
+   return(FALSE);
+#endif
       }
-
-      // Need to re-qualify to check AX order
-      GeoRef_Qualify(GRef);
    }
 
-   return(GRef->AY && GRef->AX);
+   return(TRUE);
 }
 
 /*----------------------------------------------------------------------------

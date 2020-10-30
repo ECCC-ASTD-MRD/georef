@@ -1,18 +1,16 @@
-/*=========================================================
+/*==============================================================================
  * Environnement Canada
- * Centre Meteorologique Canadien
+ * Centre Meteorologique Canadian
  * 2100 Trans-Canadienne
  * Dorval, Quebec
  *
- * Projet       : Lecture et traitements de fichiers raster
- * Fichier      : GeoRef_RDR.c
- * Creation     : Mars 2005 - J.P. Gauthier
+ * Projet       : Fonctions et definitions relatives aux fichiers standards et rmnlib
+ * Fichier      : GeoRef_Type_R.h
+ * Creation     : October 2020 - J.P. Gauthier
  *
- * Description  : Fonctions de manipulations de projections aux standard RADAR
+ * Description:
  *
- * Remarques    :
- *
- * License      :
+ * License:
  *    This library is free software; you can redistribute it and/or
  *    modify it under the terms of the GNU Lesser General Public
  *    License as published by the Free Software Foundation,
@@ -28,20 +26,13 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- *=========================================================
+ *==============================================================================
  */
 
 #include "App.h"
 #include "GeoRef.h"
 #include "Def.h"
 #include "Vertex.h"
-
-double   GeoRef_RDRHeight(TGeoRef *Ref,TZRef *ZRef,double Azimuth,double Bin,double Sweep);
-double   GeoRef_RDRDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
-int      GeoRef_RDRValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double Azimuth,double Bin,double Sweep,double *Length,double *ThetaXY);
-int      GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
-int      GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
-TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,double ResA);
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_RDRHeight>
@@ -69,30 +60,6 @@ double GeoRef_RDRHeight(TGeoRef *Ref,TZRef *ZRef,double Azimuth,double Bin,doubl
    } else {
       return(0);
    }
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RDRDistance>
- * Creation     : Mars 2007 J.P. Gauthier - CMC/CMOE
- *
- * But          : Calculer la distance entre deux points.
- *
- * Parametres    :
- *   <Ref>      : Pointeur sur la reference geographique
- *   <X0>        : coordonnee en X dans la projection/grille
- *   <Y0>        : coordonnee en Y dans la projection/grille
- *   <X0>        : coordonnee en X dans la projection/grille
- *   <Y0>        : coordonnee en Y dans la projection/grille
- *
- * Retour       : Distance
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-double GeoRef_RDRDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1) {
-
-   return(0.0);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -166,9 +133,7 @@ int GeoRef_RDRValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double Azim
 */
 int GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
 
-#ifdef HAVE_RMN
    GeoRef_LL2XY(REFGET(Ref),&X,&Y,Lat,Lon,1);
-#endif
 
    return(1);
 }
@@ -196,9 +161,7 @@ int GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
 */
 int GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
 
-#ifdef HAVE_RMN
-//TODO   GeoRef_XY2LL(REFGET(Ref),Lat,Lon,&X,&Y,1);
-#endif
+   GeoRef_XY2LL(REFGET(Ref),&Lat,&Lon,X,Y,1);
 
    return(1);
 }
@@ -223,7 +186,7 @@ int GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-TGeoRef* GeoRef_RDRCreate(double Lat,double Lon,double Height,int R,double ResR,double ResA) {
+TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int R,double ResR,double ResA) {
 
    TGeoRef *ref;
 
@@ -242,8 +205,64 @@ TGeoRef* GeoRef_RDRCreate(double Lat,double Lon,double Height,int R,double ResR,
    ref->Project=GeoRef_RDRProject;
    ref->UnProject=GeoRef_RDRUnProject;
    ref->Value=(TGeoRef_Value*)GeoRef_RDRValue;
-   ref->Distance=GeoRef_RDRDistance;
    ref->Height=GeoRef_RDRHeight;
 
    return(ref);
+}
+
+int GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
+
+   TCoord loc0;
+   double x,y,d;
+   int    n;
+
+   for(n=0;n<Nb;n++) {
+
+      loc0.Lat=DEG2RAD(Ref->Loc.Lat);
+      loc0.Lon=DEG2RAD(Ref->Loc.Lon);
+
+      x=X[n]*Ref->ResA;
+      y=Y[n]*Ref->ResR;
+
+      x=DEG2RAD(x);
+      d=M2RAD(y*Ref->CTH);
+
+      if (Ref->Options.Transform) {
+         Lat[n]=asin(sin(loc0.Lat)*cos(d)+cos(loc0.Lat)*sin(d)*cos(x));
+         Lon[n]=fmod(loc0.Lon+(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(*Lat)))+M_PI,M_2PI)-M_PI;
+         Lat[n]=RAD2DEG(*Lat);
+         Lon[n]=RAD2DEG(*Lon);
+      } else {
+         Lat[n]=d;
+         Lon[n]=x;
+      }
+   }
+
+   return(0);
+}
+
+int GeoRef_LL2XY_R(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+
+   TCoord  loc0;
+   double  x,d,lat,lon;
+   int     n;
+
+   for(n=0;n<Nb;n++) {
+      loc0.Lat=DEG2RAD(Ref->Loc.Lat);
+      loc0.Lon=DEG2RAD(Ref->Loc.Lon);
+      lat=DEG2RAD(Lat[n]);
+      lon=DEG2RAD(Lon[n]);
+
+      d=fabs(DIST(0.0,loc0.Lat,loc0.Lon,lat,lon));
+      x=-RAD2DEG(COURSE(loc0.Lat,loc0.Lon,lat,lon));
+      X[n]=x<0.0?x+360.0:x;
+      Y[n]=d/Ref->CTH;
+
+      if (Ref->Options.Transform) {
+         X[n]/=Ref->ResA;
+         Y[n]/=Ref->ResR;
+      }
+   }
+
+   return(0);
 }

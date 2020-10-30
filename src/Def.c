@@ -1462,8 +1462,6 @@ int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,float
       return(0);
    }
 
-   GeoRef_SetGet(ToRef,FromRef);
-
    // Loop on vertical levels
    for(k=0;k<ToDef->NK;k++) {
       Def_Pointer(ToDef,0,k*FSIZE2D(ToDef),pt0);
@@ -1490,59 +1488,6 @@ int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,float
       App_Log(ERROR,"%s: RMNLIB support not included\n",__func__);
 #endif   
    return(ok);
-}
-
-//TODO: Remove lock
-int ORIDef_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,char Mask,float *Index) {
-   
-#ifdef HAVE_RMN
-   void *pf0,*pt0,*pf1,*pt1;
-   int   ok,k;
- 
-   GeoRef_Lock();
-
-   // Set interpolation and extrapolation mode
-   if (Interp) FromRef->Options.InterpDegree=Interp;
-   if (Extrap) FromRef->Options.ExtrapDegree=Extrap;
-   
-   if (FromRef->Options.ExtrapDegree==ER_VALUE) {
-      FromRef->Options.ExtrapValue=ToDef->NoData;
-   }
-
-   if (ok<0) {
-      App_Log(ERROR,"%s: EZSCINT internal error, could not define gridset\n",__func__);
-      GeoRef_Unlock();
-      return(FALSE);
-   }
-
-   for(k=0;k<ToDef->NK;k++) {
-      // Effectuer l'interpolation selon le type de champs
-      if (ToDef->Data[1]) {
-         /*Interpolation vectorielle*/
-         Def_Pointer(ToDef,0,k*FSIZE2D(ToDef),pt0);
-         Def_Pointer(FromDef,0,k*FSIZE2D(FromDef),pf0);
-         Def_Pointer(ToDef,1,k*FSIZE2D(ToDef),pt1);
-         Def_Pointer(FromDef,1,k*FSIZE2D(FromDef),pf1);
-
-         // In case of Y grid, get the speed and dir instead of wind components
-         // since grid oriented components dont mean much
-         if (ToRef->GRTYP[0]=='Y') {
-            ok=GeoRef_InterpWD(ToRef,FromRef,pt0,pt1,pf0,pf1);
-         } else {
-            ok=GeoRef_InterpUV(ToRef,FromRef,pt0,pt1,pf0,pf1);
-         }
-      } else{
-         // Interpolation scalaire
-         Def_Pointer(ToDef,0,k*FSIZE2D(ToDef),pt0);
-         Def_Pointer(FromDef,0,k*FSIZE2D(FromDef),pf0);
-         ok=GeoRef_Interp(ToRef,FromRef,pt0,pf0);
-      }
-   }
-   GeoRef_Unlock();
-#else
-      App_Log(ERROR,"%s: RMNLIB support not included\n",__func__);
-#endif   
-   return(TRUE);
 }
          
 int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,char Mask,float *Index) {
@@ -1644,40 +1589,9 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDe
       FromRef->Options.ExtrapValue=ToDef->NoData;
    }
 
-   // If grids are the same, copy the data
-   if (GeoRef_Equal(ToRef,FromRef)) {
-      for(idx=0;idx<=FSIZE3D(FromDef);idx++){
-         for(c=0;c<FromDef->NC;c++){
-            Def_Get(FromDef,c,idx,val);
-            Def_Set(ToDef,c,idx,val);
-         }
-      }
-   } else {
-      // Check for ezscint capability
-      if (FromDef->Type!=TD_Float32) {
-         ezfrom=0;
-      }
-
-      if (FromRef->GRTYP[0]=='R' || FromRef->GRTYP[0]=='W' || FromRef->GRTYP[0]=='x' || FromRef->GRTYP[0]=='M') {
-         ezfrom=0;
-      }
-
-      if (ToRef->GRTYP[0]=='R' || ToRef->GRTYP[0]=='W' || ToRef->GRTYP[0]=='x' || ToRef->GRTYP[0]=='Y' || ToRef->GRTYP[0]=='M' || ToRef->Hgt) {
-         ezto=0;
-      }
-         
-      // Use ezscint
-      if (ezto && ezfrom) {
-	      if (Def_EZInterp(ToRef,ToDef,FromRef,FromDef,Index)) {
-            App_Log(ERROR,"%s: EZSCINT interpolation problem\n",__func__);
-            return(FALSE);
-         }
-      } else { 
-         if (!Def_JPInterp(ToRef,ToDef,FromRef,FromDef,Interp,Extrap,Mask,Index)) {
-            App_Log(ERROR,"%s: Interpolation problem\n",__func__);
-            return(FALSE);
-         }
-      }
+ 	if (Def_EZInterp(ToRef,ToDef,FromRef,FromDef,Index)) {
+      App_Log(ERROR,"%s: EZSCINT interpolation problem\n",__func__);
+      return(FALSE);
    }
 
    // Interpolate mask if needed

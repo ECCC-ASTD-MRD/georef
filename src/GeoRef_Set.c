@@ -191,7 +191,7 @@ int GeoRef_SetZoneDefine(TGeoRef *RefTo,TGeoRef *RefFrom) {
    gset=GeoRef_SetGet(RefTo,RefFrom);
   
    if (gset->flags & SET_ZONES) {
-      return 0;
+      return(0);
    }
 
    extrap = FALSE;
@@ -432,7 +432,6 @@ void GeoRef_SetFree(TGridSet* GSet) {
  // float *yin2yan_lat,*yin2yan_lon,*yan2yan_lat,*yan2yan_lon;
  // float *yin2yin_x,*yin2yin_y,*yan2yin_x,*yan2yin_y;
  // float *yin2yan_x,*yin2yan_y,*yan2yan_x,*yan2yan_y;
-
 }
 
 TGridSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom) {

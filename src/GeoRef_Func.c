@@ -34,6 +34,67 @@
 #include "GeoRef.h"
 
 /**----------------------------------------------------------------------------
+ * @brief  Calculate distance between to location in gridpoint coordinates
+ * @author Jean-Philippe Gauthier
+ * @date   March 2007
+ *    @param[in]  Ref   Pointer to geo reference
+ *    @param[in]  X0    First  X coordinate 
+ *    @param[in]  Y0    First  Y coordinate 
+ *    @param[in]  X1    Second X coordinate 
+ *    @param[in]  Y1    Second Y coordinate 
+ *
+ *    @return           Distance in meters
+*/
+double GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1) {
+
+#ifdef HAVE_RMN
+   char *unit,geo;
+   double i[2],j[2],lat[2],lon[2],u;
+
+   // Check for unit type 
+   geo=1;
+#ifdef HAVE_GDAL
+   if (Ref->Spatial) {
+      u=OSRGetLinearUnits(Ref->Spatial,&unit);
+      geo=(unit[0]!='M' && unit[0]!='m');
+   }
+#endif
+
+   if (geo) {
+      // Grid is geographic (latlon)
+      i[0]=X0+1.0;
+      j[0]=Y0+1.0;
+      i[1]=X1+1.0;
+      j[1]=Y1+1.0;
+
+      GeoRef_XY2LL(REFGET(Ref),lat,lon,i,j,2);
+
+      X0=DEG2RAD(lon[0]);
+      X1=DEG2RAD(lon[1]);
+      Y0=DEG2RAD(lat[0]);
+      Y1=DEG2RAD(lat[1]);
+
+      return(DIST(0.0,Y0,X0,Y1,X1));
+   } else {
+      // Grid is meters (utm)
+      if (Ref->Transform) {
+         i[0]=Ref->Transform[0]+Ref->Transform[1]*X0+Ref->Transform[2]*Y0;
+         j[0]=Ref->Transform[3]+Ref->Transform[4]*X0+Ref->Transform[5]*Y0;
+         i[1]=Ref->Transform[0]+Ref->Transform[1]*X1+Ref->Transform[2]*Y1;
+         j[1]=Ref->Transform[3]+Ref->Transform[4]*X1+Ref->Transform[5]*Y1;
+      } else {
+         i[0]=X0;
+         j[0]=Y0;
+         i[1]=X1;
+         j[1]=Y1;
+      }
+      return(hypot(j[1]-j[0],i[1]-i[0])*u);
+   }
+#endif
+   return(hypot(X1-X0,Y1-Y0));
+}
+
+/**----------------------------------------------------------------------------
  * @brief  Interpolate the position of a point on a great circle
  * @author Jean-Philippe Gauthier
  * @date   February 2008

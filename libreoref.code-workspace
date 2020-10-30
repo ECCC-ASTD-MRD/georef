@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"*.extension": "language",
+			"*.hf": "fortran",
+			"*.ftn90": "fortran",
+			"*.cuh": "c",
+			"complex": "c"
+		}
+	}
+}

@@ -343,11 +343,11 @@ int GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
       }
     
      f77name(cigaxg)(Ref->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4]);
-     GeoRef_gfLL2XY(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
+     GeoRef_RotateXY(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
    }
 
    grtypa[0] = 'A';
-   gda = GeoRef_RPNCreate(24,12, grtypa, 0,0,0,0,0);
+   gda = GeoRef_Create(24,12, grtypa, 0,0,0,0,0);
    GeoRef_UV2WD(gda, polar_spd, polar_wd,  &uuin[(nj-1)*ni], &vvin[(nj-1)*ni], polar_lat, polar_lon, ni);
   
    pi   = 0.0;
@@ -356,7 +356,7 @@ int GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
    dgrw = 0.0;
    grtypn[0] = 'N';
    f77name(cxgaig)(grtypn, &ig1n, &ig2n, &ig3n, &ig4n, &pi, &pj, &d60, &dgrw);
-   gdps = GeoRef_RPNCreate(ni, 1, grtypn, ig1n, ig2n, ig3n, ig4n, 0);
+   gdps = GeoRef_Create(ni, 1, grtypn, ig1n, ig2n, ig3n, ig4n, 0);
    GeoRef_WD2UV(gdps, polar_uu, polar_vv, polar_spd,  polar_wd, polar_lat, polar_lon, ni);
 
    f77name(ez_calcpoleval)(&uupole, polar_uu, &ni, Ref->AX, &Ref->GRTYP, &Ref->RPNHead.GRREF,1,1);
@@ -447,11 +447,11 @@ int GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
      }
     
      f77name(cigaxg)(Ref->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4]);
-     GeoRef_gfLL2XY(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
+     GeoRef_RotateXY(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
    }
 
    grtypa[0] = 'A';
-   gda = GeoRef_RPNCreate(24,12, grtypa, 0,0,0,0,0);
+   gda = GeoRef_Create(24,12, grtypa, 0,0,0,0,0);
    GeoRef_UV2WD(gda, polar_spd, polar_wd,  uuin, vvin, polar_lat, polar_lon, ni);
   
    pi   = 0.0;
@@ -460,7 +460,7 @@ int GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
    dgrw = 0.0;
    grtyps[0] = 'S';
    f77name(cxgaig)(grtyps, &ig1n, &ig2n, &ig3n, &ig4n, &pi, &pj, &d60, &dgrw);
-   gdps = GeoRef_RPNCreate(ni, 1, grtyps, ig1n, ig2n, ig3n, ig4n, 0);
+   gdps = GeoRef_Create(ni, 1, grtyps, ig1n, ig2n, ig3n, ig4n, 0);
    GeoRef_WD2UV(gdps, polar_uu, polar_vv, polar_spd,  polar_wd, polar_lat, polar_lon, ni);
 
    f77name(ez_calcpoleval)(&uupole,polar_uu,&ni,Ref->AX,&Ref->GRTYP,&Ref->RPNHead.GRREF,1,1);

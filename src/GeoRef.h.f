@@ -170,8 +170,8 @@ module libgeoref
 !      int      GeoRef_MaskInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,int *mask_out,float *zin,int *mask_in);                    // ezsint_mdm
 !      int      GeoRef_MaskInterpUV(TGeoRef *RefTo, TGeoRef *RefFrom,float *uuout,float *vvout,int *mask_out,float *uuin,float *vvin,int *mask_in);
          
-!      TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID);
-      function c_georef_rpncreate(ni,nj,grtyp,ig1,ig2,ig3,ig4,iunit) result(gref) bind(C,name='GeoRef_RPNCreate')
+!      TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID);
+      function c_georef_rpncreate(ni,nj,grtyp,ig1,ig2,ig3,ig4,iunit) result(gref) bind(C,name='GeoRef_Create')
          import :: C_PTR, C_CHAR, C_INT
          integer(C_INT), intent(IN), value :: ni
          integer(C_INT), intent(IN), value :: nj
@@ -184,8 +184,8 @@ module libgeoref
          type(C_PTR) :: gref
       end function c_georef_rpncreate
 
-!      TGeoRef* GeoRef_RPNCreateInMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,float* AX,float* AY)
-      function c_georef_rpncreateinmemory(ni,nj,grtyp,grref,ig1,ig2,ig3,ig4,ax,ay) result(gref) bind(C,name='GeoRef_RPNCreateInMemory')
+!      TGeoRef* GeoRef_CreateInMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,float* AX,float* AY)
+      function c_georef_rpncreateinmemory(ni,nj,grtyp,grref,ig1,ig2,ig3,ig4,ax,ay) result(gref) bind(C,name='GeoRef_CreateInMemory')
          import :: C_PTR, C_CHAR, C_INT
          integer(C_INT), intent(IN), value :: ni
          integer(C_INT), intent(IN), value :: nj

@@ -112,7 +112,7 @@ int GeoRef_MaskYYDefine(TGeoRef *Ref) {
       }
    }
    ynj=k;
-   Ref->mymaskgrid = GeoRef_RPNCreateInMemory(yni,ynj,Ref->GRTYP,Ref->RPNHead.GRREF,Ref->RPNHead.IGREF[X_IG1],Ref->RPNHead.IGREF[X_IG2],Ref->RPNHead.IGREF[X_IG3],Ref->RPNHead.IGREF[X_IG4],&Ref->AX[i0],&Ref->AY[j0]);
+   Ref->mymaskgrid = GeoRef_CreateInMemory(yni,ynj,Ref->GRTYP,Ref->RPNHead.GRREF,Ref->RPNHead.IGREF[X_IG1],Ref->RPNHead.IGREF[X_IG2],Ref->RPNHead.IGREF[X_IG3],Ref->RPNHead.IGREF[X_IG4],&Ref->AX[i0],&Ref->AY[j0]);
    Ref->mymaskgridi0=i0;
    Ref->mymaskgridi1=i1;
    Ref->mymaskgridj0=j0;

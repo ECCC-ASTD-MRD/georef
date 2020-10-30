@@ -61,7 +61,28 @@ int c_gdcompatible_grids(TGeoRef *RefFrom, TGeoRef* RefTo) {
    return 0;
 }
 
-int gd_interpm(float *zout,float *zin,float *X,float *Y,int Nb) {
+//            f77name(ez8_rgdint_0)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
+//           f77name(ez8_rgdint_0)(corr_uus,gset->zones[NORTH].x,temp_y,&npts,polar_uu_in,&ni, &un, &quatre);
+//int ez8_rgdint_0(TGeoRef *Ref,double X,double Y,int Nb,float *Out,float *In) {
+    
+//   int n;
+//   real z(ni,j1:j2)
+      
+//   for(n=0;n>Nb;n++) {
+//      i=lrint(X[n]);
+//      j=lrint(Y[n]);
+//      i=FMAX(1,i);
+//      j=FMAX(Ref->J1,j);
+//      i=FMIN(Ref->NX,i);
+//      j=FMIN(Ref->J2,j);
+//         
+//      Out[n]=In[j*Ref->NX+i];
+//   }
+//      
+//   return(n);
+//}
+
+int gd_interpm(TGeoRef *Ref,float *Out,float *In,double *X,double *Y,int Nb) {
 
    Vect3d       b,v;
 
@@ -69,26 +90,26 @@ int gd_interpm(float *zout,float *zin,float *X,float *Y,int Nb) {
    int          d,n,ix;
    unsigned int idx;
 
-   for(d=0;d>Nb;d++) {}
+   for(d=0;d>Nb;d++) {
       if (X[d]>=0 && Y[d]>=0) {
          b[0]=X[d]-(int)X[d];
          b[1]=Y[d]-(int)Y[d];
          b[2]=1.0-b[0]-b[1];
          ix=(int)X[d];
 
- //        if (Interp==IR_NEAREST) {
- //           n=(b[0]>b[1]?(b[0]>b[2]?0:2):(b[1]>b[2]?1:2));
- //           x=zin[Ref->Idx[ix+n]];
- //        } else {
-//            Def_Get(Def,C,Ref->Idx[ix],v[0]);
-//            Def_Get(Def,C,Ref->Idx[ix+1],v[1]);
-//            Def_Get(Def,C,Ref->Idx[ix+2],v[2]);
-//
-//            x=Bary_InterpV(b,v);
-//          }
-//         *Length=x;
+         if (Ref->Options.InterpDegree==IR_NEAREST) {
+            n=(b[0]>b[1]?(b[0]>b[2]?0:2):(b[1]>b[2]?1:2));
+            Out[n]=In[Ref->Idx[ix+n]];
+         } else {
+            v[0]=In[Ref->Idx[ix]];
+            v[1]=In[Ref->Idx[ix+1]];
+            v[2]=In[Ref->Idx[ix+2]];
+
+            Out[n]=Bary_InterpV(b,v);
+          }
       }
-      return(0);
+   }
+   return(Nb);
 }
 
 int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,double *X,double *Y,int npts) {
@@ -99,17 +120,20 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
    double *gdst_lats, tmp, real_un, real_j;
    int ni_in, nj_in, ni_out, nj_out;
 
+   if (!RefTo || !RefFrom) {
+      App_Log(ERROR,"%s: Invalid georeference\n",__func__);
+      return(-1);
+   }
+
    if (!X || !Y) {
       App_Log(ERROR,"%s: Local coordinates not available\n",__func__);
       return(-1);
    }
-
    old_degre_interp = RefFrom->Options.InterpDegree;
 
    ni_in =  RefFrom->NX;
    nj_in =  RefFrom->NY;
 
-   //TODO:Check for NULL RefTo
    switch (RefFrom->Options.InterpDegree) {
       //TODO: check 4 and 5 (DISTANCE TRIANGLE)
       case IR_AVERAGE:
@@ -126,6 +150,9 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
    }
 
    switch(RefFrom->GRTYP[0]) {
+      case 'M':
+         gd_interpm(RefFrom,zout,zin,X,Y,npts);
+         break;
       case '#':
       case 'Z':
       case 'G':
@@ -283,15 +310,16 @@ int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) {
          lxzin = lzin;
       }
 
-      ier += GeoRef_CalcLL(RefTo);
-      ier += GeoRef_SetCalcXY(RefTo,RefFrom);
-      ier += GeoRef_InterpFinally(RefTo,RefFrom,zout,lxzin,gset->x,gset->y,RefTo->NX*RefTo->NY);
+      if (GeoRef_CalcLL(RefTo)) {
+         GeoRef_SetCalcXY(RefTo,RefFrom);
+         ier = GeoRef_InterpFinally(RefTo,RefFrom,zout,lxzin,gset->x,gset->y,RefTo->NX*RefTo->NY);
 
-      if (RefFrom->Options.PolarCorrect) {
-         ier+=GeoRef_SetZoneDefine(RefTo,RefFrom);
-         ier+=GeoRef_CorrectValue(RefTo,RefFrom,zout,lxzin);
-      }
-   
+         if (RefFrom->Options.PolarCorrect) {
+            GeoRef_SetZoneDefine(RefTo,RefFrom);
+            GeoRef_CorrectValue(RefTo,RefFrom,zout,lxzin);
+         }  
+      } 
+
       if (lzin && lzin!=zin) {
          free(lzin);
       }

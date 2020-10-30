@@ -37,53 +37,9 @@
 #include "RPN.h"
 #include "Vertex.h"
 
-double   GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
 int      GeoRef_RPNValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
 int      GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
 int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RPNDistance>
- * Creation     : Mars 2007 J.P. Gauthier - CMC/CMOE
- *
- * But          : Calculer la distance entre deux points.
- *
- * Parametres    :
- *   <Ref>      : Pointeur sur la reference geographique
- *   <X0>        : coordonnee en X dans la projection/grille
- *   <Y0>        : coordonnee en Y dans la projection/grille
- *   <X0>        : coordonnee en X dans la projection/grille
- *   <Y0>        : coordonnee en Y dans la projection/grille
- *
- * Retour       : Distance
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1) {
-
-#ifdef HAVE_RMN
-   double i[2],j[2],lat[2],lon[2];
-
-   if (Ref->Type&GRID_EZ) {
-      i[0]=X0+1.0;
-      j[0]=Y0+1.0;
-      i[1]=X1+1.0;
-      j[1]=Y1+1.0;
-
-      GeoRef_XY2LL(REFGET(Ref),lat,lon,i,j,2);
-
-      X0=DEG2RAD(lon[0]);
-      X1=DEG2RAD(lon[1]);
-      Y0=DEG2RAD(lat[0]);
-      Y1=DEG2RAD(lat[1]);
-
-      return(DIST(0.0,Y0,X0,Y1,X1));
-   }
-#endif
-   return(hypot(X1-X0,Y1-Y0));
-}
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_RPNValue>
@@ -248,40 +204,38 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,do
       }
    
       // RPN grid
-      if (Ref->Type&GRID_EZ) {         
-         if (Def->Type==TD_Float32 && Def->Data[1] && !C) { 
-            x=X+1.0;
-            y=Y+1.0;
+      if (Def->Type==TD_Float32 && Def->Data[1] && !C) { 
+         x=X+1.0;
+         y=Y+1.0;
 
-            if (Interp==IR_NEAREST) {
-               x=lrint(x);
-               y=lrint(y);
-            }
-            
-            Def_Pointer(Def,0,mem,p0);
-            Def_Pointer(Def,1,mem,p1);
-            GeoRef_XYWDVal(REFGET(Ref),&valf,&valdf,p0,p1,&x,&y,1);
+         if (Interp==IR_NEAREST) {
+            x=lrint(x);
+            y=lrint(y);
+         }
+         
+         Def_Pointer(Def,0,mem,p0);
+         Def_Pointer(Def,1,mem,p1);
+         GeoRef_XYWDVal(REFGET(Ref),&valf,&valdf,p0,p1,&x,&y,1);
 
-            // If it's 3D, use the mode for speed since GeoRef_XYWDVal only uses 2D
-            if (Def->Data[2])
-               GeoRef_XYVal(REFGET(Ref),&valf,(float*)&Def->Mode[mem],&x,&y,1);
-               *Length=valf;
-            if (ThetaXY)
-               *ThetaXY=valdf;
-         } else {            
-            if (Interp==IR_NEAREST) {
-               mem+=idx;
-               Def_Get(Def,C,mem,*Length);
-            } else {
-               *Length=VertexVal(Def,C,X,Y,Z);
+         // If it's 3D, use the mode for speed since GeoRef_XYWDVal only uses 2D
+         if (Def->Data[2])
+            GeoRef_XYVal(REFGET(Ref),&valf,(float*)&Def->Mode[mem],&x,&y,1);
+            *Length=valf;
+         if (ThetaXY)
+            *ThetaXY=valdf;
+      } else {            
+         if (Interp==IR_NEAREST) {
+            mem+=idx;
+            Def_Get(Def,C,mem,*Length);
+         } else {
+            *Length=VertexVal(Def,C,X,Y,Z);
 //            Def_Pointer(Def,0,mem,p0);
 //            x=X+=1.0;y=Y+=1.0;
 //                GeoRef_XYVal(REFGET(Ref),&valf,p0,&x,&y,1);
 //               fprintf(stderr,"----- %.10e %.10e   ---> %.10e\n",*Length,valf,*Length-valf);
-            }
-            if (ThetaXY)
-               *ThetaXY=0.0;
          }
+         if (ThetaXY)
+            *ThetaXY=0.0;
       }
       return(TRUE);
    }
@@ -345,42 +299,10 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
    int     idx,idxs[8];
    double  dists[8];
 
-   *X=-1.0;
-   *Y=-1.0;
-
-   // Invalid coordinates ?
-   if (Lat>90.0 || Lat<-90.0 || Lon==-999.0) 
-     return(FALSE);
-
-   Lon=GeoRef_Lon(Ref,Lon);
-   
-#ifdef HAVE_RMN
-   if (Ref->Type&GRID_SPARSE) {      
-      if (Ref->AX && Ref->AY) {
-         if (Ref->GRTYP[0]=='Y') {
-            // Get nearest point
-            if (GeoRef_Nearest(Ref,Lon,Lat,&idx,dists,1,0.0)) {
-               if (dists[0]<1.0) {
-                  *Y=(int)(idx/Ref->NX);
-                  *X=idx-(*Y)*Ref->NX;
-                  return(TRUE);
-               }         
-            }
-         }
-      } 
-      return(FALSE);
-   } else {
 
       // Extraire la valeur du point de grille
       GeoRef_LL2XY(REFGET(Ref),X,Y,&Lat,&Lon,1);
 
-//TODO: Set CIndex default to 1
-
-      // Fix for G grid 0-360 1/5 gridpoint problem
-//TODO: Check to put in fortran ez whatever
-      if (Ref->GRTYP[0]=='G' && *X>Ref->X1+0.5) *X-=(Ref->X1+1);
-  }
-#endif
    return(TRUE);
 }
 
@@ -532,7 +454,7 @@ int GeoRef_RPNDefXG(TGeoRef* Ref) {
 //! If grtyp == 'Z' or '#', the dimensions of ax=ni and ay=nj.
 //! If grtyp == 'Y', the dimensions of ax=ay=ni*nj. 
 
-TGeoRef* GeoRef_RPNCreateInMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,float* AX,float* AY) {
+TGeoRef* GeoRef_CreateInMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,float* AX,float* AY) {
    
    TGeoRef* ref,*fref;
 
@@ -585,12 +507,13 @@ TGeoRef* GeoRef_RPNCreateInMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,
    ref->Project=GeoRef_RPNProject;
    ref->UnProject=GeoRef_RPNUnProject;
    ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
-   ref->Distance=GeoRef_RPNDistance;
+
+   GeoRef_Qualify(ref);
 
    return(ref);
 }
 
-TGeoRef* GeoRef_RPNCreateYY(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,int NbSub,TGeoRef **Subs) {
+TGeoRef* GeoRef_CreateU(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,int NbSub,TGeoRef **Subs) {
 
    int  i;
    TGeoRef *ref,*fref,*sub_gd;
@@ -644,6 +567,8 @@ TGeoRef* GeoRef_RPNCreateYY(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,in
       App_Log(DEBUG,"%s: Grille[%p].Subs[%p] has maskgrid=%p\n",__func__,ref,Subs[i],sub_gd->mymaskgrid);
    }
 
+   GeoRef_Qualify(ref);
+
    App_Log(DEBUG,"%s: grtyp     = '%c'\n",__func__, ref->GRTYP[0]);
    App_Log(DEBUG,"%s: grref     = '%c'\n",__func__, ref->RPNHead.GRREF[0]);
    App_Log(DEBUG,"%s: ni        = %d\n",__func__,ref->NX);
@@ -669,7 +594,7 @@ TGeoRef* GeoRef_RPNCreateYY(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,in
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RPNCreate>
+ * Nom          : <GeoRef_Create>
  * Creation     : Avril 2005 J.P. Gauthier - CMC/CMOE
  *
  * But          : Definir le referetiel de type RPN
@@ -690,7 +615,7 @@ TGeoRef* GeoRef_RPNCreateYY(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,in
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID) {
+TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID) {
 
    TGeoRef *ref,*fref;
    int      id;
@@ -706,22 +631,20 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int 
    ref->Project=GeoRef_RPNProject;
    ref->UnProject=GeoRef_RPNUnProject;
    ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
-   ref->Distance=GeoRef_RPNDistance;
    ref->Height=NULL;
 
-   if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='P' && GRTYP[0]!='M' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
+   if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='P' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
 
 #ifdef HAVE_RMN
       if (GRTYP[1]=='#') {
          //TODO: CHECK For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
       }
 
-      if (GRTYP[0]!='#' && GRTYP[0]!='Y' && GRTYP[0]!='Z' && GRTYP[0]!='O' && GRTYP[0]!='U' && GRTYP[0]!=' ') {
+      if (ref->GRTYP[0]=='L' || ref->GRTYP[0]=='A' || ref->GRTYP[0]=='B' || ref->GRTYP[0]=='N' || ref->GRTYP[0]=='S' || ref->GRTYP[0]=='G') {
          // No need to look for grid descriptors
-         return(GeoRef_RPNCreateInMemory(NI,NJ,GRTYP," ",IG1,IG2,IG3,IG4,NULL,NULL));
+         return(GeoRef_CreateInMemory(NI,NJ,GRTYP," ",IG1,IG2,IG3,IG4,NULL,NULL));
       }
   
-
       ref->RPNHead.FID=FID;
       ref->RPNHead.IG[X_IG1] = IG1;
       ref->RPNHead.IG[X_IG2] = IG2;
@@ -737,18 +660,18 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int 
 
       // This is a new georef
       GeoRef_Add(ref);
-      if (!RPN_ReadGrid(ref,&ref->RPNHead)) {
-         // problems with reading grid descriptors
+      if (!RPN_ReadGrid(ref)) {
+        // problems with reading grid descriptors
          return(NULL);
       }
-      
+
       if (GRTYP[0] != 'U') {
          GeoRef_AxisCalcExpandCoeff(ref);
          ref->i1 = 1;
          ref->i2 = ref->NX;
          ref->j1 = 1;
          ref->j2 = ref->NY;
-         if (GRTYP[0] != 'Y' && GRTYP[0] != 'O') {
+         if (GRTYP[0]!='Y' && GRTYP[0]!='M' && GRTYP[0]!='O') {
             GeoRef_RPNDefXG(ref);
             GeoRef_AxisCalcNewtonCoeff(ref);
          } else {
@@ -757,6 +680,8 @@ TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int 
       }
 #endif
    }
+
+   GeoRef_Qualify(ref);
 
    return(ref);
 }
@@ -884,7 +809,7 @@ void GEM_hgrid4(float *F_xgi_8,float *F_ygi_8,int F_Grd_ni,int F_Grd_nj,float *F
 }
 
 /*-------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RPNGridZE>
+ * Nom          : <GeoRef_SetZE>
  * Creation     : Avril 2005 J.P. Gauthier - CMC/CMOE
  *
  * But          : Definir le referentiel de type RPN ZE
@@ -909,7 +834,7 @@ void GEM_hgrid4(float *F_xgi_8,float *F_ygi_8,int F_Grd_ni,int F_Grd_nj,float *F
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-TGeoRef* GeoRef_RPNGridZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2) {
+TGeoRef* GeoRef_SetZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2) {
 
 #ifdef HAVE_RMN
    int    ig1,ig2,ig3,ig4;
@@ -939,7 +864,7 @@ TGeoRef* GeoRef_RPNGridZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float Lat
    GEM_hgrid4(Ref->AX,Ref->AY,NI,NJ,&DX,&DY,x0,x1,y0,y1,FALSE);
            
  //TODO: Merge with EZ  
- //  Ref->Ids[0]=GeoRef_RPNCreateInMemory(NI,NJ,"Z","E",Ref->IG[X_IG1],Ref->IG[X_IG2],Ref->IG[X_IG3],Ref->IG[X_IG4],Ref->AX,Ref->AY);
+ //  Ref->Ids[0]=GeoRef_CreateInMemory(NI,NJ,"Z","E",Ref->IG[X_IG1],Ref->IG[X_IG2],Ref->IG[X_IG3],Ref->IG[X_IG4],Ref->AX,Ref->AY);
    
    Ref->NbSub=1;
    Ref->GRTYP[0]='Z';
@@ -948,7 +873,6 @@ TGeoRef* GeoRef_RPNGridZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float Lat
    Ref->Project=GeoRef_RPNProject;
    Ref->UnProject=GeoRef_RPNUnProject;
    Ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
-   Ref->Distance=GeoRef_RPNDistance;
    Ref->Height=NULL;
  #endif
   

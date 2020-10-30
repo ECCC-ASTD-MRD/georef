@@ -63,7 +63,7 @@ main(int argc,char *argv[]) {
                &hg.IP1,&hg.IP2,&hg.IP3,hg.TYPVAR,hg.NOMVAR,hg.ETIKET,hg.GRTYP,&hg.IG[X_IG1],
                &hg.IG[X_IG2],&hg.IG[X_IG3],&hg.IG[X_IG4],&hg.SWA,&hg.LNG,&hg.DLTF,&hg.UBC,&hg.EX1,&hg.EX2,&hg.EX3);
    p[2]=(float*)calloc(hg.NI*hg.NJ,sizeof(float));
-   gref_out=GeoRef_RPNCreate(hg.NI,hg.NJ,hg.GRTYP,hg.IG[X_IG1],hg.IG[X_IG2],hg.IG[X_IG3],hg.IG[X_IG4],id[2]);
+   gref_out=GeoRef_Create(hg.NI,hg.NJ,hg.GRTYP,hg.IG[X_IG1],hg.IG[X_IG2],hg.IG[X_IG3],hg.IG[X_IG4],id[2]);
 
    // Look for first corresponding field
    key=c_fstinf(id[0],&ni,&nj,&nk,-1,"",-1,-1,-1,"",var);
@@ -71,7 +71,7 @@ main(int argc,char *argv[]) {
                   &h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG[X_IG1],
                   &h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
    p[0]=(float*)calloc(ni*nj*nk,sizeof(float));
-   gref_in=GeoRef_RPNCreate(ni,nj,h.GRTYP,h.IG[X_IG1],h.IG[X_IG2],h.IG[X_IG3],h.IG[X_IG4],id[0]);
+   gref_in=GeoRef_Create(ni,nj,h.GRTYP,h.IG[X_IG1],h.IG[X_IG2],h.IG[X_IG3],h.IG[X_IG4],id[0]);
 
    // Loop on all fields
    while(key>=0) {

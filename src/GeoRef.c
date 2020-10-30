@@ -604,8 +604,9 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       Ref->RefFrom=NULL;
       Ref->Project=NULL;
       Ref->UnProject=NULL;
+      Ref->XY2LL=NULL;
+      Ref->LL2XY=NULL;
       Ref->Value=NULL;
-      Ref->Distance=NULL;
       Ref->Height=NULL;
    }
 }
@@ -623,11 +624,30 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
    int    x;
 
    if (Ref) {
-      Ref->Type=GRID_NONE;
-
-      if (Ref->GRTYP[0]!='P' && Ref->GRTYP[0]!='M' && Ref->GRTYP[0]!='V') {
-         Ref->Type|=GRID_EZ;
+      switch(Ref->GRTYP[0]) {
+         case 'A': Ref->LL2XY=GeoRef_LL2XY_A; Ref->XY2LL=GeoRef_XY2LL_L; break;
+         case 'B': Ref->LL2XY=GeoRef_LL2XY_B; Ref->XY2LL=GeoRef_XY2LL_L; break;
+         case 'E': Ref->LL2XY=GeoRef_LL2XY_E; Ref->XY2LL=GeoRef_XY2LL_E; break;
+         case 'L': Ref->LL2XY=GeoRef_LL2XY_L; Ref->XY2LL=GeoRef_XY2LL_L; break;
+         case 'N': 
+         case 'S': Ref->LL2XY=GeoRef_LL2XY_NS; Ref->XY2LL=GeoRef_XY2LL_NS; break;
+         case 'T': Ref->LL2XY=GeoRef_LL2XY_T; Ref->XY2LL=GeoRef_XY2LL_T; break;
+         case '!': Ref->LL2XY=GeoRef_LL2XY_LAMBERT; Ref->XY2LL=GeoRef_XY2LL_LAMBERT; break;
+         case '#':
+//TODO: There's sometinhg about the G grid         
+         case 'G': //GeoRef_LL2XY_G(Ref,X,Y,Lat,Lon,Nb); Ref->XY2LL=GeoRef_XY2LL_G; break;
+         case 'Z': Ref->LL2XY=GeoRef_LL2XY_Z; Ref->XY2LL=GeoRef_XY2LL_Z; break;
+         case 'O': Ref->LL2XY=GeoRef_LL2XY_O; Ref->XY2LL=GeoRef_XY2LL_O; break;
+         case 'R': Ref->LL2XY=GeoRef_LL2XY_R; Ref->XY2LL=GeoRef_XY2LL_R; break;
+         case 'M': Ref->LL2XY=GeoRef_LL2XY_M; Ref->XY2LL=GeoRef_XY2LL_M; break;
+         case 'W': Ref->LL2XY=GeoRef_LL2XY_W; Ref->XY2LL=GeoRef_XY2LL_W; break;
+         case 'Y': Ref->LL2XY=GeoRef_LL2XY_Y; Ref->XY2LL=GeoRef_XY2LL_Y; break;
+         default:
+            App_Log(ERROR,"%s: Invalid grid type: %c\n",__func__,Ref->GRTYP[0]);
+            break;
       }
+
+      Ref->Type=GRID_NONE;
 
       if (Ref->GRTYP[0]=='M' || Ref->GRTYP[0]=='Y' || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='O') {
          Ref->Type|=GRID_SPARSE;
@@ -700,7 +720,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          } 
       }
    }
-}
+}         
 
 /**----------------------------------------------------------------------------
  * @brief  Test two GeoRef for equality
@@ -797,8 +817,9 @@ TGeoRef *GeoRef_Reference(TGeoRef* __restrict const Ref) {
       ref->RefFrom=Ref;
       ref->Project=Ref->Project;
       ref->UnProject=Ref->UnProject;
+      ref->XY2LL=Ref->XY2LL;
+      ref->LL2XY=Ref->LL2XY;
       ref->Value=Ref->Value;
-      ref->Distance=Ref->Distance;
 
       ref->Loc.Lat=Ref->Loc.Lat;
       ref->Loc.Lon=Ref->Loc.Lon;
@@ -832,8 +853,9 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       ref->GRTYP[1]=Ref->GRTYP[1];
       ref->Project=Ref->Project;
       ref->UnProject=Ref->UnProject;
+      ref->XY2LL=Ref->XY2LL;
+      ref->LL2XY=Ref->LL2XY;
       ref->Value=Ref->Value;
-      ref->Distance=Ref->Distance;
       ref->Type=Ref->Type;
       ref->NbSub=Ref->NbSub;
       ref->QTree=NULL;
@@ -859,7 +881,7 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
             ref->ResR=Ref->ResR;
             ref->ResA=Ref->ResA;
          case 'W' :
-            GeoRef_WKTSet(ref,Ref->String,Ref->Transform,Ref->InvTransform,Ref->Spatial);
+            GeoRef_SetW(ref,Ref->String,Ref->Transform,Ref->InvTransform,Ref->Spatial);
             if (Ref->RotTransform) {
                ref->RotTransform=(TRotationTransform*)malloc(sizeof(TRotationTransform));
                memcpy(ref->RotTransform,Ref->RotTransform,sizeof(TRotationTransform));
@@ -1044,7 +1066,6 @@ TGeoRef* GeoRef_New() {
    ref->Project=GeoRef_Project;
    ref->UnProject=GeoRef_UnProject;
    ref->Value=NULL;
-   ref->Distance=NULL;
    ref->Height=NULL;
 
    return(ref);
