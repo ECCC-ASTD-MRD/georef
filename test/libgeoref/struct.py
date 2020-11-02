@@ -1,88 +1,111 @@
-# typedef struct {
-#    int npts;                 ///< Nombre de points
-#    double *x,*y;             ///< Vecteur de coordonnees 
-#    int *idx;                 ///< Indice du point dans le champ de destination
-# } TGeoZone;
-
-# typedef struct {
-#    struct TGeoRef* RefFrom;
-#    TGeoZone zones[SET_NZONES];
-#    int flags;
-#    double *x, *y;
-#    int *mask_in, *mask_out;
-#    float *yin_maskout,*yan_maskout;
-#    double *yinlat,*yinlon,*yanlat,*yanlon;
-#    double *yin2yin_lat,*yin2yin_lon,*yan2yin_lat,*yan2yin_lon;
-#    double *yin2yan_lat,*yin2yan_lon,*yan2yan_lat,*yan2yan_lon;
-#    double *yin2yin_x,*yin2yin_y,*yan2yin_x,*yan2yin_y;
-#    double *yin2yan_x,*yin2yan_y,*yan2yan_x,*yan2yan_y;
-#    int yincount_yin,yancount_yin,yincount_yan,yancount_yan;
-
-#    int n_wts;                ///< Nombre de poids
-#    double *wts;              ///< Tableau de poids
-#    int *mask, *idx;          ///< Indice du point dans le champ de destination
-# } TGridSet;
-
-# typedef struct TGeoRef {
-#    char*   Name;                                          ///< Reference name
-#    int     NRef;                                          ///< Nombre de reference a la georeference
-#    struct  TGeoRef  *RefFrom;                             ///< Georeference de reference (coupe verticale,...)
-#    struct  TGeoRef **Subs;                                ///< Liste des sous grilles (GRTYP=U)
-#    int     NbSub;                                         ///< Nombre de sous-grilles
-#    int     Type;                                          ///< Parametre/Flags de grille
-#    int     BD;                                            ///< Bordure
-#    int     NX,NY,X0,Y0,X1,Y1;                             ///< Grid size and limits
-#    int     Extension;                                     ///< related to the newtonian coefficient
-#    char    GRTYP[3];                                      ///< Type de grille
-#    int     Hemi;                                          ///< Hemisphere side (0=GLOBAL,1=NORTH,2=SOUTH)
-#    int     NbSet;                                         ///< Nombre de set d'interpolation
-#    TGridSet *Sets,*LastSet;                               ///< Tableau de set d'interpolation et du dernier utilise
-
-#    unsigned int NIdx,*Idx;                                ///< Index dans les positions
-#    double       *Lat,*Lon;                                ///< Coordonnees des points de grilles (Spherical)
-#    float        *AX,*AY,*NCX,*NCY,*Hgt;                   ///< Axes de positionnement / deformation
-#    double       *Wght;                                    ///< Barycentric weight array for TIN  (M grids)
-
-#    char                         *String;                  ///< OpenGIS WKT String description
-#    double                       *Transform,*InvTransform; ///< Transformation functions
-#    TRotationTransform           *RotTransform;            ///< Rotation transform
-#    void                         *GCPTransform;            ///< GPC derivative transform (1,2,3 order)
-#    void                         *TPSTransform;            ///< GPC Thin Spline transform
-#    void                         *RPCTransform;            ///< GPC Rigorous Projection Model transform
-#    TQTree                       *QTree;                   ///< Quadtree index
-#    OGREnvelope                   LLExtent;                ///< LatLon extent
-#    OGRCoordinateTransformationH  Function,InvFunction;    ///< Projection functions
-#    OGRSpatialReferenceH          Spatial;                 ///< Spatial reference
-
-#    TCoord  Loc;                                           ///< (Radar) Localisation du centre de reference
-#    double CTH,STH;                                        ///< (Radar) sin and cos of sweep angle
-#    double ResR,ResA;                                      ///< (Radar) Resolutions en distance et azimuth
-#    int    R;                                              ///< (Radar) Rayon autour du centre de reference en bin
-
-#    TGeoOptions Options;                                   ///< Options for manipulations
-#    TGeoRef_Project   *Project;                            ///< Transformation xy a latlon
-#    TGeoRef_UnProject *UnProject;                          ///< Transformation latlon a xy
-#    TGeoRef_Value     *Value;                              ///< Valeur a un point xy
-#    TGeoRef_Distance  *Distance;                           
-#    TGeoRef_Height    *Height;
-
-#    _Grille struct from ezscint.h
-#    TRPNHeader RPNHead;
-#    int i1, i2, j1, j2;
-#    int *mask;
-#    struct TGeoRef *mymaskgrid;
-#    int mymaskgridi0,mymaskgridi1;
-#    int mymaskgridj0,mymaskgridj1;
-
-# #ifdef HAVE_RPNC   
-#    int NC_Id,NC_NXDimId,NC_NYDimId;                       ///< netCDF identifiers
-# #endif
-# } TGeoRef;
-
 from ctypes import *
+#import enum
+
+class TRPNFile(Structure):
+    _fields_ = [
+        ("CId", c_char_p),
+        ("Name", c_char_p),
+        ("Open", c_int),
+        ("Id", c_uint),
+        ("NRef", c_int),
+        ("Mode", c_char)
+    ]
+
+class TRPNHeader(Structure):
+    _fields_ = [
+        ("File", POINTER(TRPNFile)),
+        ("FID", c_int),
+        ("KEY", c_int),
+        ("DATEO", c_int),
+        ("DATEV", c_int),
+        ("DEET", c_int),
+        ("NPAS", c_int),
+        ("NBITS", c_int),
+        ("DATYP", c_int),
+        ("IP1", c_int),
+        ("IP2", c_int),
+        ("IP3", c_int),
+        ("NI", c_int),
+        ("NJ", c_int),
+        ("NK", c_int),
+        ("NIJ", c_int),
+        ("IG", c_int * 4),
+        ("IGREF", c_int * 4),
+        ("XG", c_float * 4),
+        ("XGREF", c_float * 4),
+        ("SWA", c_int),
+        ("LNG", c_int),
+        ("DLTF", c_int),
+        ("UBC", c_int),
+        ("EX1", c_int),
+        ("EX2", c_int),
+        ("EX3", c_int),
+        ("TYPVAR", c_char * 3),
+        ("NOMVAR", c_char * 5),
+        ("ETIKET", c_char * 13),
+        ("GRTYP", c_char * 2),
+        ("GRREF", c_char * 2)
+    ]
+
+# class TDef_InterpR(enum.Enum):
+#    IR_UNDEF                          = 0
+#    IR_NEAREST                        = 1
+#    IR_LINEAR                         = 2
+#    IR_CUBIC                          = 3
+#    IR_NORMALIZED_CONSERVATIVE        = 4
+#    IR_CONSERVATIVE                   = 5
+#    IR_MAXIMUM                        = 6
+#    IR_MINIMUM                        = 7
+#    IR_SUM                            = 8
+#    IR_AVERAGE                        = 9
+#    IR_VARIANCE                       = 10
+#    IR_SQUARE                         = 11
+#    IR_NORMALIZED_COUNT               = 12
+#    IR_COUNT                          = 13
+#    IR_VECTOR_AVERAGE                 = 14
+#    IR_NOP                            = 15
+#    IR_ACCUM                          = 16
+#    IR_BUFFER                         = 17
+#    IR_SUBNEAREST                     = 18
+#    IR_SUBLINEAR                      = 19
+
+
+# class TDef_ExtrapR(enum.Enum):
+#   ER_UNDEF   = 0
+#   ER_MAXIMUM = 1
+#   ER_MINIMUM = 2
+#   ER_VALUE   = 3
+#   ER_ABORT   = 4
 
 class TGeoRef(Structure):
     pass
+
+class TGeoOptions(Structure):
+    _fields_ = [
+        ("InterpDegree", c_int),
+        ("ExtrapDegree", c_int),
+        ("ExtrapValue", c_double),
+        ("SubGrid", c_int),
+        ("Transform", c_int),
+        ("CIndex", c_int),
+        ("Symmetric", c_int),
+        ("WeightNum", c_int),
+        ("PolarCorrect", c_char), #TODO: correct type?
+        ("VectorMode", c_char),
+        ("DistTreshold", c_float),
+        ("LonRef", c_float)
+    ]
+
+class TRotationTransform(Structure):
+    _fields_ = [
+        ("Lat", c_double),
+        ("Lon", c_double),
+        ("Angle", c_double),
+        ("SinTheta", c_double),
+        ("CosTheta", c_double),
+        ("SinPhi", c_double),
+        ("CosPhi", c_double)
+    ]
 
 class TGeoZone(Structure):
     _fields_ = [
@@ -95,7 +118,7 @@ class TGeoZone(Structure):
 class TGridSet(Structure):
     _fields_ = [
         ("RefFrom", POINTER(TGeoRef)),
-        ("zones", POINTER(TGeoZone)), #TODO: array ?
+        ("zones", TGeoZone * 5), #TODO: define SET_NZONES 5
         ("flags", c_int),
         ("x", POINTER(c_double)), ("y", POINTER(c_double)),
         (("mask_in", POINTER(c_int))), (("mask_out", POINTER(c_int))),
@@ -112,58 +135,57 @@ class TGridSet(Structure):
     ]
 
 TGeoRef._fields_ = [
-   ("Name", c_char_p),
-   ("NRef", c_int),
-   ("RefFrom", POINTER(TGeoRef)),
-   ("RefFrom", POINTER(Subs)),
-   ("NbSub", c_int),
-   ("Type", c_int),
-   ("BD", c_int),
-   ("NX", c_int),("NY", c_int),("X0", c_int),("Y0", c_int),("X1", c_int),("Y1", c_int),
-   ("Extension", c_int),
-   ("GRTYP", c_char_p),
-   ("Hemi", c_int),
-   ("NbSet", c_int),
+    ("Name", c_char_p),
+    ("NRef", c_int),
+    ("RefFrom", POINTER(TGeoRef)),
+    ("Subs", POINTER(POINTER(TGeoRef))), #TODO: pointer of pointer
+    ("NbSub", c_int),
+    ("Type", c_int),
+    ("BD", c_int),
+    ("NX", c_int),("NY", c_int),("X0", c_int),("Y0", c_int),("X1", c_int),("Y1", c_int),
+    ("Extension", c_int),
+    ("GRTYP", c_char * 3),
+    ("Hemi", c_int),
+    ("NbSet", c_int),
+    ("Sets", POINTER(TGridSet)),("LastSet", POINTER(TGridSet)),
+    ("NIdx", c_uint),("Idx", POINTER(c_uint)),
+    ("Lat", POINTER(c_double)),("Lon", POINTER(c_double)),
+    ("AX", POINTER(c_float)),("AY", POINTER(c_float)),("NCX", POINTER(c_float)),("NCY", POINTER(c_float)),("Hgt", POINTER(c_float)),
+    ("Wght", POINTER(c_double)),
+    ("String", c_char_p),
+    ("Transform", POINTER(c_double)),("InvTransform", POINTER(c_double)),
+    ("RotTransform", POINTER(TRotationTransform)),
 
-   TGridSet *Sets,*LastSet;                               ///< Tableau de set d'interpolation et du dernier utilise
 
-   unsigned int NIdx,*Idx;                                ///< Index dans les positions
-   double       *Lat,*Lon;                                ///< Coordonnees des points de grilles (Spherical)
-   float        *AX,*AY,*NCX,*NCY,*Hgt;                   ///< Axes de positionnement / deformation
-   double       *Wght;                                    ///< Barycentric weight array for TIN  (M grids)
+#    void                         *GCPTransform;            ///< GPC derivative transform (1,2,3 order)
+#    void                         *TPSTransform;            ///< GPC Thin Spline transform
+#    void                         *RPCTransform;            ///< GPC Rigorous Projection Model transform
+#    TQTree                       *QTree;                   ///< Quadtree index
+#    OGREnvelope                   LLExtent;                ///< LatLon extent
+#    OGRCoordinateTransformationH  Function,InvFunction;    ///< Projection functions
+#    OGRSpatialReferenceH          Spatial;                 ///< Spatial reference
 
-   char                         *String;                  ///< OpenGIS WKT String description
-   double                       *Transform,*InvTransform; ///< Transformation functions
-   TRotationTransform           *RotTransform;            ///< Rotation transform
-   void                         *GCPTransform;            ///< GPC derivative transform (1,2,3 order)
-   void                         *TPSTransform;            ///< GPC Thin Spline transform
-   void                         *RPCTransform;            ///< GPC Rigorous Projection Model transform
-   TQTree                       *QTree;                   ///< Quadtree index
-   OGREnvelope                   LLExtent;                ///< LatLon extent
-   OGRCoordinateTransformationH  Function,InvFunction;    ///< Projection functions
-   OGRSpatialReferenceH          Spatial;                 ///< Spatial reference
+#    TCoord  Loc;                                           ///< (Radar) Localisation du centre de reference
+#    double CTH,STH;                                        ///< (Radar) sin and cos of sweep angle
+#    double ResR,ResA;                                      ///< (Radar) Resolutions en distance et azimuth
+#    int    R;                                              ///< (Radar) Rayon autour du centre de reference en bin
 
-   TCoord  Loc;                                           ///< (Radar) Localisation du centre de reference
-   double CTH,STH;                                        ///< (Radar) sin and cos of sweep angle
-   double ResR,ResA;                                      ///< (Radar) Resolutions en distance et azimuth
-   int    R;                                              ///< (Radar) Rayon autour du centre de reference en bin
+    ("Options", TGeoOptions),
 
-   TGeoOptions Options;                                   ///< Options for manipulations
-   TGeoRef_Project   *Project;                            ///< Transformation xy a latlon
-   TGeoRef_UnProject *UnProject;                          ///< Transformation latlon a xy
-   TGeoRef_Value     *Value;                              ///< Valeur a un point xy
-   TGeoRef_Distance  *Distance;                           
-   TGeoRef_Height    *Height;
+#    TGeoRef_Project   *Project;                            ///< Transformation xy a latlon
+#    TGeoRef_UnProject *UnProject;                          ///< Transformation latlon a xy
+#    TGeoRef_Value     *Value;                              ///< Valeur a un point xy
+#    TGeoRef_Distance  *Distance;                           
+#    TGeoRef_Height    *Height;
 
-   _Grille struct from ezscint.h
-   TRPNHeader RPNHead;
-   int i1, i2, j1, j2;
-   int *mask;
-   struct TGeoRef *mymaskgrid;
-   int mymaskgridi0,mymaskgridi1;
-   int mymaskgridj0,mymaskgridj1;
+    ("RPNHead", TRPNHeader),
+    ("i1", c_int),("i2", c_int),("j1", c_int),("j2", c_int),
+    ("mask", POINTER(c_int)),
+    ("mymaskgrid", POINTER(TGeoRef)),
+    ("mymaskgridi0", c_int),("mymaskgridi1", c_int),
+    ("mymaskgridj0", c_int),("mymaskgridj1", c_int)
 
 # #ifdef HAVE_RPNC   
 #    int NC_Id,NC_NXDimId,NC_NYDimId;                       ///< netCDF identifiers
 # #endif
-]
+    ]

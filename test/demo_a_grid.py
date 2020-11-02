@@ -49,7 +49,8 @@ def plot_grid(params):
 def plot_data(params, data):
     'Plot data on map'
 
-    gid = rmn.ezqkdef(params)
+    # gid = rmn.ezqkdef(params)
+    gid = libgeoref.GeoRef_RPNCreate(params)
     lalo = rmn.gdll(gid)
 
     fig = plt.figure()
