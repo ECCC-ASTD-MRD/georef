@@ -123,7 +123,7 @@ def ezgxprm(gdid, doSubGrid=False):
                 params['subgrid'].append(ezgxprm(gid2))
     return params
 
-def ezqkdef(ni, nj=None, grtyp=None, ig1=None, ig2=None, ig3=None, ig4=None,
+def GeoRef_Create(ni, nj=None, grtyp=None, ig1=None, ig2=None, ig3=None, ig4=None,
                     iunit=0):
     if isinstance(ni, dict):
         gridParams = ni
@@ -154,8 +154,8 @@ def ezqkdef(ni, nj=None, grtyp=None, ig1=None, ig2=None, ig3=None, ig4=None,
         raise EzscintError('ezqkdef: Grid type {0} Not supported'.format(grtyp))
     if iunit <= 0 and grtyp.strip() in ('Z', '#', 'Y', 'U'):
         raise EzscintError('ezqkdef: A valid opened file unit ({0}) is needed for Grid type {1}'.format(iunit, grtyp))
-    gdid = rp.c_ezqkdef(ni, nj, _C_WCHAR2CHAR(grtyp), ig1, ig2, ig3, ig4, iunit)
-    if gdid >= 0:
+    gdid = rp.GeoRef_Create(ni, nj, _C_WCHAR2CHAR(grtyp), ig1, ig2, ig3, ig4, iunit)
+    if gdid is not None:
         return gdid
     raise EzscintError()
 
@@ -180,38 +180,18 @@ def GeoRef_Interp(gdidout, gdidin, zin, zout=None):
     raise EzscintError()
 
 
-def gdll(gdid, lat=None, lon=None):
-    lat = _getCheckArg(None, lat, gdid, 'lat')
-    lon = _getCheckArg(None, lon, gdid, 'lon')
-    lon = _getCheckArg(None, lon, lat, 'lon')
-    lat = _getCheckArg(None, lat, lat, 'lat')
-    gdid = _getCheckArg(int, gdid, gdid, 'id')
-    NbSub = ezget_NbSub(gdid)
-    if NbSub > 1:
-        latlon = []
-        subgridid = ezget_subgridids(gdid)
-        for id in subgridid:
-            latlon.append(gdll(id, lat, lon))
-            lat, lon = None, None
-        if not len(latlon):
-            raise EzscintError()
-        return {
-                'id' : gdid,
-                'lat' : latlon[0]['lat'],
-                'lon' : latlon[0]['lon'],
-                'NbSub' : NbSub,
-                'subgridid' : subgridid,
-                'subgrid'   : latlon
-                }
-    gridParams = ezgxprm(gdid)
-    lat = _ftnOrEmpty(lat, gridParams['shape'], _np.float32)
-    lon = _ftnOrEmpty(lon, gridParams['shape'], _np.float32)
+def GeoRef_GetLL(gdid, lat=None, lon=None):
+    ni = gdid.NX
+    nj = gdid.NY
+    shape = (ni, nj)
+    lat = _ftnOrEmpty(lat, shape, _np.float64)
+    lon = _ftnOrEmpty(lon, shape, _np.float64)
     if not (isinstance(lat, _np.ndarray) and isinstance(lon, _np.ndarray)):
         raise TypeError("gdll: Expecting lat, lon as 2 numpy.ndarray," +
                         "Got {0}, {1}".format(type(lat), type(lon)))
-    if lat.shape != gridParams['shape'] or lon.shape != gridParams['shape']:
+    if lat.shape != shape or lon.shape != shape:
         raise TypeError("gdll: provided lat, lon have the wrong shape")
-    istat = rp.c_gdll(gdid, lat, lon)
+    istat = rp.GeoRef_GetLL(gdid, lat, lon)
     if istat >= 0:
         return {
             'id'  : gdid,
@@ -226,6 +206,51 @@ def gdll(gdid, lat=None, lon=None):
                 }]
             }
     raise EzscintError()
+    # lat = _getCheckArg(None, lat, gdid, 'lat')
+    # lon = _getCheckArg(None, lon, gdid, 'lon')
+    # lon = _getCheckArg(None, lon, lat, 'lon')
+    # lat = _getCheckArg(None, lat, lat, 'lat')
+    # gdid = _getCheckArg(int, gdid, gdid, 'id')
+    # NbSub = ezget_NbSub(gdid)
+    # if NbSub > 1:
+    #     latlon = []
+    #     subgridid = ezget_subgridids(gdid)
+    #     for id in subgridid:
+    #         latlon.append(GeoRef_GetLL(id, lat, lon))
+    #         lat, lon = None, None
+    #     if not len(latlon):
+    #         raise EzscintError()
+    #     return {
+    #             'id' : gdid,
+    #             'lat' : latlon[0]['lat'],
+    #             'lon' : latlon[0]['lon'],
+    #             'NbSub' : NbSub,
+    #             'subgridid' : subgridid,
+    #             'subgrid'   : latlon
+    #             }
+    # gridParams = ezgxprm(gdid)
+    # lat = _ftnOrEmpty(lat, gridParams['shape'], _np.float32)
+    # lon = _ftnOrEmpty(lon, gridParams['shape'], _np.float32)
+    # if not (isinstance(lat, _np.ndarray) and isinstance(lon, _np.ndarray)):
+    #     raise TypeError("gdll: Expecting lat, lon as 2 numpy.ndarray," +
+    #                     "Got {0}, {1}".format(type(lat), type(lon)))
+    # if lat.shape != gridParams['shape'] or lon.shape != gridParams['shape']:
+    #     raise TypeError("gdll: provided lat, lon have the wrong shape")
+    # istat = rp.GeoRef_GetLL(gdid, lat, lon)
+    # if istat >= 0:
+    #     return {
+    #         'id'  : gdid,
+    #         'lat' : lat,
+    #         'lon' : lon,
+    #         'nbsub' : 0,
+    #         'subgridid' : [gdid],
+    #         'subgrid'   : [{
+    #             'id'  : gdid,
+    #             'lat' : lat,
+    #             'lon' : lon,
+    #             }]
+    #         }
+    # raise EzscintError()
 
 def defGrid_L(ni, nj=None, lat0=None, lon0=None, dlat=None, dlon=None,
               setGridId=True):
@@ -265,6 +290,6 @@ def defGrid_L(ni, nj=None, lat0=None, lon0=None, dlat=None, dlon=None,
     params['ig2'] = ig1234[1]
     params['ig3'] = ig1234[2]
     params['ig4'] = ig1234[3]
-    params['id'] = ezqkdef(params) if setGridId else -1
+    params['id'] = GeoRef_Create(params) if setGridId else -1
     params['shape'] = (params['ni'], params['nj'])
     return params

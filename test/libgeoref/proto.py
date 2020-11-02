@@ -3,7 +3,7 @@
 import ctypes as ct
 import numpy  as np
 import numpy.ctypeslib as npc
-from . import libgeoref
+from . import libgeoref, TGeoRef
 
 libgeoref.c_ezdefset.argtypes = (ct.c_int, ct.c_int)
 libgeoref.c_ezdefset.restype = ct.c_int
@@ -44,16 +44,6 @@ libgeoref.c_ezqkdef.argtypes = (
 libgeoref.c_ezqkdef.restype = ct.c_int
 c_ezqkdef = libgeoref.c_ezqkdef
 
-#TGeoRef* GeoRef_RPNCreate(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID)
-libgeoref.GeoRef_RPNCreate.argtypes = (
-    ct.c_int, ct.c_int, ct.c_char_p,
-    ct.c_int, ct.c_int,
-    ct.c_int, ct.c_int, ct.c_int
-    )
-#TODO Maude: return pointer to TGeoRef
-libgeoref.GeoRef_RPNCreate.restype = ct.c_int
-GeoRef_RPNCreate = libgeoref.GeoRef_RPNCreate
-
 libgeoref.GeoRef_Interp.argtypes = (
     npc.ndpointer(dtype=np.float32),
     npc.ndpointer(dtype=np.float32)
@@ -69,3 +59,21 @@ libgeoref.c_gdll.argtypes = (
 libgeoref.c_gdll.restype  = ct.c_int
 c_gdll = libgeoref.c_gdll
 
+# TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID);
+libgeoref.GeoRef_Create.argtypes = (
+    ct.c_int, ct.c_int, ct.c_char_p,
+    ct.c_int, ct.c_int,
+    ct.c_int, ct.c_int, ct.c_int
+    )
+#TODO Maude: return pointer to TGeoRef
+libgeoref.GeoRef_Create.restype = ct.POINTER(TGeoRef)
+GeoRef_Create = libgeoref.GeoRef_Create
+
+# int GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon);
+libgeoref.GeoRef_GetLL.argtypes = (
+    ct.POINTER(TGeoRef),
+    npc.ndpointer(dtype=np.float64),
+    npc.ndpointer(dtype=np.float64)
+    )
+libgeoref.GeoRef_GetLL.restype  = ct.c_int
+GeoRef_GetLL = libgeoref.GeoRef_GetLL

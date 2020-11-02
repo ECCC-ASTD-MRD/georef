@@ -11,6 +11,7 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import rpnpy.librmn.all as rmn
 import libgeoref.interp as libgeoref
+import libgeoref.interp_new as libgeoref_new
 import stage_2020
 
 def gen_params(nlon, nlat, hemisphere):
@@ -32,8 +33,10 @@ def gen_params(nlon, nlat, hemisphere):
 def plot_grid(params):
     'Display grid on map'
 
-    gid = rmn.ezqkdef(params)
-    lalo = rmn.gdll(gid)
+    # gid = rmn.ezqkdef(params)
+    # lalo = rmn.gdll(gid)
+    gid = libgeoref_new.GeoRef_Create(params)
+    lalo = libgeoref_new.GeoRef_GetLL(gid)
 
     axes = plt.axes(projection=ccrs.PlateCarree())
     axes.coastlines()
@@ -49,8 +52,7 @@ def plot_grid(params):
 def plot_data(params, data):
     'Plot data on map'
 
-    # gid = rmn.ezqkdef(params)
-    gid = libgeoref.GeoRef_RPNCreate(params)
+    gid = rmn.ezqkdef(params)
     lalo = rmn.gdll(gid)
 
     fig = plt.figure()
@@ -86,7 +88,7 @@ def error(params, data, georef=False):
     lat0, lon0, dlat, dlon = (-80, 0, 20, 30)
 
     if georef:
-        gid = libgeoref.GeoRef_RPNCreate(params)
+        gid = libgeoref_new.GeoRef_Create(params)
         out_gid = libgeoref.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
         out_data = libgeoref.GeoRef_Interp(out_gid, gid, data)
         out_lalo = libgeoref.gdll(out_gid)
