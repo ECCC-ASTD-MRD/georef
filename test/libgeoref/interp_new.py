@@ -92,8 +92,8 @@ def ezgprm(gdid, doSubGrid=False):
                 params['subgrid'].append(ezgprm(gid2))
     return params
 
-def ezgxprm(gdid, doSubGrid=False):
-    gdid = _getCheckArg(int, gdid, gdid, 'id')
+def GeoRef_GridGetParams(gdid, doSubGrid=False):
+    # gdid = _getCheckArg(int, gdid, gdid, 'id')
     (cni, cnj) = (ct.c_int(), ct.c_int())
     cgrtyp = _C_MKSTR(' '*rc.FST_GRTYP_LEN)
     (cig1, cig2, cig3, cig4) = (ct.c_int(), ct.c_int(),
@@ -101,7 +101,7 @@ def ezgxprm(gdid, doSubGrid=False):
     cgrref = _C_MKSTR(' '*rc.FST_GRTYP_LEN)
     (cig1ref, cig2ref, cig3ref, cig4ref) = (ct.c_int(), ct.c_int(),
                                             ct.c_int(), ct.c_int())
-    istat = rp.c_ezgxprm(gdid, cni, cnj, cgrtyp, cig1, cig2, cig3, cig4,
+    istat = rp.GeoRef_GridGetParams(gdid, cni, cnj, cgrtyp, cig1, cig2, cig3, cig4,
                          cgrref, cig1ref, cig2ref, cig3ref, cig4ref)
     if istat < 0:
         raise EzscintError()
@@ -127,7 +127,7 @@ def ezgxprm(gdid, doSubGrid=False):
         params['subgrid'] = []
         if params['NbSub'] > 0:
             for gid2 in params['subgridid']:
-                params['subgrid'].append(ezgxprm(gid2))
+                params['subgrid'].append(GeoRef_GridGetParams(gid2))
     return params
 
 def GeoRef_Create(ni, nj=None, grtyp=None, ig1=None, ig2=None, ig3=None, ig4=None,
@@ -167,12 +167,13 @@ def GeoRef_Create(ni, nj=None, grtyp=None, ig1=None, ig2=None, ig3=None, ig4=Non
     raise EzscintError()
 
 def GeoRef_Interp(gdidout, gdidin, zin, zout=None):
+    # TODO: check for TGeoRef pointer
     # gdidout = _getCheckArg(int, gdidout, gdidout, 'id')
     # gdidin  = _getCheckArg(int, gdidin, gdidin, 'id')
     zin     = _getCheckArg(_np.ndarray, zin, zin, 'd')
     zout    = _getCheckArg(None, zout, zout, 'd')
     # gridsetid = ezdefset(gdidout, gdidin)
-    # gridParams = ezgxprm(gdidin)
+    # gridParams = GeoRef_GridGetParams(gdidin)
     gridParams = {}
     gridParams['shape'] = (max(1,gdidin.NX), max(1,gdidin.NY))
     zin  = _ftnf32(zin)
@@ -193,7 +194,7 @@ def GeoRef_Interp(gdidout, gdidin, zin, zout=None):
     # zin     = _getCheckArg(_np.ndarray, zin, zin, 'd')
     # zout    = _getCheckArg(None, zout, zout, 'd')
     # gridsetid = ezdefset(gdidout, gdidin)
-    # gridParams = ezgxprm(gdidin)
+    # gridParams = GeoRef_GridGetParams(gdidin)
     # zin  = _ftnf32(zin)
     # if zin.shape != gridParams['shape']:
     #     raise TypeError("zin array has inconsistent shape compared to input grid\ngdidin shape: {}, zin shape: {}".format(gridParams['shape'], zin.shape))
@@ -256,7 +257,7 @@ def GeoRef_GetLL(gdid, lat=None, lon=None):
     #             'subgridid' : subgridid,
     #             'subgrid'   : latlon
     #             }
-    # gridParams = ezgxprm(gdid)
+    # gridParams = GeoRef_GridGetParams(gdid)
     # lat = _ftnOrEmpty(lat, gridParams['shape'], _np.float32)
     # lon = _ftnOrEmpty(lon, gridParams['shape'], _np.float32)
     # if not (isinstance(lat, _np.ndarray) and isinstance(lon, _np.ndarray)):
