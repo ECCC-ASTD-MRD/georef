@@ -47,16 +47,9 @@ def ezdefset(gdidout, gdidin):
         raise EzscintError()
     return istat
 
-def ezget_NbSub(super_gdid):
-    super_gdid = _getCheckArg(int, super_gdid, super_gdid, 'id')
-    NbSub = rp.c_ezget_NbSub(super_gdid)
-    if NbSub >= 0:
-        return NbSub
-    raise EzscintError()
-
 def ezget_subgridids(super_gdid):
     super_gdid = _getCheckArg(int, super_gdid, super_gdid, 'id')
-    NbSub  = ezget_NbSub(super_gdid)
+    NbSub  = super_gdid.NbSub
     cgridlist  = _np.empty(NbSub, dtype=_np.intc, order='F')
     istat = rp.c_ezget_subgridids(super_gdid, cgridlist)
     if istat >= 0:
@@ -84,7 +77,7 @@ def ezgprm(gdid, doSubGrid=False):
         'ig4'   : cig4.value
             }
     if doSubGrid:
-        params['NbSub'] = ezget_NbSub(gdid)
+        params['NbSub'] = gdid.NbSub
         params['subgridid'] = ezget_subgridids(gdid)
         params['subgrid'] = []
         if params['NbSub'] > 0:
@@ -93,6 +86,7 @@ def ezgprm(gdid, doSubGrid=False):
     return params
 
 def GeoRef_GridGetParams(gdid, doSubGrid=False):
+    # TODO: check for TGeoRef pointer
     # gdid = _getCheckArg(int, gdid, gdid, 'id')
     (cni, cnj) = (ct.c_int(), ct.c_int())
     cgrtyp = _C_MKSTR(' '*rc.FST_GRTYP_LEN)
@@ -122,7 +116,7 @@ def GeoRef_GridGetParams(gdid, doSubGrid=False):
         'ig4ref'   : cig4ref.value
             }
     if doSubGrid:
-        params['NbSub'] = ezget_NbSub(gdid)
+        params['NbSub'] = gdid.NbSub
         params['subgridid'] = ezget_subgridids(gdid)
         params['subgrid'] = []
         if params['NbSub'] > 0:
@@ -240,7 +234,7 @@ def GeoRef_GetLL(gdid, lat=None, lon=None):
     # lon = _getCheckArg(None, lon, lat, 'lon')
     # lat = _getCheckArg(None, lat, lat, 'lat')
     # gdid = _getCheckArg(int, gdid, gdid, 'id')
-    # NbSub = ezget_NbSub(gdid)
+    # NbSub = gdid.NbSub
     # if NbSub > 1:
     #     latlon = []
     #     subgridid = ezget_subgridids(gdid)
