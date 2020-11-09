@@ -20,6 +20,13 @@ _ftnf32 = lambda x: _ftn(x, _np.float32)
 _ftnOrEmpty = lambda x, s, t: \
     _np.empty(s, dtype=t, order='F') if x is None else _ftn(x, t)
 
+_isftndouble = lambda x, t: x.dtype == t and x.flags['F_CONTIGUOUS']
+_ftndouble = lambda x, t: x if _isftnf64(x) else _np.asfortranarray(x, dtype=t)
+_isftnf64 = lambda x: _isftndouble(x, _np.float64)
+_ftnf64 = lambda x: _ftndouble(x, _np.float64)
+_ftnOrEmptydouble = lambda x, s, t: \
+    _np.empty(s, dtype=t, order='F') if x is None else _ftndouble(x, t)
+
 class EzscintError(RMNError):
     pass
 
@@ -160,32 +167,53 @@ def GeoRef_Create(ni, nj=None, grtyp=None, ig1=None, ig2=None, ig3=None, ig4=Non
     raise EzscintError()
 
 def GeoRef_Interp(gdidout, gdidin, zin, zout=None):
-    gdidout = _getCheckArg(int, gdidout, gdidout, 'id')
-    gdidin  = _getCheckArg(int, gdidin, gdidin, 'id')
+    # gdidout = _getCheckArg(int, gdidout, gdidout, 'id')
+    # gdidin  = _getCheckArg(int, gdidin, gdidin, 'id')
     zin     = _getCheckArg(_np.ndarray, zin, zin, 'd')
     zout    = _getCheckArg(None, zout, zout, 'd')
-    gridsetid = ezdefset(gdidout, gdidin)
-    gridParams = ezgxprm(gdidin)
+    # gridsetid = ezdefset(gdidout, gdidin)
+    # gridParams = ezgxprm(gdidin)
+    gridParams = {}
+    gridParams['shape'] = (max(1,gdidin.NX), max(1,gdidin.NY))
     zin  = _ftnf32(zin)
     if zin.shape != gridParams['shape']:
         raise TypeError("zin array has inconsistent shape compared to input grid\ngdidin shape: {}, zin shape: {}".format(gridParams['shape'], zin.shape))
-    dshape = ezgprm(gdidout)['shape']
+    # dshape = ezgprm(gdidout)['shape']
+    dshape = (max(1,gdidin.NX), max(1,gdidin.NY))
     zout = _ftnOrEmpty(zout, dshape, zin.dtype)
     if not (isinstance(zout, _np.ndarray) and zout.shape == dshape):
         raise TypeError("Wrong type,shape for zout: {0}, {1}"\
                         .format(type(zout), repr(dshape)))
-    istat = rp.GeoRef_Interp(zout, zin)
+    istat = rp.GeoRef_Interp(gdidout, gdidin, zout, zin)
     if istat >= 0:
         return zout
     raise EzscintError()
+    # gdidout = _getCheckArg(int, gdidout, gdidout, 'id')
+    # gdidin  = _getCheckArg(int, gdidin, gdidin, 'id')
+    # zin     = _getCheckArg(_np.ndarray, zin, zin, 'd')
+    # zout    = _getCheckArg(None, zout, zout, 'd')
+    # gridsetid = ezdefset(gdidout, gdidin)
+    # gridParams = ezgxprm(gdidin)
+    # zin  = _ftnf32(zin)
+    # if zin.shape != gridParams['shape']:
+    #     raise TypeError("zin array has inconsistent shape compared to input grid\ngdidin shape: {}, zin shape: {}".format(gridParams['shape'], zin.shape))
+    # dshape = ezgprm(gdidout)['shape']
+    # zout = _ftnOrEmpty(zout, dshape, zin.dtype)
+    # if not (isinstance(zout, _np.ndarray) and zout.shape == dshape):
+    #     raise TypeError("Wrong type,shape for zout: {0}, {1}"\
+    #                     .format(type(zout), repr(dshape)))
+    # istat = rp.GeoRef_Interp(zout, zin)
+    # if istat >= 0:
+    #     return zout
+    # raise EzscintError()
 
 
 def GeoRef_GetLL(gdid, lat=None, lon=None):
     ni = gdid.NX
     nj = gdid.NY
     shape = (ni, nj)
-    lat = _ftnOrEmpty(lat, shape, _np.float64)
-    lon = _ftnOrEmpty(lon, shape, _np.float64)
+    lat = _ftnOrEmptydouble(lat, shape, _np.float64)
+    lon = _ftnOrEmptydouble(lon, shape, _np.float64)
     if not (isinstance(lat, _np.ndarray) and isinstance(lon, _np.ndarray)):
         raise TypeError("gdll: Expecting lat, lon as 2 numpy.ndarray," +
                         "Got {0}, {1}".format(type(lat), type(lon)))

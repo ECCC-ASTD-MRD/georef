@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import rpnpy.librmn.all as rmn
-import libgeoref.interp as libgeoref
+# import libgeoref.interp as libgeoref
 import libgeoref.interp_new as libgeoref_new
 import stage_2020
 
@@ -47,7 +47,7 @@ def plot_grid(params):
     plt.plot(lalo['lon'], lalo['lat'],
              linestyle='None', color='red', marker='.')
 
-    plt.savefig(os.path.join('out', 'a_grid.png'))
+    plt.savefig(os.path.join('out', 'a_new_grid.png'))
 
 def plot_data(params, data):
     'Plot data on map'
@@ -89,9 +89,9 @@ def error(params, data, georef=False):
 
     if georef:
         gid = libgeoref_new.GeoRef_Create(params)
-        out_gid = libgeoref.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
-        out_data = libgeoref.GeoRef_Interp(out_gid, gid, data)
-        out_lalo = libgeoref.gdll(out_gid)
+        out_gid = libgeoref_new.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
+        out_data = libgeoref_new.GeoRef_Interp(out_gid, gid, data)
+        out_lalo = libgeoref_new.GeoRef_GetLL(out_gid)
     else:
         gid = rmn.ezqkdef(params)
         out_gid = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)

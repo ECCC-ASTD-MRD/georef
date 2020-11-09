@@ -356,8 +356,8 @@ int GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
       n=GeoRef_CalcLL(Ref);
 
       if (Ref->Lat) {
-         if (Lon) memcpy(Lon,Ref->Lon,n*sizeof(float));
-         if (Lat) memcpy(Lat,Ref->Lat,n*sizeof(float));
+         if (Lon) memcpy(Lon,Ref->Lon,n*sizeof(double));
+         if (Lat) memcpy(Lat,Ref->Lat,n*sizeof(double));
       } else {
          App_Log(ERROR,"%s: Missing descriptors\n",__func__);
          return(-1);
