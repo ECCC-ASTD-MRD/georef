@@ -292,6 +292,13 @@ typedef struct {
    int *mask, *idx;          ///< Indice du point dans le champ de destination
 } TGridSet;
 
+// TEST
+// typedef struct Point {
+//    int x,y;
+// } Point;
+// Point* Create(int lat, int lon);
+
+
 typedef struct TGeoRef {
    char*   Name;                                          ///< Reference name
    int     NRef;                                          ///< Nombre de reference a la georeference

@@ -1,6 +1,10 @@
 from ctypes import *
 #import enum
 
+# TEST
+# class Point(Structure):
+#     _fields_ = [("x", c_int),("y", c_int)]
+
 class TRPNFile(Structure):
     _fields_ = [
         ("CId", c_char_p),

@@ -25,18 +25,13 @@ def gen_params(nlon, nlat, hemisphere):
     params['nj'] = nlat
     hemisphere_xg1 = {'global': 0, 'north': 1, 'south': 2}
 
-    params['EZ_IG1'], params['ig2'], params['ig3'], params['ig4'] = \
+    params['ig1'], params['ig2'], params['ig3'], params['ig4'] = \
         rmn.cxgaig(params['grtyp'], hemisphere_xg1[hemisphere])
 
     return params
 
-def plot_grid(params):
+def plot_grid(lalo):
     'Display grid on map'
-
-    # gid = rmn.ezqkdef(params)
-    # lalo = rmn.gdll(gid)
-    gid = libgeoref_new.GeoRef_Create(params)
-    lalo = libgeoref_new.GeoRef_GetLL(gid)
 
     axes = plt.axes(projection=ccrs.PlateCarree())
     axes.coastlines()
@@ -49,11 +44,8 @@ def plot_grid(params):
 
     plt.savefig(os.path.join('out', 'a_new_grid.png'))
 
-def plot_data(params, data):
+def plot_data(lalo, data):
     'Plot data on map'
-
-    gid = rmn.ezqkdef(params)
-    lalo = rmn.gdll(gid)
 
     fig = plt.figure()
     axes = fig.gca(projection='3d')
@@ -63,7 +55,7 @@ def plot_data(params, data):
 
     axes.plot(lon, lat, data.flatten(), linestyle='None', marker='.')
 
-    plt.savefig(os.path.join('out', 'a_data.png'))
+    plt.savefig(os.path.join('out', 'a_new_data.png'))
 
 def error(params, data, georef=False):
     """Calculate error with respect to analytical truth.
@@ -89,8 +81,12 @@ def error(params, data, georef=False):
 
     if georef:
         gid = libgeoref_new.GeoRef_Create(params)
-        out_gid = libgeoref_new.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
+        # returns dict
+        out = libgeoref_new.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
+        out_gid = out['id']
+        # takes TGeoRef*
         out_data = libgeoref_new.GeoRef_Interp(out_gid, gid, data)
+        # takes TGeoRef*
         out_lalo = libgeoref_new.GeoRef_GetLL(out_gid)
     else:
         gid = rmn.ezqkdef(params)
@@ -118,13 +114,17 @@ def main(georef=False):
     nlat = 180//30
     hemisphere = 'global'
     params = gen_params(nlon, nlat, hemisphere)
-    plot_grid(params)
+    
+    # gid = rmn.ezqkdef(params)
+    # lalo = rmn.gdll(gid)
+    gid = libgeoref_new.GeoRef_Create(params)
+    lalo = libgeoref_new.GeoRef_GetLL(gid)
+    
+    plot_grid(lalo)
 
-    gid = rmn.ezqkdef(params)
-    lalo = rmn.gdll(gid)
     data = np.sin(np.pi*lalo['lon']/180)*np.sin(np.pi*lalo['lat']/90)
 
-    plot_data(params, data)
+    plot_data(lalo, data)
 
     stage_2020.write_fst(data, params, os.path.join('out', 'a_grid.fst'))
     print('Interpolation error: {:g}'.format(error(params, data, georef)))

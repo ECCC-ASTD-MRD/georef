@@ -41,6 +41,14 @@ int      GeoRef_RPNValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double
 int      GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
 int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
 
+// TEST
+// Point* Create(int lat, int lon) {
+//    Point *ref=malloc(sizeof(Point));
+//    ref->x = lat;
+//    ref->y;
+//    return ref;
+// }
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_RPNValue>
  * Creation     : Mars 2005 J.P. Gauthier - CMC/CMOE

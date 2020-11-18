@@ -30,6 +30,10 @@ _ftnOrEmptydouble = lambda x, s, t: \
 class EzscintError(RMNError):
     pass
 
+# TEST
+# def  Create(lat, lon):
+#     return rp.Create(lat,lon)
+
 def _getCheckArg(okTypes, value, valueDict, key):
     if isinstance(valueDict, dict) and (value is None or value is valueDict):
         if key in valueDict.keys():
@@ -169,12 +173,12 @@ def GeoRef_Interp(gdidout, gdidin, zin, zout=None):
     # gridsetid = ezdefset(gdidout, gdidin)
     # gridParams = GeoRef_GridGetParams(gdidin)
     gridParams = {}
-    gridParams['shape'] = (max(1,gdidin.NX), max(1,gdidin.NY))
+    gridParams['shape'] = (max(1,gdidin.contents.NX), max(1,gdidin.contents.NY))
     zin  = _ftnf32(zin)
     if zin.shape != gridParams['shape']:
         raise TypeError("zin array has inconsistent shape compared to input grid\ngdidin shape: {}, zin shape: {}".format(gridParams['shape'], zin.shape))
     # dshape = ezgprm(gdidout)['shape']
-    dshape = (max(1,gdidin.NX), max(1,gdidin.NY))
+    dshape = (max(1,gdidin.contents.NX), max(1,gdidin.contents.NY))
     zout = _ftnOrEmpty(zout, dshape, zin.dtype)
     if not (isinstance(zout, _np.ndarray) and zout.shape == dshape):
         raise TypeError("Wrong type,shape for zout: {0}, {1}"\
@@ -204,8 +208,8 @@ def GeoRef_Interp(gdidout, gdidin, zin, zout=None):
 
 
 def GeoRef_GetLL(gdid, lat=None, lon=None):
-    ni = gdid.NX
-    nj = gdid.NY
+    ni = gdid.contents.NX
+    nj = gdid.contents.NY
     shape = (ni, nj)
     lat = _ftnOrEmptydouble(lat, shape, _np.float64)
     lon = _ftnOrEmptydouble(lon, shape, _np.float64)
