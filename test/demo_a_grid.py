@@ -41,7 +41,7 @@ def plot_grid(lalo):
     plt.plot(lalo['lon'], lalo['lat'],
              linestyle='None', color='red', marker='.')
 
-    plt.savefig(os.path.join('out', 'a_new_grid.png'))
+    plt.savefig(os.path.join('out', 'a_test_grid.png'))
 
 def plot_data(lalo, data):
     'Plot data on map'
@@ -54,7 +54,7 @@ def plot_data(lalo, data):
 
     axes.plot(lon, lat, data.flatten(), linestyle='None', marker='.')
 
-    plt.savefig(os.path.join('out', 'a_new_data.png'))
+    plt.savefig(os.path.join('out', 'a_test_data.png'))
 
 def error(params, data, georef=False):
     """Calculate error with respect to analytical truth.
@@ -114,10 +114,12 @@ def main(georef=False):
     hemisphere = 'global'
     params = gen_params(nlon, nlat, hemisphere)
     
-    # gid = rmn.ezqkdef(params)
-    # lalo = rmn.gdll(gid)
-    gid = libgeoref.GeoRef_Create(params)
-    lalo = libgeoref.GeoRef_GetLL(gid)
+    if georef:
+        gid = libgeoref.GeoRef_Create(params)
+        lalo = libgeoref.GeoRef_GetLL(gid)
+    else:
+        gid = rmn.ezqkdef(params)
+        lalo = rmn.gdll(gid)
     
     plot_grid(lalo)
 
