@@ -71,7 +71,7 @@ libgeoref.GeoRef_GridGetParams.argtypes = (ct.POINTER(TGeoRef),
                                 ct.POINTER(ct.c_int), ct.POINTER(ct.c_int),
                                 ct.POINTER(ct.c_int), ct.POINTER(ct.c_int))
 libgeoref.GeoRef_GridGetParams.restype = ct.c_int
-GeoRef_GridGetParams = libgeoref.c_ezgxprm
+GeoRef_GridGetParams = libgeoref.GeoRef_GridGetParams
 
 # int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin);
 libgeoref.GeoRef_Interp.argtypes = (
@@ -89,7 +89,6 @@ libgeoref.GeoRef_Create.argtypes = (
     ct.c_int, ct.c_int,
     ct.c_int, ct.c_int, ct.c_int
     )
-#TODO Maude: return pointer to TGeoRef
 libgeoref.GeoRef_Create.restype = ct.POINTER(TGeoRef)
 GeoRef_Create = libgeoref.GeoRef_Create
 
@@ -102,10 +101,3 @@ libgeoref.GeoRef_GetLL.argtypes = (
 libgeoref.GeoRef_GetLL.restype  = ct.c_int
 GeoRef_GetLL = libgeoref.GeoRef_GetLL
 
-# TEST
-# Point* Create(int lat, int lon)
-# libgeoref.Create.argtypes = (
-#     ct.c_int, ct.c_int
-#     )
-# libgeoref.Create.restype  = ct.POINTER(Point)
-# Create = libgeoref.Create
