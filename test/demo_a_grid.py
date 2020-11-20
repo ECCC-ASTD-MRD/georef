@@ -10,8 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import rpnpy.librmn.all as rmn
-# import libgeoref.interp as libgeoref
-import libgeoref.interp_new as libgeoref_new
+import libgeoref.interp as libgeoref
 import stage_2020
 
 def gen_params(nlon, nlat, hemisphere):
@@ -80,14 +79,14 @@ def error(params, data, georef=False):
     lat0, lon0, dlat, dlon = (-80, 0, 20, 30)
 
     if georef:
-        gid = libgeoref_new.GeoRef_Create(params)
+        gid = libgeoref.GeoRef_Create(params)
         # returns dict
-        out = libgeoref_new.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
+        out = libgeoref.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
         out_gid = out['id']
         # takes TGeoRef*
-        out_data = libgeoref_new.GeoRef_Interp(out_gid, gid, data)
+        out_data = libgeoref.GeoRef_Interp(out_gid, gid, data)
         # takes TGeoRef*
-        out_lalo = libgeoref_new.GeoRef_GetLL(out_gid)
+        out_lalo = libgeoref.GeoRef_GetLL(out_gid)
     else:
         gid = rmn.ezqkdef(params)
         out_gid = rmn.defGrid_L(nlon, nlat, lat0, lon0, dlat, dlon)
@@ -117,8 +116,8 @@ def main(georef=False):
     
     # gid = rmn.ezqkdef(params)
     # lalo = rmn.gdll(gid)
-    gid = libgeoref_new.GeoRef_Create(params)
-    lalo = libgeoref_new.GeoRef_GetLL(gid)
+    gid = libgeoref.GeoRef_Create(params)
+    lalo = libgeoref.GeoRef_GetLL(gid)
     
     plot_grid(lalo)
 
