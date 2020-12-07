@@ -64,7 +64,6 @@ int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double 
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-
 int GeoRef_RPNValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY) {
 
    Vect3d       b,v;
@@ -75,48 +74,10 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,do
    unsigned int idx;
 
    *Length=Def->NoData;
+   if (ThetaXY)
+      *ThetaXY=0.0;
 
 #ifdef HAVE_RMN
-   // In case of triangle meshe
-   if (Ref->GRTYP[0]=='M') {
-      if (C<Def->NC && X>=0 && Y>=0) {
-         b[0]=X-(int)X;
-         b[1]=Y-(int)Y;
-         b[2]=1.0-b[0]-b[1];
-         ix=(int)X;
-
-         if (Interp==IR_NEAREST) {
-            n=(b[0]>b[1]?(b[0]>b[2]?0:2):(b[1]>b[2]?1:2));
-            Def_Get(Def,C,Ref->Idx[ix+n],x);
-         } else {
-            Def_Get(Def,C,Ref->Idx[ix],v[0]);
-            Def_Get(Def,C,Ref->Idx[ix+1],v[1]);
-            Def_Get(Def,C,Ref->Idx[ix+2],v[2]);
-
-            x=Bary_InterpV(b,v);
-         }
-         *Length=x;
-         
-         if (Def->Data[1] && !C) {
-            if (Interp==IR_NEAREST) {
-               n=(b[0]>b[1]?(b[0]>b[2]?0:2):(b[1]>b[2]?1:2));
-               Def_Get(Def,1,Ref->Idx[ix+n],y);
-            } else {
-               Def_Get(Def,1,Ref->Idx[ix],v[0]);
-               Def_Get(Def,1,Ref->Idx[ix+1],v[1]);
-               Def_Get(Def,1,Ref->Idx[ix+2],v[2]);
-
-               y=Bary_InterpV(b,v);
-            }
-            *Length=hypot(x,y);
-            *ThetaXY=180+RAD2DEG(atan2(x,y));
-         }
-         return(TRUE);
-      } else {
-         return(FALSE);
-      }
-   }
-
    // Si on est a l'interieur de la grille ou que l'extrapolation est activee
    if (C<Def->NC && X>=(Ref->X0-0.5) && Y>=(Ref->Y0-0.5) && Z>=0 && X<(Ref->X1+0.5) && Y<(Ref->Y1+0.5) && Z<=Def->NK-1) {
 
@@ -131,179 +92,43 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,do
       if (Def->Mask && !Def->Mask[mem+idx]) {
          return(FALSE);
       }
-
-      // Point cloud
-      if (Ref->GRTYP[0]=='Y' || Ref->GRTYP[0]=='P' || Def->NI==1 || Def->NJ==1) {
-         mem+=idx;
-         Def_Get(Def,C,mem,x);
-         if (Def->Data[1] && !C) {
-            Def_Get(Def,1,mem,y);
-            if (ThetaXY) *ThetaXY=180+RAD2DEG(atan2(x,y));
-            *Length=hypot(x,y);
-         } else {
-            *Length=x;   
-         }
-         return(TRUE);
-      } 
-
-      // Check for nodata in linear interpolation 
-      if (Def->Type>=TD_Int64 && Interp!=IR_NEAREST) {
-         int idxs[4],dx,dy;
-         double vals[4];
-         
-         dx=X;
-         dy=Y;
-         idxs[0]=mem+dy*Def->NI+dx;
-         idxs[1]=(dx<Ref->X1)?idxs[0]+1:idxs[0];
-         idxs[2]=(dy<Ref->Y1)?idxs[0]+Def->NI:idxs[0];
-         idxs[3]=(dy<Ref->Y1 && dx<Ref->X1)?idxs[0]+Def->NI+1:idxs[0];
-         
-         Def_GetQuad(Def,C,idxs,vals);
-
-         // If either value is nodata then interpolation will be nodata as well
-         if (!DEFVALID(Def,vals[0]) || !DEFVALID(Def,vals[1]) || !DEFVALID(Def,vals[2]) || !DEFVALID(Def,vals[3])) 
-            return(FALSE);        
-      }
      
       // XSection
-      if (Ref->GRTYP[0]=='V') {
-         if (Def->Data[1]) {
-            Def_GetMod(Def,FIDX2D(Def,ix,iy),*Length);
-         } else {
-            *Length=VertexVal(Def,-1,X,Y,0.0);
-         }
-         return(TRUE);
-      }
-
-      // Unstructured or not referenced
-      if (Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='O') {
-         if (Def->Type<=TD_Int64 || Interp==IR_NEAREST || (X==ix && Y==iy)) {
-            mem+=idx;
-
-           // Pour un champs vectoriel
-            if (Def->Data[1] && !C) {
-               Def_Get(Def,0,mem,x);
-               Def_Get(Def,1,mem,y);
-               if (ThetaXY) *ThetaXY=180+RAD2DEG(atan2(x,y)-GeoRef_GeoDir(Ref,X,Y));
-               *Length=hypot(x,y);
-            } else {
-               Def_GetMod(Def,mem,*Length);              
-            }
-         } else {
-            // Pour un champs vectoriel
-            if (Def->Data[1] && !C) {
-               x=VertexVal(Def,0,X,Y,Z);
-               y=VertexVal(Def,1,X,Y,Z);
-               if (ThetaXY) *ThetaXY=180+RAD2DEG(atan2(x,y)-GeoRef_GeoDir(Ref,X,Y));
-               *Length=hypot(x,y);
-            } else {
-               *Length=VertexVal(Def,-1,X,Y,Z);               
-            }
-         }
-         return(TRUE);
-      }
+//      if (Ref->GRTYP[0]=='V') {
+//         if (Def->Data[1]) {
+//            Def_GetMod(Def,FIDX2D(Def,ix,iy),*Length);
+//         } else {
+//            *Length=VertexVal(Def,-1,X,Y,0.0);
+//         }
+//         return(TRUE);
+//      }
    
       // RPN grid
-      if (Def->Type==TD_Float32 && Def->Data[1] && !C) { 
-         x=X+1.0;
-         y=Y+1.0;
+      x=X+1.0;
+      y=Y+1.0;
+      
+      if (Def->Data[1] && !C) { 
 
-         if (Interp==IR_NEAREST) {
-            x=lrint(x);
-            y=lrint(y);
-         }
-         
          Def_Pointer(Def,0,mem,p0);
          Def_Pointer(Def,1,mem,p1);
-         GeoRef_XYWDVal(REFGET(Ref),&valf,&valdf,p0,p1,&x,&y,1);
+         GeoRef_XYWDVal(Ref,&valf,&valdf,p0,p1,&x,&y,1);
+         *Length=valf;
 
          // If it's 3D, use the mode for speed since GeoRef_XYWDVal only uses 2D
          if (Def->Data[2])
-            GeoRef_XYVal(REFGET(Ref),&valf,(float*)&Def->Mode[mem],&x,&y,1);
+            GeoRef_XYVal(Ref,&valf,(float*)&Def->Mode[mem],&x,&y,1);
             *Length=valf;
          if (ThetaXY)
             *ThetaXY=valdf;
       } else {            
-         if (Interp==IR_NEAREST) {
-            mem+=idx;
-            Def_Get(Def,C,mem,*Length);
-         } else {
-            *Length=VertexVal(Def,C,X,Y,Z);
-//            Def_Pointer(Def,0,mem,p0);
-//            x=X+=1.0;y=Y+=1.0;
-//                GeoRef_XYVal(REFGET(Ref),&valf,p0,&x,&y,1);
-//               fprintf(stderr,"----- %.10e %.10e   ---> %.10e\n",*Length,valf,*Length-valf);
-         }
-         if (ThetaXY)
-            *ThetaXY=0.0;
+         Def_Pointer(Def,C,mem,p0);
+         GeoRef_XYVal(Ref,&valf,p0,&x,&y,1);
+         *Length=valf;
       }
       return(TRUE);
    }
 #endif
    return(FALSE);
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RPNProject>
- * Creation     : Mars 2005 J.P. Gauthier - CMC/CMOE
- *
- * But          : Projeter une coordonnee de projection en latlon.
- *
- * Parametres    :
- *   <Ref>      : Pointeur sur la reference geographique
- *   <X>         : coordonnee en X dans la projection/grille
- *   <Y>         : coordonnee en Y dans la projection/grille
- *   <Lat>       : Latitude
- *   <Lon>       : Longitude
- *   <Extrap>    : Extrapolation hors grille
- *   <Transform> : Appliquer la transformation
- *
- * Retour       : Inside (1 si a l'interieur du domaine).
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
-
-#ifdef HAVE_RMN
-//TODO: double   GeoRef_XY2LL(REFGET(Ref),Lat,Lon,&X,&Y,1);
-#endif
-
-   return(1);
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RPNUnProject>
- * Creation     : Mars 2005 J.P. Gauthier - CMC/CMOE
- *
- * But          : Projeter une latlon en position grille.
- *
- * Parametres    :
- *   <Ref>      : Pointeur sur la reference geographique
- *   <X>         : coordonnee en X dans la projection/grille
- *   <Y>         : coordonnee en Y dans la projection/grille
- *   <Lat>       : Latitude
- *   <Lon>       : Longitude
- *   <Extrap>    : Extrapolation hors grille
- *   <Transform> : Appliquer la transformation
- *
- * Retour       : Inside (1 si a l'interieur du domaine).
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/                     
-int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
-
-   int     idx,idxs[8];
-   double  dists[8];
-
-
-      // Extraire la valeur du point de grille
-      GeoRef_LL2XY(REFGET(Ref),X,Y,&Lat,&Lon,1);
-
-   return(TRUE);
 }
 
 int GeoRef_RPNDefXG(TGeoRef* Ref) {
@@ -504,8 +329,6 @@ TGeoRef* GeoRef_CreateInMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int
    // TODO: Check for sub-grids (U grids can have sub grids)
    //ref->NbId = GRTYP[0]=='U'? (ref->NbSub==0? 1 : ref->NbSub) : 1;
 
-   ref->Project=GeoRef_RPNProject;
-   ref->UnProject=GeoRef_RPNUnProject;
    ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
 
    GeoRef_Qualify(ref);
@@ -628,8 +451,6 @@ TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4
    GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
    ref->RPNHead.GRTYP[0]=ref->GRTYP[0]=GRTYP[0];
    ref->RPNHead.GRTYP[0]=ref->GRTYP[1]=GRTYP[1];
-   ref->Project=GeoRef_RPNProject;
-   ref->UnProject=GeoRef_RPNUnProject;
    ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
    ref->Height=NULL;
 
@@ -673,6 +494,7 @@ TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4
          ref->j2 = ref->NY;
          if (GRTYP[0]!='Y' && GRTYP[0]!='M' && GRTYP[0]!='O') {
             GeoRef_RPNDefXG(ref);
+            
             GeoRef_AxisCalcNewtonCoeff(ref);
          } else {
             GeoRef_CalcLL(ref);
@@ -870,8 +692,6 @@ TGeoRef* GeoRef_SetZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,fl
    Ref->GRTYP[0]='Z';
    Ref->GRTYP[1]='E';
    Ref->GRTYP[2]='\0';
-   Ref->Project=GeoRef_RPNProject;
-   Ref->UnProject=GeoRef_RPNUnProject;
    Ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
    Ref->Height=NULL;
  #endif

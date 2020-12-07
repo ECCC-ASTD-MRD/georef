@@ -126,7 +126,7 @@
          return
       endif
 
-      if (grtyp.eq.'A'.or.grtyp.eq.'B'.or.grtyp.eq.'G'.or.      grtyp.eq.'L') then
+      if (grtyp.eq.'A'.or.grtyp.eq.'B'.or.grtyp.eq.'G'.or.grtyp.eq.'L'.or.grtyp.eq.'M') then
          do 50 i=1,li
             do 60 j=1,lj
                psi = 270.0 - z2(i,j)

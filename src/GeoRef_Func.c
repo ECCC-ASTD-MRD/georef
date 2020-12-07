@@ -67,7 +67,7 @@ double GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1)
       i[1]=X1+1.0;
       j[1]=Y1+1.0;
 
-      GeoRef_XY2LL(REFGET(Ref),lat,lon,i,j,2);
+      GeoRef_XY2LL(Ref,lat,lon,i,j,2,TRUE);
 
       X0=DEG2RAD(lon[0]);
       X1=DEG2RAD(lon[1]);

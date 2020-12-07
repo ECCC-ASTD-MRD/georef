@@ -133,7 +133,6 @@ int GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
 //             }
       if (GeoRef_Nearest(Ref,Lon[idx],Lat[idx],&set->idx[idxz],&set->wts[idxz],1,Ref->Options.DistTreshold)) {
          if (set->idx[idxz]<Ref->Options.DistTreshold) {
-            if (!Ref->mask || Ref->mask[set->idx[idxz]]==1) {
                if (set->wts[idxz] < tmpwgts[locmax]) {
    //TODO: finalise (ez_calcxy_y)
    //               tmpwgts[locmax] = Set->wts[idxz];
@@ -143,7 +142,6 @@ int GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
    //               locmax = maxloc(tmpwgts,1)
                }
             }
-         }
       }
       FWITHIN(0,bbox[0].Y,bbox[0].X,bbox[1].Y,bbox[1].X,Y[idx],X[idx]);
       if (set->mask[idx]) {

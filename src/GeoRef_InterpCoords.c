@@ -116,13 +116,13 @@ int GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
    return(1);
 }
 
-int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
+int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb,int Extrap) {
 
    TGeoRef *yin_gd,*yan_gd;
    int      i,j,icode;
    double   *latyin,*lonyin,*latyan,*lonyan;
    double   *tmpy;
-
+   
    if (!Ref->XY2LL) {
       App_Log(ERROR,"%s: Invalid transform function (XY2LL): GRTYP=%c\n",__func__,Ref->GRTYP[0]);
    }
@@ -143,8 +143,8 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
             tmpy[j]=Y[j];
          }
       }
-      icode = GeoRef_XY2LL(yin_gd,latyin,lonyin,X,tmpy,Nb);
-      icode = GeoRef_XY2LL(yan_gd,latyan,lonyan,X,tmpy,Nb);
+      icode = GeoRef_XY2LL(yin_gd,latyin,lonyin,X,tmpy,Nb,Extrap);
+      icode = GeoRef_XY2LL(yan_gd,latyan,lonyan,X,tmpy,Nb,Extrap);
       for (j=0; j < Nb; j++) {
          if (Y[j] > yin_gd->NY) {
             Lat[j]=latyan[j];
@@ -178,7 +178,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
       }
 
       icode=Nb;
-      if (!Ref->Options.ExtrapDegree) {
+      if (!Extrap) {
          for(i=0; i < Nb; i++) {
             if (X[i]<(Ref->X0-0.5) || Y[i]<(Ref->Y0-0.5) || X[i]>(Ref->X1+0.5) || Y[i]>(Ref->Y1+0.5)) {
                Lat[i]=-999.0;
@@ -192,7 +192,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
    return(icode);
 }
 
-int GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb,int Extrap) {
 
    TGeoRef *yin_gd,*yan_gd;
    int     j,icode,maxni,maxnj;
@@ -211,8 +211,8 @@ int GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb
       xyan = &xyin[Nb];
       yyin = &xyin[Nb*2];
       yyan = &xyin[Nb*3];
-      icode = GeoRef_LL2XY(yin_gd,xyin,yyin,Lat,Lon,Nb);
-      icode = GeoRef_LL2XY(yan_gd,xyan,yyan,Lat,Lon,Nb);
+      icode = GeoRef_LL2XY(yin_gd,xyin,yyin,Lat,Lon,Nb,Extrap);
+      icode = GeoRef_LL2XY(yan_gd,xyan,yyan,Lat,Lon,Nb,Extrap);
       for (j=0; j < Nb; j++) {
          if (xyin[j] > maxni || xyin[j] < 1 || yyin[j] > maxnj || yyin[j] < 1) {
             // point is no good, take from YAN eventhough it may not be good
@@ -241,7 +241,7 @@ int GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb
 
    // Check for grid insidness or extrapolation enabled
    icode=Nb;
-   if (!Ref->Options.ExtrapDegree) {
+   if (!Extrap) {
       for(j=0;j<Nb;j++) {
          if (X[j]>(Ref->X1+0.5) || Y[j]>(Ref->Y1+0.5) || X[j]<(Ref->X0-0.5) || Y[j]<(Ref->Y0-0.5)) {
             X[j]=-1.0;
@@ -269,10 +269,4 @@ int GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb
       }
    }
    return(icode);
-}
-
-int GeoRef_XY2XY(TGeoRef *RefTo,TGeoRef *RefFrom,double *X1,double *Y1,double *X0,double *Y0,int Nb) {
-
-   GeoRef_XY2LL(RefFrom,X0,Y0,X1,Y1,Nb);
-   return(GeoRef_LL2XY(RefTo,X1,Y1,X1,Y1,Nb));
 }

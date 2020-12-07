@@ -147,7 +147,7 @@
       return
    endif
 
-   if (grtyp.eq.'A'.or.grtyp.eq.'B'.or.grtyp.eq.'G'.or.grtyp.eq.'L')then
+   if (grtyp.eq.'A'.or.grtyp.eq.'B'.or.grtyp.eq.'G'.or.grtyp.eq.'L'.or.grtyp.eq.'M')then
       do j=1,lj
          do i=1,li
             spd0=sqrt(uu(i,j)*uu(i,j)+vv(i,j)*vv(i,j))

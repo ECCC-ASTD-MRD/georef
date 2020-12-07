@@ -374,7 +374,7 @@ int GeoRef_LLVal(TGeoRef *Ref,float *zout,float *zin,double *Lat,double *Lon,int
    x = (double*)malloc(2*Nb*sizeof(double));
    y = &x[Nb];
    
-   ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb);
+   ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb,TRUE);
    ier = GeoRef_XYVal(Ref,zout,zin,x,y,Nb);
    
    free(x);
@@ -395,7 +395,7 @@ int GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       x = (double*)malloc(2*Nb*sizeof(double));
       y = &x[Nb];
    
-      ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb);
+      ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb,TRUE);
       ier = GeoRef_XYUVVal(Ref,uuout,vvout,uuin,vvin,x,y,Nb);
    
       free(x);
@@ -418,7 +418,7 @@ int GeoRef_LLWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       vvyin = &uuyin[Nb];
       uuyan = &uuyin[Nb*2];
       vvyan = &uuyin[Nb*3];
-      ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb);
+      ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb,TRUE);
       ier = GeoRef_XYUVVal(Ref,uuout,vvout,uuin,vvin,x,y,Nb);
       yin_gd=Ref->Subs[0];
       yan_gd=Ref->Subs[1];

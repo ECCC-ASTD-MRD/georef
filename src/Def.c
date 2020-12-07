@@ -901,8 +901,9 @@ int Def_GridCell2OGR(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int
 
    // Top Left
    for(n=-0.5;n<(0.5+df);n+=dn) {
-      RefFrom->Project(RefFrom,I-0.5,J+n,&la,&lo,1,1);
-      RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
+      x=I-0.5; y=J+n;
+      GeoRef_XY2LL(RefFrom,&la,&lo,&x,&y,1,TRUE);
+      GeoRef_LL2XY(RefTo,&x,&y,&la,&lo,1,TRUE);
       x0=fmin(x0,x);
       x1=fmax(x1,x);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
@@ -910,8 +911,9 @@ int Def_GridCell2OGR(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int
 
    // Top right
    for(n=-0.5;n<(0.5+df);n+=dn) {
-      RefFrom->Project(RefFrom,I+n,J+0.5,&la,&lo,1,1);
-      RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
+      x=I+n; y=J+0.5;
+      GeoRef_XY2LL(RefFrom,&la,&lo,&x,&y,1,TRUE);
+      GeoRef_LL2XY(RefTo,&x,&y,&la,&lo,1,TRUE);
       x0=fmin(x0,x);
       x1=fmax(x1,x);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
@@ -919,8 +921,9 @@ int Def_GridCell2OGR(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int
 
    // Right bottom
    for(n=0.5;n>-(0.5+df);n-=dn) {
-      RefFrom->Project(RefFrom,I+0.5,J+n,&la,&lo,1,1);
-      RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
+      x=I+0.5; y=J+n;
+      GeoRef_XY2LL(RefFrom,&la,&lo,&x,&y,1,TRUE);
+      GeoRef_LL2XY(RefTo,&x,&y,&la,&lo,1,TRUE);
       x0=fmin(x0,x);
       x1=fmax(x1,x);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
@@ -928,16 +931,18 @@ int Def_GridCell2OGR(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int
 
    // Bottom Left
    for(n=0.5;n>-(0.5+df);n-=dn) {
-      RefFrom->Project(RefFrom,I+n,J-0.5,&la,&lo,1,1);
-      RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
+      x=I+n; y=J-0.5;
+      GeoRef_XY2LL(RefFrom,&la,&lo,&x,&y,1,TRUE);
+      GeoRef_LL2XY(RefTo,&x,&y,&la,&lo,1,TRUE);
       x0=fmin(x0,x);
       x1=fmax(x1,x);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
    // Close the polygon
-   RefFrom->Project(RefFrom,I-0.5,J-0.5,&la,&lo,1,1);
-   RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
+   x=I-0.5; y=J-0.5;
+   GeoRef_XY2LL(RefFrom,&la,&lo,&x,&y,1,TRUE);
+   GeoRef_LL2XY(RefTo,&x,&y,&la,&lo,1,TRUE);
    OGR_G_SetPoint_2D(Geom,pt++,x,y);
 
    // If the cell is outside the destination limits
@@ -1129,7 +1134,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
 
 #ifdef HAVE_GDAL
    long     f,n=0,nt=0,idx2;
-   double   value,val,area,dp;
+   double   value,val,area,dp,dx,dy;
    int      fld=-1,pi,pj;
    char     mode,type;
    float   *ip=NULL;
@@ -1281,7 +1286,8 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
 
                if (!srs) {
                   // Create an UTM referential and transform to convert to meters
-                  LayerRef->Project(LayerRef,LayerRef->X0,LayerRef->Y0,&co.Lat,&co.Lon,1,1);
+                  dx=LayerRef->X0;dy=LayerRef->Y0;
+                  GeoRef_XY2LL(LayerRef,&co.Lat,&co.Lon,&dx,&dy,1,TRUE);
                   srs=OSRNewSpatialReference(NULL);
                   OSRSetUTM(srs,(int)ceil((180+co.Lon)/6),(int)co.Lat);
                   tr=OCTNewCoordinateTransformation(LayerRef->Spatial,srs);
@@ -1322,8 +1328,8 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
             // In centroid mode, just project the coordinate into field and set value
             if (Mode==IV_CENTROID) {
                OGM_Centroid2D(geom,&vr[0],&vr[1]);
-               LayerRef->Project(LayerRef,vr[0],vr[1],&co.Lat,&co.Lon,1,1);
-               ToRef->UnProject(ToRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
+               GeoRef_XY2LL(LayerRef,&co.Lat,&co.Lon,&vr[0],&vr[1],1,TRUE);
+               GeoRef_LL2XY(ToRef,&vr[0],&vr[1],&co.Lat,&co.Lon,1,TRUE);
                n=(int)vr[1]*ToDef->NI+(int)vr[0];
                Def_Set(ToDef,0,n,value);
                nt++;
@@ -1483,13 +1489,19 @@ int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,float
          // Interpolation scalaire
          ok=GeoRef_Interp(ToRef,FromRef,pt0,pf0);
       }
+
+      // Intepolate mask if need be
+      if (FromDef->Mask && ToDef->Mask) {
+         GeoRef_InterpMask(ToRef,FromRef,&ToDef->Mask[k*FSIZE2D(ToDef)],&FromDef->Mask[k*FSIZE2D(FromDef)]);
+      }
    }
+
 #else
       App_Log(ERROR,"%s: RMNLIB support not included\n",__func__);
 #endif   
    return(ok);
 }
-         
+   
 int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,char Mask,float *Index) {
    
    double     val,dir,lat,lon,di,dj,dval;
@@ -1497,7 +1509,7 @@ int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_
    float     *ip=NULL;
    double     I0, J0;
    double     I1, J1;
-   
+/*   TODO
    idx=0;
    I1 = FromRef->X1 + 0.5;
    J1 = FromRef->Y1 + 0.5;
@@ -1561,13 +1573,13 @@ int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_
       // Mark end of index
 //         if (!gotidx && ip) *(ip++)=DEF_INDEX_END;
    }
-   
+   */
    return(TRUE);
 }
 
 int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,char Mask,float *Index) {
 
-   double val,lat,lon,di,dj;
+   double val,di,dj,la,lo;
    int    ezto=1,ezfrom=1,idx,c,i,j,k,gotidx;
    char  *interp;
    float *ip=NULL;
@@ -1592,32 +1604,6 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDe
  	if (Def_EZInterp(ToRef,ToDef,FromRef,FromDef,Index)) {
       App_Log(ERROR,"%s: EZSCINT interpolation problem\n",__func__);
       return(FALSE);
-   }
-
-   // Interpolate mask if needed
-   if (FromDef->Mask && ToDef->Mask) {
-            
-      idx=0;  
-      for(k=0;k<ToDef->NK;k++) {
-         ip=Index;
-         gotidx=(Index && Index[0]!=DEF_INDEX_EMPTY);
-
-         for(j=0;j<ToDef->NJ;j++) {
-            for(i=0;i<ToDef->NI;i++,idx++) {
-
-               if (gotidx) {
-                  // Got the index, use coordinates from it
-                  di=*(ip++);
-                  dj=*(ip++);
-               } else {
-                  // No index, project coordinate
-                  ToRef->Project(ToRef,i,j,&lat,&lon,0,1);
-                  FromRef->UnProject(FromRef,&di,&dj,lat,lon,0,1);
-               }
-               ToDef->Mask[idx]=(di>=0.0)?FromDef->Mask[k*FromDef->NIJ+ROUND(dj)*FromDef->NI+ROUND(di)]:0;
-            }
-         }
-      }     
    }
 
    return(TRUE);
@@ -1647,7 +1633,7 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDe
 int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char Degree) {
 
    int  idx,i,j,x,y,x0,x1,y0,y1,s;
-   double val,val1,di,dj,dlat,dlon,d;
+   double val,val1,di,dj,d,la,lo;
 
    if (!ToRef || !ToDef) {
       App_Log(ERROR,"%s: Invalid destination\n",__func__);
@@ -1692,8 +1678,9 @@ int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,
 
                di=(double)x-0.5+d*i;
                dj=(double)y-0.5+d*j;
-               ToRef->Project(ToRef,di,dj,&dlat,&dlon,1,1);
-               if (FromRef->UnProject(FromRef,&di,&dj,dlat,dlon,0,1)) {
+
+               GeoRef_XY2LL(FromRef,&la,&lo,&di,&dj,1,TRUE);
+               if (GeoRef_LL2XY(ToRef,&di,&dj,&la,&lo,1,FALSE)) {
                   if (FromRef->Value(FromRef,FromDef,Degree,0,di,dj,FromDef->Level,&val,&val1) && DEFVALID(FromDef,val)) {
                      ToDef->Sub[idx]=val;
                   }
@@ -2007,7 +1994,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
 */
 int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,TDef_InterpR Mode,int Final){
 
-   double        val,vx,di[4],dj[4],*fld,*aux,di0,di1,dj0,dj1;
+   double        val,vx,di[4],dj[4],*fld,*aux,di0,di1,dj0,dj1,ax,ay;
    int          *acc=NULL,x0,x1,y,y0,y1;
    unsigned long idxt,idxk,idxj,n,nijk,nij;
    unsigned int  n2,ndi,ndj,k,t,s,x,dx,dy;
@@ -2067,7 +2054,8 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
       if (ToRef->GRTYP[0]=='Y') {
          // Point cloud interpolations
          for(idxt=0;idxt<nij;idxt++) {
-            if (FromRef->UnProject(FromRef,&di0,&dj0,ToRef->AY[idxt],ToRef->AX[idxt],0,1)) {
+            ax=ToRef->AX[idxt];ay=ToRef->AY[idxt];
+            if (GeoRef_LL2XY(FromRef,&di0,&dj0,&ax,&ay,1,FALSE)) {
                di0=floor(di0);
                dj0=floor(dj0);
                FromRef->Value(FromRef,FromDef,'N',0,di0,dj0,FromDef->Level,&di[0],&vx);
@@ -2110,7 +2098,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
                App_Log(ERROR,"%s: Invalid LUT class size (%d) vs Array size (%d)  \n",__func__,(int)val,ToDef->NK);
                return(0);
             }
-            /* first row is the class count and idno */
+            // first row is the class count and idno 
             nbClass = lutDef[0]->NI - 1;       
             fromClass = (int *)malloc( sizeof(int)*nbClass );
             for (i = 0; i < nbClass ; i++)
@@ -2118,11 +2106,11 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
                Def_Get(lutDef[0],0,i+1,val);
                fromClass[i] = val;
                }
-            if (lutSize == 2) { /* only FROM and TO */
+            if (lutSize == 2) { // only FROM and TO
                toClass = (int *)malloc( sizeof(int)*nbClass );
                for (i = 0; i < nbClass ; i++) {
                   Def_Get(lutDef[1],0,i+1,val);
-                  /* make sure to value is within range */
+                  // make sure to value is within range
                   if ((val >= 1) && (val <= ToDef->NK))
                      toClass[i] = val;
                   else
@@ -2131,7 +2119,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
             } else {
                double val;
                rpnClass = (int *)malloc( sizeof(int)*lutSize );
-               for (i = 1; i < lutSize ; i++) { /* skip 1st column : the class id */
+               for (i = 1; i < lutSize ; i++) { // skip 1st column : the class id 
                   Def_Get(lutDef[i],0,0,val);
                   rpnClass[i] = val;
                   if ((val < 1)||(val > ToDef->NK)) {
@@ -2259,14 +2247,14 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
                                                          t=0;
                                                          while(t<nbClass) {
                                                             if (vx==fromClass[t]) {
-                                                               if (toClass) { /* toClass is between 1 and 26 */
+                                                               if (toClass) { // toClass is between 1 and 26 
                                                                   if (toClass[t] > 0)
                                                                      {
                                                                      fld[(toClass[t]-1)*nij+idxt]+=1.0;
                                                                      hasvalue = 1;
                                                                      }
                                                                } else {
-                                                                  for (i = 1; i < lutSize ; i++) { /* skip 1st column : the class id */
+                                                                  for (i = 1; i < lutSize ; i++) { // skip 1st column : the class id 
                                                                      Def_Get(lutDef[i],0,t+1,val);
                                                                      if (val > 0) {
                                                                         fld[(rpnClass[i]-1)*nij+idxt]+=val;
@@ -2278,7 +2266,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
                                                             }
                                                             t++;
                                                          }
-                                                         /* dont count missing values */
+                                                         // Dont count missing values
                                                          if (hasvalue)
                                                             if (Mode!=IR_COUNT) acc[idxt]++; 
                                                       } else {

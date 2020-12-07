@@ -28,10 +28,10 @@ ORDENV_PLAT=${ORDENV_PLAT:-`uname -s`-`uname -m`}
 SSM_VERSION=${VERSION}${SSM_COMP}
 SSM_NAME=${NAME}_${SSM_VERSION}_${ORDENV_PLAT}
 
-export EC_CMAKE_MODULE_PATH="`pwd`/modules;$EC_CMAKE_MODULE_PATH"
+export EC_CMAKE_MODULE_PATH="`pwd`/cmake;$EC_CMAKE_MODULE_PATH"
 export DESTDIR=${SSM_DEV}/workspace/${SSM_NAME}
 
 rm -f -r build; mkdir -p build; cd build
-cmake $CMAKE_COMP_FLAGS -DEC_COMPILER_SUITE=intel -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
+cmake $CMAKE_COMP_FLAGS -DCOMPILER_SUITE=intel -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
 make -j
 make install

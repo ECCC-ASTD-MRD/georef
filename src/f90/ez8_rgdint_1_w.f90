@@ -17,14 +17,14 @@
 ! * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ! * Boston, MA 02111-1307, USA.
 ! */
-      subroutine ez8_rgdint_1_w(zo,px,py,npts,z,ni,j1,j2,wrap)
+      subroutine ez8_rgdint_1_w(zo,px,py,npts,z,nodata,ni,j1,j2,wrap)
 
       implicit none
       
       integer npts,ni,j1,j2,wrap,i,j,n,limite,iplus1
       real zo(npts)
       real*8 px(npts),py(npts)
-      real z(ni,j1:j2)
+      real z(ni,j1:j2),nodata
       real*8 dx, dy, y2, y3
 
 #include "zlin8.cdk"
@@ -42,10 +42,13 @@
          dx = px(n) - i
          dy = py(n) - j
          
-         y2=zlin(dble(z(i,j  )),dble(z(iplus1,j  )),dx)
-         y3=zlin(dble(z(i,j+1)),dble(z(iplus1,j+1)),dx)
-         
-         zo(n)=zlin(y2,y3,dy)
+         if (defvalid(z(i,j),nodata) .and.  defvalid(z(i+1,j),nodata) .and. defvalid(z(i,j+1),nodata) .and. defvalid(z(i+1,j+1),nodata)) then
+            y2=zlin(dble(z(i,j  )),dble(z(iplus1,j  )),dx)
+            y3=zlin(dble(z(i,j+1)),dble(z(iplus1,j+1)),dx)  
+            zo(n)=zlin(y2,y3,dy)
+         else
+            zo(n)=nodata
+         endif
       enddo
 
       return 

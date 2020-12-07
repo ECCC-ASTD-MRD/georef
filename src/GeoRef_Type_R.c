@@ -53,6 +53,7 @@
  *
  *---------------------------------------------------------------------------------------------------------------
 */
+//TODO: vgrid of ZRef ?
 double GeoRef_RDRHeight(TGeoRef *Ref,TZRef *ZRef,double Azimuth,double Bin,double Sweep) {
 
    if (Bin>=0 && Bin<Ref->R && Sweep>=0 && Sweep<ZRef->LevelNb) {
@@ -60,110 +61,6 @@ double GeoRef_RDRHeight(TGeoRef *Ref,TZRef *ZRef,double Azimuth,double Bin,doubl
    } else {
       return(0);
    }
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RDRValue>
- * Creation     : Mars 2005 J.P. Gauthier - CMC/CMOE
- *
- * But          : Extraire la valeur d'une matrice de donnees.
- *
- * Parametres    :
- *   <Ref>      : Pointeur sur la reference geographique
- *   <Def>       : Pointeur sur la definition de la donnee
- *   <Interp>    : Mode d'interpolation;
- *   <C>         : Composante
- *   <X>         : coordonnee en X dans la projection/grille
- *   <Y>         : coordonnee en Y dans la projection/grille
- *   <Z>         : coordonnee en Z dans la projection/grille
- *   <Length>    : Module interpolee
- *   <ThetaXY>   : Direction interpolee
- *
- * Retour       : Inside (1 si a l'interieur du domaine).
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-int GeoRef_RDRValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double Azimuth,double Bin,double Sweep,double *Length,double *ThetaXY){
-
-   int      valid=0,mem,ix,iy;
-
-   *Length=Def->NoData;
-
-   /*Si on est a l'interieur de la grille ou que l'extrapolation est activee*/
-   if (C<Def->NC && Bin<=Ref->R) {
-
-      mem=Def->NI*Def->NJ*(int)Sweep;
-
-      ix=ROUND(Azimuth);
-      iy=ROUND(Bin);
-
-      if (Def->Type<=9 || Interp==IR_NEAREST || (Azimuth==ix && Bin==iy)) {
-         mem+=iy*Def->NI+ix;
-         Def_Get(Def,C,mem,*Length);
-      } else {
-         *Length=VertexVal(Def,C,Azimuth,Bin,Sweep);
-      }
-      valid=1;
-   }
-   return(valid);
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RDRProject>
- * Creation     : Mars 2005 J.P. Gauthier - CMC/CMOE
- *
- * But          : Projeter une coordonnee de projection en latlon.
- *
- * Parametres    :
- *   <Ref>      : Pointeur sur la reference geographique
- *   <X>         : coordonnee en X dans la projection/grille
- *   <Y>         : coordonnee en Y dans la projection/grille
- *   <Lat>       : Latitude
- *   <Lon>       : Longitude
- *   <Extrap>    : Extrapolation hors grille
- *   <Transform> : Appliquer la transformation
- *
- * Retour       : Inside (1 si a l'interieur du domaine).
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-int GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
-
-   GeoRef_LL2XY(REFGET(Ref),&X,&Y,Lat,Lon,1);
-
-   return(1);
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RDRUnProject>
- * Creation     : Mars 2005 J.P. Gauthier - CMC/CMOE
- *
- * But          : Projeter une latlon en position grille.
- *
- * Parametres    :
- *   <Ref>      : Pointeur sur la reference geographique
- *   <X>         : coordonnee en X dans la projection/grille
- *   <Y>         : coordonnee en Y dans la projection/grille
- *   <Lat>       : Latitude
- *   <Lon>       : Longitude
- *   <Extrap>    : Extrapolation hors grille
- *   <Transform> : Appliquer la transformation
- *
- * Retour       : Inside (1 si a l'interieur du domaine).
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-int GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
-
-   GeoRef_XY2LL(REFGET(Ref),&Lat,&Lon,X,Y,1);
-
-   return(1);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -202,9 +99,6 @@ TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int R,double ResR,do
 
    GeoRef_Size(ref,0,0,360/ResA,R-1,0);
 
-   ref->Project=GeoRef_RDRProject;
-   ref->UnProject=GeoRef_RDRUnProject;
-   ref->Value=(TGeoRef_Value*)GeoRef_RDRValue;
    ref->Height=GeoRef_RDRHeight;
 
    return(ref);

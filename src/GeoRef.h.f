@@ -162,6 +162,38 @@ module libgeoref
 !         integer(C_INT)                :: status
 !      end function c_def_gridinterp
       
+!      int      GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
+!      int      GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,int In);
+!      int      GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int Idx0,int Idx1,int Idx2,int Idx3);
+!      int      GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1,int *X0,int *Y0,int *X1,int *Y1,int BD);
+!      int      GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
+!      int      GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA);
+!      TGeoRef* GeoRef_New();
+!      TGeoRef* GeoRef_Add(TGeoRef *Ref);
+!      TGeoRef* GeoRef_Find(TGeoRef *Ref);
+!      TGeoRef* GeoRef_Copy(TGeoRef* __restrict const Ref);
+!      TGeoRef* GeoRef_HardCopy(TGeoRef* __restrict const Ref);
+!      TGeoRef* GeoRef_Reference(TGeoRef* __restrict const Ref);
+!      void     GeoRef_Size(TGeoRef *Ref,int X0,int Y0,int X1,int Y1,int BD);
+!      TGeoRef* GeoRef_Resize(TGeoRef* __restrict const Ref,int NI,int NJ);
+!      int      GeoRef_Free(TGeoRef *Ref);
+!      void     GeoRef_Clear(TGeoRef *Ref,int New);
+!      void     GeoRef_Qualify(TGeoRef* __restrict const Ref);
+!      int      GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1);
+!      int      GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,double *I0,double *J0,double *I1,double *J1);
+!      int      GeoRef_Valid(TGeoRef* __restrict const Ref);
+!      double   GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1);
+   
+!      TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID);
+!      TGeoRef* GeoRef_CreateInMemory(int NI,int NJ,char* grtyp,char* GRREF,int IG1,int IG2,int IG3,int IG4,float* AX,float* AY);
+!      TGeoRef* GeoRef_CreateU(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,int NbSub,TGeoRef **Subs);
+!      TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int R,double ResR,double ResA);
+!      TGeoRef* GeoRef_CreateW(int ni,int nj,char *grtyp,int ig1,int ig2,int ig3,int ig4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
+!      TGeoRef* GeoRef_SetZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2);
+!      TGeoRef* GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
+!      int      GeoRef_Positional(TGeoRef *Ref,struct TDef *XDef,struct TDef *YDef);
+!      TQTree*  GeoRef_BuildIndex(TGeoRef* __restrict const Ref);
+!      int      GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,double *Dists,int NbNear,double MaxDist);
 !      void     GeoRef_GridGetExpanded(TGeoRef *Ref, float *zout, float *zin);                                                           // gdxpngd
 !      int      GeoRef_AxisGetExpanded(TGeoRef* Ref, float *AX, float *AY);                                                              // gdgxpndaxes
 !      void     GeoRef_AxisDefine(TGeoRef* Ref,float *AX,float *AY);

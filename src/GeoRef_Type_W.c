@@ -116,62 +116,6 @@ int GeoRef_WKTValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,do
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_WKTProject>
- * Creation     : Mars 2005 J.P. Gauthier - CMC/CMOE
- *
- * But          : Projeter une coordonnee de projection en latlon.
- *
- * Parametres    :
- *   <Ref>      : Pointeur sur la reference geographique
- *   <X>         : coordonnee en X dans la projection/grille
- *   <Y>         : coordonnee en Y dans la projection/grille
- *   <Lat>       : Latitude
- *   <Lon>       : Longitude
- *   <Extrap>    : Extrapolation hors grille
- *   <Transform> : Appliquer la transformation
- *
- * Retour       : Inside (1 si a l'interieur du domaine).
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
-
-   GeoRef_XY2LL(REFGET(Ref),&X,&Y,Lat,Lon,1);
-
-   return(0);
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_WKTUnProject>
- * Creation     : Mars 2005 J.P. Gauthier - CMC/CMOE
- *
- * But          : Projeter une latlon en position grille.
- *
- * Parametres    :
- *   <Ref>      : Pointeur sur la reference geographique
- *   <X>         : coordonnee en X dans la projection/grille
- *   <Y>         : coordonnee en Y dans la projection/grille
- *   <Lat>       : Latitude
- *   <Lon>       : Longitude
- *   <Extrap>    : Extrapolation hors grille
- *   <Transform> : Appliquer la transformation
- *
- * Retour       : Inside (1 si a l'interieur du domaine).
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
-
-   GeoRef_LL2XY(REFGET(Ref),X,Y,&Lat,&Lon,1);
-
-   return(0);
-}
-
-/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_WKTSet>
  * Creation     : Juin 2004 J.P. Gauthier - CMC/CMOE
  *
@@ -265,8 +209,6 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
       return(NULL);
    }
 
-   Ref->Project=GeoRef_WKTProject;
-   Ref->UnProject=GeoRef_WKTUnProject;
    Ref->Value=(TGeoRef_Value*)GeoRef_WKTValue;
    Ref->Height=NULL;
 
@@ -278,7 +220,7 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_WKTCreate>
+ * Nom          : <GeoRef_CreateW>
  * Creation     : Avril 2005 J.P. Gauthier - CMC/CMOE
  *
  * But          : Definir le referetiel de type RPN

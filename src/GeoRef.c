@@ -38,10 +38,10 @@
 #include "Def.h"
 #include "RPN.h"
 #include "List.h"
-
-static TList          *GeoRef_List=NULL;                                                                                ///< Global list of known geo references
-static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                          ///< Thread lock on geo reference access
-static TGeoOptions     GeoRef_Options= { IR_CUBIC, ER_UNDEF, 0.0, 0, TRUE, FALSE, FALSE, 16, TRUE, FALSE, 10.0, 0.0 };  ///< Default options
+ 
+static TList          *GeoRef_List=NULL;                                                                                  ///< Global list of known geo references
+static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                            ///< Thread lock on geo reference access
+__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_UNDEF, 0.0, 0, TRUE, FALSE, FALSE, 16, TRUE, FALSE, 10.0, 0.0 };    ///< Default options
 
 /**----------------------------------------------------------------------------
  * @brief  Apply thread lock on GeoRef access
@@ -167,7 +167,7 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
          x0=dd?x-0.5:x;
          y0=dd?y-0.5:y;
          
-         FromRef->Project(FromRef,x0,y0,&Scan->X[n],&Scan->Y[n],0,1);
+         GeoRef_XY2LL(FromRef,&x0,&y0,&Scan->X[n],&Scan->Y[n],1,FALSE);
 
 
          if (FromRef->Transform) {
@@ -237,7 +237,7 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
             Scan->Y[n]=dd?y+0.5:y+1.0;
          }
       }
-      GeoRef_XY2LL(REFGET(FromRef),Scan->Y,Scan->X,Scan->X,Scan->Y,n);
+      GeoRef_XY2LL(FromRef,Scan->Y,Scan->X,Scan->X,Scan->Y,n,FALSE);
 
       d=dd?2:1;
       sz=4;
@@ -261,7 +261,7 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
       }
 
       // If we're inside
-      if (ToRef->UnProject(ToRef,&Scan->X[x],&Scan->Y[x],y0,x0,0,1) && ToDef) {
+      if (GeoRef_LL2XY(ToRef,&Scan->X[x],&Scan->Y[x],&y0,&x0,1,FALSE) && ToDef) {
          ToRef->Value(ToRef,ToDef,Degree,0,Scan->X[x],Scan->Y[x],0,&v,NULL);
          Scan->D[x]=v;
       }
@@ -364,7 +364,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             Scan->Y[n]=dd?y+0.5:y+1.0;
          }
       }
-      GeoRef_XY2LL(REFGET(FromRef),Scan->Y,Scan->X,Scan->X,Scan->Y,n);
+      GeoRef_XY2LL(FromRef,Scan->Y,Scan->X,Scan->X,Scan->Y,n,FALSE);
 
       d=dd?2:1;
       sz=4;
@@ -384,7 +384,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             Scan->D[x]=ToDef->NoData;
          }
 
-         if (ToRef->UnProject(ToRef,&Scan->X[x],&Scan->Y[x],y0,x0,0,1)) {
+         if (GeoRef_LL2XY(ToRef,&Scan->X[x],&Scan->Y[x],&y0,&x0,1,FALSE)) {
             if (ToDef) {
               ToRef->Value(ToRef,ToDef,Degree,0,Scan->X[x],Scan->Y[x],0,&v,NULL);
               Scan->D[x]=v;
@@ -408,14 +408,14 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
 #endif
    } else {
 #ifdef HAVE_RMN
-      GeoRef_LL2XY(REFGET(ToRef),Scan->X,Scan->Y,Scan->Y,Scan->X,n);
+      GeoRef_LL2XY(ToRef,Scan->X,Scan->Y,Scan->Y,Scan->X,n,FALSE);
 //EZFIX
       // If we have the data of source and they're float, get it's values right now
       if (ToDef && ToDef->Type==TD_Float32) {
          if (Degree)
             ToRef->Options.InterpDegree=Degree;
          
-         GeoRef_XYVal(REFGET(ToRef),Scan->D,(float*)ToDef->Mode,Scan->X,Scan->Y,n);         
+         GeoRef_XYVal(ToRef,Scan->D,(float*)ToDef->Mode,Scan->X,Scan->Y,n);         
       }
 
       // Cast back to double (Start from end since type is double, not to overlap values
@@ -602,8 +602,6 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
 #endif
 
       Ref->RefFrom=NULL;
-      Ref->Project=NULL;
-      Ref->UnProject=NULL;
       Ref->XY2LL=NULL;
       Ref->LL2XY=NULL;
       Ref->Value=NULL;
@@ -620,8 +618,8 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
 void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
 
    TCoord co[2];
-   double d[2];
-   int    x;
+   double d[2],lat[2],lon[2],n[2],x[2],y[2];
+   int    nx;
 
    if (Ref) {
       switch(Ref->GRTYP[0]) {
@@ -661,7 +659,9 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
     
       if (Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='O') {
          // If grid type is X (ORCA) and a pole in within the grid, mark as wrapping grid
-         if (Ref->UnProject(Ref,&d[0],&d[1],89.0,0.0,0,1) || Ref->UnProject(Ref,&d[0],&d[1],-89.0,0.0,0,1)) {
+         lat[0]=89.0;lat[1]=-89.0;
+         lon[0]=lon[1]=0.0;
+         if (GeoRef_LL2XY(Ref,x,y,lat,lon,2,TRUE)) {
             Ref->Type|=GRID_WRAP;
          }
       }  
@@ -670,26 +670,30 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          Ref->Type|=GRID_WRAP;
       } else if (Ref->GRTYP[0]!='V' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
          // Check if north is up by looking at longitude variation on an Y increment at grid limits
-         Ref->Project(Ref,Ref->X0,Ref->Y0,&co[0].Lat,&co[0].Lon,1,1);
-         Ref->Project(Ref,Ref->X0,Ref->Y0+1,&co[1].Lat,&co[1].Lon,1,1);
-         d[0]=co[0].Lon-co[1].Lon;
-         Ref->Project(Ref,Ref->X1,Ref->Y1-1,&co[0].Lat,&co[0].Lon,1,1);
-         Ref->Project(Ref,Ref->X1,Ref->Y1,&co[1].Lat,&co[1].Lon,1,1);
-         d[1]=co[0].Lon-co[1].Lon;
+         x[0]=Ref->X0;x[1]=Ref->X0;
+         y[0]=Ref->Y0;y[1]=Ref->Y0+1.0;
+         GeoRef_XY2LL(Ref,lat,lon,x,y,2,TRUE);
+         d[0]=lon[0]-lon[1];
+         x[0]=Ref->X1;x[1]=Ref->X1;
+         y[0]=Ref->Y1-1;y[1]=Ref->Y1;
+         GeoRef_XY2LL(Ref,lat,lon,x,y,2,TRUE);
+         d[1]=lon[0]-lon[1];
 
          if (fabs(d[0])>0.0001 || fabs(d[1])>0.0001) {
             Ref->Type|=GRID_ROTATED;
          }
                   
          // Get size of a gridpoint
-         Ref->Project(Ref,Ref->X0+(Ref->X1-Ref->X0)/2.0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[0].Lat,&co[0].Lon,1,1);
-         Ref->Project(Ref,Ref->X0+(Ref->X1-Ref->X0)/2.0+1.0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[1].Lat,&co[1].Lon,1,1);
-         d[0]=DIST(0.0,DEG2RAD(co[0].Lat),DEG2RAD(co[0].Lon),DEG2RAD(co[1].Lat),DEG2RAD(co[1].Lon));
+         x[0]=Ref->X0+(Ref->X1-Ref->X0)/2.0;x[1]=x[0]+1.0;
+         y[0]=y[1]=Ref->Y0+(Ref->Y1-Ref->Y0)/2.0;
+         GeoRef_XY2LL(Ref,lat,lon,x,y,2,TRUE);
+         d[0]=DIST(0.0,DEG2RAD(lat[0]),DEG2RAD(lon[0]),DEG2RAD(lat[1]),DEG2RAD(lon[1]));
 
          // Get distance between first and lat point
-         Ref->Project(Ref,Ref->X0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[0].Lat,&co[0].Lon,1,1);
-         Ref->Project(Ref,Ref->X1,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[1].Lat,&co[1].Lon,1,1);
-         d[1]=DIST(0.0,DEG2RAD(co[0].Lat),DEG2RAD(co[0].Lon),DEG2RAD(co[1].Lat),DEG2RAD(co[1].Lon));
+         x[0]=Ref->X0;x[1]=Ref->X1;
+         y[0]=y[1]=Ref->Y0+(Ref->Y1-Ref->Y0)/2.0;
+         GeoRef_XY2LL(Ref,lat,lon,x,y,2,TRUE);
+         d[1]=DIST(0.0,DEG2RAD(lat[0]),DEG2RAD(lon[0]),DEG2RAD(lat[1]),DEG2RAD(lon[1]));
 
          // If we're within 1.5 grid point, we wrap
          if (d[1]<=(d[0]*1.5)) {
@@ -712,8 +716,8 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
    
       // Check for negative longitude (-180 <-> 180, or 0 <-> 360)
       if (Ref->AX) {
-         for(x=0;x<Ref->NX;x++) { 
-            if (Ref->AX[x]<0) { 
+         for(nx=0;nx<Ref->NX;nx++) { 
+            if (Ref->AX[nx]<0) { 
                Ref->Type|=GRID_NEGLON; 
                break; 
             } 
@@ -815,8 +819,6 @@ TGeoRef *GeoRef_Reference(TGeoRef* __restrict const Ref) {
    if (Ref) {
       GeoRef_Incr(Ref);
       ref->RefFrom=Ref;
-      ref->Project=Ref->Project;
-      ref->UnProject=Ref->UnProject;
       ref->XY2LL=Ref->XY2LL;
       ref->LL2XY=Ref->LL2XY;
       ref->Value=Ref->Value;
@@ -851,8 +853,6 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
    if (Ref) {
       ref->GRTYP[0]=Ref->GRTYP[0];
       ref->GRTYP[1]=Ref->GRTYP[1];
-      ref->Project=Ref->Project;
-      ref->UnProject=Ref->UnProject;
       ref->XY2LL=Ref->XY2LL;
       ref->LL2XY=Ref->LL2XY;
       ref->Value=Ref->Value;
@@ -939,7 +939,7 @@ int GeoRef_UnProject(TGeoRef* __restrict const Ref,double *X,double *Y,double La
    *X=Lon*(Ref->X1-Ref->X0);
    *Y=Lat*(Ref->Y1-Ref->Y0);
 
-   /*Check the grid limits*/
+   // Check the grid limits
    if (*X>Ref->X1 || *Y>Ref->Y1 || *X<Ref->X0 || *Y<Ref->Y0) {
       if (!Extrap) {
          *X=-1.0;
@@ -1030,7 +1030,7 @@ TGeoRef* GeoRef_New() {
    ref->Sets=NULL;
    ref->LastSet=NULL;
 
-   // Assign defualt options
+   // Assign default options
    memcpy(&ref->Options,&GeoRef_Options,sizeof(TGeoOptions));
 
    // RPN Specific
@@ -1063,8 +1063,9 @@ TGeoRef* GeoRef_New() {
    ref->ResA=0;
 
    // General functions
-   ref->Project=GeoRef_Project;
-   ref->UnProject=GeoRef_UnProject;
+   //TODO
+//   ref->Project=GeoRef_Project;
+//   ref->UnProject=GeoRef_UnProject;
    ref->Value=NULL;
    ref->Height=NULL;
 
@@ -1331,49 +1332,53 @@ int GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,dou
 */
 int GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1,int *X0,int *Y0,int *X1,int *Y1,int BD) {
 
-   double lat,lon,di,dj,in=0;
-   double x0,y0,x1,y1;
+   double la,lo,di,dj,in=0;
+   double x0,y0,x1,y1,dx,dy;
    int    x,y;
 
    if (!Ref0 || !Ref1) return(0);
 
-   /*Source grid Y*/
+   // Source grid Y
    if (Ref1->GRTYP[0]=='Y') {
       *X0=Ref1->X0; *Y0=Ref1->Y0;
       *X1=Ref1->X1; *Y1=Ref1->Y1;
       return(1);
    }
 
-   /*If destination is global*/
+   // If destination is global
    if (Ref0->Type&GRID_WRAP) {
       *X0=Ref1->X0; *Y0=Ref1->Y0;
       *X1=Ref1->X1; *Y1=Ref1->Y1;
       in=1;
    }
 
-   /*Test for limit source inclusion into destination*/
+   // Test for limit source inclusion into destination
    x0=y0=1e32;
    x1=y1=-1e32;
    x=0;
 
    if (!in) {
-      Ref1->Project(Ref1,Ref1->X0,Ref1->Y0,&lat,&lon,0,1);
-      if (Ref0->UnProject(Ref0,&di,&dj,lat,lon,0,1)) {
+      dx=Ref1->X0; dy=Ref1->Y0;
+      GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
+      if (GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE)) {
          x0=Ref1->X0;y0=Ref1->Y0;
          x++;
       }
-      Ref1->Project(Ref1,Ref1->X0,Ref1->Y1,&lat,&lon,0,1);
-      if (Ref0->UnProject(Ref0,&di,&dj,lat,lon,0,1)) {
+      dx=Ref1->X0; dy=Ref1->Y1;
+      GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
+      if (GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE)) {
          x0=Ref1->X0;y1=Ref1->Y1;
          x++;
       }
-      Ref1->Project(Ref1,Ref1->X1,Ref1->Y0,&lat,&lon,0,1);
-      if (Ref0->UnProject(Ref0,&di,&dj,lat,lon,0,1)) {
+      dx=Ref1->X1; dy=Ref1->Y0;
+      GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
+      if (GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE)) {
          x1=Ref1->X1;y0=Ref1->Y0;
          x++;
       }
-      Ref1->Project(Ref1,Ref1->X1,Ref1->Y1,&lat,&lon,0,1);
-      if (Ref0->UnProject(Ref0,&di,&dj,lat,lon,0,1)) {
+      dx=Ref1->X1; dy=Ref1->Y1;
+      GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
+      if (GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE)) {
          x1=Ref1->X1;y1=Ref1->Y1;
       }
       *X0=x0; *Y0=y0;
@@ -1386,39 +1391,45 @@ int GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Re
 
    if (!in) {
 
-      /*Project Ref0 within Ref1 and get limits*/
+      // Project Ref0 within Ref1 and get limits
       for(x=Ref0->X0;x<=Ref0->X1;x++) {
-         Ref0->Project(Ref0,x,Ref0->Y0,&lat,&lon,0,1);
-         Ref1->UnProject(Ref1,&di,&dj,lat,lon,1,1);
+         dx=x;dy=Ref0->Y0;
+         GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
+         GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE);
          x0=fmin(x0,di); y0=fmin(y0,dj);
          x1=fmax(x1,di); y1=fmax(y1,dj);
 
-         Ref0->Project(Ref0,x,Ref0->Y1,&lat,&lon,0,1);
-         Ref1->UnProject(Ref1,&di,&dj,lat,lon,1,1);
+         dx=x;dy=Ref0->Y1;
+         GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
+         GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE);
          x0=fmin(x0,di); y0=fmin(y0,dj);
          x1=fmax(x1,di); y1=fmax(y1,dj);
       }
 
       for(y=Ref0->Y0;y<=Ref0->Y1;y++) {
-         Ref0->Project(Ref0,Ref0->X0,y,&lat,&lon,0,1);
-         Ref1->UnProject(Ref1,&di,&dj,lat,lon,1,1);
+         dx=Ref0->X0; dy=y;
+         GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
+         GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE);
          x0=fmin(x0,di); y0=fmin(y0,dj);
          x1=fmax(x1,di); y1=fmax(y1,dj);
 
-         Ref0->Project(Ref0,Ref0->X1,y,&lat,&lon,0,1);
-         Ref1->UnProject(Ref1,&di,&dj,lat,lon,1,1);
+         dx=Ref0->X1; dy=y;
+         GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
+         GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE);
          x0=fmin(x0,di); y0=fmin(y0,dj);
          x1=fmax(x1,di); y1=fmax(y1,dj);
       }
 
-      /*Test for north and south pole including grid*/
-      if (Ref0->UnProject(Ref0,&di,&dj,89.9,0.0,0,1) && dj>Ref0->Y0+2 && dj<Ref0->Y1-2 && di>Ref0->X0+2 && di<Ref0->X1-2) {
-         Ref1->UnProject(Ref1,&di,&dj,89.9,0.0,1,1);
+      // Test for north and south pole including grid
+      dx=0.0;dy=89.9;
+      if (GeoRef_LL2XY(Ref0,&di,&dj,&dy,&dx,1,FALSE) && dj>Ref0->Y0+2 && dj<Ref0->Y1-2 && di>Ref0->X0+2 && di<Ref0->X1-2) {
+         GeoRef_LL2XY(Ref1,&di,&dj,&dy,&dx,1,TRUE);
          x0=fmin(x0,di); y0=fmin(y0,dj);
          x1=fmax(x1,di); y1=fmax(y1,dj);
       }
-      if (Ref0->UnProject(Ref0,&di,&dj,-89.9,0.0,0,1) && dj>Ref0->Y0+2 && dj<Ref0->Y1-2 && di>Ref0->X0+2 && di<Ref0->X1-2) {
-         Ref1->UnProject(Ref1,&di,&dj,-89.9,0.0,1,1);
+      dx=0.0;dy=-89.9;
+      if (GeoRef_LL2XY(Ref0,&di,&dj,&dy,&dx,1,FALSE) && dj>Ref0->Y0+2 && dj<Ref0->Y1-2 && di>Ref0->X0+2 && di<Ref0->X1-2) {
+         GeoRef_LL2XY(Ref1,&di,&dj,&dy,&dx,1,TRUE);
          x0=fmin(x0,di); y0=fmin(y0,dj);
          x1=fmax(x1,di); y1=fmax(y1,dj);
       }
@@ -1431,7 +1442,7 @@ int GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Re
       }
    }
 
-   /*Clamp the coordinates*/
+   // Clamp the coordinates
    if (BD) {
       REFCLAMP(Ref1,*X0,*Y0,*X1,*Y1);
    } else {
@@ -1481,34 +1492,40 @@ int GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double
 
    // Project Ref0 Border within Ref1 and get limits
    for(x=Ref->X0,y=Ref->Y0;x<=Ref->X1;x++) {
-      Ref->Project(Ref,x,y,&lat,&lon,0,1);
+      di=x;dj=y;
+      GeoRef_XY2LL(Ref,&lat,&lon,&di,&dj,1,FALSE);
       *Lat0=fmin(*Lat0,lat); *Lon0=fmin(*Lon0,lon);
       *Lat1=fmax(*Lat1,lat); *Lon1=fmax(*Lon1,lon);
    }
 
    for(x=Ref->X0,y=Ref->Y1;x<=Ref->X1;x++) {
-      Ref->Project(Ref,x,y,&lat,&lon,0,1);
+      di=x;dj=y;
+      GeoRef_XY2LL(Ref,&lat,&lon,&di,&dj,1,FALSE);
       *Lat0=fmin(*Lat0,lat); *Lon0=fmin(*Lon0,lon);
       *Lat1=fmax(*Lat1,lat); *Lon1=fmax(*Lon1,lon);
    }
 
    for(y=Ref->Y0,x=Ref->X0;y<=Ref->Y1;y++) {
-      Ref->Project(Ref,x,y,&lat,&lon,0,1);
+      di=x;dj=y;
+      GeoRef_XY2LL(Ref,&lat,&lon,&di,&dj,1,FALSE);
       *Lat0=fmin(*Lat0,lat); *Lon0=fmin(*Lon0,lon);
       *Lat1=fmax(*Lat1,lat); *Lon1=fmax(*Lon1,lon);
    }
 
    for(y=Ref->Y0,x=Ref->X1;y<=Ref->Y1;y++) {
-      Ref->Project(Ref,x,y,&lat,&lon,0,1);
+      di=x;dj=y;
+      GeoRef_XY2LL(Ref,&lat,&lon,&di,&dj,1,FALSE);
       *Lat0=fmin(*Lat0,lat); *Lon0=fmin(*Lon0,lon);
       *Lat1=fmax(*Lat1,lat); *Lon1=fmax(*Lon1,lon);
    }
 
    // Test for north and south pole including grid
-   if (Ref->UnProject(Ref,&di,&dj,90.0,0.0,0,1) && dj>Ref->Y0+2 && dj<Ref->Y1-2 && di>Ref->X0+2 && di<Ref->X1-2) {
+   lat=90.0;lon=0.0;
+   if (GeoRef_LL2XY(Ref,&di,&dj,&lat,&lon,1,FALSE) && dj>Ref->Y0+2 && dj<Ref->Y1-2 && di>Ref->X0+2 && di<Ref->X1-2) {
       *Lat1=90.0;
    }
-   if (Ref->UnProject(Ref,&di,&dj,-90.0,0.0,0,1) && dj>Ref->Y0+2 && dj<Ref->Y1-2 && di>Ref->X0+2 && di<Ref->X1-2) {
+   lat=-90.0;lon=0.0;
+   if (GeoRef_LL2XY(Ref,&di,&dj,&lat,&lon,1,FALSE) && dj>Ref->Y0+2 && dj<Ref->Y1-2 && di>Ref->X0+2 && di<Ref->X1-2) {
       *Lat0=-90.0;
    }
    return(1);
@@ -1525,36 +1542,36 @@ int GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double
 */
 int GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) {
 
-   double lat,lon,di,dj;
+   double la,lo,x0,y0,x1,y1;
    int    x,y;
 
    if (!Ref0 || !Ref1) return(0);
    
    // Project Ref0 Border within Ref1 and get limits
-   for(x=Ref0->X0,y=Ref0->Y0;x<=Ref0->X1;x++) {
-      Ref0->Project(Ref0,x,y,&lat,&lon,0,1);
-      if (!Ref1->UnProject(Ref1,&di,&dj,lat,lon,0,1)) {
+   for(x0=Ref0->X0,y0=Ref0->Y0;x0<=Ref0->X1;x0+=1.0) {
+      GeoRef_XY2LL(Ref0,&la,&lo,&x0,&y0,1,TRUE);
+      if (!GeoRef_LL2XY(Ref1,&x1,&y1,&la,&lo,1,FALSE)) {
          return(0);
       }
    }
 
-   for(x=Ref0->X0,y=Ref0->Y1;x<=Ref0->X1;x++) {
-      Ref0->Project(Ref0,x,y,&lat,&lon,0,1);
-      if (!Ref1->UnProject(Ref1,&di,&dj,lat,lon,0,1)) {
+   for(x0=Ref0->X0,y0=Ref0->Y1;x0<=Ref0->X1;x0+=1.0) {
+      GeoRef_XY2LL(Ref0,&la,&lo,&x0,&y0,1,TRUE);
+      if (!GeoRef_LL2XY(Ref1,&x1,&y1,&la,&lo,1,FALSE)) {
          return(0);
       }
    }
 
-   for(y=Ref0->Y0,x=Ref0->X0;y<=Ref0->Y1;y++) {
-      Ref0->Project(Ref0,x,y,&lat,&lon,0,1);
-      if (!Ref1->UnProject(Ref1,&di,&dj,lat,lon,0,1)) {
+   for(y0=Ref0->Y0,x0=Ref0->X0;y0<=Ref0->Y1;y0+=1.0) {
+      GeoRef_XY2LL(Ref0,&la,&lo,&x0,&y0,1,TRUE);
+      if (!GeoRef_LL2XY(Ref1,&x1,&y1,&la,&lo,1,FALSE)) {
          return(0);
-      };
+      }
    }
 
-   for(y=Ref0->Y0,x=Ref0->X1;y<=Ref0->Y1;y++) {
-      Ref0->Project(Ref0,x,y,&lat,&lon,0,1);
-      if (!Ref1->UnProject(Ref1,&di,&dj,lat,lon,0,1)) {
+   for(y0=Ref0->Y0,x0=Ref0->X1;y0<=Ref0->Y1;y+=1.0) {
+      GeoRef_XY2LL(Ref0,&la,&lo,&x0,&y0,1,TRUE);
+      if (!GeoRef_LL2XY(Ref1,&x1,&y1,&la,&lo,1,FALSE)) {
          return(0);
       }
    }
@@ -1576,7 +1593,7 @@ int GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1)
 */
 int GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,int In) {
 
-   double lat[4],lon[4],dl;
+   double lat[4],lon[4],x[4],y[4],dl;
    int    d0,d1,d2,d3;
 
    if (!Ref) return(0);
@@ -1599,24 +1616,26 @@ int GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,dou
       dl=0;
    }
    
-   /* Check image within range */
-   Ref->Project(Ref,Ref->X0,Ref->Y0,&lat[0],&lon[0],0,1);
+   // Check image within range
+   x[0]=Ref->X0; y[0]=Ref->Y0;
+   x[1]=Ref->X1; y[1]=Ref->Y0;
+   x[2]=Ref->X1; y[2]=Ref->Y1;
+   x[3]=Ref->X0; y[3]=Ref->Y1;
+   GeoRef_XY2LL(Ref,lat,lon,x,y,4,FALSE);
+
    d0=FWITHIN(dl,Lat0,Lon0,Lat1,Lon1,lat[0],lon[0]);
    if (!In && d0) return(1);
 
-   Ref->Project(Ref,Ref->X1,Ref->Y0,&lat[1],&lon[1],0,1);
    d1=FWITHIN(dl,Lat0,Lon0,Lat1,Lon1,lat[1],lon[1]);
    if (!In && d1) return(1);
 
-   Ref->Project(Ref,Ref->X1,Ref->Y1,&lat[2],&lon[2],0,1);
    d2=FWITHIN(dl,Lat0,Lon0,Lat1,Lon1,lat[2],lon[2]);
    if (!In && d2) return(1);
 
-   Ref->Project(Ref,Ref->X0,Ref->Y1,&lat[3],&lon[3],0,1);
    d3=FWITHIN(dl,Lat0,Lon0,Lat1,Lon1,lat[3],lon[3]);
    if (!In && d3) return(1);
 
-   /* Check for all contained */
+   // Check for all contained
    if (In) {
       if (d0 && d1 && d2 && d3) {
          return(1);
@@ -1625,7 +1644,7 @@ int GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,dou
       }
    }
 
-   /* Check range within image */
+   // Check range within image
    lat[0]=fmin(fmin(fmin(lat[0],lat[1]),lat[2]),lat[3]);
    lat[1]=fmax(fmax(fmax(lat[0],lat[1]),lat[2]),lat[3]);
    lon[0]=fmin(fmin(fmin(lon[0],lon[1]),lon[2]),lon[3]);
@@ -1696,25 +1715,25 @@ int GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,dou
    *I0=*J0=1000000;
    *I1=*J1=-1000000;
 
-   Ref->UnProject(Ref,&di,&dj,Lat0,Lon0,1,1);
+   GeoRef_LL2XY(Ref,&di,&dj,&Lat0,&Lon0,1,TRUE);
    *I0=*I0<di?*I0:di;
    *J0=*J0<dj?*J0:dj;
    *I1=*I1>di?*I1:di;
    *J1=*J1>dj?*J1:dj;
 
-   Ref->UnProject(Ref,&di,&dj,Lat0,Lon1,1,1);
+   GeoRef_LL2XY(Ref,&di,&dj,&Lat0,&Lon1,1,TRUE);
    *I0=*I0<di?*I0:di;
    *J0=*J0<dj?*J0:dj;
    *I1=*I1>di?*I1:di;
    *J1=*J1>dj?*J1:dj;
 
-   Ref->UnProject(Ref,&di,&dj,Lat1,Lon1,1,1);
+   GeoRef_LL2XY(Ref,&di,&dj,&Lat1,&Lon1,1,TRUE);
    *I0=*I0<di?*I0:di;
    *J0=*J0<dj?*J0:dj;
    *I1=*I1>di?*I1:di;
    *J1=*J1>dj?*J1:dj;
 
-   Ref->UnProject(Ref,&di,&dj,Lat1,Lon0,1,1);
+   GeoRef_LL2XY(Ref,&di,&dj,&Lat1,&Lon0,1,TRUE);
    *I0=*I0<di?*I0:di;
    *J0=*J0<dj?*J0:dj;
    *I1=*I1>di?*I1:di;
@@ -1748,14 +1767,15 @@ int GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,dou
 */
 int GeoRef_Valid(TGeoRef* __restrict const Ref) {
 
-   TCoord co[2];
+   double x[2],y[2],lat[2],lon[2];
 
    if (!Ref) return(0);
    
-   Ref->Project(Ref,Ref->X0,Ref->Y0,&co[0].Lat,&co[0].Lon,1,1);
-   Ref->Project(Ref,Ref->X1,Ref->Y1,&co[1].Lat,&co[1].Lon,1,1);
+   x[0]=Ref->X0;y[0]=Ref->Y0;
+   x[1]=Ref->X1;y[1]=Ref->Y1;
+   GeoRef_XY2LL(Ref,lat,lon,x,y,2,TRUE);
 
-   if (co[0].Lat<-91 || co[0].Lat>91.0 || co[1].Lat<-91 || co[1].Lat>91.0) {
+   if (lat[0]<-91 || lat[0]>91.0 || lat[1]<-91 || lat[1]>91.0) {
       return(0);
    }
    return(1);
@@ -1777,7 +1797,7 @@ int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
    
    if (!Ref) return(0);
 
-   /* Check the dimensions */
+   // Check the dimensions
    nx=FSIZE2D(XDef);
    ny=FSIZE2D(YDef);
    dx=(Ref->X1-Ref->X0+1);
@@ -1799,7 +1819,7 @@ int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
       return(0);
    }
 
-   /*Clear arrays*/
+   // Clear arrays
    if (Ref->AX) free(Ref->AX);
    if (Ref->AY) free(Ref->AY);
 
@@ -1810,7 +1830,7 @@ int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
       return(0);
    }
 
-   /*Assign positionals, if size is float, just memcopy otherwise, assign*/
+   // Assign positionals, if size is float, just memcopy otherwise, assign
    if (XDef->Type==TD_Float32) {
       memcpy(Ref->AX,XDef->Data[0],nx*sizeof(float));
    } else {
@@ -1946,7 +1966,7 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
 
                // Reproject gridpoint length coordinates of segments crossing center of cell
 /*                c_gdllfxy(Ref->Subs[nid],dlat,dlon,di,dj,4); */
-               GeoRef_XY2LL(gr,dlat,dlon,di,dj,4);
+               GeoRef_XY2LL(gr,dlat,dlon,di,dj,4,TRUE);
                dx[0]=DEG2RAD(dlon[0]); dy[0]=DEG2RAD(dlat[0]);
                dx[1]=DEG2RAD(dlon[1]); dy[1]=DEG2RAD(dlat[1]);
 

@@ -21,48 +21,29 @@
 #include "App.h"
 #include "GeoRef.h"
 
-int GeoRef_MaskSet(TGeoRef *Ref, int *mask) {
+int GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskIn) {
 
-   int ni, nj;
-  
-   if (Ref->NbSub > 0) {
+   TGridSet *gset=NULL;
+   float    *x,*y;
+ 
+   if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
       App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
       return(-1);
    }
 
-   ni = Ref->NX;
-   nj = Ref->NY;
+   gset=GeoRef_SetGet(RefTo,RefFrom);
 
-   if (Ref->mask != NULL){
-      free(Ref->mask);
+   if (RefFrom->GRTYP[0] == 'Y') {
+      memcpy(MaskOut,gset->mask,RefTo->NX*RefTo->NY*sizeof(int));
+   } else {
+      x = (float *) gset->x;
+      y = (float *) gset->y;
+      f77name(qqq_ezsint_mask)(MaskOut,x,y,&RefTo->NX,&RefTo->NY,MaskIn,&RefFrom->NX,&RefFrom->NY,RefFrom->Options.InterpDegree);
    }
-   Ref->mask = (int *)malloc(ni*nj*sizeof(int));
-   memcpy(Ref->mask, mask, ni*nj*sizeof(int));
    return(0);
 }
 
-int GeoRef_MaskGet(TGeoRef *Ref, int *mask) {
-   
-   int ni, nj;
-
-   if (Ref->NbSub > 0) {
-      App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
-      return(-1);
-   }
-
-   ni = Ref->NX;
-   nj = Ref->NY;
-
-   if (Ref->mask != NULL) {
-      memcpy(mask, Ref->mask, ni*nj*sizeof(int));
-      return 0;
-   } else {
-      mask = NULL;
-      return -1;
-   }
-}
-
-int GeoRef_MaskZones(int *mask_out, int *mask_in, TGeoRef *RefTo, TGeoRef *RefFrom) {
+int GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int *MaskOut,int *MaskIn) {
 
    TGridSet *gset=NULL;
    int       npts_in, npts_out;
@@ -81,7 +62,7 @@ int GeoRef_MaskZones(int *mask_out, int *mask_in, TGeoRef *RefTo, TGeoRef *RefFr
     x = (float *) gset->x;
     y = (float *) gset->y;
 
-   f77name(qqq_ezget_mask_zones)(mask_out, x, y, &RefTo->NX, &RefTo->NY, mask_in, &RefFrom->NX, &RefFrom->NY);
+   f77name(qqq_ezget_mask_zones)(MaskOut, x, y, &RefTo->NX, &RefTo->NY, MaskIn, &RefFrom->NX, &RefFrom->NY);
    return(0);
 }
 
@@ -176,60 +157,4 @@ int GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,int ni,int nj,float *mask
    *yyancount = yancount;
 
    return(icode);
-}
-
-int GeoRef_InterpMaskFinally(TGeoRef *RefTo, TGeoRef *RefFrom,int *mask_out, int *mask_in) {
-
-   TGridSet *gset=NULL;
-   float    *x,*y;
- 
-   if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
-      App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
-      return(-1);
-   }
-
-   gset=GeoRef_SetGet(RefTo,RefFrom);
-
-   if (RefFrom->GRTYP[0] == 'Y') {
-      memcpy(mask_out,gset->mask,RefTo->NX*RefTo->NY*sizeof(int));
-   } else {
-      x = (float *) gset->x;
-      y = (float *) gset->y;
-      f77name(qqq_ezsint_mask)(mask_out,x,y,&RefTo->NX,&RefTo->NY,mask_in,&RefFrom->NX,&RefFrom->NY);
-   }
-   return(0);
-}
-
-int GeoRef_MaskInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,int *mask_out,float *zin,int *mask_in) {
-
-   int methode = 2;
-
-   if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
-      App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
-      return(-1);
-   }
- 
-   GeoRef_SetGet(RefTo,RefFrom);
-   GeoRef_Interp(RefTo,RefFrom,zout,zin);
-   GeoRef_InterpMaskFinally(RefTo,RefFrom,mask_out,mask_in);
-   f77name(lorenzo_mask_fill)(zout,mask_out,&RefTo->NX,&RefTo->NY,&methode);
-   return 0;
-
-}
-
-int GeoRef_MaskInterpUV(TGeoRef *RefTo, TGeoRef *RefFrom,float *uuout,float *vvout,int *mask_out,float *uuin,float *vvin,int *mask_in) {
-
-   int methode = 2;
-
-   if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
-      App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
-      return(-1);
-   }
-
-   GeoRef_SetGet(RefTo,RefFrom);
-   GeoRef_InterpMaskFinally(RefTo,RefFrom,mask_out,mask_in);
-   GeoRef_InterpUV(RefTo,RefFrom,uuout,vvout,uuin,vvin);
-   f77name(lorenzo_mask_fill)(uuout,mask_out,&RefTo->NX,&RefTo->NY,&methode);
-   f77name(lorenzo_mask_fill)(vvout,mask_out,&RefTo->NX,&RefTo->NY,&methode);
-   return 0;
 }

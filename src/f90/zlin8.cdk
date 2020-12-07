@@ -1,4 +1,8 @@
       real*8 zlin, zz1, zz2, zdx
       
       zlin(zz1,zz2,zdx) = zz1 + (zz2 - zz1) * zdx
-      
+
+      real(kind=8) zval,znodata
+      logical defvalid
+      defvalid(zval,znodata)=(zval.eq.zval .and. .not.(zval.eq.znodata))
+

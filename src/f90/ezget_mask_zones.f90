@@ -60,21 +60,14 @@
 
    end subroutine qqq_ezget_mask_zones
 
-   subroutine qqq_ezsint_mask(mask_out, x, y, ni_out, nj_out, mask_in, ni_in, nj_in)
+   subroutine qqq_ezsint_mask(mask_out, x, y, ni_out, nj_out, mask_in, ni_in, nj_in,mode)
    implicit none
 
-   integer :: ni_out, nj_out, ni_in, nj_in
-   integer :: mask_out(ni_out, nj_out),mask_in(ni_in, nj_in)
+   integer :: ni_out, nj_out, ni_in, nj_in, mode
+   integer(kind=1) :: mask_out(ni_out, nj_out),mask_in(ni_in, nj_in)
    real    :: x(ni_out, nj_out), y(ni_out, nj_out)
-   real    :: rx, ry
-   integer :: i,j, k, l, ix, iy, nix, niy, nmissing, ier
-
-   integer ezgetopt
-   external ezgetopt
-   character(len=32) :: value
-
-   ier = ezgetopt('cloud_interp_alg', value)
-
+   integer :: i,j,ix,iy,nix,niy
+   
    mask_out = 1
 
    do j=1,nj_out
@@ -91,7 +84,8 @@
       enddo
    enddo
 
-   if (value(1:6) == 'linear') then
+! IR_LINEAR
+   if (mode == 1) then
       do j=1,nj_out-1
          do i=1,ni_out-1
             if (mask_out(i,j) == 1) then

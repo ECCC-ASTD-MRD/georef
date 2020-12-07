@@ -123,8 +123,8 @@ void OGM_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
 
       for(n=0;n<OGR_G_GetPointCount(Geom);n++) {
          OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
-         FromRef->Project(FromRef,vr[0],vr[1],&co.Lat,&co.Lon,1,1);
-         ToRef->UnProject(ToRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
+         GeoRef_XY2LL(FromRef,&co.Lat,&co.Lon,&vr[0],&vr[1],1,TRUE);
+         GeoRef_LL2XY(ToRef,&vr[0],&vr[1],&co.Lat,&co.Lon,1,TRUE);
          OGR_G_SetPoint(Geom,n,vr[0],vr[1],vr[2]);
       }
    }

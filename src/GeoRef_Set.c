@@ -66,7 +66,7 @@ int GeoRef_SetZoneDefinePole(TGeoRef *RefFrom,TGridSet *GSet,int Zone) {
    } else {
       latpole = (Zone==NORTH)?90.0:-90.0;
       lonpole = 0.0;
-      GeoRef_LL2XY(RefFrom,&xpole,&ypole,&latpole,&lonpole,1);
+      GeoRef_LL2XY(RefFrom,&xpole,&ypole,&latpole,&lonpole,1,TRUE);
    }
   
    for (i=0; i < zone->npts; i++) {
@@ -255,7 +255,7 @@ int GeoRef_SetCalcXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
    gset->x = (double*)malloc(ninj_out*sizeof(double));
    gset->y = (double*)malloc(ninj_out*sizeof(double));
 
-   GeoRef_LL2XY(RefFrom,gset->x,gset->y,RefTo->Lat,RefTo->Lon,ninj_out);
+   GeoRef_LL2XY(RefFrom,gset->x,gset->y,RefTo->Lat,RefTo->Lon,ninj_out,TRUE);
    
    return(0);
 }
@@ -342,8 +342,8 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       gset->yin2yin_y = (double*) malloc(yincount_yin*sizeof(double));
       gset->yan2yin_x = (double*) malloc(yancount_yin*sizeof(double));
       gset->yan2yin_y = (double*) malloc(yancount_yin*sizeof(double));
-      icode = GeoRef_LL2XY(yin_gdin,gset->yin2yin_x,gset->yin2yin_y,yin2yin_lat,yin2yin_lon,yincount_yin);
-      icode = GeoRef_LL2XY(yan_gdin,gset->yan2yin_x,gset->yan2yin_y,yan2yin_lat,yan2yin_lon,yancount_yin);
+      icode = GeoRef_LL2XY(yin_gdin,gset->yin2yin_x,gset->yin2yin_y,yin2yin_lat,yin2yin_lon,yincount_yin,TRUE);
+      icode = GeoRef_LL2XY(yan_gdin,gset->yan2yin_x,gset->yan2yin_y,yan2yin_lat,yan2yin_lon,yancount_yin,TRUE);
    }
 
    if (yyout == 1) { 
@@ -369,8 +369,8 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       gset->yin2yin_y = (double*) malloc(yincount_yin*sizeof(double));
       gset->yan2yin_x = (double*) malloc(yancount_yin*sizeof(double));
       gset->yan2yin_y = (double*) malloc(yancount_yin*sizeof(double));
-      icode = GeoRef_LL2XY(yin_gdin,gset->yin2yin_x,gset->yin2yin_y,yin2yin_lat,yin2yin_lon,yincount_yin);
-      icode = GeoRef_LL2XY(yan_gdin,gset->yan2yin_x,gset->yan2yin_y,yan2yin_lat,yan2yin_lon,yancount_yin);
+      icode = GeoRef_LL2XY(yin_gdin,gset->yin2yin_x,gset->yin2yin_y,yin2yin_lat,yin2yin_lon,yincount_yin,TRUE);
+      icode = GeoRef_LL2XY(yan_gdin,gset->yan2yin_x,gset->yan2yin_y,yan2yin_lat,yan2yin_lon,yancount_yin,TRUE);
       
       /* create mask (Yin priority) with src Yin,src Yang onto dest Yang and store x,y pos */
 
@@ -393,8 +393,8 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       gset->yin2yan_y = (double*) malloc(yincount_yan*sizeof(double));
       gset->yan2yan_x = (double*) malloc(yancount_yan*sizeof(double));
       gset->yan2yan_y = (double*) malloc(yancount_yan*sizeof(double));
-      icode = GeoRef_LL2XY(yin_gdin,gset->yin2yan_x,gset->yin2yan_y,yin2yan_lat,yin2yan_lon,yincount_yan);
-      icode = GeoRef_LL2XY(yan_gdin,gset->yan2yan_x,gset->yan2yan_y,yan2yan_lat,yan2yan_lon,yancount_yan);
+      icode = GeoRef_LL2XY(yin_gdin,gset->yin2yan_x,gset->yin2yan_y,yin2yan_lat,yin2yan_lon,yincount_yan,TRUE);
+      icode = GeoRef_LL2XY(yan_gdin,gset->yan2yan_x,gset->yan2yan_y,yan2yan_lat,yan2yan_lon,yancount_yan,TRUE);
    }
 
    free(yin2yin_lat);
@@ -424,7 +424,7 @@ void GeoRef_SetFree(TGridSet* GSet) {
 
    GeoRef_SetZoneFree(GSet);
 
-   //TODO: to free:
+ //TODO: to free:
  //   int *mask_in, *mask_out;
  // float *yin_maskout,*yan_maskout;
  // float *yinlat,*yinlon,*yanlat,*yanlon;

@@ -198,11 +198,11 @@ int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
          }
       }
       icode = GeoRef_XYUVVal(yin_gd, tmpuu, tmpvv, uuin, vvin, X, tmpy, n);
-      icode = GeoRef_XY2LL(yin_gd,tmplat,tmplon,X,tmpy,n);
+      icode = GeoRef_XY2LL(yin_gd,tmplat,tmplon,X,tmpy,n,TRUE);
       icode = GeoRef_UV2WD(yin_gd, uuyin,vvyin,tmpuu,tmpvv,tmplat,tmplon,n);
 
       icode = GeoRef_XYUVVal(yan_gd, tmpuu, tmpvv, &uuin[(lni*lnj)], &vvin[(lni*lnj)], X, tmpy, n);
-      icode = GeoRef_XY2LL(yan_gd,tmplat,tmplon,X,tmpy,n);
+      icode = GeoRef_XY2LL(yan_gd,tmplat,tmplon,X,tmpy,n,TRUE);
       icode = GeoRef_UV2WD(yan_gd, uuyan,vvyan,tmpuu,tmpvv,tmplat,tmplon,n);
 
       for (j=0; j< n; j++) {
@@ -219,7 +219,7 @@ int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       free(tmpy);
    } else {
       ier = GeoRef_XYUVVal(Ref,tmpuu,tmpvv,uuin,vvin,X,Y,n);
-      ier = GeoRef_XY2LL(Ref,tmplat,tmplon,X,Y,n);
+      ier = GeoRef_XY2LL(Ref,tmplat,tmplon,X,Y,n,TRUE);
       ier = GeoRef_UV2WD(Ref,uuout,vvout,tmpuu,tmpvv,tmplat,tmplon,n);
    }
 
