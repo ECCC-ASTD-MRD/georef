@@ -71,7 +71,7 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,TDef_InterpR Type) {
    //RPN_FieldReadGrid(in);
 
    // Create index field
-   if (!(idx=RPN_FieldNew(in->Def->NIJ*100,1,1,1,TD_Float32))) {
+   if (!(idx=RPN_FieldNew(in->Def->NIJ*100,1,1,1,TD_Float64))) {
       return(0);       
    }
 
@@ -83,7 +83,7 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,TDef_InterpR Type) {
    idx->Head.GRTYP[0]='X';
    idx->Head.NBITS=32;
    idx->Head.DATYP=5;
-   index=(float*)idx->Def->Data[0];
+   index=(double*)idx->Def->Data[0];
 
    // Initialize index to empty
    index[0]=REF_INDEX_EMPTY;
