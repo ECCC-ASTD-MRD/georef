@@ -184,7 +184,6 @@ typedef struct TApp {
 
 #ifndef APP_BUILD
 extern __thread TApp *App;               ///< Per thread App pointer
-extern float NODATA;
 #endif
 
 typedef int (TApp_InputParseProc) (void *Def,char *Token,char *Value,int Index);

@@ -84,7 +84,7 @@ int ReGrid(char *In,char *Out,char *Grid,char **Vars) {
    index=(float*)idx->Def->Data[0];
 
    // Initialize index to empty
-   index[0]=DEF_INDEX_EMPTY;
+   index[0]=REF_INDEX_EMPTY;
    grid->Def->NoData=0.0;
  
    while(in->Head.KEY>0) {
@@ -110,7 +110,7 @@ int ReGrid(char *In,char *Out,char *Grid,char **Vars) {
    }
    
    // Write index
-   if (index[0]!=DEF_INDEX_EMPTY) {
+   if (index[0]!=REF_INDEX_EMPTY) {
       App_Log(DEBUG,"Saving index containing %i items\n",idx->Head.NI);
       
       if (!RPN_FieldWrite(fout,idx)) {

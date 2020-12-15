@@ -53,7 +53,6 @@
 static TApp AppInstance;                         ///< Static App instance
 __thread TApp *App=&AppInstance;                 ///< Per thread App pointer
 static __thread char APP_ERROR[APP_ERRORSIZE];   ///< Last error is accessible through this
-float NODATA;
 
 char* App_ErrorGet(void) {                       //< Return last error
    return(APP_ERROR);
@@ -302,7 +301,6 @@ void App_Start(void) {
    c_fstopc("MSGLVL","WARNIN",0);
    c_fstopc("TOLRNC","SYSTEM",0);
 #endif
-   NODATA=nan("NaN");
 
    App->State      = RUN;
    App->LogWarning = 0;

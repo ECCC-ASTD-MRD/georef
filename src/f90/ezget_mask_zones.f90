@@ -3,7 +3,7 @@
 
    integer :: ni_out, nj_out, ni_in, nj_in
    integer :: mask_zones(ni_out, nj_out),mask_in(ni_in, nj_in)
-   real    :: x(ni_out, nj_out), y(ni_out, nj_out)
+   real*8  :: x(ni_out, nj_out), y(ni_out, nj_out)
    real    :: rx, ry
    integer :: i,j, k, l, ix, iy, nix, niy, nmissing
 
@@ -65,7 +65,7 @@
 
    integer :: ni_out, nj_out, ni_in, nj_in, mode
    integer(kind=1) :: mask_out(ni_out, nj_out),mask_in(ni_in, nj_in)
-   real    :: x(ni_out, nj_out), y(ni_out, nj_out)
+   real*8      :: x(ni_out, nj_out), y(ni_out, nj_out)
    integer :: i,j,ix,iy,nix,niy
    
    mask_out = 1

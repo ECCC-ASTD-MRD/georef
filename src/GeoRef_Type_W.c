@@ -184,7 +184,7 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
         return(NULL);
       }
    } else {
-      string=strdup(REFDEFAULT);
+      string=strdup(REF_DEFAULT);
       Ref->Spatial=OSRNewSpatialReference(string);
    }
 

@@ -70,7 +70,7 @@ int GeoRef_SetZoneDefinePole(TGeoRef *RefFrom,TGridSet *GSet,int Zone) {
    }
   
    for (i=0; i < zone->npts; i++) {
-      if (fabs(GSet->y[i]-ypole) < 1.0e-3) {
+      if (fabs(GSet->Y[i]-ypole) < 1.0e-3) {
          tmpidx[nhits]=i;
          nhits++;
       }
@@ -84,8 +84,8 @@ int GeoRef_SetZoneDefinePole(TGeoRef *RefFrom,TGridSet *GSet,int Zone) {
       App_Log(DEBUG,"%s: Number of points at pole: %d\n",__func__,nhits);
       
       for (i=0; i < zone->npts; i++) {
-         zone->x[i]   = GSet->x[tmpidx[i]];      
-         zone->y[i]   = GSet->y[tmpidx[i]];
+         zone->x[i]   = GSet->X[tmpidx[i]];      
+         zone->y[i]   = GSet->Y[tmpidx[i]];
          zone->idx[i] = tmpidx[i];
       }
    }
@@ -106,7 +106,7 @@ int GeoRef_SetZoneDefineThem(TGeoRef *RefFrom,TGridSet *GSet,int Zone) {
    nhits = 0;
    jlim = (Zone==SOUTH)?RefFrom->j1+1:RefFrom->j2-2;
    for (i=0; i < zone->npts; i++) {
-      if ((Zone==SOUTH)?((int)GSet->y[i] < jlim):((int)GSet->y[i] > jlim)) {
+      if ((Zone==SOUTH)?((int)GSet->Y[i] < jlim):((int)GSet->Y[i] > jlim)) {
          tmpidx[nhits]=i;
          nhits++;
       }
@@ -120,8 +120,8 @@ int GeoRef_SetZoneDefineThem(TGeoRef *RefFrom,TGridSet *GSet,int Zone) {
       App_Log(DEBUG,"%s: Number of points between pole and limit: %d\n",__func__,nhits);
     
       for (i=0; i < zone->npts; i++) {
-         zone->x[i]   = GSet->x[tmpidx[i]];      
-         zone->y[i]   = GSet->y[tmpidx[i]];
+         zone->x[i]   = GSet->X[tmpidx[i]];      
+         zone->y[i]   = GSet->Y[tmpidx[i]];
          zone->idx[i] = tmpidx[i];
       }
    }
@@ -155,8 +155,8 @@ int GeoRef_SetZoneDefineOut(TGeoRef *RefFrom,TGridSet *GSet,int Zone) {
    App_Log(DEBUG,"%s: Offset left: %d Offset right: \n",__func__,offsetleft, offsetright);
    nhits = 0;
    for (i=0; i < zone->npts; i++) {
-      ix = (int)(GSet->x[i]+0.5);
-      iy = (int)(GSet->y[i]+0.5);
+      ix = (int)(GSet->X[i]+0.5);
+      iy = (int)(GSet->Y[i]+0.5);
       if (ix < (1+offsetleft) || iy < (1+offsetleft) || ix > (RefFrom->NX-offsetright) || iy > (RefFrom->NY-offsetright)) {
           tmpidx[nhits]=i;
          nhits++;
@@ -171,8 +171,8 @@ int GeoRef_SetZoneDefineOut(TGeoRef *RefFrom,TGridSet *GSet,int Zone) {
       App_Log(DEBUG,"%s: Number opf outside pointst: \n",__func__,offsetleft,zone->npts);
     
       for (i=0; i < zone->npts; i++) {
-         zone->x[i]   = GSet->x[tmpidx[i]];      
-         zone->y[i]   = GSet->y[tmpidx[i]];
+         zone->x[i]   = GSet->X[tmpidx[i]];      
+         zone->y[i]   = GSet->Y[tmpidx[i]];
          zone->idx[i] = tmpidx[i];
       }
    }
@@ -188,7 +188,7 @@ int GeoRef_SetZoneDefine(TGeoRef *RefTo,TGeoRef *RefFrom) {
    int       i;
    int       extrap;
 
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
   
    if (gset->flags & SET_ZONES) {
       return(0);
@@ -244,19 +244,20 @@ int GeoRef_SetCalcXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
    TGridSet *gset=NULL;
    int       ninj_out;
 
-   gset=GeoRef_SetGet(RefTo,RefFrom);
-
-   if (gset->x) {
-      return(0);
-   }
-
+   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
    ninj_out = RefTo->NX*RefTo->NY;
 
-   gset->x = (double*)malloc(ninj_out*sizeof(double));
-   gset->y = (double*)malloc(ninj_out*sizeof(double));
+   if (!gset->Index) {
+      gset->Index = (double*)malloc(2*ninj_out*sizeof(double));
+      gset->X=gset->Index;
+      gset->Y=&gset->Index[ninj_out];
 
-   GeoRef_LL2XY(RefFrom,gset->x,gset->y,RefTo->Lat,RefTo->Lon,ninj_out,TRUE);
-   
+      GeoRef_LL2XY(RefFrom,gset->X,gset->Y,RefTo->Lat,RefTo->Lon,ninj_out,TRUE);
+   } else {
+      gset->X=gset->Index;
+      gset->Y=&gset->Index[ninj_out];
+   }
+
    return(0);
 }
 
@@ -276,7 +277,7 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       
    yyin=0; yyout=0;
 
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
    /* Mettre du code au cas ou gdx_gdin == -1 */
 
    if (gset->flags & SET_YYXY) {
@@ -412,14 +413,11 @@ void GeoRef_SetFree(TGridSet* GSet) {
       GSet->RefFrom == NULL;
    }
 
-   if (GSet->x) {
-      free(GSet->x);
-      GSet->x  = NULL;
-   }
-
-   if (GSet->y) {
-      free(GSet->y);
-      GSet->y  = NULL;
+   if (GSet->Index) {
+      free(GSet->Index);
+      GSet->Index=NULL;
+      GSet->X=NULL;
+      GSet->Y=NULL;
    }
 
    GeoRef_SetZoneFree(GSet);
@@ -433,8 +431,8 @@ void GeoRef_SetFree(TGridSet* GSet) {
  // float *yin2yin_x,*yin2yin_y,*yan2yin_x,*yan2yin_y;
  // float *yin2yan_x,*yin2yan_y,*yan2yan_x,*yan2yan_y;
 }
-
-TGridSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom) {
+ 
+TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,double *Index) {
 
    int i;
 
@@ -473,6 +471,7 @@ TGridSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom) {
    // If we get here, we have'nt found any sets, create a new one    
    RefTo->Sets[i].RefFrom = RefFrom;
    RefTo->NbSet++;
+   RefTo->Sets[i].Index=Index;
 
    App_Log(DEBUG,"%s: RefFrom : %p RefTo: %p\n",__func__,RefFrom,RefTo);
 

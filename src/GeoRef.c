@@ -39,9 +39,9 @@
 #include "RPN.h"
 #include "List.h"
  
-static TList          *GeoRef_List=NULL;                                                                                  ///< Global list of known geo references
-static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                            ///< Thread lock on geo reference access
-__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_UNDEF, 0.0, 0, TRUE, FALSE, FALSE, 16, TRUE, FALSE, 10.0, 0.0 };    ///< Default options
+static TList          *GeoRef_List=NULL;                                                                                     ///< Global list of known geo references
+static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                               ///< Thread lock on geo reference access
+__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_UNDEF, 0.0, 0, TRUE, FALSE, FALSE, 16, TRUE, FALSE, 10.0, 0.0, 0.0 };  ///< Default options
 
 /**----------------------------------------------------------------------------
  * @brief  Apply thread lock on GeoRef access
@@ -1031,6 +1031,7 @@ TGeoRef* GeoRef_New() {
    ref->LastSet=NULL;
 
    // Assign default options
+   GeoRef_Options.NoData=nan("NaN"); // TODO: Move this init for only once
    memcpy(&ref->Options,&GeoRef_Options,sizeof(TGeoOptions));
 
    // RPN Specific
@@ -1444,9 +1445,9 @@ int GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Re
 
    // Clamp the coordinates
    if (BD) {
-      REFCLAMP(Ref1,*X0,*Y0,*X1,*Y1);
+      REF_CLAMP(Ref1,*X0,*Y0,*X1,*Y1);
    } else {
-      REFCLAMPBD(Ref1,*X0,*Y0,*X1,*Y1);
+      REF_CLAMPBD(Ref1,*X0,*Y0,*X1,*Y1);
    }
 
    return(in);

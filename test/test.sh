@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GRID_PATH=/users/dor/afsr/005/Projects/RPN/stage_2020/GRIDS
+GRID_PATH=/users/dor/afsr/005/Projects/RPN/libgeoref/GRIDS
 GRIDS_NEW="O M ZW"
 GRIDS="L PS PSN PSS ZE ZL O ZW M"
 GRID=L

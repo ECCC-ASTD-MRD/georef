@@ -33,7 +33,7 @@ int GeoRef_CorrValNorth(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) 
    int un = 1;
    int quatre = 4;
 
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
 
    npts = gset->zones[NORTH].npts;
 
@@ -83,7 +83,7 @@ int GeoRef_CorrValNorth(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) 
 	          for (i=0; i < npts; i++) {
                temp_y[i] = gset->zones[NORTH].y[i] - (1.0 * (RefFrom->j2-3));
 	          }
-	          f77name(ez8_rgdint_1_w)(vals,gset->zones[NORTH].x,temp_y,&npts,temp,&NODATA,&ni, &un, &quatre, &(RefFrom->Extension));
+	          f77name(ez8_rgdint_1_w)(vals,gset->zones[NORTH].x,temp_y,&npts,temp,&RefFrom->Options.NoData,&ni, &un, &quatre, &(RefFrom->Extension));
 	          free(temp_y);
 	          break;
 
@@ -119,7 +119,7 @@ int GeoRef_CorrValSouth(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) 
    int un = 1;
    int quatre = 4;
   
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
 
    npts = gset->zones[SOUTH].npts;
    if (npts > 0) {
@@ -169,7 +169,7 @@ int GeoRef_CorrValSouth(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) 
 	     temp_y[i] = gset->zones[SOUTH].y[i] - (1.0*j1);
 	     }
 	   f77name(ez_rgdint_1_nw)(vals,gset->zones[SOUTH].x,temp_y,&npts,temp,&ni, &un, &quatre);*/
-   	        f77name(ez8_rgdint_1_w)(vals,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,temp,&NODATA,&ni, &j1, &j2,&RefFrom->Extension);
+   	        f77name(ez8_rgdint_1_w)(vals,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,temp,&RefFrom->Options.NoData,&ni, &j1, &j2,&RefFrom->Extension);
 	          free(temp_y);
 	          break;
 
@@ -207,7 +207,7 @@ int GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin)
 
    fudgeval_set = 0;
   
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
 
    nj = RefFrom->j2 - RefFrom->j1 +1;
    ierc = 0; /* no extrapolation */
@@ -521,7 +521,7 @@ int GeoRef_CorrVecNorth(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvou
    int       quatre = 4;
    int       un = 1;
 
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
 
    ni = RefFrom->NX;
    nj = RefFrom->j2 - RefFrom->j1 + 1;
@@ -566,8 +566,8 @@ int GeoRef_CorrVecNorth(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvou
          for (i=0; i < npts; i++) {
             temp_y[i] = gset->zones[NORTH].y[i] - (1.0 * (RefFrom->j2-3));
 	       }
-         f77name(ez8_rgdint_1_w)(corr_uus,gset->zones[NORTH].x,temp_y,&npts,polar_uu_in,&NODATA,&ni, &un, &quatre, &RefFrom->Extension);
-         f77name(ez8_rgdint_1_w)(corr_vvs,gset->zones[NORTH].x,temp_y,&npts,polar_vv_in,&NODATA,&ni, &un, &quatre, &RefFrom->Extension);
+         f77name(ez8_rgdint_1_w)(corr_uus,gset->zones[NORTH].x,temp_y,&npts,polar_uu_in,&RefFrom->Options.NoData,&ni, &un, &quatre, &RefFrom->Extension);
+         f77name(ez8_rgdint_1_w)(corr_vvs,gset->zones[NORTH].x,temp_y,&npts,polar_vv_in,&RefFrom->Options.NoData,&ni, &un, &quatre, &RefFrom->Extension);
          free(temp_y);
          
          break;
@@ -604,7 +604,7 @@ int GeoRef_CorrVecSouth(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvou
    int ni, nj, i1, i2, j1, j2, degree,npts,i;
    int idx_gdin;
 
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
 
    npts = gset->zones[SOUTH].npts;
    ni = RefFrom->NX;
@@ -645,8 +645,8 @@ int GeoRef_CorrVecSouth(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvou
       break;
 
       case IR_LINEAR:
-         f77name(ez8_rgdint_1_w)(corr_uus,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_uu_in,&NODATA,&ni,&j1,&j2,&RefFrom->Extension);
-         f77name(ez8_rgdint_1_w)(corr_vvs,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_vv_in,&NODATA,&ni,&j1,&j2,&RefFrom->Extension);
+         f77name(ez8_rgdint_1_w)(corr_uus,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_uu_in,&RefFrom->Options.NoData,&ni,&j1,&j2,&RefFrom->Extension);
+         f77name(ez8_rgdint_1_w)(corr_vvs,gset->zones[SOUTH].x,gset->zones[SOUTH].y,&npts,polar_vv_in,&RefFrom->Options.NoData,&ni,&j1,&j2,&RefFrom->Extension);
          break;
 
       case IR_NEAREST:
@@ -674,7 +674,7 @@ int GeoRef_CorrectVector(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvo
    TGridSet *gset=NULL;
    int ier;
   
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
   
    if (gset->zones[NORTH].npts > 0) {
       ier = GeoRef_CorrVecNorth(RefTo,RefFrom,uuout,vvout,uuin,vvin);

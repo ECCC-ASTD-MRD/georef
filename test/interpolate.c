@@ -84,7 +84,7 @@ main(int argc,char *argv[]) {
                   &h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG[X_IG1],
                   &h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
       c_fstluk(p[0],key,&ni,&nj,&nk);
-      err=GeoRef_Interp(gref_out,gref_in,p[2],p[0]);
+      err=GeoRef_Interp(gref_out,gref_in,p[2],p[0],NULL);
       err=c_fstecr(p[2],NULL,-h.NBITS,id[1],h.DATEO,h.DEET,h.NPAS,hg.NI,hg.NJ,hg.NK,h.IP1,h.IP2,h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,hg.IG[X_IG1],hg.IG[X_IG2],hg.IG[X_IG3],hg.IG[X_IG4],h.DATYP,0);
    
       key=c_fstsui(id[0],&ni,&nj,&nk);

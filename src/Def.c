@@ -1199,11 +1199,11 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
    }
 
    // Do we have and index
-   if (Index && Index[0]!=DEF_INDEX_EMPTY) {
+   if (Index && Index[0]!=REF_INDEX_EMPTY) {
 
       // As long as the file or the list is not empty
       ip=Index;
-      while(*ip!=DEF_INDEX_END) {
+      while(*ip!=REF_INDEX_END) {
 
          // Get the gridpoint
          f=*(ip++);
@@ -1223,7 +1223,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
          }
 
          // Get the geometry intersections
-         while(*ip!=DEF_INDEX_SEPARATOR) {
+         while(*ip!=REF_INDEX_SEPARATOR) {
             pi=*(ip++);
             pj=*(ip++);
             dp=*(ip++);
@@ -1256,7 +1256,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
          OGR_G_AddGeometryDirectly(ToDef->Poly,ToDef->Pick);
       }
 
-      if (Index && Index[0]==DEF_INDEX_EMPTY) {
+      if (Index && Index[0]==REF_INDEX_EMPTY) {
          ip=Index;
       }
 
@@ -1386,7 +1386,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
 
                      if (ip) {
                         if (n) {
-                           *(ip++)=DEF_INDEX_SEPARATOR; // End the list for this gridpoint
+                           *(ip++)=REF_INDEX_SEPARATOR; // End the list for this gridpoint
                         } else {
                            ip-=1;                       // No intersection found, removed previously inserted feature
                         }
@@ -1400,7 +1400,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
                OGR_G_DestroyGeometry(utmgeom);
          }
       }
-      if (ip) *(ip++)=DEF_INDEX_END;
+      if (ip) *(ip++)=REF_INDEX_END;
 
       App_Log(DEBUG,"%s: %i total hits\n",__func__,nt);
 
@@ -1430,159 +1430,10 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
 #endif
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Def_GridInterp>
- * Creation     : Aout 2006 J.P. Gauthier - CMC/CMOE
- *
- * But          : Interpolate une bande raster dans un champs de donnees
- *
- * Parametres   :
- *   <Degree>   : Degree d'interpolation (N:Nearest, L:Lineaire)
- *   <ToRef>    : Reference du champs destination
- *   <ToDef>    : Description du champs destination
- *   <FromRef>  : Reference du champs source
- *   <FromDef>  : Description du champs source
- *
- * Retour       :
- *   <OK>       : ERROR=0
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-int Def_EZInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,float *Index) {
+int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,double *Index) {
 
-#ifdef HAVE_RMN
-   TGridSet *gset=NULL;
-   void *pf0,*pt0,*pf1,*pt1;
-   int   ok=0,k;
-
-   if (!ToRef || !FromRef || !ToDef || !FromDef) {
-      App_Log(ERROR,"%s: Source and/or target grid undefined\n",__func__);
-      return(-1);
-   }
- 
-   // Same GeoRef
-   if (FromRef == ToRef) {
-      Def_CopyData(ToDef,FromDef);
-      return(0);
-   }
-
-   // Loop on vertical levels
-   for(k=0;k<ToDef->NK;k++) {
-      Def_Pointer(ToDef,0,k*FSIZE2D(ToDef),pt0);
-      Def_Pointer(FromDef,0,k*FSIZE2D(FromDef),pf0);
-
-      if (ToDef->Data[1]) {
-         // Interpolation vectorielle
-         Def_Pointer(ToDef,1,k*FSIZE2D(ToDef),pt1);
-         Def_Pointer(FromDef,1,k*FSIZE2D(FromDef),pf1);
-
-         // In case of Y grid, get the speed and dir instead of wind components
-         // since grid oriented components dont mean much
-         if (ToRef->GRTYP[0]=='Y') {
-            ok=GeoRef_InterpWD(ToRef,FromRef,pt0,pt1,pf0,pf1);
-         } else {
-            ok=GeoRef_InterpUV(ToRef,FromRef,pt0,pt1,pf0,pf1);
-         }
-      } else{
-         // Interpolation scalaire
-         ok=GeoRef_Interp(ToRef,FromRef,pt0,pf0);
-      }
-
-      // Intepolate mask if need be
-      if (FromDef->Mask && ToDef->Mask) {
-         GeoRef_InterpMask(ToRef,FromRef,&ToDef->Mask[k*FSIZE2D(ToDef)],&FromDef->Mask[k*FSIZE2D(FromDef)]);
-      }
-   }
-
-#else
-      App_Log(ERROR,"%s: RMNLIB support not included\n",__func__);
-#endif   
-   return(ok);
-}
-   
-int Def_JPInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,char Mask,float *Index) {
-   
-   double     val,dir,lat,lon,di,dj,dval;
-   int        ok=-1,idx,i,j,k,gotidx;
-   float     *ip=NULL;
-   double     I0, J0;
-   double     I1, J1;
-/*   TODO
-   idx=0;
-   I1 = FromRef->X1 + 0.5;
-   J1 = FromRef->Y1 + 0.5;
-   I0 = FromRef->X0 - 0.5;
-   J0 = FromRef->Y0 - 0.5;
-
-//   fprintf( stderr, "i0 = %f  i1 = %f  j0 = %f, j1 = %f\n", I0, I1, J0, J1 );
-
-   for(k=0;k<ToDef->NK;k++) {
-      ip=Index;
-      gotidx=(Index && Index[0]!=DEF_INDEX_EMPTY);
-
-#pragma omp parallel for default(none) \
-      private( j,i,idx,lat,lon,di,dj,dir,val,dval,ip,ok ) \
-      shared( k,I0,I1,J0,J1,ToRef,ToDef,FromRef,FromDef,gotidx,Index,Interp,Extrap,Mask ) \
-      schedule(static)
-      for(j=0;j<ToDef->NJ;j++) {
-         idx=j*ToDef->NI;
-         ip=Index?Index+idx*2:NULL;
-         idx+=k*ToDef->NIJ;
-         for(i=0;i<ToDef->NI;i++,idx++) {
-            if (gotidx) {
-               // Got the index, use coordinates from it
-               di=*(ip++);
-               dj=*(ip++);
-
-//                  if (di>=0.0 && !FIN2D(FieldFrom->Def,di,dj)) {
-//                     App_Log(ERROR,"%s: Wrong index, index coordinates (%f,%f)\n",__func__,di,dj);
-//                     return(TCL_ERROR);
-//                  }
-            } else {
-               // No index, project coordinate and store in index if provided
-               ToRef->Project(ToRef,i,j,&lat,&lon,0,1);
-//               fprintf(stderr,"---%f %f\n",lat,lon);
-               ok=FromRef->UnProject(FromRef,&di,&dj,lat,lon,1,1);
-               if (ip) {
-                  *(ip++)=di;
-                  *(ip++)=dj;
-               }
-            }
-            if (di>=I0 && di<=I1 && dj>=J0 && dj<=J1 && FromRef->Value(FromRef,FromDef,Interp,0,di,dj,k,&val,&dir)) {
-               if (ToDef->Data[1]) {
-                  // Have to reproject vector
-                  dir=DEG2RAD(dir)+GeoRef_GeoDir(ToRef,i,j);
-                  dval=Mask?val!=0.0:-val*sin(dir);
-                  Def_Set(ToDef,0,idx,dval);
-                  dval=Mask?val!=0.0:-val*cos(dir);
-                  Def_Set(ToDef,1,idx,dval); 
-               } else {
-                  Def_Set(ToDef,0,idx,val);
-               } 
-            } else if (Extrap==ER_VALUE) {
-               Def_Set(ToDef,0,idx,ToDef->NoData);
-               if (ToDef->Data[1]) {
-                  Def_Set(ToDef,1,idx,ToDef->NoData); 
-               }
-            } 
-         }
-      }
-      
-      // Mark end of index
-//         if (!gotidx && ip) *(ip++)=DEF_INDEX_END;
-   }
-   */
-   return(TRUE);
-}
-
-int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,char Mask,float *Index) {
-
-   double val,di,dj,la,lo;
-   int    ezto=1,ezfrom=1,idx,c,i,j,k,gotidx;
-   char  *interp;
-   float *ip=NULL;
+   void     *pf0,*pt0,*pf1,*pt1;
+   int       ok=TRUE,k,gotidx;
 
    if (!ToRef || !ToDef) {
       App_Log(ERROR,"%s: Invalid destination\n",__func__);
@@ -1601,12 +1452,46 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDe
       FromRef->Options.ExtrapValue=ToDef->NoData;
    }
 
- 	if (Def_EZInterp(ToRef,ToDef,FromRef,FromDef,Index)) {
-      App_Log(ERROR,"%s: EZSCINT interpolation problem\n",__func__);
-      return(FALSE);
+#ifdef HAVE_RMN
+
+   // Same GeoRef
+   if (FromRef == ToRef) {
+      Def_CopyData(ToDef,FromDef);
+      return(TRUE);
    }
 
-   return(TRUE);
+   // Loop on vertical levels
+   for(k=0;k<ToDef->NK;k++) {
+      Def_Pointer(ToDef,0,k*FSIZE2D(ToDef),pt0);
+      Def_Pointer(FromDef,0,k*FSIZE2D(FromDef),pf0);
+
+      if (ToDef->Data[1]) {
+         // Interpolation vectorielle
+         Def_Pointer(ToDef,1,k*FSIZE2D(ToDef),pt1);
+         Def_Pointer(FromDef,1,k*FSIZE2D(FromDef),pf1);
+
+         // In case of Y grid, get the speed and dir instead of wind components
+         // since grid oriented components dont mean much
+         if (ToRef->GRTYP[0]=='Y') {
+            ok=GeoRef_InterpWD(ToRef,FromRef,pt0,pt1,pf0,pf1,Index);
+         } else {
+            ok=GeoRef_InterpUV(ToRef,FromRef,pt0,pt1,pf0,pf1,Index);
+         }
+      } else{
+         // Interpolation scalaire
+         ok=GeoRef_Interp(ToRef,FromRef,pt0,pf0,Index);
+      }
+
+      // Intepolate mask if need be
+      if (FromDef->Mask && ToDef->Mask) {
+         GeoRef_InterpMask(ToRef,FromRef,&ToDef->Mask[k*FSIZE2D(ToDef)],&FromDef->Mask[k*FSIZE2D(FromDef)],Index);
+      }
+   }
+
+#else
+      App_Log(ERROR,"%s: RMNLIB support not included\n",__func__);
+#endif   
+   return(ok);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1762,11 +1647,11 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
          for(i=0;i<FSIZE2D(ToDef);i++) ToDef->Buffer[i]=0.0;
 
       // Do we have and index
-      if (Index && Index[0]!=DEF_INDEX_EMPTY) {
+      if (Index && Index[0]!=REF_INDEX_EMPTY) {
 
          // As long as the file or the list is not empty
          ip=Index;
-         while(*ip!=DEF_INDEX_END) {
+         while(*ip!=REF_INDEX_END) {
 
             // Get the gridpoint
             i=*(ip++);
@@ -1784,7 +1669,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             }
 
             // Get the geometry intersections
-            while(*ip!=DEF_INDEX_SEPARATOR) {
+            while(*ip!=REF_INDEX_SEPARATOR) {
                pi=*(ip++);
                pj=*(ip++);
                dp=*(ip++);
@@ -1808,7 +1693,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
          }
       } else {
          int cnt, intersect;
-         if (Index && Index[0]==DEF_INDEX_EMPTY) {
+         if (Index && Index[0]==REF_INDEX_EMPTY) {
             ip=Index;
          }
 
@@ -1878,7 +1763,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
 
                      if (ip) {
                         if (n) {
-                           *(ip++)=DEF_INDEX_SEPARATOR; // End the list for this gridpoint
+                           *(ip++)=REF_INDEX_SEPARATOR; // End the list for this gridpoint
                         } else {
                            ip-=2;                       // No intersection found, removed previously inserted gridpoint
                         }
@@ -1928,7 +1813,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
 
                      if (ip) {
                         if (n) {
-                           *(ip++)=DEF_INDEX_SEPARATOR; // End the list for this gridpoint
+                           *(ip++)=REF_INDEX_SEPARATOR; // End the list for this gridpoint
                         } else {
                            ip-=2;                       // No intersection found, removed previously inserted gridpoint
                         }
@@ -1938,7 +1823,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
                }
             }
          }
-         if (ip) *(ip++)=DEF_INDEX_END;
+         if (ip) *(ip++)=REF_INDEX_END;
 
          App_Log(DEBUG,"%s: %i total hits\n",__func__,nt);
       }

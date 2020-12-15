@@ -40,9 +40,6 @@ endif()
 #   include_directories(${VGRID_INCLUDE_DIR})
 #endif()
 
-#find_package(LibXml2 REQUIRED)
-#include_directories(${LIBXML2_INCLUDE_DIR})
-
 find_package(GDAL)
 if(GDAL_FOUND)
    add_compile_definitions(HAVE_GDAL)

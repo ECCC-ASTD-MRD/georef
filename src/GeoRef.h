@@ -88,9 +88,6 @@
 #define NORTH_POLE 3
 #define SOUTH_POLE 4
 
-#define ABSOLUTE 0
-#define RELATIVE 1
-
 #define GRID_NONE     0x0        ///< No flags defined
 #define GRID_REGULAR  0x1        ///< Regular grid
 #define GRID_VARIABLE 0x2        ///< Variable grid resolution
@@ -107,6 +104,50 @@
 #define GRID_YINVERT  0x1000     ///< Y axis is inverted
 #define GRID_EXPAND   0x2000     ///< Grid needs to be expanded
 #define GRID_AXY2D    0x4000     ///< Grid AX/AY are bidimentional
+
+#define GRID_YQTREESIZE   1000   ///< Default Y grid quad tree 2D size
+#define GRID_MQTREEDEPTH  8      ///< Default M grid quad tree depth
+
+//#define REF_DEFAULT "GEOGCS[\"GCS_North_American_1983\",DATUM[\"D_North_American_1983\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]]"
+//#define REF_DEFAULT "GEOGCS[\"NAD83",DATUM[\"North_American_Datum_1983\",SPHEROID[\"GRS 1980\",6378137,298.257222101]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]"
+//#define REF_DEFAULT "GEOGCS[\"WGS84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]"
+#define REF_DEFAULT "GEOGCS[\"GCS_WGS_1984\",DATUM[\"WGS_1984\",SPHEROID[\"WGS84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.017453292519943295]]"
+#define REF_CLAMPBD(R,PX0,PY0,PX1,PY1) if (PX0<(R->X0+R->BD)) PX0=R->X0+R->BD; if (PY0<(R->Y0+R->BD)) PY0=R->Y0+R->BD; if (PX1>(R->X1-R->BD)) PX1=R->X1-R->BD; if (PY1>(R->Y1-R->BD)) PY1=R->Y1-R->BD;
+#define REF_CLAMP(R,PX0,PY0,PX1,PY1)   if (PX0<R->X0) PX0=R->X0; if (PY0<R->Y0) PY0=R->Y0; if (PX1>R->X1) PX1=R->X1; if (PY1>R->Y1) PY1=R->Y1;
+#define REF_GET(REF)                   (REF->Options.SubGrid?REF->Subs[REF->Options.SubGrid-1]:REF)
+#define REF_INDEX_SEPARATOR -1.0
+#define REF_INDEX_END       -2.0
+#define REF_INDEX_EMPTY     -3.0
+
+#define REF_COORD(REF,N,C)\
+   if (REF->GRTYP[1]!='\0') {\
+      REF->Project(REF,REF->Lon[N],REF->Lat[N],&C.lat,&C.lon,1,1);\
+   } else {\
+      C.lat=REF->Lat[N];\
+      C.lon=REF->Lon[N];\
+   }
+
+#define REF_TRANSFORM(REF,X,Y,IX,IY)\
+   if (REF->Transform) {\
+      X=REF->Transform[0]+REF->Transform[1]*(IX)+REF->Transform[2]*(IY);\
+      Y=REF->Transform[3]+REF->Transform[4]*(IX)+REF->Transform[5]*(IY);\
+   } else {\
+      X=IX;\
+      Y=IY;\
+   }
+
+#define REF_INVTRANSFORM(REF,X,Y,IX,IY)\
+   if (REF->InvTransform) {\
+      X=REF->InvTransform[0]+REF->InvTransform[1]*(IX)+REF->InvTransform[2]*(IY);\
+      Y=REF->InvTransform[3]+REF->InvTransform[4]*(IX)+REF->InvTransform[5]*(IY);\
+   } else {\
+      X=IX;\
+      Y=IY;\
+   }
+
+#define GeoRef_ScanX(X) (((float*)GeoScanX)[X]-1.0)
+#define GeoRef_ScanY(X) (((float*)GeoScanY)[X]-1.0)
+#define GeoRef_Lon(R,L) (((L)>180 && R->Type&GRID_NEGLON)?(L)-360.0:((L)<0 && !(R->Type&GRID_NEGLON))?(L)+360.0:(L))
 
 // Raster interpolation modes
 typedef enum {
@@ -166,48 +207,6 @@ typedef enum {
    CB_AVERAGE   = 4,
 } TDef_Combine;
 
-// Qtree index parameters
-#define GRID_YQTREESIZE   1000
-#define GRID_MQTREEDEPTH  8
-
-//#define REFDEFAULT "GEOGCS[\"GCS_North_American_1983\",DATUM[\"D_North_American_1983\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]]"
-//#define REFDEFAULT "GEOGCS[\"NAD83",DATUM[\"North_American_Datum_1983\",SPHEROID[\"GRS 1980\",6378137,298.257222101]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]"
-//#define REFDEFAULT "GEOGCS[\"WGS84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]"
-#define REFDEFAULT "GEOGCS[\"GCS_WGS_1984\",DATUM[\"WGS_1984\",SPHEROID[\"WGS84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.017453292519943295]]"
-#define REFCLAMPBD(R,PX0,PY0,PX1,PY1) if (PX0<(R->X0+R->BD)) PX0=R->X0+R->BD; if (PY0<(R->Y0+R->BD)) PY0=R->Y0+R->BD; if (PX1>(R->X1-R->BD)) PX1=R->X1-R->BD; if (PY1>(R->Y1-R->BD)) PY1=R->Y1-R->BD;
-#define REFCLAMP(R,PX0,PY0,PX1,PY1)   if (PX0<R->X0) PX0=R->X0; if (PY0<R->Y0) PY0=R->Y0; if (PX1>R->X1) PX1=R->X1; if (PY1>R->Y1) PY1=R->Y1;
-#define REFGET(REF)                   (REF->Options.SubGrid?REF->Subs[REF->Options.SubGrid-1]:REF)
-
-#define REFCOORD(REF,N,C)\
-   if (REF->GRTYP[1]!='\0') {\
-      REF->Project(REF,REF->Lon[N],REF->Lat[N],&C.lat,&C.lon,1,1);\
-   } else {\
-      C.lat=REF->Lat[N];\
-      C.lon=REF->Lon[N];\
-   }
-
-#define TRANSFORM(REF,X,Y,IX,IY)\
-   if (REF->Transform) {\
-      X=REF->Transform[0]+REF->Transform[1]*(IX)+REF->Transform[2]*(IY);\
-      Y=REF->Transform[3]+REF->Transform[4]*(IX)+REF->Transform[5]*(IY);\
-   } else {\
-      X=IX;\
-      Y=IY;\
-   }
-
-#define INVTRANSFORM(REF,X,Y,IX,IY)\
-   if (REF->InvTransform) {\
-      X=REF->InvTransform[0]+REF->InvTransform[1]*(IX)+REF->InvTransform[2]*(IY);\
-      Y=REF->InvTransform[3]+REF->InvTransform[4]*(IX)+REF->InvTransform[5]*(IY);\
-   } else {\
-      X=IX;\
-      Y=IY;\
-   }
-
-#define GeoRef_ScanX(X) (((float*)GeoScanX)[X]-1.0)
-#define GeoRef_ScanY(X) (((float*)GeoScanY)[X]-1.0)
-#define GeoRef_Lon(R,L) (((L)>180 && R->Type&GRID_NEGLON)?(L)-360.0:((L)<0 && !(R->Type&GRID_NEGLON))?(L)+360.0:(L))
-
 // Structure pour les coordonees latlon
 typedef struct TCoord {
    double Lon,Lat,Elev;
@@ -254,8 +253,7 @@ typedef struct TGeoOptions {
    char         VectorMode;     ///< Process data as vector
    float        DistTreshold;   ///< Distance treshold for point clouds
    float        LonRef;         ///< Longitude referential (-180.0,0.0)
-// int msg_pt_tol;
-//  float msg_dist_thresh;
+   float        NoData;         ///< NoData Value (Default: NaN)
 } TGeoOptions;
 
 #ifndef GEOREF_BUILD
@@ -276,7 +274,8 @@ typedef struct {
    struct TGeoRef* RefFrom;
    TGeoZone zones[SET_NZONES];
    int flags;
-   double *x, *y;
+   double *Index;
+   double *X,*Y;
    float *yin_maskout,*yan_maskout;
    double *yinlat,*yinlon,*yanlat,*yanlon;
    double *yin2yin_lat,*yin2yin_lon,*yan2yin_lat,*yan2yin_lon;
@@ -412,13 +411,13 @@ int      GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float
 int      GeoRef_LLVal(TGeoRef *Ref,float *zout,float *zin,double *lat,double *lon,int n);                                         // c_gdllsval
 int      GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int n);            // c_gdllvval
 int      GeoRef_LLWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int n);            // c_gdllwdval
-int      GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskIn);
-int      GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin);                                                  // c_ezsint
-int      GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin);                      // c_ezuvint
-int      GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin);                      // c_ezwdint
-int      GeoRef_InterpYY(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin);                                                // c_ezyysint
-int      GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin);                    // c_ezyyuvint
-int      GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin);                    // c_ezyywdint
+int      GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin,double *Index);                                    // c_ezsint
+int      GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,double *Index);        // c_ezuvint
+int      GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,double *Index);        // c_ezwdint
+int      GeoRef_InterpYY(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin,double *Index);                                  // c_ezyysint
+int      GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,double *Index);      // c_ezyyuvint
+int      GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,double *Index);      // c_ezyywdint
+int      GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskIn,double *Index);
 int      GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float *vvllin,double *Lat,double *Lon,int npts);   // c_gduvfwd
 int      GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int npts);        // c_gdwdfuv
 
@@ -435,7 +434,7 @@ void     GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref);
 void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
 
 // Internal functions
-TGridSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom);
+TGridSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom,double *Index);
 void      GeoRef_SetFree(TGridSet* GSet);
 int       GeoRef_SetZoneDefine(TGeoRef *RefTo,TGeoRef *RefFrom);
 int       GeoRef_SetCalcXY(TGeoRef* RefTo, TGeoRef* RefFrom);
