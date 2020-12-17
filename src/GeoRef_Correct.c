@@ -222,7 +222,7 @@ int GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin)
 //TODO: check if ok
 //    valmin=f77name(AMIN)(zin,&(RefFrom->NX),&nj, 0)
 //    valmax=f77name(AMAX)(zin,&(RefFrom->NX),&nj, 0)
-      f77name(ez_aminmax)(&valmin,&valmax,zin,&(RefFrom->NX), &nj);
+      f77name(ez_aminmax)(&valmin,&valmax,zin,&(RefFrom->NX),&nj);
       if (RefFrom->Options.ExtrapDegree >= ER_MAXIMUM) {
          if (RefFrom->Options.VectorMode) {
 	         fudgeval = 0.0;

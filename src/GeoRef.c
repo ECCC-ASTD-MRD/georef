@@ -51,6 +51,7 @@ __thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_UNDEF, 0.0, 0, TRUE, FALSE
 void GeoRef_Lock() {
    pthread_mutex_lock(&GeoRef_Mutex);
 }
+
 /**----------------------------------------------------------------------------
  * @brief  Remove thread lock on GeoRef access
  * @author Jean-Philippe Gauthier

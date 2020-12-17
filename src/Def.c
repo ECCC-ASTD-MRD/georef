@@ -1430,10 +1430,11 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
 #endif
 }
 
-int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,double *Index) {
+int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,TGridSet **GSet) {
 
-   void     *pf0,*pt0,*pf1,*pt1;
-   int       ok=TRUE,k,gotidx;
+   void      *pf0,*pt0,*pf1,*pt1;
+   int        k,ok=TRUE;
+   TGridSet  *gset;
 
    if (!ToRef || !ToDef) {
       App_Log(ERROR,"%s: Invalid destination\n",__func__);
@@ -1473,18 +1474,18 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDe
          // In case of Y grid, get the speed and dir instead of wind components
          // since grid oriented components dont mean much
          if (ToRef->GRTYP[0]=='Y') {
-            ok=GeoRef_InterpWD(ToRef,FromRef,pt0,pt1,pf0,pf1,Index);
+            ok=GeoRef_InterpWD(ToRef,FromRef,pt0,pt1,pf0,pf1,GSet);
          } else {
-            ok=GeoRef_InterpUV(ToRef,FromRef,pt0,pt1,pf0,pf1,Index);
+            ok=GeoRef_InterpUV(ToRef,FromRef,pt0,pt1,pf0,pf1,GSet);
          }
       } else{
          // Interpolation scalaire
-         ok=GeoRef_Interp(ToRef,FromRef,pt0,pf0,Index);
+         ok=GeoRef_Interp(ToRef,FromRef,pt0,pf0,GSet);
       }
 
       // Intepolate mask if need be
       if (FromDef->Mask && ToDef->Mask) {
-         GeoRef_InterpMask(ToRef,FromRef,&ToDef->Mask[k*FSIZE2D(ToDef)],&FromDef->Mask[k*FSIZE2D(FromDef)],Index);
+         ok=GeoRef_InterpMask(ToRef,FromRef,&ToDef->Mask[k*FSIZE2D(ToDef)],&FromDef->Mask[k*FSIZE2D(FromDef)],GSet);
       }
    }
 

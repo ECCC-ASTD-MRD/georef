@@ -242,20 +242,16 @@ int GeoRef_SetZoneDefine(TGeoRef *RefTo,TGeoRef *RefFrom) {
 int GeoRef_SetCalcXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
 
    TGridSet *gset=NULL;
-   int       ninj_out;
 
    gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
-   ninj_out = RefTo->NX*RefTo->NY;
 
    if (!gset->Index) {
-      gset->Index = (double*)malloc(2*ninj_out*sizeof(double));
+      gset->IndexSize=2*RefTo->NX*RefTo->NY;
+      gset->Index = (double*)calloc(gset->IndexSize,sizeof(double));
       gset->X=gset->Index;
-      gset->Y=&gset->Index[ninj_out];
+      gset->Y=&gset->Index[RefTo->NX*RefTo->NY];
 
-      GeoRef_LL2XY(RefFrom,gset->X,gset->Y,RefTo->Lat,RefTo->Lon,ninj_out,TRUE);
-   } else {
-      gset->X=gset->Index;
-      gset->Y=&gset->Index[ninj_out];
+      GeoRef_LL2XY(RefFrom,gset->X,gset->Y,RefTo->Lat,RefTo->Lon,RefTo->NX*RefTo->NY,TRUE);
    }
 
    return(0);
@@ -304,75 +300,54 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       nj = RefTo->NY;
    }
 
-   k=0;
    nij = ni*nj;
 
    /* Masquer les grilles YY input pour enlever overlap si TRUE */
-   yin2yin_lat = (double*)malloc(8*nij*sizeof(double));
+   k=0;
+   yin2yin_lat = (double*)malloc(4*nij*sizeof(double));
    yin2yin_lon = &yin2yin_lat[k+=nij];
    yan2yin_lat = &yin2yin_lat[k+=nij];
    yan2yin_lon = &yin2yin_lat[k+=nij];
-   yin2yan_lat = &yin2yin_lat[k+=nij];
-   yin2yan_lon = &yin2yin_lat[k+=nij];
-   yan2yan_lat = &yin2yin_lat[k+=nij];
-   yan2yan_lon = &yin2yin_lat[k+=nij];
+
    yancount_yin=0;
    yincount_yin=0;
-   if (yyout == 0) {
-      /* destination grid is one grid */ 
-      /* create mask with Yin as a priority choice and store x,y,lat,lon pos */
-      gset->yin_maskout = (float *) malloc(ni*nj*sizeof(float));
-      gset->yinlat = (double*) malloc(ni*nj*sizeof(double));
-      gset->yinlon = (double*) malloc(ni*nj*sizeof(double));
-      icode = GeoRef_GetLL(yin_gdout,gset->yinlat,gset->yinlon);
-      icode = GeoRef_MaskYYApply(yin_gdout,yin_gdin, i,nj,gset->yin_maskout,gset->yinlat,gset->yinlon,yin2yin_lat,yin2yin_lon,&yincount_yin,yan2yin_lat,yan2yin_lon,&yancount_yin);
-      /* store the lats and lons */
-      gset->yincount_yin = yincount_yin;
-      gset->yancount_yin = yancount_yin;
-      gset->yin2yin_lat = (double*) malloc(yincount_yin*sizeof(double));
-      gset->yin2yin_lon = (double*) malloc(yincount_yin*sizeof(double));
-      gset->yan2yin_lat = (double*) malloc(yancount_yin*sizeof(double));
-      gset->yan2yin_lon = (double*) malloc(yancount_yin*sizeof(double));
-      memcpy(gset->yin2yin_lat,yin2yin_lat,yincount_yin*sizeof(double));
-      memcpy(gset->yin2yin_lon,yin2yin_lon,yincount_yin*sizeof(double));
-      memcpy(gset->yan2yin_lat,yan2yin_lat,yancount_yin*sizeof(double));
-      memcpy(gset->yan2yin_lon,yan2yin_lon,yancount_yin*sizeof(double));
 
-      /* store the Xs and Ys */
-      gset->yin2yin_x = (double*) malloc(yincount_yin*sizeof(double));
-      gset->yin2yin_y = (double*) malloc(yincount_yin*sizeof(double));
-      gset->yan2yin_x = (double*) malloc(yancount_yin*sizeof(double));
-      gset->yan2yin_y = (double*) malloc(yancount_yin*sizeof(double));
-      icode = GeoRef_LL2XY(yin_gdin,gset->yin2yin_x,gset->yin2yin_y,yin2yin_lat,yin2yin_lon,yincount_yin,TRUE);
-      icode = GeoRef_LL2XY(yan_gdin,gset->yan2yin_x,gset->yan2yin_y,yan2yin_lat,yan2yin_lon,yancount_yin,TRUE);
-   }
+   /* destination grid is one grid */ 
+   /* create mask with Yin as a priority choice and store x,y,lat,lon pos */
+   gset->yin_maskout = (float *) malloc(ni*nj*sizeof(float));
+   gset->yinlat = (double*) malloc(ni*nj*sizeof(double));
+   gset->yinlon = (double*) malloc(ni*nj*sizeof(double));
+   icode = GeoRef_GetLL(yin_gdout,gset->yinlat,gset->yinlon);
+   icode = GeoRef_MaskYYApply(yin_gdout,yin_gdin,ni,nj,gset->yin_maskout,gset->yinlat,gset->yinlon,yin2yin_lat,yin2yin_lon,&yincount_yin,yan2yin_lat,yan2yin_lon,&yancount_yin);
+   /* store the lats and lons */
+   gset->yincount_yin = yincount_yin;
+   gset->yancount_yin = yancount_yin;
+   gset->yin2yin_lat = (double*) malloc(yincount_yin*sizeof(double));
+   gset->yin2yin_lon = (double*) malloc(yincount_yin*sizeof(double));
+   gset->yan2yin_lat = (double*) malloc(yancount_yin*sizeof(double));
+   gset->yan2yin_lon = (double*) malloc(yancount_yin*sizeof(double));
+   memcpy(gset->yin2yin_lat,yin2yin_lat,yincount_yin*sizeof(double));
+   memcpy(gset->yin2yin_lon,yin2yin_lon,yincount_yin*sizeof(double));
+   memcpy(gset->yan2yin_lat,yan2yin_lat,yancount_yin*sizeof(double));
+   memcpy(gset->yan2yin_lon,yan2yin_lon,yancount_yin*sizeof(double));
+
+   /* store the Xs and Ys */
+   gset->yin2yin_x = (double*) malloc(yincount_yin*sizeof(double));
+   gset->yin2yin_y = (double*) malloc(yincount_yin*sizeof(double));
+   gset->yan2yin_x = (double*) malloc(yancount_yin*sizeof(double));
+   gset->yan2yin_y = (double*) malloc(yancount_yin*sizeof(double));
+   icode = GeoRef_LL2XY(yin_gdin,gset->yin2yin_x,gset->yin2yin_y,yin2yin_lat,yin2yin_lon,yincount_yin,TRUE);
+   icode = GeoRef_LL2XY(yan_gdin,gset->yan2yin_x,gset->yan2yin_y,yan2yin_lat,yan2yin_lon,yancount_yin,TRUE);
+
+   free(yin2yin_lat);
 
    if (yyout == 1) { 
-      /* destination grid is a U grid*/
-      /* create mask (Yin priority)with src Yin,src Yang onto dest Yin and 
-                                                            store x,y pos */
-      gset->yin_maskout = (float *) malloc(ni*nj*sizeof(float));
-      gset->yinlat = (double *) malloc(ni*nj*sizeof(double));
-      gset->yinlon = (double *) malloc(ni*nj*sizeof(double));
-      icode = GeoRef_GetLL(yin_gdout,gset->yinlat,gset->yinlon);
-      icode = GeoRef_MaskYYApply(yin_gdout,yin_gdin,ni,nj,gset->yin_maskout,gset->yinlat,gset->yinlon,yin2yin_lat,yin2yin_lon,&yincount_yin,yan2yin_lat,yan2yin_lon,&yancount_yin);
-      gset->yincount_yin = yincount_yin;
-      gset->yancount_yin = yancount_yin;
-      gset->yin2yin_lat = (double*) malloc(yincount_yin*sizeof(double));
-      gset->yin2yin_lon = (double*) malloc(yincount_yin*sizeof(double));
-      gset->yan2yin_lat = (double*) malloc(yancount_yin*sizeof(double));
-      gset->yan2yin_lon = (double*) malloc(yancount_yin*sizeof(double));
-      memcpy(gset->yin2yin_lat,yin2yin_lat,yincount_yin*sizeof(double));
-      memcpy(gset->yin2yin_lon,yin2yin_lon,yincount_yin*sizeof(double));
-      memcpy(gset->yan2yin_lat,yan2yin_lat,yancount_yin*sizeof(double));
-      memcpy(gset->yan2yin_lon,yan2yin_lon,yancount_yin*sizeof(double));
-      gset->yin2yin_x = (double*) malloc(yincount_yin*sizeof(double));
-      gset->yin2yin_y = (double*) malloc(yincount_yin*sizeof(double));
-      gset->yan2yin_x = (double*) malloc(yancount_yin*sizeof(double));
-      gset->yan2yin_y = (double*) malloc(yancount_yin*sizeof(double));
-      icode = GeoRef_LL2XY(yin_gdin,gset->yin2yin_x,gset->yin2yin_y,yin2yin_lat,yin2yin_lon,yincount_yin,TRUE);
-      icode = GeoRef_LL2XY(yan_gdin,gset->yan2yin_x,gset->yan2yin_y,yan2yin_lat,yan2yin_lon,yancount_yin,TRUE);
-      
+      k=0;
+      yin2yan_lat = (double*)malloc(4*nij*sizeof(double));
+      yin2yan_lon = &yin2yan_lat[k+=nij];
+      yan2yan_lat = &yin2yan_lat[k+=nij];
+      yan2yan_lon = &yin2yan_lat[k+=nij];
+
       /* create mask (Yin priority) with src Yin,src Yang onto dest Yang and store x,y pos */
 
       gset->yan_maskout = (float *) malloc(ni*nj*sizeof(float));
@@ -396,9 +371,10 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
       gset->yan2yan_y = (double*) malloc(yancount_yan*sizeof(double));
       icode = GeoRef_LL2XY(yin_gdin,gset->yin2yan_x,gset->yin2yan_y,yin2yan_lat,yin2yan_lon,yincount_yan,TRUE);
       icode = GeoRef_LL2XY(yan_gdin,gset->yan2yan_x,gset->yan2yan_y,yan2yan_lat,yan2yan_lon,yancount_yan,TRUE);
+
+      free(yin2yan_lat);
    }
 
-   free(yin2yin_lat);
    gset->flags |= SET_YYXY;
 
    return(icode);
@@ -431,9 +407,30 @@ void GeoRef_SetFree(TGridSet* GSet) {
  // float *yin2yin_x,*yin2yin_y,*yan2yin_x,*yan2yin_y;
  // float *yin2yan_x,*yin2yan_y,*yan2yan_x,*yan2yan_y;
 }
- 
-TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,double *Index) {
 
+// TODO:
+//TGridSet* GeoRef_SetRead(void){
+//
+//}
+int GeoRef_SetWrite(int FID,TGridSet *GSet){
+
+   int ok;
+
+   if (GSet && GSet->Index) {
+      c_fst_data_length(8);
+      ok=cs_fstecr(GSet->Index,-64,FID,0,0,0,GSet->IndexSize,1,1,0,0,0,GSet->G2G,"#>>#","GSETINDEX","X",0,0,0,0,5,FALSE);
+
+      if (ok<0) {
+         App_Log(ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
+         return(0);
+      }
+   }
+   return(1);
+}
+
+TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGridSet** GSet) {
+
+   TGridSet* gset=NULL;
    int i;
 
    if (!RefTo || !RefFrom) {
@@ -471,7 +468,22 @@ TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,double *Index) {
    // If we get here, we have'nt found any sets, create a new one    
    RefTo->Sets[i].RefFrom = RefFrom;
    RefTo->NbSet++;
-   RefTo->Sets[i].Index=Index;
+   RefTo->Sets[i].G2G[0]=RefFrom->GRTYP[0];
+   RefTo->Sets[i].G2G[1]=RefTo->GRTYP[0];
+   
+   // If a known grid set is passed in, use it
+   if (GSet) {
+      if (gset=*GSet) {
+         if (gset->G2G[0]!=RefTo->Sets[i].G2G[0] || gset->G2G[1]!=RefTo->Sets[i].G2G[1]) {
+            App_Log(WARNING,"%s: Invalid grid set %c%c!=%c%c\n",__func__,gset->G2G[0],gset->G2G[1],RefTo->Sets[i].G2G[0],RefTo->Sets[i].G2G[1]);
+         } else {
+            RefTo->Sets[i].Index=gset->Index;
+            RefTo->Sets[i].IndexSize=gset->IndexSize;
+         }
+      } else {
+         *GSet=&RefTo->Sets[i];
+      }
+   }
 
    App_Log(DEBUG,"%s: RefFrom : %p RefTo: %p\n",__func__,RefFrom,RefTo);
 

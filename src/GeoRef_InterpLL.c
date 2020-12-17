@@ -422,6 +422,11 @@ int GeoRef_LLWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       ier = GeoRef_XYUVVal(Ref,uuout,vvout,uuin,vvin,x,y,Nb);
       yin_gd=Ref->Subs[0];
       yan_gd=Ref->Subs[1];
+
+      // TODO: WTF will I do to avoid this or global options
+      memcpy(&yin_gd->Options,&Ref->Options,sizeof(TGeoOptions));
+      memcpy(&yan_gd->Options,&Ref->Options,sizeof(TGeoOptions));
+
       ier = GeoRef_UV2WD(yin_gd,uuyin,vvyin,uuout,vvout,Lat,Lon,Nb);
       ier = GeoRef_UV2WD(yan_gd,uuyan,vvyan,uuout,vvout,Lat,Lon,Nb);
       for (j=0; j< Nb; j++) {

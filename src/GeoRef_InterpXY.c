@@ -97,6 +97,11 @@ int GeoRef_XYVal(TGeoRef *Ref,float *zout,float *zin,double *X,double *Y,int n) 
             tmpy[j]=Y[j];
          }
       }
+
+      // TODO: WTF will I do to avoid this or global options
+      memcpy(&yin_gd->Options,&Ref->Options,sizeof(TGeoOptions));
+      memcpy(&yan_gd->Options,&Ref->Options,sizeof(TGeoOptions));
+      
       icode = GeoRef_XYInterp(NULL,yin_gd,zoutyin,zin,X,tmpy,n);
       icode = GeoRef_XYInterp(NULL,yan_gd,zoutyan,&zin[ni*nj],X,tmpy,n);
       for (j=0; j < n; j++) {
@@ -132,6 +137,7 @@ int GeoRef_XYUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       vvyin = &uuyin[n];
       uuyan = &uuyin[n*2];
       vvyan = &uuyin[n*3];
+
       for (j=0; j< n; j++) {
          if (Y[j] > yin_gd->NY) {
             tmpy[j]=Y[j]-yin_gd->NY;
@@ -139,6 +145,11 @@ int GeoRef_XYUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
             tmpy[j]=Y[j];
          }
       }
+
+      // TODO: WTF will I do to avoid this or global options
+      memcpy(&yin_gd->Options,&Ref->Options,sizeof(TGeoOptions));
+      memcpy(&yan_gd->Options,&Ref->Options,sizeof(TGeoOptions));
+
       icode = GeoRef_XYUVVal(yin_gd,uuyin,vvyin,uuin,vvin,X,tmpy,n);
       icode = GeoRef_XYUVVal(yan_gd,uuyan,vvyan,&uuin[ni*nj],&vvin[ni*nj],X,tmpy,n);
  
@@ -147,8 +158,8 @@ int GeoRef_XYUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
             uuout[j]=uuyan[j];
             vvout[j]=vvyan[j];
          } else {
-           uuout[j]=uuyin[j];
-           vvout[j]=vvyin[j];
+            uuout[j]=uuyin[j];
+            vvout[j]=vvyin[j];
          }
       }
       free(tmpy); 
@@ -197,6 +208,11 @@ int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
             tmpy[j]=Y[j];
          }
       }
+      
+      // TODO: WTF will I do to avoid this or global options
+      memcpy(&yin_gd->Options,&Ref->Options,sizeof(TGeoOptions));
+      memcpy(&yan_gd->Options,&Ref->Options,sizeof(TGeoOptions));
+
       icode = GeoRef_XYUVVal(yin_gd, tmpuu, tmpvv, uuin, vvin, X, tmpy, n);
       icode = GeoRef_XY2LL(yin_gd,tmplat,tmplon,X,tmpy,n,TRUE);
       icode = GeoRef_UV2WD(yin_gd, uuyin,vvyin,tmpuu,tmpvv,tmplat,tmplon,n);

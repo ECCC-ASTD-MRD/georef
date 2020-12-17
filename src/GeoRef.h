@@ -75,6 +75,7 @@
 #define BITPOS(i)     (i - ((i >> 5) << 5))
 #define GETMSK(fld,i) ((fld[i >> 5]  & (1 << BITPOS(i))) >> BITPOS(i))
 #define SETMSK(fld,i) (fld[i >> 5] | (fld[i] << BITPOS(i)))
+#define NULLOK      (void*)0x1
 
 #define SET_ZONES   0x1          ///< Flag for set zone definitions
 #define SET_YYXY    0x4          ///< Flag for set YinYang calculations
@@ -273,7 +274,9 @@ typedef struct {
 typedef struct {
    struct TGeoRef* RefFrom;
    TGeoZone zones[SET_NZONES];
+   char G2G[2];
    int flags;
+   int IndexSize;
    double *Index;
    double *X,*Y;
    float *yin_maskout,*yan_maskout;
@@ -411,13 +414,13 @@ int      GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float
 int      GeoRef_LLVal(TGeoRef *Ref,float *zout,float *zin,double *lat,double *lon,int n);                                         // c_gdllsval
 int      GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int n);            // c_gdllvval
 int      GeoRef_LLWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int n);            // c_gdllwdval
-int      GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin,double *Index);                                    // c_ezsint
-int      GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,double *Index);        // c_ezuvint
-int      GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,double *Index);        // c_ezwdint
-int      GeoRef_InterpYY(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin,double *Index);                                  // c_ezyysint
-int      GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,double *Index);      // c_ezyyuvint
-int      GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,double *Index);      // c_ezyywdint
-int      GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskIn,double *Index);
+int      GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin,TGridSet** GSet);                                  // c_ezsint
+int      GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,TGridSet** GSet);      // c_ezuvint
+int      GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,TGridSet** GSet);      // c_ezwdint
+int      GeoRef_InterpYY(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin,TGridSet** GSet);                                // c_ezyysint
+int      GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,TGridSet** GSet);    // c_ezyyuvint
+int      GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin,TGridSet** GSet);    // c_ezyywdint
+int      GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskIn,TGridSet** GSet);
 int      GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float *vvllin,double *Lat,double *Lon,int npts);   // c_gduvfwd
 int      GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int npts);        // c_gdwdfuv
 
@@ -434,8 +437,9 @@ void     GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref);
 void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
 
 // Internal functions
-TGridSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom,double *Index);
-void      GeoRef_SetFree(TGridSet* GSet);
+TGridSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom,TGridSet** GSet);
+void      GeoRef_SetFree(TGridSet *GSet);
+int       GeoRef_SetWrite(int FID,TGridSet *GSet);
 int       GeoRef_SetZoneDefine(TGeoRef *RefTo,TGeoRef *RefFrom);
 int       GeoRef_SetCalcXY(TGeoRef* RefTo, TGeoRef* RefFrom);
 int       GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom);
@@ -565,7 +569,6 @@ void f77name(ez_calcxy_y_m)();
 void f77name(ez_aminmax)();
 void f77name(ez_corrbgd)();
 void f77name(ez_glat)();
-void f77name(ez8_genpole)(ftnfloat *vpolnor,ftnfloat *vpolsud,ftnfloat *fld,wordint *ni,wordint *nj,wordint *vecteur,char *grtyp,wordint *hem,double *x,double *y,ftnfloat *z,double *lat,double *lon,ftnfloat *glat,wordint *ordint);
 void f77name(ez_crot)();
 void f77name(ez_lac)();
 void f77name(ez_cal)();

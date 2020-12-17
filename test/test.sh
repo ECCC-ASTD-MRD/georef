@@ -9,7 +9,7 @@ rm /tmp/libgeoref.fstd
 
 for grid in $GRIDS; do
    echo "Interpolating $grid to $GRID"
-   ./build/util/Interpolate -g ${GRID_PATH}/${GRID}.fstd -i ${GRID_PATH}/${grid}.fstd -o /tmp/libgeoref.fstd -n GRID
+   ./build/util/Interpolate -g ${GRID_PATH}/${GRID}.fstd -i ${GRID_PATH}/${grid}.fstd -o /tmp/libgeoref.fstd -n GRID -v DEBUG
 done
 
 scp /tmp/libgeoref.fstd nil000@ppp3:/home/nil000/

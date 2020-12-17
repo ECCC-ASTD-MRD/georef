@@ -40,9 +40,9 @@
 int Interpolate(char *In,char *Out,char *Grid,char **Vars,TDef_InterpR Type) {
 
 #ifdef HAVE_RMN
+   TGridSet  *gset=NULL;
    TRPNField *in,*grid,*idx;
    int  fin,fout,fgrid,n=0;
-   double *index=NULL;
 
    if ((fin=cs_fstouv(In,"STD+RND+R/O"))<0) {
       App_Log(ERROR,"Problems opening input file %s\n",In);
@@ -83,10 +83,7 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,TDef_InterpR Type) {
    idx->Head.GRTYP[0]='X';
    idx->Head.NBITS=32;
    idx->Head.DATYP=5;
-   index=(double*)idx->Def->Data[0];
 
-   // Initialize index to empty
-   index[0]=REF_INDEX_EMPTY;
    grid->Def->NoData=0.0;
  
    //fprintf(stderr,"...%c...%c...\n",grid->GRef->RPNHead.GRREF[0],in->GRef->RPNHead.GRREF[0]);
@@ -97,8 +94,7 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,TDef_InterpR Type) {
       Def_Clear(grid->Def);
      
       // Proceed with interpolation
-      //     if (!(Def_EzInterp(grid->Def,in->Def,grid->GRef,in->GRef,Type,ER_VALUE,index))) {
-      if (!(Def_GridInterp(grid->GRef,grid->Def,in->GRef,in->Def,Type,ER_VALUE,index))) {
+      if (!(Def_GridInterp(grid->GRef,grid->Def,in->GRef,in->Def,Type,ER_VALUE,&gset))) {
          App_Log(ERROR,"%s: EZSCINT interpolation problem",__func__);
          return(0);    
       }
@@ -115,10 +111,10 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,TDef_InterpR Type) {
    }
    
    // Write index
-   if (index[0]!=REF_INDEX_EMPTY) {
-      App_Log(DEBUG,"Saving index containing %i items\n",idx->Head.NI);
+   if (gset) {
+      App_Log(DEBUG,"Saving index containing %i items\n",gset->IndexSize);
       
-      if (!RPN_FieldWrite(fout,idx)) {
+      if (!GeoRef_SetWrite(fout,gset)) {
          return(0);
       }
    }

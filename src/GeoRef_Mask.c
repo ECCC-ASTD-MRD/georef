@@ -21,23 +21,22 @@
 #include "App.h"
 #include "GeoRef.h"
 
-int GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskIn,double *Index) {
-
-   TGridSet *gset=NULL;
+int GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskIn,TGridSet **GSet) {
  
+   TGridSet *gset=NULL;
    if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
       App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
-      return(-1);
+      return(FALSE);
    }
 
-   gset=GeoRef_SetGet(RefTo,RefFrom,Index);
+   gset=GeoRef_SetGet(RefTo,RefFrom,GSet);
 
    if (RefFrom->GRTYP[0] == 'Y') {
       memcpy(MaskOut,gset->mask,RefTo->NX*RefTo->NY*sizeof(int));
    } else {
       f77name(qqq_ezsint_mask)(MaskOut,gset->X,gset->Y,&RefTo->NX,&RefTo->NY,MaskIn,&RefFrom->NX,&RefFrom->NY,RefFrom->Options.InterpDegree);
    }
-   return(0);
+   return(TRUE);
 }
 
 int GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int *MaskOut,int *MaskIn) {
@@ -124,7 +123,7 @@ int GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,int ni,int nj,float *mask
  
    RefFrom->Options.ExtrapValue=1.0;
    RefFrom->Options.ExtrapDegree=ER_VALUE;
-   icode = GeoRef_Interp(RefTo,yin_mg,maskout,yin_fld,NULL);
+   GeoRef_Interp(RefTo,yin_mg,maskout,yin_fld,NULL);
    // Masking is done,reset original interp options
    memcpy(&RefFrom->Options,&opt,sizeof(TGeoOptions));
    free(yin_fld);

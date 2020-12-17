@@ -328,9 +328,6 @@ TRPNField* RPN_FieldReadIndex(int FileId,int Index,TRPNField *Fld) {
       fld->GRef=GeoRef_Create(h.NI,h.NJ,h.GRTYP,h.IG[X_IG1],h.IG[X_IG2],h.IG[X_IG3],h.IG[X_IG4],h.FID);
       
       fld->ZRef=ZRef_Define(type,h.NK,&lvl);
-   // TODO:  if (grtyp[0]=='U') {
-   //      FSTD_FieldSubBuild(field);
-   //   }
    }
    memcpy(&fld->Head,&h,sizeof(TRPNHeader));
 
