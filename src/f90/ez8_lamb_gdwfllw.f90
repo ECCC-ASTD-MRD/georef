@@ -17,14 +17,14 @@
 ! * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ! * Boston, MA 02111-1307, USA.
 ! */
-      subroutine ez_lamb_gdwfllw(z1,z2,xlon,li,lj,grtyp,ig1,ig2,ig3,ig4,x1,y1,xlat)
+      subroutine ez8_lamb_gdwfllw(z1,z2,xlon,li,lj,grtyp,ig1,ig2,ig3,ig4,x1,y1,xlat)
       implicit none
 
       integer li,lj
-      real z1(li*lj), z2(li*lj), xlon(li*lj)
+      real z1(li*lj), z2(li*lj)
       character*1 grtyp
       integer ig1,ig2,ig3,ig4   
-      real x1(li*lj,2),y1(li*lj,2),xlat(li*lj,2)
+      real*8 x1(li*lj,2),y1(li*lj,2),xlat(li*lj,2),xlon(li*lj)
 
       real delx,dely,uuu,vvv,alpha,psi
 
@@ -46,8 +46,8 @@
          xlat(i,2) = 50.0
       enddo
 
-      call ez_lambfll(x1(1,1),y1(1,1),xlat(1,1),xlon(1),li*lj,grtyp,ig1,ig2,ig3,ig4)
-      call ez_lambfll(x1(1,2),y1(1,2),xlat(1,2),xlon(1),li*lj,grtyp,ig1,ig2,ig3,ig4)
+      call ez8_lambfll(x1(1,1),y1(1,1),xlat(1,1),xlon(1),li*lj,grtyp,ig1,ig2,ig3,ig4)
+      call ez8_lambfll(x1(1,2),y1(1,2),xlat(1,2),xlon(1),li*lj,grtyp,ig1,ig2,ig3,ig4)
       
       do i=1,li*lj
          delx = x1(i,2) - x1(i,1)

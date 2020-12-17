@@ -80,7 +80,7 @@
    integer i,j,k,n,ntot
    real*8 spd0, dir0
    integer npts,ier
-   real x1(2*li*lj),y1(2*li*lj),lat(2*li*lj)
+   real*8 x1(2*li*lj),y1(2*li*lj),lat(2*li*lj)
 
 
 !  les #define qui suivent rendent le code plus lisible
@@ -88,9 +88,9 @@
 #define vv   z2
 #define spd  z1
 #define dir  z2
-   ! TODO Maude: convert to double
-   if (grtyp .eq. '!') then
-      call ez_lamb_llwfgdw(uu,vv,xlon,li,lj,grtyp,ig1,ig2,ig3,ig4,x1,y1,lat)
+
+if (grtyp .eq. '!') then
+      call ez8_lamb_llwfgdw(uu,vv,xlon,li,lj,grtyp,ig1,ig2,ig3,ig4,x1,y1,lat)
       return
    endif
 
