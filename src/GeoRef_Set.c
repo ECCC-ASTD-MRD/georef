@@ -408,24 +408,42 @@ void GeoRef_SetFree(TGridSet* GSet) {
  // float *yin2yan_x,*yin2yan_y,*yan2yan_x,*yan2yan_y;
 }
 
-// TODO:
-//TGridSet* GeoRef_SetRead(void){
-//
-//}
+int GeoRef_SetRead(int FID,TGridSet *GSet,char GFrom,char GTo){
+
+   TRPNHeader h;
+   char       typvar[2];
+
+   typvar[0]=GFrom;
+   typvar[1]=GTo;
+
+   // Rechercher et lire l'information de l'enregistrement specifie
+   if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,-1,typvar,"#>>#"))<0) {
+      App_Log(ERROR,"%s: Could not find gridset index field (c_fstinf failed)\n",__func__);
+      return(FALSE);
+   }
+   GSet->IndexSize=h.NI;
+   GSet->Index=(double*)malloc(GSet->IndexSize*sizeof(double));
+
+   c_fst_data_length(8);
+   if (cs_fstluk(GSet->Index,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
+      App_Log(ERROR,"%s: Could not read gridset index field (c_fstlir failed)\n",__func__);
+      return(FALSE);
+   }
+   return(TRUE);
+}
+
 int GeoRef_SetWrite(int FID,TGridSet *GSet){
 
-   int ok;
 
    if (GSet && GSet->Index) {
       c_fst_data_length(8);
-      ok=cs_fstecr(GSet->Index,-64,FID,0,0,0,GSet->IndexSize,1,1,0,0,0,GSet->G2G,"#>>#","GSETINDEX","X",0,0,0,0,5,FALSE);
 
-      if (ok<0) {
+      if (cs_fstecr(GSet->Index,-64,FID,0,0,0,GSet->IndexSize,1,1,0,0,0,GSet->G2G,"#>>#","GRIDSET","X",0,0,0,0,5,FALSE)<0) {
          App_Log(ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
-         return(0);
+         return(FALSE);
       }
    }
-   return(1);
+   return(TRUE);
 }
 
 TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGridSet** GSet) {
