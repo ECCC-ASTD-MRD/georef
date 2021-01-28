@@ -116,6 +116,20 @@ int GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
    return(1);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms XY grid coordinates to LatLon
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] Lat     Latitude array
+ *    @param[out] Lon     Longitude array
+ *    @param[in]  X       X array
+ *    @param[in]  Y       Y array
+ *    @param[in]  Nb      Number of coordinates
+ *    @param[in]  Extrap  Enable extrapolation
+ 
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb,int Extrap) {
 
    TGeoRef *yin_gd,*yan_gd;
@@ -192,6 +206,20 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
    return(icode);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms LatLon coordinates XY
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] X       X array
+ *    @param[out] Y       Y array
+ *    @param[in]  Lat     Latitude array
+ *    @param[in]  Lon     Longitude array
+ *    @param[in]  Nb      Number of coordinates
+ *    @param[in]  Extrap  Enable extrapolation
+  
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb,int Extrap) {
 
    TGeoRef *yin_gd,*yan_gd;

@@ -35,7 +35,6 @@
 #define _Def_h
 
 #include "List.h"
-//#include "Array.h"
 #include "OGR.h"
 
 #define DEFSELECTTYPE(A,B)  (A->Type>B->Type?A:B)
@@ -64,6 +63,13 @@ switch(DEF->Type) {\
    case TD_Float64:((double*)DEF->Data[COMP])[IDX]=VAL;break;\
    }\
 }
+
+//unsigned char* Def_GetUByte(char* Data,unsigned int Index) {
+//   return ((unsigned char*)Data)[Index];
+//}
+//void Def_SetUByte(char* Data,unsigned int Index,unsigned char Value) {
+//   ((unsigned char*)Data)[Index]=Value;
+//}
 
 #define Def_GetQuad(DEF,COMP,IDX,VAL) {\
 switch(DEF->Type) {\
@@ -291,6 +297,7 @@ int   Def_Paste(TDef *DefTo,TDef *DefPaste,int X0,int Y0);
 int   Def_Rasterize(TDef *Def,struct TGeoRef *Ref,OGRGeometryH Geom,double Value,TDef_Combine Comb);
 int   Def_GridCell2OGR(OGRGeometryH Geom,struct TGeoRef *RefTo,struct TGeoRef *RefFrom,int I,int J,int Seg);
 
+int   Def_GetValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
 int   Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,TGridSet **GSet);
 int   Def_GridInterpAverage(struct TGeoRef *ToRef,TDef *ToDef,struct TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize,TDef *TmpDef,TDef_InterpR Mode,int Final);
 int   Def_GridInterpConservative(struct TGeoRef *ToRef,TDef *ToDef,struct TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Mode,int Final,int Prec,float *Index);

@@ -17,7 +17,7 @@
 ! * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ! * Boston, MA 02111-1307, USA.
 ! */
-      subroutine ez8_irgdint_3_wnnc(zo,px,py,npts,ax,ay,z,ni,j1,j2,wrap)
+      subroutine ez8_irgdint_3_wnnc(zo,px,py,npts,z,ni,j1,j2,ax,ay,wrap)
       implicit none
 !*******
 !     Auteur: Y.Chartier, drpn
@@ -31,7 +31,7 @@
       integer imoins1, iplus1, iplus2
       real zo(npts)
       real*8 px(npts),py(npts)
-      real ax(ni),ay(j1:j2)
+      real*8 ax(ni),ay(j1:j2)
       real z(ni,j1:j2)
 !     
 !     npts   : nombre de points a interpoler
@@ -87,7 +87,7 @@
       fa(a1,a2,a3,a4,x,x1,x2,x3)=a1+(x-x1)*(a2+(x-x2)*(a3+a4*(x-x3)))
       fa2(c1,a1,a2)=c1*(a2-a1)
       fa3(c1,c2,c3,a1,a2,a3)=c2*(c3*(a3-a2)-c1*(a2-a1))
-      fa4(c1,c2,c3,c4,c5,c6,a1,a2,a3,a4)=c4*(c5*(c6*(a4-a3)-      c3*(a3-a2)) - c2*(c3*(a3-a2)-c1*(a2-a1)))
+      fa4(c1,c2,c3,c4,c5,c6,a1,a2,a3,a4)=c4*(c5*(c6*(a4-a3)-c3*(a3-a2))-c2*(c3*(a3-a2)-c1*(a2-a1)))
       
 
       limite = ni+2-wrap

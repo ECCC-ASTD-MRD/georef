@@ -609,6 +609,58 @@ int Def_Paste(TDef *DefTo,TDef *DefPaste,int X0, int Y0) {
    return(1);
 }
 
+int Def_GetValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
+
+   double       x,y,d,ddir=0.0;
+   int          mem,ix,iy;
+   float        valf,valdf;
+   void        *p0,*p1;
+   unsigned int idx;
+
+  *Length=Def->NoData;
+   d=Ref->GRTYP[0]=='W'?1.0:0.5;
+
+   //i on est a l'interieur de la grille ou que l'extrapolation est activee
+   if (C<Def->NC && X>=(Ref->X0-d) && Y>=(Ref->Y0-d) && Z>=0 && X<=(Ref->X1+d) && Y<=(Ref->Y1+d) && Z<=Def->NK-1) {
+
+      X-=Ref->X0;
+      Y-=Ref->Y0;
+      DEFCLAMP(Def,X,Y);
+
+      // Index memoire du niveau desire
+      mem=Def->NIJ*(int)Z;
+      ix=lrint(X);
+      iy=lrint(Y);
+      idx=iy*Def->NI+ix;
+
+      // Check for mask
+      if (Def->Mask && !Def->Mask[idx]) {
+         return(FALSE);
+      }
+      
+      if (Def->Data[1] && !C) { 
+         Def_Pointer(Def,0,mem,p0);
+         Def_Pointer(Def,1,mem,p1);
+         GeoRef_XYWDVal(Ref,&valf,&valdf,p0,p1,&x,&y,1);
+         *Length=valf;
+
+         // If it's 3D, use the mode for speed since GeoRef_XYWDVal only uses 2D
+         if (Def->Data[2])
+            GeoRef_XYVal(Ref,&valf,(float*)&Def->Mode[mem],&x,&y,1);
+            *Length=valf;
+         if (ThetaXY)
+            *ThetaXY=valdf;
+      } else {            
+         Def_Pointer(Def,C,mem,p0);
+         GeoRef_XYVal(Ref,&valf,p0,&x,&y,1);
+         *Length=valf;
+      }
+      return(TRUE);
+   }
+   
+   return(FALSE);
+}
+
 /*----------------------------------------------------------------------------------------------------------
  * Nom          : <Def_Rasterize>
  * Creation     : Juin 2004 J.P. Gauthier - CMC/CMOE
@@ -1564,10 +1616,10 @@ int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,
 
                di=(double)x-0.5+d*i;
                dj=(double)y-0.5+d*j;
-
+//TODO: make this on call
                GeoRef_XY2LL(FromRef,&la,&lo,&di,&dj,1,TRUE);
                if (GeoRef_LL2XY(ToRef,&di,&dj,&la,&lo,1,FALSE)) {
-                  if (FromRef->Value(FromRef,FromDef,Degree,0,di,dj,FromDef->Level,&val,&val1) && DEFVALID(FromDef,val)) {
+                  if (Def_GetValue(FromRef,FromDef,Degree,0,di,dj,FromDef->Level,&val,&val1) && DEFVALID(FromDef,val)) {
                      ToDef->Sub[idx]=val;
                   }
                }
@@ -1944,10 +1996,10 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
             if (GeoRef_LL2XY(FromRef,&di0,&dj0,&ax,&ay,1,FALSE)) {
                di0=floor(di0);
                dj0=floor(dj0);
-               FromRef->Value(FromRef,FromDef,'N',0,di0,dj0,FromDef->Level,&di[0],&vx);
-               FromRef->Value(FromRef,FromDef,'N',0,di0+1.0,dj0,FromDef->Level,&di[1],&vx);
-               FromRef->Value(FromRef,FromDef,'N',0,di0,dj0+1.0,FromDef->Level,&di[2],&vx);
-               FromRef->Value(FromRef,FromDef,'N',0,di0+1.0,dj0+1.0,FromDef->Level,&di[3],&vx);
+               Def_GetValue(FromRef,FromDef,'N',0,di0,dj0,FromDef->Level,&di[0],&vx);
+               Def_GetValue(FromRef,FromDef,'N',0,di0+1.0,dj0,FromDef->Level,&di[1],&vx);
+               Def_GetValue(FromRef,FromDef,'N',0,di0,dj0+1.0,FromDef->Level,&di[2],&vx);
+               Def_GetValue(FromRef,FromDef,'N',0,di0+1.0,dj0+1.0,FromDef->Level,&di[3],&vx);
             }
             for(s=0;s<4;s++) {
                vx=di[s];

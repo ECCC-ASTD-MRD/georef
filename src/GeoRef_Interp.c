@@ -163,29 +163,12 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
             break;
 
          case IR_LINEAR:
-            switch(RefFrom->Extension) {
-               case 0:
-                 f77name(ez8_irgdint_1_nw)(zout,X,Y,&npts,RefFrom->AX,RefFrom->AY,zin,&RefFrom->Options.NoData,&RefFrom->NX,&RefFrom->NY);
-                  break;
-
-               case 1:
-               case 2:
-                  f77name(ez8_irgdint_1_w)(zout,X,Y,&npts,RefFrom->AX,RefFrom->AY,zin,&RefFrom->Options.NoData,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
-                  break;
-               }
-            break;
+            f77name(ez8_irgdint_1)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,&RefFrom->Extension,&RefFrom->Options.NoData);
+           break;
 
          case IR_CUBIC:
-            switch(RefFrom->Extension) {
-               case 0:
-                  f77name(ez8_irgdint_3_nw)(zout,X,Y,&npts,RefFrom->AX,RefFrom->AY,RefFrom->NCX,RefFrom->NCY,zin,&RefFrom->i1,&RefFrom->i2,&RefFrom->j1,&RefFrom->j2);
-                  break;
-
-               case 1:
-               case 2:
-                  f77name(ez8_irgdint_3_w)(zout,X,Y,&npts,RefFrom->AX,RefFrom->AY,RefFrom->NCX,RefFrom->NCY,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
-                  break;
-               }
+         //TODO: NCX,NCY
+            f77name(ez8_irgdint_3)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->i1,&RefFrom->i2,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,RefFrom->NCX,RefFrom->NCY,&RefFrom->Extension,&RefFrom->Options.NoData);
             break;
 
          case 4:
@@ -210,7 +193,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
          nj_out = RefTo->NY;
          un = 1;
          if (ni_in > 1 && nj_in > 1 && RefFrom->Options.InterpDegree==IR_LINEAR) {
-            f77name(ez8_rgdint_1_nw)(zout,X,Y,&npts,zin,&RefFrom->Options.NoData,&RefFrom->NX,&un,&RefFrom->NY);
+            f77name(ez8_rgdint_1)(zout,X,Y,&npts,zin,&RefFrom->NX,&un,&RefFrom->NY,0,&RefFrom->Options.NoData);
          } else {
             f77name(ez_applywgts)(zout,gset->wts,gset->idx,zin,gset->mask,&ni_in, &nj_in, &ni_out, &nj_out,&(gset->n_wts));
          }
@@ -223,28 +206,11 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
                break;
 
             case IR_LINEAR:
-               switch(RefFrom->Extension) {
-                  case 0:
-                  case 1:
-                     f77name(ez8_rgdint_1_nw)(zout,X,Y,&npts,zin,&RefFrom->Options.NoData,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
-                     break;
-
-                  case 2:
-                   f77name(ez8_rgdint_1_w)(zout,X,Y,&npts,zin,&RefFrom->Options.NoData,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
-               }
+               f77name(ez8_rgdint_1)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension,&RefFrom->Options.NoData);
                break;
 
             case IR_CUBIC:
-               switch(RefFrom->Extension) {
-                  case 0:
-                    f77name(ez8_rgdint_3_nw)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
-                     break;
-
-                  case 1:
-                  case 2:
-                     f77name(ez8_rgdint_3_w)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
-                   break;
-               }
+               f77name(ez8_rgdint_3)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension,&RefFrom->Options.NoData);
                break;
 
             case 4:

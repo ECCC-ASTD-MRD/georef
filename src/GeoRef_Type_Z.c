@@ -33,6 +33,19 @@
 #include "App.h"
 #include "GeoRef.h"
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms XY grid coordinates to LatLon for a Z grid
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] Lat     Latitude array
+ *    @param[out] Lon     Longitude array
+ *    @param[in]  X       X array
+ *    @param[in]  Y       Y array
+ *    @param[in]  Nb      Number of coordinates
+
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
 
    int     i,indx,indy,un=1;
@@ -93,6 +106,19 @@ int GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
    return(0);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms LatLon coordinates to XY for a Z grid
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] X       X array
+ *    @param[out] Y       Y array
+ *    @param[in]  Lat     Latitude array
+ *    @param[in]  Lon     Longitude array
+ *    @param[in]  Nb      Number of coordinates
+
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
    int   i,j,indx,indy,d;

@@ -64,72 +64,72 @@ int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double 
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_RPNValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY) {
+// int GeoRef_RPNValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY) {
 
-   Vect3d       b,v;
-   double       x,y;
-   float        valf,valdf;
-   void        *p0,*p1;
-   int          mem,ix,iy,n;
-   unsigned int idx;
+//    Vect3d       b,v;
+//    double       x,y;
+//    float        valf,valdf;
+//    void        *p0,*p1;
+//    int          mem,ix,iy,n;
+//    unsigned int idx;
 
-   *Length=Def->NoData;
-   if (ThetaXY)
-      *ThetaXY=0.0;
+//    *Length=Def->NoData;
+//    if (ThetaXY)
+//       *ThetaXY=0.0;
 
-#ifdef HAVE_RMN
-   // Si on est a l'interieur de la grille ou que l'extrapolation est activee
-   if (C<Def->NC && X>=(Ref->X0-0.5) && Y>=(Ref->Y0-0.5) && Z>=0 && X<(Ref->X1+0.5) && Y<(Ref->Y1+0.5) && Z<=Def->NK-1) {
+// #ifdef HAVE_RMN
+//    // Si on est a l'interieur de la grille ou que l'extrapolation est activee
+//    if (C<Def->NC && X>=(Ref->X0-0.5) && Y>=(Ref->Y0-0.5) && Z>=0 && X<(Ref->X1+0.5) && Y<(Ref->Y1+0.5) && Z<=Def->NK-1) {
 
-      // Index memoire du niveau desire
-      mem=Def->NIJ*(int)Z;
+//       // Index memoire du niveau desire
+//       mem=Def->NIJ*(int)Z;
 
-      ix=lrint(X);
-      iy=lrint(Y);
-      idx=iy*Def->NI+ix;
+//       ix=lrint(X);
+//       iy=lrint(Y);
+//       idx=iy*Def->NI+ix;
       
-      // Check for mask
-      if (Def->Mask && !Def->Mask[mem+idx]) {
-         return(FALSE);
-      }
+//       // Check for mask
+//       if (Def->Mask && !Def->Mask[mem+idx]) {
+//          return(FALSE);
+//       }
      
-      // XSection
-//      if (Ref->GRTYP[0]=='V') {
-//         if (Def->Data[1]) {
-//            Def_GetMod(Def,FIDX2D(Def,ix,iy),*Length);
-//         } else {
-//            *Length=VertexVal(Def,-1,X,Y,0.0);
-//         }
-//         return(TRUE);
-//      }
+//       // XSection
+// //      if (Ref->GRTYP[0]=='V') {
+// //         if (Def->Data[1]) {
+// //            Def_GetMod(Def,FIDX2D(Def,ix,iy),*Length);
+// //         } else {
+// //            *Length=VertexVal(Def,-1,X,Y,0.0);
+// //         }
+// //         return(TRUE);
+// //      }
    
-      // RPN grid
-      x=X+1.0;
-      y=Y+1.0;
+//       // RPN grid
+//       x=X+1.0;
+//       y=Y+1.0;
       
-      if (Def->Data[1] && !C) { 
+//       if (Def->Data[1] && !C) { 
 
-         Def_Pointer(Def,0,mem,p0);
-         Def_Pointer(Def,1,mem,p1);
-         GeoRef_XYWDVal(Ref,&valf,&valdf,p0,p1,&x,&y,1);
-         *Length=valf;
+//          Def_Pointer(Def,0,mem,p0);
+//          Def_Pointer(Def,1,mem,p1);
+//          GeoRef_XYWDVal(Ref,&valf,&valdf,p0,p1,&x,&y,1);
+//          *Length=valf;
 
-         // If it's 3D, use the mode for speed since GeoRef_XYWDVal only uses 2D
-         if (Def->Data[2])
-            GeoRef_XYVal(Ref,&valf,(float*)&Def->Mode[mem],&x,&y,1);
-            *Length=valf;
-         if (ThetaXY)
-            *ThetaXY=valdf;
-      } else {            
-         Def_Pointer(Def,C,mem,p0);
-         GeoRef_XYVal(Ref,&valf,p0,&x,&y,1);
-         *Length=valf;
-      }
-      return(TRUE);
-   }
-#endif
-   return(FALSE);
-}
+//          // If it's 3D, use the mode for speed since GeoRef_XYWDVal only uses 2D
+//          if (Def->Data[2])
+//             GeoRef_XYVal(Ref,&valf,(float*)&Def->Mode[mem],&x,&y,1);
+//             *Length=valf;
+//          if (ThetaXY)
+//             *ThetaXY=valdf;
+//       } else {            
+//          Def_Pointer(Def,C,mem,p0);
+//          GeoRef_XYVal(Ref,&valf,p0,&x,&y,1);
+//          *Length=valf;
+//       }
+//       return(TRUE);
+//    }
+// #endif
+//    return(FALSE);
+// }
 
 int GeoRef_RPNDefXG(TGeoRef* Ref) {
 
@@ -279,39 +279,46 @@ int GeoRef_RPNDefXG(TGeoRef* Ref) {
 //! If grtyp == 'Z' or '#', the dimensions of ax=ni and ay=nj.
 //! If grtyp == 'Y', the dimensions of ax=ay=ni*nj. 
 
-TGeoRef* GeoRef_CreateInMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,float* AX,float* AY) {
+TGeoRef* GeoRef_Set(TGeoRef *Ref,int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,double* AX,double* AY) {
+   
+   Ref->RPNHead.GRTYP[0]=Ref->GRTYP[0] = GRTYP[0];
+   Ref->RPNHead.GRTYP[1]=Ref->GRTYP[1] = '\0';
+   Ref->RPNHead.GRREF[0] = GRREF?GRREF[0]:'\0';
+   Ref->RPNHead.GRREF[1] = '\0';
+   Ref->RPNHead.NI=Ref->NX = NI;
+   Ref->RPNHead.NJ=Ref->NY = NJ;
+   Ref->RPNHead.IG[X_IG1] = IG1;
+   Ref->RPNHead.IG[X_IG2] = IG2;
+   Ref->RPNHead.IG[X_IG3] = IG3;
+   Ref->RPNHead.IG[X_IG4] = IG4;
+   Ref->i1 = 1;
+   Ref->i2 = NI;
+   Ref->j1 = 1;
+   Ref->j2 = NJ;
+
+   switch (GRTYP[0]) {
+      case 'Z':
+         f77name(cigaxg)(Ref->RPNHead.GRREF,&Ref->RPNHead.XGREF[X_LAT1],&Ref->RPNHead.XGREF[X_LON1],&Ref->RPNHead.XGREF[X_LAT2],&Ref->RPNHead.XGREF[X_LON2],&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+      case '#':
+      case 'Y':
+         Ref->AX = AX;
+         Ref->AY = AY;
+         break;
+   }
+
+   GeoRef_Size(Ref,0,0,NI-1,NJ-1,0);
+
+   return(Ref);
+}
+
+TGeoRef* GeoRef_CreateInMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,double* AX,double* AY) {
    
    TGeoRef* ref,*fref;
 
    ref = GeoRef_New();
 
-   ref->RPNHead.GRTYP[0]=ref->GRTYP[0] = GRTYP[0];
-   ref->RPNHead.GRTYP[1]=ref->GRTYP[1] = '\0';
-   ref->RPNHead.GRREF[0] = GRREF?GRREF[0]:'\0';
-   ref->RPNHead.GRREF[1] = '\0';
-   ref->RPNHead.NI=ref->NX = NI;
-   ref->RPNHead.NJ=ref->NY = NJ;
-   ref->RPNHead.IG[X_IG1] = IG1;
-   ref->RPNHead.IG[X_IG2] = IG2;
-   ref->RPNHead.IG[X_IG3] = IG3;
-   ref->RPNHead.IG[X_IG4] = IG4;
-   ref->i1 = 1;
-   ref->i2 = NI;
-   ref->j1 = 1;
-   ref->j2 = NJ;
-
-   switch (GRTYP[0]) {
-      case 'Z':
-         f77name(cigaxg)(ref->RPNHead.GRREF,&ref->RPNHead.XGREF[X_LAT1],&ref->RPNHead.XGREF[X_LON1],&ref->RPNHead.XGREF[X_LAT2],&ref->RPNHead.XGREF[X_LON2],&ref->RPNHead.IGREF[X_IG1],&ref->RPNHead.IGREF[X_IG2],&ref->RPNHead.IGREF[X_IG3],&ref->RPNHead.IGREF[X_IG4]);
-      case '#':
-      case 'Y':
-         ref->AX = AX;
-         ref->AY = AY;
-         break;
-   }
-
-   GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
-
+   GeoRef_Set(ref,NI,NJ,GRTYP,GRREF,IG1,IG2,IG3,IG4,AX,AY);
+ 
    // TODO: Would be more efficient to find without creating one
    if (fref = GeoRef_Find(ref)) {
       // This georef already exists
@@ -325,12 +332,6 @@ TGeoRef* GeoRef_CreateInMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int
 
    GeoRef_RPNDefXG(ref);
    GeoRef_AxisDefine(ref,AX,AY);
-
-   // TODO: Check for sub-grids (U grids can have sub grids)
-   //ref->NbId = GRTYP[0]=='U'? (ref->NbSub==0? 1 : ref->NbSub) : 1;
-
-   ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
-
    GeoRef_Qualify(ref);
 
    return(ref);
@@ -451,8 +452,6 @@ TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4
    GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
    ref->RPNHead.GRTYP[0]=ref->GRTYP[0]=GRTYP[0];
    ref->RPNHead.GRTYP[0]=ref->GRTYP[1]=GRTYP[1];
-   ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
-   ref->Height=NULL;
 
    if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='P' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
 
@@ -482,7 +481,7 @@ TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4
       // This is a new georef
       GeoRef_Add(ref);
       if (!RPN_ReadGrid(ref)) {
-        // problems with reading grid descriptors
+         // problems with reading grid descriptors
          return(NULL);
       }
 
@@ -493,8 +492,7 @@ TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4
          ref->j1 = 1;
          ref->j2 = ref->NY;
          if (GRTYP[0]!='Y' && GRTYP[0]!='M' && GRTYP[0]!='O') {
-            GeoRef_RPNDefXG(ref);
-            
+            GeoRef_RPNDefXG(ref);           
             GeoRef_AxisCalcNewtonCoeff(ref);
          } else {
             GeoRef_CalcLL(ref);
@@ -609,7 +607,7 @@ int GEM_grid_param(int *F_bsc_base,int *F_bsc_ext1,int *F_extension ,int F_maxcf
    return(1);
 }
 
-void GEM_hgrid4(float *F_xgi_8,float *F_ygi_8,int F_Grd_ni,int F_Grd_nj,float *F_Grd_dx,float *F_Grd_dy,double F_Grd_x0_8,double F_Grd_xl_8,double F_Grd_y0_8,double F_Grd_yl_8, int F_Grd_yinyang_L){
+void GEM_hgrid4(double *F_xgi_8,double *F_ygi_8,int F_Grd_ni,int F_Grd_nj,float *F_Grd_dx,float *F_Grd_dy,double F_Grd_x0_8,double F_Grd_xl_8,double F_Grd_y0_8,double F_Grd_yl_8, int F_Grd_yinyang_L){
 
    int i;
    double delta_8;
@@ -659,12 +657,8 @@ void GEM_hgrid4(float *F_xgi_8,float *F_ygi_8,int F_Grd_ni,int F_Grd_nj,float *F
 TGeoRef* GeoRef_SetZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2) {
 
 #ifdef HAVE_RMN
-   int    ig1,ig2,ig3,ig4;
-   char   gxtyp='E';
-   int    bsc_base,bsc_ext1,extension,err;
-   int    maxcfl;
+   int    bsc_base,bsc_ext1,extension;
    double x0,x1,y0,y1;
-   float latr,lonr;
 
    if (!Ref) {
       return(NULL);
@@ -676,24 +670,17 @@ TGeoRef* GeoRef_SetZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,fl
    GEM_grid_param(&bsc_base,&bsc_ext1,&extension,MaxCFL,&LonR,&LatR,&NI,&NJ,&DX,&DY,&x0,&y0,&x1,&y1,-1,FALSE);
  
    if (NI!=Ref->NX+1 || NJ!=Ref->NY+1) {
-      Ref->AX=realloc(Ref->AX,NI*sizeof(float));
-      Ref->AY=realloc(Ref->AY,NJ*sizeof(float));
-
-      GeoRef_Size(Ref,0,0,NI-1,NJ-1,0);
+      Ref->AX=realloc(Ref->AX,NI*sizeof(double));
+      Ref->AY=realloc(Ref->AY,NJ*sizeof(double));
    }
 
-   //   f77name(set_gemhgrid4)(Ref->AX,Ref->AY,&NI,&NJ,&DX,&DY,&x0,&x1,&y0,&y1,FALSE);
+   // f77name(set_gemhgrid4)(Ref->AX,Ref->AY,&NI,&NJ,&DX,&DY,&x0,&x1,&y0,&y1,FALSE);
    GEM_hgrid4(Ref->AX,Ref->AY,NI,NJ,&DX,&DY,x0,x1,y0,y1,FALSE);
            
- //TODO: Merge with EZ  
- //  Ref->Ids[0]=GeoRef_CreateInMemory(NI,NJ,"Z","E",Ref->IG[X_IG1],Ref->IG[X_IG2],Ref->IG[X_IG3],Ref->IG[X_IG4],Ref->AX,Ref->AY);
-   
-   Ref->NbSub=1;
-   Ref->GRTYP[0]='Z';
-   Ref->GRTYP[1]='E';
-   Ref->GRTYP[2]='\0';
-   Ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
-   Ref->Height=NULL;
+   GeoRef_Set(Ref,NI,NJ,"Z","E",Ref->RPNHead.IG[X_IG1],Ref->RPNHead.IG[X_IG2],Ref->RPNHead.IG[X_IG3],Ref->RPNHead.IG[X_IG4],Ref->AX,Ref->AY);
+   GeoRef_RPNDefXG(Ref);
+   GeoRef_AxisDefine(Ref,Ref->AX,Ref->AY);
+   GeoRef_Qualify(Ref);
  #endif
   
    return(Ref);

@@ -400,6 +400,7 @@ int RPN_FieldReadComponent(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int F
       } else {
          if (!*Ptr) {
             //TODO: 64 bit descriptorspi++
+ //           cs_fstprm(key,&i,&i,&i,&i,&i,&i,&Head->NBITS,&i,&i,&i,&i,c,c,c,Head->GRREF,&Head->IGREF[X_IG1],&Head->IGREF[X_IG2],&Head->IGREF[X_IG3],&Head->IGREF[X_IG4],&i,&i,&i,&i,&i,&i,&i);
             if (!(*Ptr=(float*)malloc(ni*nj*nk*sizeof(float)))) {
                App_Log(ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
                return(0);
@@ -441,7 +442,7 @@ struct TGeoRef* RPN_FieldReadGrid(TRPNField *Field) {
 
 int RPN_ReadGrid(struct TGeoRef *GRef) {
 
-   int         key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,d=0;
+   int         key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,dx=0,dy=0;
    float      *ax=NULL,*ay=NULL;
    char        grref[2];
    TRPNHeader *h=&GRef->RPNHead;
@@ -454,8 +455,11 @@ int RPN_ReadGrid(struct TGeoRef *GRef) {
 
       switch(GRef->GRTYP[0]) {
          case 'M':
-            if (!GRef->AY) RPN_FieldReadComponent(h,&GRef->AY,"^^",1,0);
-            if (!GRef->AX) d=RPN_FieldReadComponent(h,&GRef->AX,">>",1,0);
+            if (!GRef->AY) dx=RPN_FieldReadComponent(h,&ay,"^^",1,0);
+            if (!GRef->AX) dy=RPN_FieldReadComponent(h,&ax,">>",1,0);
+
+            if (ax) { GRef->AX=(double*)malloc(dx*sizeof(double)); for(i=0;i<dx;i++) GRef->AX[i]=ax[i]; }
+            if (ay) { GRef->AY=(double*)malloc(dy*sizeof(double)); for(i=0;i<dy;i++) GRef->AY[i]=ay[i]; }
 
             // Lire le champs d'indexes
             if (!GRef->Idx) {
@@ -479,45 +483,58 @@ int RPN_ReadGrid(struct TGeoRef *GRef) {
             break;
 
          case 'Y':
-            if (!GRef->AY) RPN_FieldReadComponent(h,&GRef->AY,"LA",0,0);
-            if (!GRef->AY) RPN_FieldReadComponent(h,&GRef->AY,"^^",1,0);
-            if (!GRef->AX) RPN_FieldReadComponent(h,&GRef->AX,"LO",0,0);
-            if (!GRef->AX) RPN_FieldReadComponent(h,&GRef->AX,">>",1,0);
+            if (!GRef->AY)  RPN_FieldReadComponent(h,&ay,"LA",0,0);
+            if (!ay)        RPN_FieldReadComponent(h,&ay,"^^",1,0);
+            if (!GRef->AX)  RPN_FieldReadComponent(h,&ax,"LO",0,0);
+            if (!ax)        RPN_FieldReadComponent(h,&ax,">>",1,0);
             if (!GRef->Hgt) RPN_FieldReadComponent(h,&GRef->Hgt,"ZH",0,0);
-            break;
+
+            if (ax) { GRef->AX=(double*)malloc(GRef->NX*sizeof(double)); for(i=0;i<GRef->NX;i++) GRef->AX[i]=ax[i]; }
+            if (ay) { GRef->AY=(double*)malloc(GRef->NY*sizeof(double)); for(i=0;i<GRef->NY;i++) GRef->AY[i]=ay[i]; }
+           break;
 
          case 'X':
          case 'O':
-            if (!GRef->AY) RPN_FieldReadComponent(h,&GRef->AY,"^^",1,0);
-            if (!GRef->AX) d=RPN_FieldReadComponent(h,&GRef->AX,">>",1,0);
+            if (!GRef->AY) dy=RPN_FieldReadComponent(h,&ay,"^^",1,0);
+            if (!GRef->AX) dx=RPN_FieldReadComponent(h,&ax,">>",1,0);
+
+            if (ax) { GRef->AX=(double*)malloc(dx*sizeof(double)); for(i=0;i<dx;i++) GRef->AX[i]=ax[i]; }
+            if (ay) { GRef->AY=(double*)malloc(dy*sizeof(double)); for(i=0;i<dy;i++) GRef->AY[i]=ay[i]; }
             GeoRef_BuildIndex(GRef);          
             break;
 
          case 'V':
-            if (!GRef->AY) RPN_FieldReadComponent(h,&GRef->AY,"^^",1,0);
-            if (!GRef->AX) RPN_FieldReadComponent(h,&GRef->AX,">>",1,0);
+            if (!GRef->AY) RPN_FieldReadComponent(h,&ay,"^^",1,0);
+            if (!GRef->AX) RPN_FieldReadComponent(h,&ax,">>",1,0);
+
+            if (ax) { GRef->AX=(double*)malloc(GRef->NX*sizeof(double)); for(i=0;i<GRef->NX;i++) GRef->AX[i]=ax[i]; }
+            if (ay) { GRef->AY=(double*)malloc(GRef->NY*sizeof(double)); for(i=0;i<GRef->NY;i++) GRef->AY[i]=ay[i]; }
 //TODO:            RPN_FieldReadLevels(Field);
             break;
 
          case 'Z':
-            if (!GRef->AY) RPN_FieldReadComponent(h,&GRef->AY,"^^",1,0);
-            if (!GRef->AX) d=RPN_FieldReadComponent(h,&GRef->AX,">>",1,0);
+            if (!GRef->AY) dy=RPN_FieldReadComponent(h,&ay,"^^",1,0);
+            if (!GRef->AX) dx=RPN_FieldReadComponent(h,&ax,">>",1,0);
+
+            if (ax) { GRef->AX=(double*)malloc(dx*sizeof(double)); for(i=0;i<dx;i++) GRef->AX[i]=ax[i]; }
+            if (ay) { GRef->AY=(double*)malloc(dy*sizeof(double)); for(i=0;i<dy;i++) GRef->AY[i]=ay[i]; }
             break;
 
          case '#':
             if (!GRef->AY) RPN_FieldReadComponent(h,&ay,"^^",1,0);
             if (!GRef->AX) RPN_FieldReadComponent(h,&ax,">>",1,0);
 
+            if (ax) { GRef->AX=(double*)malloc(GRef->NX*sizeof(double)); for(i=0;i<GRef->NX;i++) GRef->AX[i]=ax[i]; }
+            if (ay) { GRef->AY=(double*)malloc(GRef->NY*sizeof(double)); for(i=0;i<GRef->NY;i++) GRef->AY[i]=ay[i]; }
+
             if (ax && ay) {
-               GRef->AX = (float *) malloc(GRef->NX*sizeof(float));
-               GRef->AY = (float *) malloc(GRef->NY*sizeof(float));
+               GRef->AX = (double*) malloc(GRef->NX*sizeof(double));
+               GRef->AY = (double*) malloc(GRef->NY*sizeof(double));
    // TODO: Check with LireEnrPositionel
    //            offsetx = ip3 - 1;
    //            offsety = ip4 - 1;
    //            for (j=0; j < GRef->NY; j++) GRef->AY[j] = ay[j+offsety];
    //            for (i=0; i < GRef->NX; i++) GRef->AX[i] = ax[i+offsetx];
-               free(ax);
-               free(ay);
             }
             break;
          
@@ -530,10 +547,10 @@ int RPN_ReadGrid(struct TGeoRef *GRef) {
                nj=(int)ax[6];                     // NJ size of LAM grid
                GRef->NX = ni;                     // NI size of U grid
                GRef->NY = nj*GRef->NbSub;         // NJ size of U grid
-               GRef->AX = (float*)malloc(ni*sizeof(float));
-               GRef->AY = (float*)malloc(nj*sizeof(float));
-               memcpy(GRef->AX,&ax[15],ni*sizeof(float));
-               memcpy(GRef->AY,&ax[15+ni],nj*sizeof(float));
+               GRef->AX = (double*)malloc(ni*sizeof(double));
+               GRef->AY = (double*)malloc(nj*sizeof(double));
+               for(i=0;i<ni;i++) GRef->AX[i]=ax[15+i];
+               for(i=0;i<nj;i++) GRef->AY[i]=ax[15+ni+i];
 
                // Get subgrids
                GRef->Subs = (TGeoRef**)malloc(GRef->NbSub*sizeof(TGeoRef*));
@@ -550,8 +567,11 @@ int RPN_ReadGrid(struct TGeoRef *GRef) {
             }
       }
 
+      if (ax) free(ax);
+      if (ay) free(ay);
+
       // Check for 2D AX/AY
-      if (d>GRef->RPNHead.NI) {
+      if (dx>GRef->RPNHead.NI) {
          GRef->Type|=GRID_AXY2D;
       }
       // In case of WKT REF

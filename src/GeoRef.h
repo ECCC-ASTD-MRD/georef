@@ -309,7 +309,8 @@ typedef struct TGeoRef {
 
    unsigned int NIdx,*Idx;                                ///< Index dans les positions
    double       *Lat,*Lon;                                ///< Coordonnees des points de grilles (Spherical)
-   float        *AX,*AY,*NCX,*NCY,*Hgt;                   ///< Axes de positionnement / deformation
+   double       *AX,*AY;                                  ///< Axes de positionnement / deformation
+   float        *NCX,*NCY,*Hgt;                   
    double       *Wght;                                    ///< Barycentric weight array for TIN  (M grids)
 
    char                         *String;                  ///< OpenGIS WKT String description
@@ -331,7 +332,6 @@ typedef struct TGeoRef {
    TGeoOptions Options;                                   ///< Options for manipulations
    TGeoRef_XY2LL     *XY2LL;                              ///< Transformation xy a latlon
    TGeoRef_LL2XY     *LL2XY;                              ///< Transformation latlon a xy
-   TGeoRef_Value     *Value;                              ///< Valeur a un point xy
    TGeoRef_Height    *Height;
 
    // _Grille struct from ezscint.h
@@ -390,10 +390,11 @@ int      GeoRef_Valid(TGeoRef* __restrict const Ref);
 double   GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1);
 
 TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID);
-TGeoRef* GeoRef_CreateInMemory(int NI,int NJ,char* grtyp,char* GRREF,int IG1,int IG2,int IG3,int IG4,float* AX,float* AY);
+TGeoRef* GeoRef_CreateInMemory(int NI,int NJ,char* grtyp,char* GRREF,int IG1,int IG2,int IG3,int IG4,double* AX,double* AY);
 TGeoRef* GeoRef_CreateU(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,int NbSub,TGeoRef **Subs);
 TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int R,double ResR,double ResA);
 TGeoRef* GeoRef_CreateW(int ni,int nj,char *grtyp,int ig1,int ig2,int ig3,int ig4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
+TGeoRef* GeoRef_Set(TGeoRef *Ref,int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,double* AX,double* AY);
 TGeoRef* GeoRef_SetZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2);
 TGeoRef* GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
 int      GeoRef_Positional(TGeoRef *Ref,struct TDef *XDef,struct TDef *YDef);
@@ -430,9 +431,9 @@ int      GeoRef_MaskYYDefine(TGeoRef *Ref);
 
 void     GeoRef_GridGetExpanded(TGeoRef *Ref, float *zout, float *zin);                                                           // gdxpngd
 int      GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,int *IG2,int *IG3,int *IG4,char *GRREF,int *IG1REF,int *IG2REF,int *IG3REF,int *IG4REF);  //c_ezgxprm
-int      GeoRef_AxisGet(TGeoRef *Ref,float *AX,float *AY);                                                                        // gdaxes
-int      GeoRef_AxisGetExpanded(TGeoRef* Ref, float *AX, float *AY);                                                              // gdgxpndaxes
-void     GeoRef_AxisDefine(TGeoRef* Ref,float *AX,float *AY);
+int      GeoRef_AxisGet(TGeoRef *Ref,double *AX,double *AY);                                                                        // gdaxes
+int      GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY);                                                              // gdgxpndaxes
+void     GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY);
 void     GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref);
 void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
 
@@ -506,7 +507,7 @@ static inline double GeoRef_GeoDir(TGeoRef* __restrict const Ref,double X, doubl
 }
 
 // Grid descriptor search
-static inline int GeoRef_XFind(float Value,float *Table,int Nb,int D) {
+static inline int GeoRef_XFind(double Value,double *Table,int Nb,int D) {
 
    int start,mid,end;
 
@@ -537,16 +538,12 @@ static inline void GeoRef_LL2GD(double *X,double *Y,double *Lat,double *Lon,int 
 }
 
 void f77name(ez8_rgdint_0)      (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2);
-void f77name(ez8_rgdint_1_w)    (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,ftnfloat *nodata,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
-void f77name(ez8_rgdint_1_nw)   (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,ftnfloat *nodata,wordint *ni,wordint *j1,wordint *j2);
-void f77name(ez8_rgdint_3_w)    (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
-void f77name(ez8_rgdint_3_nw)   (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2);
+void f77name(ez8_rgdint_1)      (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap,ftnfloat *nodata);
+void f77name(ez8_rgdint_3)      (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap,ftnfloat *nodata);
+void f77name(ez8_irgdint_1)     (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,double *ax,double *ay,wordint *wrap,ftnfloat *nodata);
+void f77name(ez8_irgdint_3)     (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *i1,wordint *i2,wordint *j1,wordint *j2,double *ax,double *ay,ftnfloat *cx,ftnfloat *cy,wordint *wrap,ftnfloat *nodata);
 void f77name(ez8_rgdint_3_wnnc) (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
-void f77name(ez8_irgdint_1_w)   (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *z,ftnfloat *nodata,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
-void f77name(ez8_irgdint_1_nw)  (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *z,ftnfloat *nodata,wordint *ni,wordint *nj);
-void f77name(ez8_irgdint_3_w)   (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *cx,ftnfloat *cy,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
-void f77name(ez8_irgdint_3_nw)  (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *cx,ftnfloat *cy,ftnfloat *z,wordint *i1,wordint *i2,wordint *j1,wordint *j2);
-void f77name(ez8_irgdint_3_wnnc)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *ax,ftnfloat *ay,ftnfloat *,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
+void f77name(ez8_irgdint_3_wnnc)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,double *ax,double *ay,wordint *wrap);
 
 void f77name(ez8_llwfgdw)(ftnfloat *z1,ftnfloat *z2,double *xlon,wordint *li,wordint *lj,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4,wordint sz);
 void f77name(ez8_gdwfllw)(ftnfloat *z1,ftnfloat *z2,double *xlon,wordint *li,wordint *lj,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4,wordint sz);
@@ -557,13 +554,16 @@ void f77name(ez8_vtxyfll)(double *x,double *y,double *dlat,double *dlon,ftnfloat
 void f77name(ez8_mxm)(ftnfloat *a,int *nar,double *b,int *nac,double *c,int *nbc);
 void f77name(ez8_llflamb)(double *xlat,double *xlon,double *x,double *y,wordint *npts,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4);
 void f77name(ez8_lambfll)(double *x,double *y,double *xlat,double *xlon,wordint *npts,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4);
+void f77name(ez_lambxyfll99)(double *x,double *y,double *lat,double *lon,wordint *nb,float *latin1,float *latin2,float *yaxislat,float *yaxislon);
+void f77name(ez8_lambllfxy99)(double *lat,double *lon,double *x,double *y,wordint *nb,float *latin1,float *latin2,float *yaxislat,float *yaxislon);
+void f77name(igaxg95)(char *gtypout,float *xg,int *nb,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4);
 void f77name(ez_avg)();
 void f77name(ez_avg_sph)();
 void f77name(ez_applywgts)();
-void f77name(ez_calcpoleval)();
+void f77name(ez_calcpoleval)(ftnfloat *poleval,ftnfloat *z,wordint *ni,double *ax,char *grtyp,char *grref,wordint c1,wordint c2);
 void f77name(ez_fillnpole)();
 void f77name(ez_fillspole)();
-void f77name(ez_nwtncof)();
+void f77name(ez_nwtncof)(ftnfloat *cx,ftnfloat *cy,double *ax,double *ay,wordint *ni,wordint *nj,wordint *i1,wordint *i2,wordint *j1,wordint *j2,wordint *extension);
 void f77name(ez_calcxy_y)();
 void f77name(ez_calcxy_y_m)();
 void f77name(ez_aminmax)();
@@ -571,7 +571,6 @@ void f77name(ez_corrbgd)();
 void f77name(ez_glat)();
 void f77name(ez_crot)();
 void f77name(ez_lac)();
-void f77name(ez_cal)();
 void f77name(ez8_uvacart)(double *XYZ,ftnfloat *U,ftnfloat *V,double *LON,double *LAT,wordint *NI,wordint *NJ);
 void f77name(ez8_cartauv)(ftnfloat *U,ftnfloat *V,double *UVCART,double *LON,double *LAT,wordint *NI,wordint *NJ);
 void f77name(ez_xpngdb2)();

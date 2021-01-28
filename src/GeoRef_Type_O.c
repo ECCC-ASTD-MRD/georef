@@ -33,17 +33,43 @@
 #include "GeoRef.h"
 #include "Vertex.h"
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms XY grid coordinates to LatLon for an O grid
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] Lat     Latitude array
+ *    @param[out] Lon     Longitude array
+ *    @param[in]  X       X array
+ *    @param[in]  Y       Y array
+ *    @param[in]  Nb      Number of coordinates
+
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_XY2LL_O(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
 
    int i;
 
    for (i=0; i < Nb; i++) {
-      Lon[i]=Vertex_ValS(Ref->AX,NULL,Ref->NX,Ref->NY,X[i],Y[i],TRUE);
-      Lat[i]=Vertex_ValS(Ref->AY,NULL,Ref->NX,Ref->NY,X[i],Y[i],FALSE);
+      Lon[i]=VertexValS(Ref->AX,NULL,Ref->NX,Ref->NY,X[i],Y[i],TRUE);
+      Lat[i]=VertexValS(Ref->AY,NULL,Ref->NX,Ref->NY,X[i],Y[i],FALSE);
    }
    return(0);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms LatLon coordinates to XY for an O grid
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] X       X array
+ *    @param[out] Y       Y array
+ *    @param[in]  Lat     Latitude array
+ *    @param[in]  Lon     Longitude array
+ *    @param[in]  Nb      Number of coordinates
+
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
    int     out=0;
@@ -108,7 +134,7 @@ int GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
                out++;
             }
          } else {
- //           App_Log(ERROR,"%s: Point not found: %f %f %i\n",__func__,Lat[d],Lon[d],idx);
+            App_Log(ERROR,"%s: Point not found: %f %f %i\n",__func__,Lat[d],Lon[d],idx);
             out++;
          }
       } 

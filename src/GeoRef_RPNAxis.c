@@ -145,7 +145,7 @@ void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
    }
 }
 
-int GeoRef_AxisGet(TGeoRef *Ref,float *AX, float *AY) {
+int GeoRef_AxisGet(TGeoRef *Ref,double *AX,double *AY) {
 
    int nix,njy;
    
@@ -162,8 +162,8 @@ int GeoRef_AxisGet(TGeoRef *Ref,float *AX, float *AY) {
    }
    
    if (Ref->AX) {
-      memcpy(AX,Ref->AX, nix*sizeof(float));
-      memcpy(AY,Ref->AY, njy*sizeof(float));
+      memcpy(AX,Ref->AX, nix*sizeof(double));
+      memcpy(AY,Ref->AY, njy*sizeof(double));
    } else {
       App_Log(ERROR,"%s: Descriptor not found\n",__func__);
       return(-1);
@@ -171,11 +171,11 @@ int GeoRef_AxisGet(TGeoRef *Ref,float *AX, float *AY) {
    return(0);
 }
 
-void GeoRef_AxisDefine(TGeoRef* Ref,float *AX,float *AY) {
+void GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY) {
   
-  int i,j;
-  float *temp, dlon;
-  int zero, deuxnj;
+  int     i,j;
+  double *temp, dlon;
+  int     zero,deuxnj;
 
   switch (Ref->GRTYP[0]) {
     case '#':
@@ -183,20 +183,20 @@ void GeoRef_AxisDefine(TGeoRef* Ref,float *AX,float *AY) {
       f77name(cigaxg)(Ref->RPNHead.GRREF,&Ref->RPNHead.XGREF[X_LAT1], &Ref->RPNHead.XGREF[X_LON1], &Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2],
 		      &Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4]);
 
-      Ref->AX = (float *) malloc(Ref->NX*sizeof(float));
-      Ref->AY = (float *) malloc(Ref->NY*sizeof(float));
+      Ref->AX = (double*) malloc(Ref->NX*sizeof(double));
+      Ref->AY = (double*) malloc(Ref->NY*sizeof(double));
 
-      memcpy(Ref->AX,AX,Ref->NX*sizeof(float));
-      memcpy(Ref->AY,AY,Ref->NY*sizeof(float));
+      memcpy(Ref->AX,AX,Ref->NX*sizeof(double));
+      memcpy(Ref->AY,AY,Ref->NY*sizeof(double));
       GeoRef_AxisCalcExpandCoeff(Ref);
       GeoRef_AxisCalcNewtonCoeff(Ref);
       break;
 
     case 'Y':
-      Ref->AX = (float *) malloc(Ref->NX*Ref->NY*sizeof(float));
-      Ref->AY = (float *) malloc(Ref->NX*Ref->NY*sizeof(float));
-      memcpy(Ref->AX,AX,Ref->NX*Ref->NY*sizeof(float));
-      memcpy(Ref->AY,AY,Ref->NX*Ref->NY*sizeof(float));
+      Ref->AX = (double*) malloc(Ref->NX*Ref->NY*sizeof(double));
+      Ref->AY = (double*) malloc(Ref->NX*Ref->NY*sizeof(double));
+      memcpy(Ref->AX,AX,Ref->NX*Ref->NY*sizeof(double));
+      memcpy(Ref->AY,AY,Ref->NX*Ref->NY*sizeof(double));
 
       GeoRef_AxisCalcExpandCoeff(Ref);
       break;
@@ -210,10 +210,10 @@ void GeoRef_AxisDefine(TGeoRef* Ref,float *AX,float *AY) {
       f77name(cxgaig)(Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4],
 		      &Ref->RPNHead.XGREF[X_SWLAT], &Ref->RPNHead.XGREF[X_SWLON], &Ref->RPNHead.XGREF[X_DLAT], &Ref->RPNHead.XGREF[X_DLON]);
 
-      Ref->AX = (float *) malloc(Ref->NX*sizeof(float));
-      dlon = 360. / (float) Ref->NX;
+      Ref->AX = (double*)malloc(Ref->NX*sizeof(double));
+      dlon = 360.0 / (double) Ref->NX;
       for (i=0; i < Ref->NX; i++) {
-	      Ref->AX[i] = (float)i * dlon;
+	      Ref->AX[i] = (double)i * dlon;
 	    }
 
       zero = 0;
@@ -221,8 +221,8 @@ void GeoRef_AxisDefine(TGeoRef* Ref,float *AX,float *AY) {
 
       switch (Ref->RPNHead.IG[X_IG1]) {
 	      case GLOBAL:
-	        Ref->AY = (float *) malloc(Ref->NY*sizeof(float));
-	        temp    = (float *) malloc(Ref->NY*sizeof(float));
+	        Ref->AY = (double*) malloc(Ref->NY*sizeof(double));
+	        temp    = (double*) malloc(Ref->NY*sizeof(double));
 	        f77name(ez_glat)(Ref->AY,temp,&Ref->NY,&zero);
 	        free(temp);
 	        break;
@@ -230,8 +230,8 @@ void GeoRef_AxisDefine(TGeoRef* Ref,float *AX,float *AY) {
 	      case NORTH:
 	      case SOUTH:
 	        deuxnj = 2 * Ref->NY;
-	        Ref->AY = (float *) malloc(deuxnj*sizeof(float));
-	        temp    = (float *) malloc(deuxnj*sizeof(float));
+	        Ref->AY = (double*) malloc(deuxnj*sizeof(double));
+	        temp    = (double*) malloc(deuxnj*sizeof(double));
 	        f77name(ez_glat)(Ref->AY,temp,&deuxnj,&zero);
 	        free(temp);
 	        break;
@@ -247,7 +247,7 @@ void GeoRef_AxisDefine(TGeoRef* Ref,float *AX,float *AY) {
     }
 }
 
-int GeoRef_AxisGetExpanded(TGeoRef* Ref, float *AX, float *AY) {
+int GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY) {
   
    int nix, njy;
    int istart, jstart;
@@ -265,8 +265,8 @@ int GeoRef_AxisGetExpanded(TGeoRef* Ref, float *AX, float *AY) {
    switch(Ref->GRTYP[0]) {
       case 'Y':
          nix = Ref->NX * Ref->NY;
-         memcpy(AX, Ref->AX, nix*sizeof(float));
-         memcpy(AY, Ref->AY, nix*sizeof(float));
+         memcpy(AX, Ref->AX, nix*sizeof(double));
+         memcpy(AY, Ref->AY, nix*sizeof(double));
          break;
       
       default:
@@ -279,8 +279,8 @@ int GeoRef_AxisGetExpanded(TGeoRef* Ref, float *AX, float *AY) {
          if (Ref->j2 == (njy+1)) jstart = 1;
          if (Ref->j2 == (njy+2)) jstart = 2;
          if (Ref->j2 == (njy))   jstart = 0;
-         memcpy(&AX[istart],Ref->AX, nix*sizeof(float));
-         memcpy(&AY[jstart],Ref->AY, njy*sizeof(float));
+         memcpy(&AX[istart],Ref->AX, nix*sizeof(double));
+         memcpy(&AY[jstart],Ref->AY, njy*sizeof(double));
       
          if (Ref->i2 == (Ref->NX+1)) {
             AX[0] = Ref->AX[nix-2] - 360.0; 

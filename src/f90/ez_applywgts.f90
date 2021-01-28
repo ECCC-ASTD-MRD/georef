@@ -14,6 +14,7 @@
    character(len=32) :: interopt, xtrapopt
    real xtrapval
 
+!   TODO passe theses values
    ier = ezgetopt('INTERP_DEGREE', interopt)
    ier = ezgetopt('EXTRAP_DEGREE', xtrapopt)
    ier = ezgetval('EXTRAP_VALUE', xtrapval)

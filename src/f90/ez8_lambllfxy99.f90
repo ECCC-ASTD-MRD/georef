@@ -17,7 +17,7 @@
 ! * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ! * Boston, MA 02111-1307, USA.
 ! */
-      subroutine ez8_lambllfxy99(lat,lon,x,y,n,      latin1,latin2,yaxislat,yaxislon)
+      subroutine ez8_lambllfxy99(lat,lon,x,y,n,latin1,latin2,yaxislat,yaxislon)
       implicit none
       integer n
       real*8 x(n),y(n),lat(n),lon(n)

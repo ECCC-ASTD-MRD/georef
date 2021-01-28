@@ -31,29 +31,20 @@
 
 #include "App.h"
 #include "GeoRef.h"
-#include "Def.h"
-#include "Vertex.h"
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RDRHeight>
- * Creation     : Decembre 2009 J.P. Gauthier - CMC/CMOE
- *
- * But          : Calculer la hauteur en MAGL d<une coordonnee RADAR.
- *
- * Parametres    :
- *   <Ref>      : Pointeur sur la reference geographique
- *   <ZRef>      : Pointeur sur la reference verticale
- *   <Azimuth>   : coordonnee en X dans la projection/grille
- *   <Bin>       : coordonnee en Y dans la projection/grille
- *   <Sweep>     : coordonnee en Z dans la projection/grille
- *
- * Retour       : Hauteur
- *
- * Remarques   :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
 //TODO: vgrid of ZRef ?
+/*----------------------------------------------------------------------------
+ * @brief  Calculates MAGL height of a grid coordinate
+ * @author Jean-Philippe Gauthier
+ * @date   June 2014
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[in]  ZRef    Vertical reference pointer
+ *    @param[in]  Azimuth Azimuth (x) coordinate in grid unit
+ *    @param[in]  Bin     Bin (y) coordinate in grid unit
+ *    @param[in]  Sweep   Sweep (z) coordinate in grid unit
+ * 
+ *    @return     Height (m)
+*/
 double GeoRef_RDRHeight(TGeoRef *Ref,TZRef *ZRef,double Azimuth,double Bin,double Sweep) {
 
    if (Bin>=0 && Bin<Ref->R && Sweep>=0 && Sweep<ZRef->LevelNb) {
@@ -63,25 +54,18 @@ double GeoRef_RDRHeight(TGeoRef *Ref,TZRef *ZRef,double Azimuth,double Bin,doubl
    }
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_RDRCreate>
- * Creation     : Avril 2006 J.P. Gauthier - CMC/CMOE
- *
- * But          : Definir le referetiel de type Radar
- *
- * Parametres   :
- *    <Lat>     : Latitude du centre
- *    <Lon>     : Longitude du centre
- *    <Height>  : Altitude du centre
- *    <NBin>    : Nombre de bin
- *    <ResR>    : Resolution en distance
- *    <ResA>    : Resolution en azimuth
- *
- * Retour       :
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------
+ * @brief  Create an R type  georeference (Radial)
+ * @author Jean-Philippe Gauthier
+ * @date   June 2014
+ *    @param[in]     Lat        Center latitude
+ *    @param[in]     Lon        Center longitude
+ *    @param[in]     Height     Center altitude (m)
+ *    @param[in]     R          Radius (m)
+ *    @param[in]     ResR       Resolution along the radius
+ *    @param[in]     ResA       Resolution in azimuth
+ * 
+ *    @return        GeoRef object (NULL=Error)
 */
 TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int R,double ResR,double ResA) {
 
@@ -104,6 +88,19 @@ TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int R,double ResR,do
    return(ref);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms XY grid coordinates to LatLon for a R grid (Radial)
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] Lat     Latitude array
+ *    @param[out] Lon     Longitude array
+ *    @param[in]  X       X array
+ *    @param[in]  Y       Y array
+ *    @param[in]  Nb      Number of coordinates
+
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
 
    TCoord loc0;
@@ -135,6 +132,19 @@ int GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
    return(0);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms LatLon coordinates to XY for a R grid (Radial)
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] X       X array
+ *    @param[out] Y       Y array
+ *    @param[in]  Lat     Latitude array
+ *    @param[in]  Lon     Longitude array
+ *    @param[in]  Nb      Number of coordinates
+
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_LL2XY_R(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
    TCoord  loc0;

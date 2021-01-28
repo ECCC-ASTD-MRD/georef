@@ -208,7 +208,6 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
       }
 #endif
       d=dd?2:1;
-      sz=8;
 
    // Y GRTYP type
    } else if (FromRef->GRTYP[0]=='Y') {
@@ -218,12 +217,11 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
             if (x<=X1 && y<=Y1) {
                Scan->V[Scan->N++]=idx;
             }
-            ((float*)Scan->X)[n]=FromRef->AX[idx];
-            ((float*)Scan->Y)[n]=FromRef->AY[idx];
+            Scan->X[n]=FromRef->AX[idx];
+            Scan->Y[n]=FromRef->AY[idx];
          }
       }
       d=1;
-      sz=4;
 
    // Other RPN grids
    } else {
@@ -241,7 +239,6 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
       GeoRef_XY2LL(FromRef,Scan->Y,Scan->X,Scan->X,Scan->Y,n,FALSE);
 
       d=dd?2:1;
-      sz=4;
 #else
       App_Log(ERROR,"%s: RMNLIB support not included\n",__func__);
 #endif
@@ -249,13 +246,8 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
 
    // Project to destination grid
    for(x=n-1;x>=0;x--) {
-      if (sz==4) {
-         x0=(double)((float*)Scan->X)[x];
-         y0=(double)((float*)Scan->Y)[x];
-      } else {
-         x0=Scan->X[x];
-         y0=Scan->Y[x];
-      }
+      x0=Scan->X[x];
+      y0=Scan->Y[x];
       
       if (ToDef) {
          Scan->D[x]=ToDef->NoData;
@@ -263,7 +255,7 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
 
       // If we're inside
       if (GeoRef_LL2XY(ToRef,&Scan->X[x],&Scan->Y[x],&y0,&x0,1,FALSE) && ToDef) {
-         ToRef->Value(ToRef,ToDef,Degree,0,Scan->X[x],Scan->Y[x],0,&v,NULL);
+         Def_GetValue(ToRef,ToDef,Degree,0,Scan->X[x],Scan->Y[x],0,&v,NULL);
          Scan->D[x]=v;
       }
    }
@@ -350,7 +342,6 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
          }
       }
       d=1;
-      sz=4;
 
    // Other RPN grids
    } else {
@@ -368,7 +359,6 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
       GeoRef_XY2LL(FromRef,Scan->Y,Scan->X,Scan->X,Scan->Y,n,FALSE);
 
       d=dd?2:1;
-      sz=4;
 #else
       App_Log(ERROR,"%s: RMNLIB support not included\n",__func__);
 #endif
@@ -387,7 +377,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
 
          if (GeoRef_LL2XY(ToRef,&Scan->X[x],&Scan->Y[x],&y0,&x0,1,FALSE)) {
             if (ToDef) {
-              ToRef->Value(ToRef,ToDef,Degree,0,Scan->X[x],Scan->Y[x],0,&v,NULL);
+              Def_GetValue(ToRef,ToDef,Degree,0,Scan->X[x],Scan->Y[x],0,&v,NULL);
               Scan->D[x]=v;
             }
          }
@@ -605,7 +595,6 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       Ref->RefFrom=NULL;
       Ref->XY2LL=NULL;
       Ref->LL2XY=NULL;
-      Ref->Value=NULL;
       Ref->Height=NULL;
    }
 }
@@ -766,10 +755,10 @@ int GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) 
    if (Ref0->R!=Ref1->R || Ref0->ResR!=Ref1->ResR || Ref0->ResA!=Ref1->ResA || Ref0->Loc.Lat!=Ref1->Loc.Lat || Ref0->Loc.Lon!=Ref1->Loc.Lon || Ref0->Loc.Elev!=Ref1->Loc.Elev)
       return(0);
 
+#ifdef HAVE_GDAL 
    if ((Ref0->Spatial && !Ref1->Spatial) || (!Ref0->Spatial && Ref1->Spatial))
       return(0);
 
-#ifdef HAVE_GDAL 
    if (Ref0->Spatial && Ref1->Spatial && !OSRIsSame(Ref0->Spatial,Ref1->Spatial))
       return(0);
 #endif
@@ -822,8 +811,6 @@ TGeoRef *GeoRef_Reference(TGeoRef* __restrict const Ref) {
       ref->RefFrom=Ref;
       ref->XY2LL=Ref->XY2LL;
       ref->LL2XY=Ref->LL2XY;
-      ref->Value=Ref->Value;
-
       ref->Loc.Lat=Ref->Loc.Lat;
       ref->Loc.Lon=Ref->Loc.Lon;
       ref->Loc.Elev=Ref->Loc.Elev;
@@ -856,7 +843,6 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       ref->GRTYP[1]=Ref->GRTYP[1];
       ref->XY2LL=Ref->XY2LL;
       ref->LL2XY=Ref->LL2XY;
-      ref->Value=Ref->Value;
       ref->Type=Ref->Type;
       ref->NbSub=Ref->NbSub;
       ref->QTree=NULL;
@@ -1065,10 +1051,8 @@ TGeoRef* GeoRef_New() {
    ref->ResA=0;
 
    // General functions
-   //TODO
-//   ref->Project=GeoRef_Project;
-//   ref->UnProject=GeoRef_UnProject;
-   ref->Value=NULL;
+   ref->XY2LL=NULL;
+   ref->LL2XY=NULL;
    ref->Height=NULL;
 
    return(ref);
@@ -1825,15 +1809,15 @@ int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
    if (Ref->AX) free(Ref->AX);
    if (Ref->AY) free(Ref->AY);
 
-   Ref->AX=(float*)malloc(nx*sizeof(float));
-   Ref->AY=(float*)malloc(ny*sizeof(float));
+   Ref->AX=(double*)malloc(nx*sizeof(double));
+   Ref->AY=(double*)malloc(ny*sizeof(double));
 
    if (!Ref->AX || !Ref->AY) {
       return(0);
    }
 
    // Assign positionals, if size is float, just memcopy otherwise, assign
-   if (XDef->Type==TD_Float32) {
+   if (XDef->Type==TD_Float64) {
       memcpy(Ref->AX,XDef->Data[0],nx*sizeof(float));
    } else {
       for(d=0;d<nx;d++) {
@@ -1841,7 +1825,7 @@ int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
       }
    }
 
-   if (YDef->Type==TD_Float32) {
+   if (YDef->Type==TD_Float64) {
       memcpy(Ref->AY,YDef->Data[0],ny*sizeof(float));
    } else {
       for(d=0;d<ny;d++) {

@@ -22,6 +22,7 @@ enable_language(Fortran)
 include(compiler_rules)
 #include(compiler_presets)
 
+set (CMAKE_CXX_STANDARD 11)
 set(CMAKE_Fortran_FLAGS         "${CMAKE_Fortran_FLAGS} -cpp")
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)

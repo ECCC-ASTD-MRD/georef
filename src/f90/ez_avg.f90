@@ -16,7 +16,7 @@
 
    real dxcore, dycore, dxcoarse, dycoarse
    real total_area, xtile_min, ytile_min, xtile_max, ytile_max, xfrac, yfrac, area
-   integer ez_cherche,ii,jj
+   integer ii,jj
    integer istart, iend, jstart, jend, compression_code, usr_datyp
 
    if (extension == 0) then

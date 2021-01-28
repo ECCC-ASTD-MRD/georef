@@ -57,80 +57,74 @@
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_WKTValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
+// int GeoRef_WKTValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
 
-   double       x,y,d,ddir=0.0;
-   int          valid=0,mem,ix,iy;
-   unsigned int idx;
+//    double       x,y,d,ddir=0.0;
+//    int          valid=0,mem,ix,iy;
+//    unsigned int idx;
 
-  *Length=Def->NoData;
-   d=1.0;
+//   *Length=Def->NoData;
+//    d=Ref->Type[[0]=='W'?1.0:0.5;
 
-   //i on est a l'interieur de la grille ou que l'extrapolation est activee
-   if (C<Def->NC && X>=(Ref->X0-d) && Y>=(Ref->Y0-d) && Z>=0 && X<=(Ref->X1+d) && Y<=(Ref->Y1+d) && Z<=Def->NK-1) {
+//    //i on est a l'interieur de la grille ou que l'extrapolation est activee
+//    if (C<Def->NC && X>=(Ref->X0-d) && Y>=(Ref->Y0-d) && Z>=0 && X<=(Ref->X1+d) && Y<=(Ref->Y1+d) && Z<=Def->NK-1) {
 
-      X-=Ref->X0;
-      Y-=Ref->Y0;
-      DEFCLAMP(Def,X,Y);
+//       X-=Ref->X0;
+//       Y-=Ref->Y0;
+//       DEFCLAMP(Def,X,Y);
 
-      // Index memoire du niveau desire
-      mem=Def->NI*Def->NJ*(int)Z;
+//       // Index memoire du niveau desire
+//       mem=Def->NIJ*(int)Z;
+//       ix=lrint(X);
+//       iy=lrint(Y);
+//       idx=iy*Def->NI+ix;
 
-      ix=lrint(X);
-      iy=lrint(Y);
-      idx=iy*Def->NI+ix;
-
-      // Check for mask
-      if (Def->Mask && !Def->Mask[idx]) {
-         return(valid);
-      }
+//       // Check for mask
+//       if (Def->Mask && !Def->Mask[idx]) {
+//          return(valid);
+//       }
       
-      // Reproject vector orientation by adding grid projection's north difference
-      if (Def->Data[1] && Ref->Type&GRID_ROTATED) { 
-         ddir=GeoRef_GeoDir(Ref,X,Y);
-      }
+//       // Reproject vector orientation by adding grid projection's north difference
+//       if (Def->Data[1] && Ref->Type&GRID_ROTATED) { 
+//          ddir=GeoRef_GeoDir(Ref,X,Y);
+//       }
 
-      if (Def->Type<=9 || Interp==IR_NEAREST || (X==ix && Y==iy)) {
-         mem+=idx;
-         Def_GetMod(Def,mem,*Length);
+//       if (Def->Type<=9 || Interp==IR_NEAREST || (X==ix && Y==iy)) {
+//          mem+=idx;
+//          Def_GetMod(Def,mem,*Length);
 
-         // Pour un champs vectoriel
-         if (Def->Data[1] && ThetaXY) {
-            Def_Get(Def,0,mem,x);
-            Def_Get(Def,1,mem,y);
-            *ThetaXY=180+RAD2DEG(atan2(x,y)-ddir);
-         }
-      } else {
-         *Length=VertexVal(Def,-1,X,Y,Z);
-         // Pour un champs vectoriel
-         if (Def->Data[1] && ThetaXY) {
-            x=VertexVal(Def,0,X,Y,Z);
-            y=VertexVal(Def,1,X,Y,Z);
-            *ThetaXY=180+RAD2DEG(atan2(x,y)-ddir);
-         }
-      }
-      valid=DEFVALID(Def,*Length);
-   }
+//          // Pour un champs vectoriel
+//          if (Def->Data[1] && ThetaXY) {
+//             Def_Get(Def,0,mem,x);
+//             Def_Get(Def,1,mem,y);
+//             *ThetaXY=180+RAD2DEG(atan2(x,y)-ddir);
+//          }
+//       } else {
+//          *Length=VertexVal(Def,-1,X,Y,Z);
+//          // Pour un champs vectoriel
+//          if (Def->Data[1] && ThetaXY) {
+//             x=VertexVal(Def,0,X,Y,Z);
+//             y=VertexVal(Def,1,X,Y,Z);
+//             *ThetaXY=180+RAD2DEG(atan2(x,y)-ddir);
+//          }
+//       }
+//       valid=DEFVALID(Def,*Length);
+//    }
    
-   return(valid);
-}
+//    return(valid);
+// }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_WKTSet>
- * Creation     : Juin 2004 J.P. Gauthier - CMC/CMOE
- *
- * But          : Definir les fonctions de transformations WKT
- *
- * Parametres   :
- *   <Ref>     : Pointeur sur la reference geographique
- *   <String>   : Description de la projection
- *   <Geometry> : Geometrie d'ou extraire la reference spatiale (optionel=NULL)
- *
- * Retour       :
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------
+ * @brief  Changes a georeference type to W
+ * @author Jean-Philippe Gauthier
+ * @date   June 2014
+ *    @param[in]     Ref          GeoRef pointer
+ *    @param[in]     String       WKT description
+ *    @param[in]     Transform    Transformation matrix [2][6]
+ *    @param[in]     InvTransform Inverse transformation matrix [2][6]
+ *    @param[in]     Spatial      Spatial reference (GDAL object)
+
+ *    @return        GeoRef object (NULL=Error)
 */
 TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
 
@@ -209,7 +203,6 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
       return(NULL);
    }
 
-   Ref->Value=(TGeoRef_Value*)GeoRef_WKTValue;
    Ref->Height=NULL;
 
    return(Ref);
@@ -219,53 +212,60 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
 #endif
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_CreateW>
- * Creation     : Avril 2005 J.P. Gauthier - CMC/CMOE
- *
- * But          : Definir le referetiel de type RPN
- *
- * Parametres   :
- *    <NI>      : Dimension en X
- *    <NJ>      : Dimension en Y
- *    <GRTYP>   : Type de grille
- *    <IG1>     : Descripteur IG1
- *    <IG2>     : Descripteur IG2
- *    <IG3>     : Descripteur IG3
- *    <IG4>     : Descripteur IG4
- *
- * Retour       :
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------
+ * @brief  Create a W type  georeference
+ * @author Jean-Philippe Gauthier
+ * @date   June 2014
+ *    @param[in]     NI           Number of gridpoints in X
+ *    @param[in]     NJ           Number of gridpoints in Y
+ *    @param[in]     GRTYP        Grid type
+ *    @param[in]     IG1          Grid descriptor information
+ *    @param[in]     IG2          Grid descriptor information
+ *    @param[in]     IG3          Grid descriptor information
+ *    @param[in]     IG4          Grid descriptor information
+ *    @param[in]     String       WKT description
+ *    @param[in]     Transform    Transformation matrix [2][6]
+ *    @param[in]     InvTransform Inverse transformation matrix [2][6]
+ *    @param[in]     Spatial      Spatial reference (GDAL object)
+
+ *    @return        GeoRef object (NULL=Error)
 */
-TGeoRef *GeoRef_CreateW(int ni,int nj,char *grtyp,int ig1,int ig2,int ig3,int ig4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
+TGeoRef *GeoRef_CreateW(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
 
    TGeoRef *ref;
 
    ref=GeoRef_New();
-   GeoRef_Size(ref,0,0,ni>0?ni-1:0,nj>0?nj-1:0,0);
+   GeoRef_Size(ref,0,0,NI>0?NI-1:0,NJ>0?NJ-1:0,0);
    if (!GeoRef_SetW(ref,String,Transform,InvTransform,Spatial)) {
       return(NULL);
    }
    
-   if (grtyp) {
-      ref->GRTYP[0]=grtyp[0];
-      ref->GRTYP[1]=grtyp[1];
+   if (GRTYP) {
+      ref->GRTYP[0]=GRTYP[0];
+      ref->GRTYP[1]=GRTYP[1];
    } else {
       ref->GRTYP[0]='W';
       ref->GRTYP[1]='\0';
    }
-   ref->RPNHead.IG[X_IG1]=ig1;
-   ref->RPNHead.IG[X_IG2]=ig2;
-   ref->RPNHead.IG[X_IG3]=ig3;
-   ref->RPNHead.IG[X_IG4]=ig4;
+   ref->RPNHead.IG[X_IG1]=IG1;
+   ref->RPNHead.IG[X_IG2]=IG2;
+   ref->RPNHead.IG[X_IG3]=IG3;
+   ref->RPNHead.IG[X_IG4]=IG4;
    
    return(ref);
 }
 
 #ifdef HAVE_GDAL
+/*----------------------------------------------------------------------------
+ * @brief  Apply rotation matrix to a LatLon pair
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]     T       Transform matrix
+ *    @param[inout]  Lat     Latitude array
+ *    @param[inout]  Lon     Longitude array
+
+ *    @return             Error code (TRUE=ok)
+*/
 static inline int GeoRef_WKTRotate(TRotationTransform *T,double *Lat,double *Lon) {
 
    double lat,lon,x,y,z,xr,yr,zr;
@@ -291,6 +291,16 @@ static inline int GeoRef_WKTRotate(TRotationTransform *T,double *Lat,double *Lon
 #endif
 
 #ifdef HAVE_GDAL
+/*----------------------------------------------------------------------------
+ * @brief  Apply inverse rotation matrix to a LatLon pair
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]     T       Transform matrix
+ *    @param[inout]  Lat     Latitude array
+ *    @param[inout]  Lon     Longitude array
+
+ *    @return             Error code (TRUE=ok)
+*/
 static inline int GeoRef_WKTUnRotate(TRotationTransform *T,double *Lat,double *Lon) {
 
    double lat,lon,x,y,z,xr,yr,zr;
@@ -315,6 +325,19 @@ static inline int GeoRef_WKTUnRotate(TRotationTransform *T,double *Lat,double *L
 }
 #endif
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms XY grid coordinates to LatLon for a W grid
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] Lat     Latitude array
+ *    @param[out] Lon     Longitude array
+ *    @param[in]  X       X array
+ *    @param[in]  Y       Y array
+ *    @param[in]  Nb      Number of coordinates
+
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
 
 #ifdef HAVE_GDAL
@@ -361,6 +384,19 @@ int GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
    return(0);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms LatLon coordinates to XY for a Z grid
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] X       X array
+ *    @param[out] Y       Y array
+ *    @param[in]  Lat     Latitude array
+ *    @param[in]  Lon     Longitude array
+ *    @param[in]  Nb      Number of coordinates
+
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_LL2XY_W(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
 #ifdef HAVE_GDAL

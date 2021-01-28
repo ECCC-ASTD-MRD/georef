@@ -22,7 +22,8 @@
       implicit none
       
       integer ni, wrap
-      real poleval,z(ni),ax(ni)
+      real poleval,z(ni)
+      real*8 ax(ni)
       character*1 grtyp, grref
       
       integer i

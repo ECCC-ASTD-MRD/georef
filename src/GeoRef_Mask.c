@@ -64,8 +64,6 @@ int GeoRef_MaskYYDefine(TGeoRef *Ref) {
    int i0,i1,j0,j1;
    int ig1ref,ig2ref,ig3ref,ig4ref;
   
-   float *ax,*ay;
-
    k=0;
    for (i=0; i < Ref->NX; i++) {
       if (Ref->AX[i] >= 45.0 && Ref->AX[i] <= 315.0) {

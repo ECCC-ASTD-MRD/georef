@@ -32,6 +32,19 @@
 #include "App.h"
 #include "GeoRef.h"
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms XY grid coordinates to LatLon for a T grid
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] Lat     Latitude array
+ *    @param[out] Lon     Longitude array
+ *    @param[in]  X       X array
+ *    @param[in]  Y       Y array
+ *    @param[in]  Nb      Number of coordinates
+
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_XY2LL_T(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
 
    f77name(ez8_vtllfxy)(Lat,Lon,X,Y,&Ref->RPNHead.XG[X_CLAT],&Ref->RPNHead.XG[X_CLON],&Ref->RPNHead.XG[X_TD60],&Ref->RPNHead.XG[X_TDGRW],&Ref->NX,&Ref->NY,&Nb);
@@ -39,6 +52,19 @@ int GeoRef_XY2LL_T(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
    return(0);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms LatLon coordinates to XY for a T grid
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] X       X array
+ *    @param[out] Y       Y array
+ *    @param[in]  Lat     Latitude array
+ *    @param[in]  Lon     Longitude array
+ *    @param[in]  Nb      Number of coordinates
+
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_LL2XY_T(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
 
    float  clat,clon,dgrw,d60;   

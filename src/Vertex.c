@@ -499,7 +499,7 @@ double VertexValV(TDef *Def,double X,double Y,double Z,Vect3d V) {
    return(0);
 }
 
-static inline float VertexAvgS(float *Data,char *Mask,int NI,int NJ,int X,int Y) {
+static inline float VertexAvgS(double *Data,char *Mask,int NI,int NJ,int X,int Y) {
    
    unsigned long n=0,i,j,idx;
    float         val=0.0;
@@ -517,7 +517,7 @@ static inline float VertexAvgS(float *Data,char *Mask,int NI,int NJ,int X,int Y)
    return(n?val/n:0.0);
 }
 
-float Vertex_ValS(float *Data,char *Mask,int NI,int NJ,double X,double Y,char Geo) {
+float VertexValS(double *Data,char *Mask,int NI,int NJ,double X,double Y,char Geo) {
    
    double        cell[4],d;
    unsigned long i,j,idx[4];

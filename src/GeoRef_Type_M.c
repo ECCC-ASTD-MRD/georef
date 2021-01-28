@@ -33,6 +33,19 @@
 #include "GeoRef.h"
 #include "Vertex.h"
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms XY grid coordinates to LatLon for an M grid (Mesh or TIN)
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] Lat     Latitude array
+ *    @param[out] Lon     Longitude array
+ *    @param[in]  X       X array
+ *    @param[in]  Y       Y array
+ *    @param[in]  Nb      Number of coordinates
+
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
  
    TQTree *node;
@@ -78,13 +91,26 @@ int GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
    return(0);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Transforms LatLon coordinates to XY for an M grid (Mesh or TIN)
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[out] X       X array
+ *    @param[out] Y       Y array
+ *    @param[in]  Lat     Latitude array
+ *    @param[in]  Lon     Longitude array
+ *    @param[in]  Nb      Number of coordinates
+
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_XY2LL_M(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
 
    int i;
 
    for (i=0; i < Nb; i++) {
-      Lon[i]=Vertex_ValS(Ref->AX,NULL,Ref->NX,Ref->NY,X[i],Y[i],TRUE);
-      Lat[i]=Vertex_ValS(Ref->AY,NULL,Ref->NX,Ref->NY,X[i],Y[i],FALSE);
+      Lon[i]=VertexValS(Ref->AX,NULL,Ref->NX,Ref->NY,X[i],Y[i],TRUE);
+      Lat[i]=VertexValS(Ref->AY,NULL,Ref->NX,Ref->NY,X[i],Y[i],FALSE);
    }
    return(0);
 }
