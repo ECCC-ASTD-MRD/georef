@@ -9,9 +9,9 @@ IF(DEFINED ENV{INTELCOMP_HOME})
    add_link_options(-lintlc -lifcore -lifport -fopenmp)
 endif()
 
-add_executable(interpolate interpolate.c)
-target_link_libraries(interpolate georef -lm ${RMN_LIBRARIES} ${VGRID_LIBRARIES})
-set_target_properties(interpolate PROPERTIES VERSION ${PROJECT_VERSION})
+#add_executable(interpolate interpolate.c)
+#target_link_libraries(interpolate georef -lm ${RMN_LIBRARIES} ${VGRID_LIBRARIES})
+#set_target_properties(interpolate PROPERTIES VERSION ${PROJECT_VERSION})
 
-install(TARGETS interpolate
-   RUNTIME DESTINATION bin)
+#install(TARGETS interpolate
+#   RUNTIME DESTINATION bin)

@@ -18,12 +18,13 @@ set(CMAKE_INSTALL_PREFIX "" CACHE PATH "..." FORCE)
 
 enable_language(C)
 enable_language(Fortran)
+enable_testing()
 
 include(compiler_rules)
 #include(compiler_presets)
 
-set (CMAKE_CXX_STANDARD 11)
-set(CMAKE_Fortran_FLAGS         "${CMAKE_Fortran_FLAGS} -cpp")
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 add_compile_definitions(HAVE_GPC)
@@ -72,3 +73,6 @@ endif()
 
 include(ec_bin_config)
 
+set(GRID_PATH /local/drive1/afsr005/GRIDS)
+#add_test(NAME O2L CONFIGURATIONS Release WORKING_DIRECTORY build/util COMMAND Interpolate -g ${GRID_PATH}/O.fstd -i ${GRID_PATH}/L.fstd -o /tmp/libgeoref.fstd -n GRID -v DEBUG)
+#add_test(O2L Interpolate -g ${GRID_PATH}/O.fstd -i ${GRID_PATH}/L.fstd -o /tmp/libgeoref.fstd -n GRID -v DEBUG)

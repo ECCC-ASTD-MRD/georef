@@ -646,6 +646,10 @@ int QSort_DecInt(const void *A, const void *B) {
    return(*(const int*)B)-(*(const int*)A);
 }
 
+int QSort_StrPtr(const void *A, const void *B) {
+   return strcmp(*(const char * const *)A,*(const char * const *)B);
+}
+
 /*----------------------------------------------------------------------------
  * Nom      : <Unique>
  * Creation : Mars 2015 - E. Legault-Ouellet - CMC/CMOE

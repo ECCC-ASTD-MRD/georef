@@ -37,12 +37,12 @@
 #define APP_NAME "Interpolate"
 #define APP_DESC "ECCC/CMC RPN fstd interpolation tool."
 
-int Interpolate(char *In,char *Out,char *Grid,char **Vars,TDef_InterpR Type) {
+int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,TDef_InterpR Type) {
 
 #ifdef HAVE_RMN
    TGridSet  *gset=NULL;
-   TRPNField *in,*grid,*idx;
-   int  fin,fout,fgrid,n=0;
+   TRPNField *in,*grid,*truth,*idx;
+   int  fin,fout,fgrid,ftruth,n=0;
 
    if ((fin=cs_fstouv(In,"STD+RND+R/O"))<0) {
       App_Log(ERROR,"Problems opening input file %s\n",In);
@@ -58,18 +58,29 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,TDef_InterpR Type) {
       App_Log(ERROR,"Problems opening grid file %s\n",Grid);
       return(0);
    }
+
    if (!(grid=RPN_FieldRead(fgrid,-1,"",-1,-1,-1,"","GRID"))) {
       App_Log(ERROR,"Problems reading grid field\n");
       return(0);    
    }
-   //RPN_FieldReadGrid(grid);
+  
+   if (Truth) {
+      if ((ftruth=cs_fstouv(Out,"STD+RND+R"))<0) {
+         App_Log(ERROR,"Problems opening truth file %s\n",Out);
+         return(0);
+      }
+
+      if (!(truth=RPN_FieldRead(ftruth,-1,"",-1,-1,-1,"","GRID"))) {
+         App_Log(ERROR,"Problems reading truth field\n");
+         return(0);    
+      }
+   }
 
    if (!(in=RPN_FieldRead(fin,-1,"",-1,-1,-1,"",Vars[0]))) {
       App_Log(ERROR,"Problems reading input field\n");
       return(0);  
    }
-   //RPN_FieldReadGrid(in);
-
+  
    // Create index field
    if (!(idx=RPN_FieldNew(in->Def->NIJ*100,1,1,1,TD_Float64))) {
       return(0);       
@@ -86,7 +97,6 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,TDef_InterpR Type) {
 
    grid->Def->NoData=0.0;
  
-   //fprintf(stderr,"...%c...%c...\n",grid->GRef->RPNHead.GRREF[0],in->GRef->RPNHead.GRREF[0]);
    while(in->Head.KEY>0 && n++<10) {
       App_Log(INFO,"Processing %s %i\n",Vars[0],in->Head.KEY);
 
@@ -107,6 +117,10 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,TDef_InterpR Type) {
          if (!RPN_FieldReadIndex(fin,in->Head.KEY,in)) {
             return(0);
          }
+      }
+
+      if (truth) {
+
       }
    }
    
@@ -131,11 +145,12 @@ int main(int argc, char *argv[]) {
 
    TDef_InterpR interp=IR_LINEAR;
    int          ok=0,code=EXIT_FAILURE;
-   char        *in=NULL,*out=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
+   char        *in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
 
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,   1,             "i", "input",  "Input file" },
         { APP_CHAR,  &out,  1,             "o", "output", "Output file" },
+        { APP_CHAR,  &truth,1,             "t", "truth",  "Truth data file to compare with" },
         { APP_CHAR,  &grid, 1,             "g", "grid",   "Grid file" },
         { APP_CHAR,  &type, 1,             "t", "type",   "Interpolation type (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC)" },
         { APP_CHAR,  vars,  APP_LISTMAX-1, "n", "nomvar", "List of variable to process" },
@@ -180,8 +195,8 @@ int main(int argc, char *argv[]) {
          App_Log(ERROR,"Invalid interpolation method: %s\n",type);
    }
 
-   ok=Interpolate(in,out,grid,vars,interp);
-   code=App_End(ok?-1:EXIT_FAILURE);
+   ok=Interpolate(in,out,truth,grid,vars,interp);
+   code=App_End(ok?0:EXIT_FAILURE);
    App_Free();
 
    exit(code);

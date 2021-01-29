@@ -32,7 +32,7 @@
 #define _RPN_h
 
 #define RPNMAX 2048                            ///< Maximum size of fstinl list
-#define C_TO_FTN(I,J,NI) (int)((NI)*(J)+I)     ///< Array index conversion
+#define C_TO_FTN(I,J,NI) (int)((NI)*(J)+(I))   ///< Array index conversion
 
 #define X_PI    0
 #define X_PJ    1
@@ -130,7 +130,7 @@ int RPN_LinkPattern(const char* Pattern);
 #include "rpnmacros.h"
 #include "rpn_macros_arch.h"
 
-// EER threadsafe fstd functions
+// RPN threadsafe (lock) fstd functions
 void cs_fstunlockid(int Unit);
 int  cs_fstlockid();
 int  cs_fstfrm(int Unit);

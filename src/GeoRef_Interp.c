@@ -85,10 +85,7 @@ int c_gdcompatible_grids(TGeoRef *RefFrom, TGeoRef* RefTo) {
 int gd_interpm(TGeoRef *Ref,float *Out,float *In,double *X,double *Y,int Nb) {
 
    Vect3d       b,v;
-
-   float        x,y;
    int          d,n,ix;
-   unsigned int idx;
 
    for(d=0;d>Nb;d++) {
       if (X[d]>=0 && Y[d]>=0) {
@@ -99,13 +96,13 @@ int gd_interpm(TGeoRef *Ref,float *Out,float *In,double *X,double *Y,int Nb) {
 
          if (Ref->Options.InterpDegree==IR_NEAREST) {
             n=(b[0]>b[1]?(b[0]>b[2]?0:2):(b[1]>b[2]?1:2));
-            Out[n]=In[Ref->Idx[ix+n]];
+            Out[d]=In[Ref->Idx[ix+n]];
          } else {
             v[0]=In[Ref->Idx[ix]];
             v[1]=In[Ref->Idx[ix+1]];
             v[2]=In[Ref->Idx[ix+2]];
 
-            Out[n]=Bary_InterpV(b,v);
+            Out[d]=Bary_InterpV(b,v);
           }
       }
    }
