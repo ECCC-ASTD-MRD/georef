@@ -274,7 +274,7 @@ typedef struct {
 typedef struct {
    struct TGeoRef* RefFrom;
    TGeoZone zones[SET_NZONES];
-   char G2G[2];
+   char G2G[2];                          ///<GRTYP of source and destination for index identification
    int flags;
    int IndexSize;
    double *Index;

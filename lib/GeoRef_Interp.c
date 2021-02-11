@@ -114,8 +114,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
    TGridSet *gset=NULL;
    int ier, un, j;
    int old_degre_interp;
-   double *gdst_lats, tmp, real_un, real_j;
-   int ni_in, nj_in, ni_out, nj_out;
+   double *gdst_lats, tmp, real_un=1.0, real_j;
 
    // RefTo needed for type 4,5 and Y grid
    if ((!RefTo && (RefFrom->Options.InterpDegree==4 || RefFrom->Options.InterpDegree==5)) || !RefFrom) {
@@ -128,9 +127,6 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
       return(-1);
    }
    old_degre_interp = RefFrom->Options.InterpDegree;
-
-   ni_in =  RefFrom->NX;
-   nj_in =  RefFrom->NY;
 
    switch (RefFrom->Options.InterpDegree) {
       //TODO: check 4 and 5 (DISTANCE TRIANGLE)
@@ -174,7 +170,6 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
 
          case 5:
             gdst_lats = (double*) malloc(sizeof(double)*npts);
-            real_un = 1.0;
             for (j=0; j < RefTo->NY; j++) {
                real_j = 1.0 * (j+1);
                ier = GeoRef_XY2LL(RefTo,&gdst_lats[j],&tmp,&real_un,&real_j,1,TRUE);
@@ -186,13 +181,11 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
 
       case 'Y':
          gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
-         ni_out = RefTo->NX;
-         nj_out = RefTo->NY;
          un = 1;
-         if (ni_in > 1 && nj_in > 1 && RefFrom->Options.InterpDegree==IR_LINEAR) {
+         if (RefFrom->NX > 1 && RefFrom->NY > 1 && RefFrom->Options.InterpDegree==IR_LINEAR) {
             f77name(ez8_rgdint_1)(zout,X,Y,&npts,zin,&RefFrom->NX,&un,&RefFrom->NY,0,&RefFrom->Options.NoData);
          } else {
-            f77name(ez_applywgts)(zout,gset->wts,gset->idx,zin,gset->mask,&ni_in, &nj_in, &ni_out, &nj_out,&(gset->n_wts));
+            f77name(ez_applywgts)(zout,gset->wts,gset->idx,zin,gset->mask,&RefFrom->NX,&RefFrom->NY,&RefTo->NX,&RefTo->NY,&(gset->n_wts));
          }
          break;
 
@@ -216,7 +209,6 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
 
             case 5:
                gdst_lats = (double*) malloc(sizeof(double)*npts);
-               real_un = 1.0;
                for (j=0; j < RefTo->NY; j++) {
                   real_j = 1.0 * (j+1);
                   ier = GeoRef_XY2LL(RefTo,&gdst_lats[j],&tmp,&real_un,&real_j,1,TRUE);

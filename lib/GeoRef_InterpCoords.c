@@ -24,12 +24,12 @@
 void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int npts,float xlat1,float xlon1,float xlat2,float xlon2) {
 
    double cart[3],carot[3],latr,lonr,cosdar;
-   int i,k,n,c;
-   float r[3][3],ri[3][3];
+   int    n;
+   float  r[3][3],ri[3][3];
 
    f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
-#pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(X,Y)
+#pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(Lat,Lon,X,Y)
    for(n=0;n<npts;n++) {
       latr=DEG2RAD(Lat[n]);
       lonr=DEG2RAD(Lon[n]);
@@ -39,9 +39,9 @@ void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int npts,float
       cart[1] = cosdar*sin(lonr);
       cart[2] = sin(latr);
 
-      carot[0] = r[0][0]*cart[0]+r[0][1]*cart[1]+r[0][2]*cart[2];
-      carot[1] = r[1][0]*cart[0]+r[1][1]*cart[1]+r[1][2]*cart[2];
-      carot[2] = r[2][0]*cart[0]+r[2][1]*cart[1]+r[2][2]*cart[2];
+      carot[0] = r[0][0]*cart[0]+r[1][0]*cart[1]+r[2][0]*cart[2];
+      carot[1] = r[0][1]*cart[0]+r[1][1]*cart[1]+r[2][1]*cart[2];
+      carot[2] = r[0][2]*cart[0]+r[1][2]*cart[1]+r[2][2]*cart[2];
       
       Y[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[2]))));
       X[n]=RAD2DEG(atan2(carot[1],carot[0]));
@@ -49,7 +49,7 @@ void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int npts,float
       if (X[n]<0.0) X[n]+=360.0;
    }
 }
-
+ 
 void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int npts,float xlat1,float xlon1,float xlat2,float xlon2) {
 
    double cart[3],carot[3],latr,lonr,cosdar;
@@ -58,7 +58,7 @@ void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int npts
 
    f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
-#pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(X,Y)
+#pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(Lat,Lon,X,Y)
    for(n=0;n<npts;n++) {
       latr=DEG2RAD(Y[n]);
       lonr=DEG2RAD(X[n]);
@@ -68,9 +68,9 @@ void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int npts
       cart[1] = cosdar*sin(lonr);
       cart[2] = sin(latr);
 
-      carot[0] = ri[0][0]*cart[0]+ri[0][1]*cart[1]+ri[0][2]*cart[2];
-      carot[1] = ri[1][0]*cart[0]+ri[1][1]*cart[1]+ri[1][2]*cart[2];
-      carot[2] = ri[2][0]*cart[0]+ri[2][1]*cart[1]+ri[2][2]*cart[2];
+      carot[0] = ri[0][0]*cart[0]+ri[1][0]*cart[1]+ri[2][0]*cart[2];
+      carot[1] = ri[0][1]*cart[0]+ri[1][1]*cart[1]+ri[2][1]*cart[2];
+      carot[2] = ri[0][2]*cart[0]+ri[1][2]*cart[1]+ri[2][2]*cart[2];
      
       Lat[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[2]))));
       Lon[n]=RAD2DEG(atan2(carot[1],carot[0]));
@@ -177,6 +177,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
          }
       }
    
+//TODO: Confirm CIndex
       if (Ref->Options.CIndex) {
          for(i=0;i<Nb;i++) {
             X[i]+=1.0;

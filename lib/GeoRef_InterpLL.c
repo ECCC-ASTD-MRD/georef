@@ -41,28 +41,30 @@ static inline void llfxy(double *Lat,double *Lon,double X,double Y,double D60,do
    re=1.866025*EARTHRADIUS/D60;
    re2=re*re;
 
-   // If point is at pole set coords to (0.,90.)
-
+   // Initialize point at pole (0.0,90.0)
    *Lat=90.0;
    *Lon=0.0;
 
    if (X!=0.0 || Y!=0.0) {
 
       // Calculate longitude in map coordinates
-
-      if (X==0.0) *Lon=SIGN(90.0,Y);
-      if (X!=0.0) *Lon=RAD2DEG(atan(Y/X));
-      if (X<0.0)  *Lon=*Lon+SIGN(180.0,Y);
+      if (X==0.0) { 
+         *Lon=SIGN(90.0,Y);
+      } else {
+         *Lon=RAD2DEG(atan(Y/X));
+      }
+      if (X<0.0) *Lon=*Lon+SIGN(180.0,Y);
 
       // Adjust for grid orientation
       *Lon-=DGRW;
-
+      *Lon=CLAMPLON(*Lon);
+      
       // Calculate latitude
       r2=X*X+Y*Y;
       *Lat=(re2-r2)/(re2+r2);
       *Lat=RAD2DEG(asin(*Lat));
-
    }
+
    // Change sign if in southern hemisphere
    if (HEM==2) {
       *Lat=-*Lat;
@@ -120,12 +122,11 @@ static inline void grps(double *Lat,double *Lon,int NI,int NJ,double PI,double P
    double lat,lon,x,y;
 
    for(j=0;j<NJ;j++){
-      y=j-PJ;
+      y=j+1-PJ;
       for(i=0;i<NI;i++) {
-         x=i-PI;
-         llfxy(&lat,&lon,x,y,D60,DGRW,HEM);
-         Lat[idx]=lat;
-         Lon[idx]=lon;
+         x=i+1-PI;
+         llfxy(&Lat[idx],&Lon[idx],x,y,D60,DGRW,HEM);
+         idx++;
       }
    }
 }
@@ -251,17 +252,20 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
          case '#':
          case 'Z':
          case 'G':
-            for (j=0; j < nj; j++) {
-               for (i=0; i < ni; i++) {
-                    Ref->Lat[C_TO_FTN(i,j,ni)] = Ref->AY[j];
-                    Ref->Lon[C_TO_FTN(i,j,ni)] = Ref->AX[i];
+            k=0;
+            for (j=0; j<nj; j++) {
+               for (i=0; i<ni; i++) {
+                    Ref->Lat[k] = Ref->AY[j];
+                    Ref->Lon[k] = Ref->AX[i];
+                    k++;
                }
             }
 
 	         if (Ref->GRTYP[0] == 'G' && Ref->RPNHead.IG[X_IG1] == NORTH) {
-	            for (j=0; j < nj; j++) {
-	               for (i=0; i < ni; i++) {
-		               Ref->Lat[C_TO_FTN(i,j,ni)] = Ref->AY[j+nj];
+               k=0;
+	            for (j=0; j<nj; j++) {
+	               for (i=0; i<ni; i++) {
+		               Ref->Lat[k++] = Ref->AY[j+nj];
 		            }
 	            }
 	         }
@@ -273,16 +277,10 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                   break;
 
                case 'L':
-                  for (j=0; j < nj; j++) {
-                     for (i=0; i < ni; i++) {
-                        Ref->Lat[C_TO_FTN(i,j,ni)] += 1.0;
-                        Ref->Lon[C_TO_FTN(i,j,ni)] += 1.0;
-                     }
-                  }
-  
+
                   for (i=0; i < npts; i++) {
-                     Ref->Lon[i] = Ref->RPNHead.XGREF[X_SWLON] + Ref->RPNHead.XGREF[X_DLON] * (Ref->Lon[i]-1.0);
-                     Ref->Lat[i] = Ref->RPNHead.XGREF[X_SWLAT] + Ref->RPNHead.XGREF[X_DLAT] * (Ref->Lat[i]-1.0);
+                     Ref->Lon[i] = Ref->RPNHead.XGREF[X_SWLON] + Ref->RPNHead.XGREF[X_DLON] * Ref->Lon[i];
+                     Ref->Lat[i] = Ref->RPNHead.XGREF[X_SWLAT] + Ref->RPNHead.XGREF[X_DLAT] * Ref->Lat[i];
                   }   
                   break;
 

@@ -13,3 +13,5 @@ for grid in $GRIDS; do
 done
 
 scp /tmp/libgeoref.fstd nil000@ppp3:/home/nil000/
+
+cd.; \rm /tmp/libgeoref.fstd; make test; scp /tmp/libgeoref.fstd nil000@ppp3:/home/nil000

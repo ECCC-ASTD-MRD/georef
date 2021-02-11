@@ -212,7 +212,7 @@ int GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin)
 
    nj = RefFrom->j2 - RefFrom->j1 +1;
    ierc = 0; /* no extrapolation */
-  
+
    if (gset->zones[OUTSIDE].npts > 0) {
       ierc = 2; /* code to indicate extrapolation */
       if (RefFrom->Options.ExtrapDegree == ER_ABORT) {
@@ -221,7 +221,7 @@ int GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin)
       }
 
       f77name(ez_aminmax)(&valmin,&valmax,zin,&(RefFrom->NX),&nj);
-      if (RefFrom->Options.ExtrapDegree >= ER_MAXIMUM) {
+      if (RefFrom->Options.ExtrapDegree) {
          if (RefFrom->Options.VectorMode) {
 	         fudgeval = 0.0;
             fudgeval_set = 1;

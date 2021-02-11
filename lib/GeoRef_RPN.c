@@ -135,7 +135,7 @@ int GeoRef_RPNDefXG(TGeoRef* Ref) {
       case 'Z':
          if (Ref->RPNHead.GRREF[0] == 'N') Ref->Hemi = NORTH;
          if (Ref->RPNHead.GRREF[0] == 'S') Ref->Hemi = SOUTH;
-         if (Ref->RPNHead.GRREF[0] == 'E') {
+         if (Ref->RPNHead.GRREF[0] == 'E' || Ref->RPNHead.GRREF[0]== 'L') {
             f77name(cigaxg)(Ref->RPNHead.GRREF,&Ref->RPNHead.XGREF[X_LAT1], &Ref->RPNHead.XGREF[X_LON1], &Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2],&Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4]);
          }
          break;

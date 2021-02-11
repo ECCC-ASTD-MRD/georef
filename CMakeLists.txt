@@ -65,14 +65,10 @@ endif()
 
 add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ _GNU_SOURCE)
 
-add_subdirectory(src src)
+add_subdirectory(lib lib)
 if(NOT DEFINED ENV{OMPI})
    add_subdirectory(util util)
    add_subdirectory(test test)
 endif()
 
 include(ec_bin_config)
-
-set(GRID_PATH /local/drive1/afsr005/GRIDS)
-#add_test(NAME O2L CONFIGURATIONS Release WORKING_DIRECTORY build/util COMMAND Interpolate -g ${GRID_PATH}/O.fstd -i ${GRID_PATH}/L.fstd -o /tmp/libgeoref.fstd -n GRID -v DEBUG)
-#add_test(O2L Interpolate -g ${GRID_PATH}/O.fstd -i ${GRID_PATH}/L.fstd -o /tmp/libgeoref.fstd -n GRID -v DEBUG)
