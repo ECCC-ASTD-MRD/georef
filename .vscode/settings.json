@@ -1,0 +1,11 @@
+{
+   "files.associations": {
+      "*.extension": "language",
+      "*.hf": "fortran",
+      "*.ftn90": "fortran",
+      "*.cuh": "c",
+      "complex": "c"
+   },
+   "C_Cpp.errorSquiggles": "Disabled",
+   "python.pythonPath": "/usr/bin/python3"
+}

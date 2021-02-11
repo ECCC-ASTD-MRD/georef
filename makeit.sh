@@ -5,9 +5,9 @@
       main/opt/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199 \
       main/opt/openmpi-setup/openmpi-setup-0.2 \
       main/opt/cmake/cmake-3.16.4 \
-      rpn/libs/19.6-beta \
-      rpn/utils/19.6-beta \
-      rpn/vgrid/6.5.b2
+      rpn/libs/19.7.0 \
+      rpn/utils/19.7.0 \
+      rpn/vgrid/6.5.0
 }
 
 #----- Parse VERSION file
@@ -28,10 +28,10 @@ ORDENV_PLAT=${ORDENV_PLAT:-`uname -s`-`uname -m`}
 SSM_VERSION=${VERSION}${SSM_COMP}
 SSM_NAME=${NAME}_${SSM_VERSION}_${ORDENV_PLAT}
 
-export EC_CMAKE_MODULE_PATH="`pwd`/modules;$EC_CMAKE_MODULE_PATH"
+export EC_CMAKE_MODULE_PATH="`pwd`/cmake;$EC_CMAKE_MODULE_PATH"
 export DESTDIR=${SSM_DEV}/workspace/${SSM_NAME}
 
-rm -f -r build; mkdir build; cd build
-cmake $CMAKE_COMP_FLAGS -DEC_COMPILER_SUITE=intel -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
+rm -f -r build; mkdir -p build; cd build
+cmake $CMAKE_COMP_FLAGS -DCOMPILER_SUITE=intel -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
 make -j
 make install

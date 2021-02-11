@@ -9,15 +9,22 @@ include(ec_utils)   # Include EC specific cmake utils
 ec_parse_manifest() # Parse MANIFEST file
 ec_build_info()     # Generate build include file
 
+#set(DOXYGEN_FOUND True)
+# include(doxygen)    # Doxygen target
+
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
+
+set(CMAKE_INSTALL_PREFIX "" CACHE PATH "..." FORCE)
 
 enable_language(C)
 enable_language(Fortran)
+enable_testing()
 
 include(compiler_rules)
 #include(compiler_presets)
 
-set(CMAKE_Fortran_FLAGS         "${CMAKE_Fortran_FLAGS} -cpp")
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 add_compile_definitions(HAVE_GPC)
@@ -34,9 +41,6 @@ endif()
 #  add_compile_definitions(HAVE_VGRID)
 #   include_directories(${VGRID_INCLUDE_DIR})
 #endif()
-
-#find_package(LibXml2 REQUIRED)
-#include_directories(${LIBXML2_INCLUDE_DIR})
 
 find_package(GDAL)
 if(GDAL_FOUND)
@@ -61,11 +65,10 @@ endif()
 
 add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ _GNU_SOURCE)
 
-add_subdirectory(src src)
+add_subdirectory(lib lib)
 if(NOT DEFINED ENV{OMPI})
    add_subdirectory(util util)
    add_subdirectory(test test)
 endif()
 
 include(ec_bin_config)
-

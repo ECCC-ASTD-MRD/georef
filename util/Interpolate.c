@@ -37,12 +37,12 @@
 #define APP_NAME "Interpolate"
 #define APP_DESC "ECCC/CMC RPN fstd interpolation tool."
 
-int Interpolate(char *In,char *Out,char *Grid,char **Vars,char *Type) {
+int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket,TDef_InterpR Type) {
 
 #ifdef HAVE_RMN
-   TRPNField *in,*grid,*idx;
-   int  fin,fout,fgrid;
-   float *index=NULL;
+   TGridSet  *gset=NULL;
+   TRPNField *in,*grid,*truth,*idx;
+   int  fin,fout,fgrid,ftruth,n=0;
 
    if ((fin=cs_fstouv(In,"STD+RND+R/O"))<0) {
       App_Log(ERROR,"Problems opening input file %s\n",In);
@@ -63,16 +63,26 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,char *Type) {
       App_Log(ERROR,"Problems reading grid field\n");
       return(0);    
    }
-   RPN_FieldReadGrid(grid);
+  
+   if (Truth) {
+      if ((ftruth=cs_fstouv(Out,"STD+RND+R"))<0) {
+         App_Log(ERROR,"Problems opening truth file %s\n",Out);
+         return(0);
+      }
+
+      if (!(truth=RPN_FieldRead(ftruth,-1,"",-1,-1,-1,"","GRID"))) {
+         App_Log(ERROR,"Problems reading truth field\n");
+         return(0);    
+      }
+   }
 
    if (!(in=RPN_FieldRead(fin,-1,"",-1,-1,-1,"",Vars[0]))) {
       App_Log(ERROR,"Problems reading input field\n");
       return(0);  
    }
-   RPN_FieldReadGrid(in);
-
+  
    // Create index field
-   if (!(idx=RPN_FieldNew(in->Def->NIJ*100,1,1,1,TD_Float32))) {
+   if (!(idx=RPN_FieldNew(in->Def->NIJ*100,1,1,1,TD_Float64))) {
       return(0);       
    }
 
@@ -84,21 +94,20 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,char *Type) {
    idx->Head.GRTYP[0]='X';
    idx->Head.NBITS=32;
    idx->Head.DATYP=5;
-   index=(float*)idx->Def->Data[0];
 
-   // Initialize index to empty
-   index[0]=DEF_INDEX_EMPTY;
+   if (Etiket) strncpy(idx->Head.ETIKET,Etiket,12);
+   if (Etiket) strncpy(in->Head.ETIKET,Etiket,12);
+
    grid->Def->NoData=0.0;
  
-   while(in->Head.KEY>0) {
+   while(in->Head.KEY>0 && n++<10) {
       App_Log(INFO,"Processing %s %i\n",Vars[0],in->Head.KEY);
 
       // Reset result grid
       Def_Clear(grid->Def);
      
       // Proceed with interpolation
-      //     if (!(Def_EzInterp(grid->Def,in->Def,grid->GRef,in->GRef,Type,"VALUE",FALSE,index))) {
-      if (!(Def_GridInterp(grid->GRef,grid->Def,in->GRef,in->Def,Type,"VALUE",FALSE,index))) {
+      if (!(Def_GridInterp(grid->GRef,grid->Def,in->GRef,in->Def,Type,ER_VALUE,&gset))) {
          App_Log(ERROR,"%s: EZSCINT interpolation problem",__func__);
          return(0);    
       }
@@ -112,13 +121,17 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,char *Type) {
             return(0);
          }
       }
+
+      if (truth) {
+
+      }
    }
    
    // Write index
-   if (index[0]!=DEF_INDEX_EMPTY) {
-      App_Log(DEBUG,"Saving index containing %i items\n",idx->Head.NI);
+   if (gset) {
+      App_Log(DEBUG,"Saving index containing %i items\n",gset->IndexSize);
       
-      if (!RPN_FieldWrite(fout,idx)) {
+      if (!GeoRef_SetWrite(fout,gset)) {
          return(0);
       }
    }
@@ -133,15 +146,18 @@ int Interpolate(char *In,char *Out,char *Grid,char **Vars,char *Type) {
 
 int main(int argc, char *argv[]) {
 
-   int      ok=0,code=EXIT_FAILURE;
-   char     *in=NULL,*out=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
+   TDef_InterpR interp=IR_LINEAR;
+   int          ok=0,code=EXIT_FAILURE;
+   char         *etiket=NULL,*in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
 
    TApp_Arg appargs[]=
-      { { APP_CHAR,  &in,   1,             "i", "input",  "Input file" },
-        { APP_CHAR,  &out,  1,             "o", "output", "Output file" },
-        { APP_CHAR,  &grid, 1,             "g", "grid",   "Grid file" },
-        { APP_CHAR,  &type, 1,             "t", "type",   "Interpolation type (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC)" },
-        { APP_CHAR,  vars,  APP_LISTMAX-1, "n", "nomvar", "List of variable to process" },
+      { { APP_CHAR,  &in,    1,             "i", "input",  "Input file" },
+        { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
+        { APP_CHAR,  &truth, 1,             "t", "truth",  "Truth data file to compare with" },
+        { APP_CHAR,  &grid,  1,             "g", "grid",   "Grid file" },
+        { APP_CHAR,  &type,  1,             "t", "type",   "Interpolation type (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC)" },
+        { APP_CHAR,  &etiket,1,             "e", "etiket", "ETIKET for destination field" },
+        { APP_CHAR,  vars,  APP_LISTMAX-1,  "n", "nomvar", "List of variable to process" },
         { APP_NIL } };
 
    memset(vars,0x0,APP_LISTMAX*sizeof(vars[0]));
@@ -151,7 +167,7 @@ int main(int argc, char *argv[]) {
       exit(EXIT_FAILURE);      
    }
    
-   /*Error checking*/
+   // Error checking
    if (!in) {
       App_Log(ERROR,"No input standard file specified\n");
       exit(EXIT_FAILURE);
@@ -173,10 +189,18 @@ int main(int argc, char *argv[]) {
       type=dtype;
    }
 
-   /*Launch the app*/
+   // Launch the app
    App_Start();
-   ok=Interpolate(in,out,grid,vars,type);
-   code=App_End(ok?-1:EXIT_FAILURE);
+   switch(type[0]) {
+      case 'N': interp=IR_NEAREST; break;
+      case 'L': interp=IR_LINEAR; break;
+      case 'V': interp=IR_CUBIC; break;
+      default:
+         App_Log(ERROR,"Invalid interpolation method: %s\n",type);
+   }
+
+   ok=Interpolate(in,out,truth,grid,vars,etiket,interp);
+   code=App_End(ok?0:EXIT_FAILURE);
    App_Free();
 
    exit(code);

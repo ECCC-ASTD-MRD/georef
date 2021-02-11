@@ -3,13 +3,13 @@ VERSION    : 0.1.0
 BUILD      : Debug
 DESCRIPTION: ECCC-CCMEP Geo reference manipulation library
 SUMMARY    : This library allows for reprojection, coordinate transform and interpolation in between various type of geo reference (RPN,WTK,meshes,...)
-MAINTAINER : Kristjan Onu - Kristjan.Onu@canada.ca 
-URL        : https://github.com/jeixav/stage_2020
+MAINTAINER : Jean-Philipe Gauthier - Jean-Philipep.Gauthier@canada.ca 
+URL        : https://gitlab.science.gc.ca/RPN-SI/libgeoref
 
 # Dependencies 
 #    =,<,<=,>,>= : Version rules
 #    ~           : Optional
 
-RMN  ~>= 19.6.0
+RMN  ~>= 19.7.0
 VGRID ~= 6.5.0
 GDAL ~>= 2.0
