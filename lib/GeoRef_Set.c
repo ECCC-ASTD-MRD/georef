@@ -32,6 +32,12 @@
 #include "App.h"
 #include "GeoRef.h"
 
+/*----------------------------------------------------------------------------
+ * @brief  Free gridset zone definitions
+ * @author Yves Chartier
+ * @date   
+ *    @param[in]  GSet    Grid set pointer
+*/
 void GeoRef_SetZoneFree(TGridSet *GSet) {
 
   int i;
@@ -49,6 +55,17 @@ void GeoRef_SetZoneFree(TGridSet *GSet) {
    }
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Finds the points at a pole
+ * @author Yves Chartier
+ * @date   
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[in]  GSet    Grid set pointer
+ *    @param[in]  Zone    Zone identifier (NORTH_POLE,SOUTH_POLE)
+ *    @param[in]  NbPts   Number of points to check
+ *
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_SetZoneDefinePole(TGeoRef *RefFrom,TGridSet *GSet,int Zone,int NbPts) {
 
    TGeoZone *zone=&GSet->zones[Zone];
@@ -93,6 +110,17 @@ int GeoRef_SetZoneDefinePole(TGeoRef *RefFrom,TGridSet *GSet,int Zone,int NbPts)
    return(0);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Finds the points between the pole and a limit
+ * @author Yves Chartier
+ * @date   
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[in]  GSet    Grid set pointer
+ *    @param[in]  Zone    Zone identifier (NORTH,SOUTH)
+ *    @param[in]  NbPts   Number of points to check
+ *
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_SetZoneDefineThem(TGeoRef *RefFrom,TGridSet *GSet,int Zone,int NbPts) {
 
    TGeoZone *zone=&GSet->zones[Zone];
@@ -127,6 +155,17 @@ int GeoRef_SetZoneDefineThem(TGeoRef *RefFrom,TGridSet *GSet,int Zone,int NbPts)
    return(0);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Finds the points outside of the source data
+ * @author Yves Chartier
+ * @date   
+ *    @param[in]  Ref     Georeference pointer
+ *    @param[in]  GSet    Grid set pointer
+ *    @param[in]  Zone    Zone identifier (OUTSIDE)
+ *    @param[in]  NbPts   Number of points to check
+ *
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_SetZoneDefineOut(TGeoRef *RefFrom,TGridSet *GSet,int Zone,int NbPts) {
 
    TGeoZone *zone=&GSet->zones[Zone];
@@ -175,6 +214,15 @@ int GeoRef_SetZoneDefineOut(TGeoRef *RefFrom,TGridSet *GSet,int Zone,int NbPts) 
    return(0);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Defines the various zones
+ * @author Yves Chartier
+ * @date   
+ *    @param[in]  RefTo     Destination georeference pointer
+ *    @param[in]  RefFrom   Source georeference pointer
+ *
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_SetZoneDefine(TGeoRef *RefTo,TGeoRef *RefFrom) {
 
    TGridSet *gset=NULL;
@@ -233,6 +281,15 @@ int GeoRef_SetZoneDefine(TGeoRef *RefTo,TGeoRef *RefFrom) {
    return(0);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Calculates XY correspondance of destination points within the source grid
+ * @author Yves Chartier
+ * @date   
+ *    @param[in]  RefTo     Destination georeference pointer
+ *    @param[in]  RefFrom   Source georeference pointer
+ *
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_SetCalcXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
 
    TGridSet *gset=NULL;
@@ -251,6 +308,15 @@ int GeoRef_SetCalcXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
    return(0);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Calculates XY correspondance of destination points within the source grid (for YY grids)
+ * @author Yves Chartier
+ * @date   
+ *    @param[in]  RefTo     Destination georeference pointer
+ *    @param[in]  RefFrom   Source georeference pointer
+ *
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
 
    TGridSet *gset=NULL;
@@ -374,6 +440,13 @@ int GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom) {
    return(icode);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Free grid set structure
+ * @author Yves Chartier
+ * @date   
+ *    @param[in]  GSet      Gridset pointer
+ *
+*/
 void GeoRef_SetFree(TGridSet* GSet) {
 
    int i;
@@ -402,6 +475,17 @@ void GeoRef_SetFree(TGridSet* GSet) {
  // float *yin2yan_x,*yin2yan_y,*yan2yan_x,*yan2yan_y;
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Reads a gridset definition and index from a file
+ * @author Jean-Philippe Gauthier
+ * @date   January 2020
+ *    @param[in]  FID       FSTD file identifier
+ *    @param[in]  GSet      Gridset pointer
+ *    @param[in]  Grom      Destination grid type
+ *    @param[in]  GTo       Source grid type
+ *
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_SetRead(int FID,TGridSet *GSet,char GFrom,char GTo){
 
    TRPNHeader h;
@@ -426,6 +510,15 @@ int GeoRef_SetRead(int FID,TGridSet *GSet,char GFrom,char GTo){
    return(TRUE);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Writes a gridset definition and index from a file
+ * @author Jean-Philippe Gauthier
+ * @date   January 2020
+ *    @param[in]  FID       FSTD file identifier
+ *    @param[in]  GSet      Gridset pointer
+ *
+ *    @return             Error code (0=ok)
+*/
 int GeoRef_SetWrite(int FID,TGridSet *GSet){
 
 
@@ -440,6 +533,16 @@ int GeoRef_SetWrite(int FID,TGridSet *GSet){
    return(TRUE);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Find a gridset within the cached list
+ * @author Jean-Philippe Gauthier
+ * @date   
+ *    @param[in]  RefTo     Destination georeference pointer
+ *    @param[in]  RefFrom   Source georeference pointer
+ *    @param[in]  GSet      Existing gridset to initialise from (optional)
+ *
+ *    @return               Found gridset pointer, NULL on error
+ */
 TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGridSet** GSet) {
 
    TGridSet* gset=NULL;

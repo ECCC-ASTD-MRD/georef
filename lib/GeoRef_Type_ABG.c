@@ -33,7 +33,7 @@
 #include "App.h"
 #include "GeoRef.h"
 
- /*----------------------------------------------------------------------------
+/*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon for an A grid
  * @author Jean-Philippe Gauthier
  * @date   June 2015

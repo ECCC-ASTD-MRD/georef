@@ -34,4 +34,5 @@ export DESTDIR=${SSM_DEV}/workspace/${SSM_NAME}
 rm -f -r build; mkdir -p build; cd build
 cmake $CMAKE_COMP_FLAGS -DCOMPILER_SUITE=intel -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
 make -j
+make doc
 make install

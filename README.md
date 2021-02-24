@@ -55,12 +55,15 @@ ssh eccc-ppp4.science.gc.ca
 . r.load.dot comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
   rpn/libs/19.5 \
   rpn/MIG/ENV/rpnpy/2.1.0
-cd test
+
+cd test/python
 ./demo_a_grid.py
 # Test libgeoref interpolation
 ./demo_a_grid.py --georef
 ./demo_defGrid_L.py
 ./demo_o_grid.py
+
+cd ../tcl
 . r.load.dot rpn/OCEAN/cstint-3.2.8 \
   cmd/cmds/apps/SPI/beta
 ./NEMOInterp_sinus.tcl out/O_sinus.fst out/l_grid.fst

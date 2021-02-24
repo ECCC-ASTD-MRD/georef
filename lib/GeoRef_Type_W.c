@@ -135,6 +135,7 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
    if (String && String[0]!='\0') {
       string=strdup(String);
       strtrim(string,' ');
+      App_Log(DEBUG,"%s: Projection string: %s\n",__func__,string);
    }
 
 //TODO: Reenable ?   GeoRef_Clear(Ref,0);
@@ -171,6 +172,7 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
    if (Spatial) {
       Ref->Spatial=OSRClone(Spatial);
       OSRExportToWkt(Ref->Spatial,&string);
+      App_Log(DEBUG,"%s: Projection from spatial:%p\n",__func__,string);
    } else if (string) {
       Ref->Spatial=OSRNewSpatialReference(NULL);
       if (OSRSetFromUserInput(Ref->Spatial,string)==OGRERR_FAILURE) {
@@ -197,6 +199,9 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
          // Create forward/backward tranformation functions
          Ref->Function=OCTNewCoordinateTransformation(Ref->Spatial,llref);
          Ref->InvFunction=OCTNewCoordinateTransformation(llref,Ref->Spatial);
+         if (!Ref->Function || !Ref->InvFunction) {
+            App_Log(ERROR,"%s: Unable to create transformation functions\n",__func__);
+         }
       }
   } else {
       App_Log(WARNING,"%s: Unable to get spatial reference\n",__func__);
