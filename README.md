@@ -1,10 +1,3 @@
-L'objectif de ce stage est d'améliorer les programmathèques de
-prévision numérique du temps du Centre de prévision météorologique et
-environnementale du Canada (CPMEC). Plus spécifiquement, le stage
-concerne les grilles utilisées pour encoder des données
-météorologiques comme la température de l'air, la pression
-atmosphérique, ou la salinité de l'eau.
-
 Les grilles de données utilisées dans les modèles originaux de
 prévision numérique du temps (PNT), depuis les années 1950, étaient
 cartésiennes, voir la Figure 1 pour une illustration. Les grilles
@@ -62,12 +55,9 @@ cd test/python
 ./demo_a_grid.py --georef
 ./demo_defGrid_L.py
 ./demo_o_grid.py
-<<<<<<< HEAD
 ./demo_m_grid.py
-=======
 
 cd ../tcl
->>>>>>> jp
 . r.load.dot rpn/OCEAN/cstint-3.2.8 \
   cmd/cmds/apps/SPI/beta
 ./NEMOInterp_sinus.tcl out/O_sinus.fst out/l_grid.fst
