@@ -206,11 +206,12 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
          case 'T':
             xp = (double *) malloc(2*npts*sizeof(double));
             yp = &yp[npts];
-            for (j=0; j < nj; j++) {
-               for (i=0; i < ni; i++) {
-                  k = j*ni + i;
-                  yp[k] = 1.0 * (j+1);
-                  xp[k] = 1.0 * (i+1);
+            k=0;
+            for (j=0; j<nj; j++) {
+               for (i=0; i<ni; i++) {
+                  yp[k] = j+1.0;
+                  xp[k] = i+1.0;
+                  k++;
                }
             }
 
@@ -255,9 +256,9 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
             k=0;
             for (j=0; j<nj; j++) {
                for (i=0; i<ni; i++) {
-                    Ref->Lat[k] = Ref->AY[j];
-                    Ref->Lon[k] = Ref->AX[i];
-                    k++;
+                  Ref->Lat[k] = Ref->AY[j];
+                  Ref->Lon[k] = Ref->AX[i];
+                  k++;
                }
             }
 
@@ -277,7 +278,6 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                   break;
 
                case 'L':
-
                   for (i=0; i < npts; i++) {
                      Ref->Lon[i] = Ref->RPNHead.XGREF[X_SWLON] + Ref->RPNHead.XGREF[X_DLON] * Ref->Lon[i];
                      Ref->Lat[i] = Ref->RPNHead.XGREF[X_SWLAT] + Ref->RPNHead.XGREF[X_DLAT] * Ref->Lat[i];
@@ -293,10 +293,12 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
          case '!':
             xp = (double*) malloc(2*npts*sizeof(double));
             yp = &xp[npts];
+            k=0;
             for (j=0; j < nj; j++) {
                for (i=0; i < ni; i++) {
-                  xp[C_TO_FTN(i,j,ni)] = (float) (i+1.0);
-                  yp[C_TO_FTN(i,j,ni)] = (float) (j+1.0);
+                  xp[k] = i+1.0;
+                  yp[k] = j+1.0;
+                  k++;
                }
             }
             f77name(ez8_llflamb)(Ref->Lat,Ref->Lon,xp,yp,&npts,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);

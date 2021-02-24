@@ -22,6 +22,7 @@ enable_testing()
 
 include(compiler_rules)
 #include(compiler_presets)
+include(doxygen)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
