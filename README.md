@@ -1,10 +1,3 @@
-L'objectif de ce stage est d'améliorer les programmathèques de
-prévision numérique du temps du Centre de prévision météorologique et
-environnementale du Canada (CPMEC). Plus spécifiquement, le stage
-concerne les grilles utilisées pour encoder des données
-météorologiques comme la température de l'air, la pression
-atmosphérique, ou la salinité de l'eau.
-
 Les grilles de données utilisées dans les modèles originaux de
 prévision numérique du temps (PNT), depuis les années 1950, étaient
 cartésiennes, voir la Figure 1 pour une illustration. Les grilles
@@ -62,6 +55,7 @@ cd test/python
 ./demo_a_grid.py --georef
 ./demo_defGrid_L.py
 ./demo_o_grid.py
+./demo_m_grid.py
 
 cd ../tcl
 . r.load.dot rpn/OCEAN/cstint-3.2.8 \
@@ -69,12 +63,18 @@ cd ../tcl
 ./NEMOInterp_sinus.tcl out/O_sinus.fst out/l_grid.fst
 ./comparaison_interp.py
 ```
+
 Cette séquence devrait produire les fichiers `a_data.png`,
-`a_grid.fst`, `a_grid.png`, `l_grid.fst`, `l_grid.png`, `o_data.png`, `o_grid.png`, `O_sinus.fst`, `out.csintrp`, `out.csintrp.avg` et `out.spi` dans le dossier `out`.
+`a_grid.fst`, `a_grid.png`, `l_grid.fst`, `l_grid.png`, `o_data.png`,
+`o_grid.png`, `o_grid.fst`, `mesh.std`, `out.csintrp`, `out.csintrp.avg` 
+et `out.spi` dans le dossier `out`.
 
-La dernière commande utilise les fichiers `out.*` produits par le script `NEMOInterp_sinus.tcl`.
+La dernière commande utilise les fichiers `out.*` produits par le
+script `NEMOInterp_sinus.tcl`.
 
-Le dossier `GRIDS` contient le fichier `O.fstd` qui donne les positions des points de grille de la grille ORCA.
+Le dossier `in` contient les fichiers `orca.std`, qui donne les
+positions des points de grille de la grille ORCA, et `mesh.std`, qui
+contient un exemple de grille d'éléments finis.
 
 # [Documentation](https://hpfx.collab.science.gc.ca/~map007/html/index.html)
 
