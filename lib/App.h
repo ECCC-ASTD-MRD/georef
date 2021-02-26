@@ -91,8 +91,8 @@
 #endif
 #define APP_MAXONCE 1024
 
-typedef enum { MUST=-1,ERROR=0,WARNING=1,INFO=2,DEBUG=3,EXTRA=4 } TApp_LogLevel;
-typedef enum { STOP,RUN,DONE } TApp_State;
+typedef enum { APP_MUST=-1,APP_ERROR=0,APP_WARNING=1,APP_INFO=2,APP_DEBUG=3,APP_EXTRA=4 } TApp_LogLevel;
+typedef enum { APP_STOP,APP_RUN,APP_DONE } TApp_State;
 typedef enum { APP_NIL=0x0,APP_FLAG=0x01,APP_CHAR=0x02,APP_UINT32=0x04,APP_INT32=0x06,APP_UINT64=0x08,APP_INT64=0x0A,APP_FLOAT32=0x0C,APP_FLOAT64=0x0E } TApp_Type;
 typedef enum { APP_FR=0x0,APP_EN=0x01 } TApp_Lang;
 typedef enum { APP_OK=1,APP_ERR=0 } TApp_RetCode;
@@ -101,25 +101,25 @@ typedef enum { APP_AFFINITY_NONE=0,APP_AFFINITY_COMPACT=1,APP_AFFINITY_SCATTER=2
 #define APP_ASRT_OK(x) if( (x)!=APP_OK ) return(APP_ERR)
 #define APP_ASRT_OK_M(Fct, ...) \
    if( (Fct)!=APP_OK ) { \
-      App_Log(ERROR, __VA_ARGS__); \
+      App_Log(APP_ERROR, __VA_ARGS__); \
       return(APP_ERR); \
    }
 
 // Check FST function and return the specified value if an error was encountered
 #define APP_FST_ASRT_H(Fct, ...) \
    if( (Fct) < 0 ) { \
-      App_Log(ERROR, __VA_ARGS__); \
+      App_Log(APP_ERROR, __VA_ARGS__); \
       return(APP_ERR); \
    }
 #define APP_FST_ASRT(Fct, ...) \
    if( (Fct) != 0 ) { \
-      App_Log(ERROR, __VA_ARGS__); \
+      App_Log(APP_ERROR, __VA_ARGS__); \
       return(APP_ERR); \
    }
 // Memory helpers
 #define APP_MEM_ASRT(Buf,Fct) \
    if( !(Buf=(Fct)) ) { \
-      App_Log(ERROR,"(%s) Could not allocate memory for field %s at line %d.\n",__func__,#Buf,__LINE__); \
+      App_Log(APP_ERROR,"(%s) Could not allocate memory for field %s at line %d.\n",__func__,#Buf,__LINE__); \
       return(APP_ERR); \
    }
 #define APP_FREE(Ptr) if(Ptr) { free(Ptr); Ptr=NULL; }
@@ -128,14 +128,14 @@ typedef enum { APP_AFFINITY_NONE=0,APP_AFFINITY_COMPACT=1,APP_AFFINITY_SCATTER=2
 #define APP_MPI_ASRT(Fct) { \
    int err = (Fct); \
    if( err!=MPI_SUCCESS ) { \
-      App_Log(ERROR,"(%s) MPI call %s at line %d failed with code %d for MPI node %d\n",__func__,#Fct,__LINE__,err,App->RankMPI); \
+      App_Log(APP_ERROR,"(%s) MPI call %s at line %d failed with code %d for MPI node %d\n",__func__,#Fct,__LINE__,err,App->RankMPI); \
       return(APP_ERR); \
    } \
 }
 #define APP_MPI_CHK(Fct) { \
    int err = (Fct); \
    if( err!=MPI_SUCCESS ) { \
-      App_Log(ERROR,"(%s) MPI call %s at line %d failed with code %d for MPI node %d\n",__func__,#Fct,__LINE__,err,App->RankMPI); \
+      App_Log(APP_ERROR,"(%s) MPI call %s at line %d failed with code %d for MPI node %d\n",__func__,#Fct,__LINE__,err,App->RankMPI); \
    } \
 }
 #endif //_MPI

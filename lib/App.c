@@ -52,15 +52,15 @@
 
 static TApp AppInstance;                         ///< Static App instance
 __thread TApp *App=&AppInstance;                 ///< Per thread App pointer
-static __thread char APP_ERROR[APP_ERRORSIZE];   ///< Last error is accessible through this
+static __thread char APP_LASTERROR[APP_ERRORSIZE];   ///< Last error is accessible through this
 
 char* App_ErrorGet(void) {                       //< Return last error
-   return(APP_ERROR);
+   return(APP_LASTERROR);
 }
 
 unsigned int App_OnceTable[APP_MAXONCE];         ///< Log once table
 
-int App_IsDone(void)       { return(App->State==DONE); }
+int App_IsDone(void)       { return(App->State==APP_DONE); }
 int App_IsMPI(void)        { return(App->NbMPI>1); }
 int App_IsOMP(void)        { return(App->NbThread>1); }
 int App_IsSingleNode(void) { return(App->NbNodeMPI==App->NbMPI); }
@@ -102,8 +102,8 @@ TApp *App_Init(int Type,char *Name,char *Version,char *Desc,char* Stamp) {
    App->LogError=0;
    App->LogColor=FALSE;
    App->Tag=NULL;
-   App->LogLevel=INFO;
-   App->State=STOP;
+   App->LogLevel=APP_INFO;
+   App->State=APP_STOP;
    App->Percent=0.0;
    App->Affinity=APP_AFFINITY_NONE;
    App->NbThread=0;
@@ -302,7 +302,7 @@ void App_Start(void) {
    c_fstopc("TOLRNC","SYSTEM",0);
 #endif
 
-   App->State      = RUN;
+   App->State      = APP_RUN;
    App->LogWarning = 0;
    App->LogError   = 0;
    App->Percent    = 0.0;
@@ -356,40 +356,40 @@ void App_Start(void) {
 
    if (!App->RankMPI) {
 
-      App_Log(MUST,"-------------------------------------------------------------------------------------\n");
-      App_Log(MUST,"Application    : %s %s (%s)\n",App->Name,App->Version,App->TimeStamp);
-      App_Log(MUST,"Lib eerUtils   : %s [%s] (%s)\n",VERSION,BUILD_INFO,BUILD_TIMESTAMP);
+      App_Log(APP_MUST,"-------------------------------------------------------------------------------------\n");
+      App_Log(APP_MUST,"Application    : %s %s (%s)\n",App->Name,App->Version,App->TimeStamp);
+      App_Log(APP_MUST,"Lib eerUtils   : %s [%s] (%s)\n",VERSION,BUILD_INFO,BUILD_TIMESTAMP);
 
 #ifdef HAVE_RMN
       // Extract RMNLIB version
       f77name(rmnlib_version)(rmn,&print,127);
       rmn[126]='\0';
-      App_Log(MUST,"Lib RMN        : %s\n",&rmn[22]);
+      App_Log(APP_MUST,"Lib RMN        : %s\n",&rmn[22]);
 #endif
 
-      App_Log(MUST,"\nStart time     : (UTC) %s",ctime(&App->Time.tv_sec));
+      App_Log(APP_MUST,"\nStart time     : (UTC) %s",ctime(&App->Time.tv_sec));
 
 #ifdef _OPENMP
       if (App->NbThread>1) {
          // OpenMP specification version
-         if       (_OPENMP >= 201811)  App_Log(MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s5.0)\n",App->NbThread,_OPENMP,_OPENMP>201811?">":"");
-         else if  (_OPENMP >= 201511)  App_Log(MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s4.5)\n",App->NbThread,_OPENMP,_OPENMP>201511?">":"");
-         else if  (_OPENMP >= 201307)  App_Log(MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s4.0)\n",App->NbThread,_OPENMP,_OPENMP>201307?">":"");
-         else if  (_OPENMP >= 201107)  App_Log(MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s3.1)\n",App->NbThread,_OPENMP,_OPENMP>201107?">":"");
-         else if  (_OPENMP >= 200805)  App_Log(MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s3.0)\n",App->NbThread,_OPENMP,_OPENMP>200805?">":"");
-         else if  (_OPENMP >= 200505)  App_Log(MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s2.5)\n",App->NbThread,_OPENMP,_OPENMP>200505?">":"");
-         else if  (_OPENMP >= 200203)  App_Log(MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s2.0)\n",App->NbThread,_OPENMP,_OPENMP>200203?">":"");
-         else if  (_OPENMP >= 199810)  App_Log(MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s1.0)\n",App->NbThread,_OPENMP,_OPENMP>199810?">":"");
-         else                          App_Log(MUST,"OpenMP threads : %i (Standard: %d)\n",App->NbThread,_OPENMP);
+         if       (_OPENMP >= 201811)  App_Log(APP_MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s5.0)\n",App->NbThread,_OPENMP,_OPENMP>201811?">":"");
+         else if  (_OPENMP >= 201511)  App_Log(APP_MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s4.5)\n",App->NbThread,_OPENMP,_OPENMP>201511?">":"");
+         else if  (_OPENMP >= 201307)  App_Log(APP_MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s4.0)\n",App->NbThread,_OPENMP,_OPENMP>201307?">":"");
+         else if  (_OPENMP >= 201107)  App_Log(APP_MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s3.1)\n",App->NbThread,_OPENMP,_OPENMP>201107?">":"");
+         else if  (_OPENMP >= 200805)  App_Log(APP_MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s3.0)\n",App->NbThread,_OPENMP,_OPENMP>200805?">":"");
+         else if  (_OPENMP >= 200505)  App_Log(APP_MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s2.5)\n",App->NbThread,_OPENMP,_OPENMP>200505?">":"");
+         else if  (_OPENMP >= 200203)  App_Log(APP_MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s2.0)\n",App->NbThread,_OPENMP,_OPENMP>200203?">":"");
+         else if  (_OPENMP >= 199810)  App_Log(APP_MUST,"OpenMP threads : %i (Standard: %d -- OpenMP %s1.0)\n",App->NbThread,_OPENMP,_OPENMP>199810?">":"");
+         else                          App_Log(APP_MUST,"OpenMP threads : %i (Standard: %d)\n",App->NbThread,_OPENMP);
       }
 #endif //_OPENMP
 
       if (App->NbMPI>1) {
 #if defined MPI_VERSION && defined MPI_SUBVERSION
          // MPI specification version
-         App_Log(MUST,"MPI processes  : %i (Standard: %d.%d)\n",App->NbMPI,MPI_VERSION,MPI_SUBVERSION);
+         App_Log(APP_MUST,"MPI processes  : %i (Standard: %d.%d)\n",App->NbMPI,MPI_VERSION,MPI_SUBVERSION);
 #else
-         App_Log(MUST,"MPI processes  : %i\n",App->NbMPI);
+         App_Log(APP_MUST,"MPI processes  : %i\n",App->NbMPI);
 #endif
 #ifdef _MPI
          char *nodes,*n;
@@ -406,22 +406,22 @@ void App_Start(void) {
              qsort(nodes,App->NbMPI,MPI_MAX_PROCESSOR_NAME,App_MPIProcCmp);
 
              // Print the node names with a count of MPI per nodes
-             App_Log(MUST,"MPI nodes      :");
+             App_Log(APP_MUST,"MPI nodes      :");
              for(i=1,cnt=1,n=nodes; i<App->NbMPI; ++i,n+=MPI_MAX_PROCESSOR_NAME) {
                  if( strncmp(n,n+MPI_MAX_PROCESSOR_NAME,MPI_MAX_PROCESSOR_NAME) ) {
-                     App_Log(MUST,"%s%.*s (%d)",i!=cnt?", ":" ",(int)MPI_MAX_PROCESSOR_NAME,n,cnt);
+                     App_Log(APP_MUST,"%s%.*s (%d)",i!=cnt?", ":" ",(int)MPI_MAX_PROCESSOR_NAME,n,cnt);
                      cnt = 1;
                  } else {
                      ++cnt;
                  }
              }
-             App_Log(MUST,"%s%.*s (%d)\n",i!=cnt?", ":" ",(int)MPI_MAX_PROCESSOR_NAME,n,cnt);
+             App_Log(APP_MUST,"%s%.*s (%d)\n",i!=cnt?", ":" ",(int)MPI_MAX_PROCESSOR_NAME,n,cnt);
 
              free(nodes);
          }
 #endif //_MPI
       }
-      App_Log(MUST,"-------------------------------------------------------------------------------------\n\n");
+      App_Log(APP_MUST,"-------------------------------------------------------------------------------------\n\n");
    } else {
        // Send the node name (hostname)
 #ifdef _MPI
@@ -477,25 +477,25 @@ int App_End(int Status) {
       gettimeofday(&end,NULL);
       timersub(&end,&App->Time,&dif);
 
-      App_Log(MUST,"\n-------------------------------------------------------------------------------------\n");
+      App_Log(APP_MUST,"\n-------------------------------------------------------------------------------------\n");
       if (App->Signal) {
-         App_Log(MUST,"Trapped signal : %i\n",App->Signal);         
+         App_Log(APP_MUST,"Trapped signal : %i\n",App->Signal);         
       }
-      App_Log(MUST,"Finish time    : (UTC) %s",ctime(&end.tv_sec));
-      App_Log(MUST,"Execution time : %.4f seconds\n",(float)dif.tv_sec+dif.tv_usec/1000000.0);
+      App_Log(APP_MUST,"Finish time    : (UTC) %s",ctime(&end.tv_sec));
+      App_Log(APP_MUST,"Execution time : %.4f seconds\n",(float)dif.tv_sec+dif.tv_usec/1000000.0);
 
       
       if (Status!=EXIT_SUCCESS) {
-         App_Log(MUST,"Status         : Error %i (%i Errors)\n",Status,App->LogError);
+         App_Log(APP_MUST,"Status         : Error %i (%i Errors)\n",Status,App->LogError);
       } else {
-         App_Log(MUST,"Status         : Ok (%i Warnings)\n",App->LogWarning);
+         App_Log(APP_MUST,"Status         : Ok (%i Warnings)\n",App->LogWarning);
       }
 
-      App_Log(MUST,"-------------------------------------------------------------------------------------\n");
+      App_Log(APP_MUST,"-------------------------------------------------------------------------------------\n");
 
       App_LogClose();
 
-      App->State=DONE;
+      App->State=APP_DONE;
    }
    
    return(App->Signal?128+App->Signal:Status);
@@ -510,12 +510,12 @@ int App_End(int Status) {
  */
 void App_TrapProcess(int Signal) {
 
-   App_Log(DEBUG,"Trapped signal %i\n",Signal);
+   App_Log(APP_DEBUG,"Trapped signal %i\n",Signal);
    App->Signal=Signal;
    
    switch(Signal) {
       case SIGUSR2:
-      case SIGTERM: App->State=DONE;
+      case SIGTERM: App->State=APP_DONE;
    }
 }
 
@@ -595,7 +595,7 @@ void App_Log(TApp_LogLevel Level,const char *Format,...) {
       App_LogOpen();
 
    // Check for once log flag
-   if (Level>EXTRA) {
+   if (Level>APP_EXTRA) {
       // If we logged it at least once
       if (Level>>3<APP_MAXONCE && App_OnceTable[Level>>3]++)
          return;
@@ -604,11 +604,11 @@ void App_Log(TApp_LogLevel Level,const char *Format,...) {
       Level&=0x7;
    }
    
-   if (Level==WARNING) App->LogWarning++;
-   if (Level==ERROR)   App->LogError++;
+   if (Level==APP_WARNING) App->LogWarning++;
+   if (Level==APP_ERROR)   App->LogError++;
 
    if (Level<=App->LogLevel) {
-      color=App->LogColor?colors[Level]:colors[INFO];
+      color=App->LogColor?colors[Level]:colors[APP_INFO];
       
       if (Level>=0) {
 #ifdef _MPI
@@ -627,7 +627,7 @@ void App_Log(TApp_LogLevel Level,const char *Format,...) {
       if (App->LogColor)
          fprintf(App->LogStream,APP_COLOR_RESET);
       
-      if (Level==ERROR) {
+      if (Level==APP_ERROR) {
          // On errors, save for extenal to use (ex: Tcl)
          va_start(args,Format);
          vsnprintf(APP_ERROR,APP_ERRORSIZE,Format,args);
@@ -949,12 +949,12 @@ int App_ParseInput(void *Def,char *File,TApp_InputParseProc *ParseProc) {
    char  token[256],*parse,*values,*value,*valuesave,*idx,*buf,*tokensave;
 
    if (!(fp=fopen(File,"r"))) {
-      App_Log(ERROR,"Unable to open input file: %s\n",File);
+      App_Log(APP_ERROR,"Unable to open input file: %s\n",File);
       return(0);
    }
 
    if (!(buf=(char*)alloca(APP_BUFMAX))) {
-      App_Log(ERROR,"Unable to allocate input parsing buffer\n");
+      App_Log(APP_ERROR,"Unable to allocate input parsing buffer\n");
       return(0);
    }
 
@@ -990,9 +990,9 @@ int App_ParseInput(void *Def,char *File,TApp_InputParseProc *ParseProc) {
          valuesave=NULL;
          while((value=strtok_r(values," ",&valuesave))) {
             if (seq) {
-               App_Log(DEBUG,"Input parameters: %s(%i) = %s\n",token,seq,value);
+               App_Log(APP_DEBUG,"Input parameters: %s(%i) = %s\n",token,seq,value);
             } else {
-               App_Log(DEBUG,"Input parameters: %s = %s\n",token,value);
+               App_Log(APP_DEBUG,"Input parameters: %s = %s\n",token,value);
             }
 
             // Call mode specific imput parser
@@ -1028,7 +1028,7 @@ int App_ParseBool(char *Param,char *Value,char *Var) {
    } else if (strcasecmp(Value,"false")==0 || strcmp(Value,"0")==0) {
       *Var=0;
    } else {
-      App_Log(ERROR,"Invalid value for %s, must be TRUE(1) or FALSE(0): %s\n",Param,Value);
+      App_Log(APP_ERROR,"Invalid value for %s, must be TRUE(1) or FALSE(0): %s\n",Param,Value);
       return(0);
    }
    return(1);
@@ -1051,7 +1051,7 @@ int App_ParseDate(char *Param,char *Value,time_t *Var) {
    char     *ptr;
 
    if( (t=strtoll(Value,&ptr,10))<=0 ) {
-      App_Log(ERROR,"Invalid value for %s, must be YYYYMMDDHHMM or YYYYMMDDHHMMSS: %s\n",Param,Value);
+      App_Log(APP_ERROR,"Invalid value for %s, must be YYYYMMDDHHMM or YYYYMMDDHHMMSS: %s\n",Param,Value);
       return(0);
    }
    switch( strlen(Value) ) {
@@ -1062,7 +1062,7 @@ int App_ParseDate(char *Param,char *Value,time_t *Var) {
          *Var=System_DateTime2Seconds(t/1000000,(t-(t/1000000*1000000)),1);
          break;
       default:
-         App_Log(ERROR,"Invalid value for %s, must be YYYYMMDDHHMM or YYYYMMDDHHMMSS: %s\n",Param,Value);
+         App_Log(APP_ERROR,"Invalid value for %s, must be YYYYMMDDHHMM or YYYYMMDDHHMMSS: %s\n",Param,Value);
          return(0);
    }
 
@@ -1090,7 +1090,7 @@ int App_ParseDateSplit(char *Param,char *Value,int *Year,int *Month,int *Day,int
    char     *ptr;
 
    if (strlen(Value)!=12 || (t=strtoll(Value,&ptr,10))<=0) {
-      App_Log(ERROR,"Invalid value for %s, must be YYYYMMDDHHMM: %s\n",Param,Value);
+      App_Log(APP_ERROR,"Invalid value for %s, must be YYYYMMDDHHMM: %s\n",Param,Value);
       return(0);
    }
    *Year=t/100000000;  t-=(long long)(*Year)*100000000;
@@ -1124,7 +1124,7 @@ int App_ParseDateSplit(char *Param,char *Value,int *Year,int *Month,int *Day,int
    switch(Index) {
       case 0: 
          if (coord<-90.0 || coord>90.0) {
-            App_Log(ERROR,"Invalid latitude coordinate: %s\n",Value);
+            App_Log(APP_ERROR,"Invalid latitude coordinate: %s\n",Value);
             return(0);
          }
          *Lat=coord;
@@ -1132,7 +1132,7 @@ int App_ParseDateSplit(char *Param,char *Value,int *Year,int *Month,int *Day,int
       case 1:
          if (coord<0.0) coord+=360.0;
          if (coord<0.0 || coord>360.0) {
-            App_Log(ERROR,"Invalid longitude coordinate: %s\n",Value);
+            App_Log(APP_ERROR,"Invalid longitude coordinate: %s\n",Value);
             return(0);
          }
          *Lon=coord;

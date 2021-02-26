@@ -21,7 +21,7 @@
       subroutine ez_calcpoleval(poleval, z, ni, ax, grtyp, grref)
       implicit none
       
-      integer ni, wrap
+      integer ni
       real poleval,z(ni)
       real*8 ax(ni)
       character*1 grtyp, grref

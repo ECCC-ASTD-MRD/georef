@@ -27,7 +27,7 @@
 !     d'une grille source irreguliere.
 !*******
       
-      integer npts,ni,i1,i2,j1,j2,degree,wrap,limite
+      integer npts,ni,i1,i2,j1,j2,wrap
       integer imoins1, iplus1, iplus2
       real zo(npts)
       real*8 px(npts),py(npts)
@@ -70,7 +70,7 @@
 !     
 !  structure identique pour cy(j,1..6)
 
-      integer i, j, m, n
+      integer i, j, n
       real*8 a11,a12,a13,a14,a21,a22,a23,a24
       real*8 a31,a32,a33,a34,a41,a42,a43,a44
       real*8 b1,b2,b3,b4,b11,b12,b13,b14
@@ -174,7 +174,7 @@
 
          zo(n)=nodata
 
-         if (defvalid(z1,nodata) .and. defvalid(z2,nodata) .and. defvalid(z3,nodata) .and. defvalid(z4,nodata)) then        
+         if (defvalid(real(z1),nodata) .and. defvalid(real(z2),nodata) .and. defvalid(real(z3),nodata) .and. defvalid(real(z4),nodata)) then        
             !     interpolation 1ere rangee selon x
 
             a11 = z1
@@ -188,7 +188,7 @@
             z3=z(iplus1,j)
             z4=z(iplus2,j)
             
-            if (defvalid(z1,nodata) .and. defvalid(z2,nodata) .and. defvalid(z3,nodata) .and. defvalid(z4,nodata)) then        
+            if (defvalid(real(z1),nodata) .and. defvalid(real(z2),nodata) .and. defvalid(real(z3),nodata) .and. defvalid(real(z4),nodata)) then        
                !     interpolation 2eme rangee selon x
 
                a21 = z1
@@ -202,7 +202,7 @@
                z3=z(iplus1,j+1)
                z4=z(iplus2,j+1)
       
-               if (defvalid(z1,nodata) .and. defvalid(z2,nodata) .and. defvalid(z3,nodata) .and. defvalid(z4,nodata)) then        
+               if (defvalid(real(z1),nodata) .and. defvalid(real(z2),nodata) .and. defvalid(real(z3),nodata) .and. defvalid(real(z4),nodata)) then        
                   !     interpolation 3eme rangee selon x
                   
                   a31 = z1
@@ -217,7 +217,7 @@
                   z3=z(iplus1,j+2)
                   z4=z(iplus2,j+2)
 
-                  if (defvalid(z1,nodata) .and. defvalid(z2,nodata) .and. defvalid(z3,nodata) .and. defvalid(z4,nodata)) then        
+                  if (defvalid(real(z1),nodata) .and. defvalid(real(z2),nodata) .and. defvalid(real(z3),nodata) .and. defvalid(real(z4),nodata)) then        
                      !     interpolation 4eme rangee selon x
         
                      a41 = z1

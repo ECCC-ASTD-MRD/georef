@@ -4,12 +4,10 @@
    integer :: ni_out, nj_out, ni_in, nj_in
    integer :: mask_zones(ni_out, nj_out),mask_in(ni_in, nj_in)
    real*8  :: x(ni_out, nj_out), y(ni_out, nj_out)
-   real    :: rx, ry
    integer :: i,j, k, l, ix, iy, nix, niy, nmissing
 
-   integer :: codes(8)
    integer :: original_mask, all_pts_present, three_points_present, two_points_present, &
-      one_point_present, one_point_missing, all_pts_missing, nearest_point_missing, outside_src_grid
+      one_point_present, all_pts_missing, nearest_point_missing, outside_src_grid
 
    all_pts_missing           = 0
    one_point_present         = 1

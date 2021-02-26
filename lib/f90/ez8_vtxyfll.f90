@@ -23,7 +23,6 @@
 
       integer i,j,ni,nj
       real clat, clon, d60, dgrw
-      real lat(11,11), lon(11,11)
 
       real*8 tlat(5,5), tlon(5,5)
       real*8 tlat2(5,5), tlon2(5,5)
@@ -73,7 +72,7 @@
       integer i, n, ni, nj
       real*8 x(n), y(n), lat(n), lon(n)
       real clat, clon, d60, dgrw
-      real r,lat0,lon0
+      real r
       real*8 k
       real offsetx, offsety,sinclat,cosclat,sinclon,cosclon
 
@@ -105,7 +104,7 @@
       integer i, n, ni, nj
       real*8 x(n), y(n), lat(n), lon(n)
       real clat, clon, d60, dgrw
-      real r,k,lat0,lon0
+      real r
       real offsetx, offsety,sinclat,cosclat,sinclon,cosclon
       real*8 rho, c, a, b, temp
 

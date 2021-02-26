@@ -128,18 +128,18 @@ int GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
                Y[d]+=y+dy+1;
                X[d]+=x+dx+1; 
             } else {
-               App_Log(ERROR,"%s: Invalid coordinate (NAN): ll(%f,%f) xy(%f,%f) %i\n",__func__,Lat[d],Lon[d],X[d],Y[d],idx);
+               App_Log(APP_ERROR,"%s: Invalid coordinate (NAN): ll(%f,%f) xy(%f,%f) %i\n",__func__,Lat[d],Lon[d],X[d],Y[d],idx);
                X[d]=-1,0;
                Y[d]=-1.0;
                out++;
             }
          } else {
-            App_Log(ERROR,"%s: Point not found: %f %f %i\n",__func__,Lat[d],Lon[d],idx);
+            App_Log(APP_ERROR,"%s: Point not found: %f %f %i\n",__func__,Lat[d],Lon[d],idx);
             out++;
          }
       } 
    }
-   App_Log(DEBUG,"%s: Points out: %i\n",__func__,out);
+   App_Log(APP_DEBUG,"%s: Points out: %i\n",__func__,out);
 
    return(0);
 }

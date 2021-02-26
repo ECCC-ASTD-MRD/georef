@@ -118,12 +118,12 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
 
    // RefTo needed for type 4,5 and Y grid
    if ((!RefTo && (RefFrom->Options.InterpDegree==4 || RefFrom->Options.InterpDegree==5)) || !RefFrom) {
-      App_Log(ERROR,"%s: Invalid georeference\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid georeference\n",__func__);
       return(-1);
    }
 
    if (!X || !Y) {
-      App_Log(ERROR,"%s: Local coordinates not available\n",__func__);
+      App_Log(APP_ERROR,"%s: Local coordinates not available\n",__func__);
       return(-1);
    }
    old_degre_interp = RefFrom->Options.InterpDegree;
@@ -134,7 +134,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
       case 5:
          ier = c_gdcompatible_grids(RefFrom, RefTo);
          if (ier < 0) {
-            App_Log(WARNING,"%s: Input and output grids are not compatible for average computation, interpolaton level set to linear\n",__func__);
+            App_Log(APP_WARNING,"%s: Input and output grids are not compatible for average computation, interpolaton level set to linear\n",__func__);
             RefFrom->Options.InterpDegree = IR_LINEAR;
          }
          break;
@@ -235,7 +235,7 @@ int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,TGridSe
    lxzin = NULL;
 
    if (!RefFrom || !RefTo) {
-      App_Log(DEBUG,"%s: Source or target grid undefined\n",__func__);
+      App_Log(APP_DEBUG,"%s: Source or target grid undefined\n",__func__);
       return(FALSE);
    }
 
@@ -352,12 +352,12 @@ int GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,float *zout,float *zin,TGri
    if (RefFrom->Options.SubGrid) { // User specifies to use 1 grid only
       // Output is a Yin-Yang grid 
       if (yyout == 1) { 
-         App_Log(ERROR,"%s: Cannot use subgrid to interpolate to a Yin-Yang grid\n",__func__);
+         App_Log(APP_ERROR,"%s: Cannot use subgrid to interpolate to a Yin-Yang grid\n",__func__);
          return(FALSE);
       }
       // Is specified subgrid within the subgrid list
       if (RefFrom->Options.SubGrid>RefFrom->NbSub) { 
-         App_Log(ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Options.SubGrid);
+         App_Log(APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Options.SubGrid);
          return(FALSE);
       }
       // Use yin input grid

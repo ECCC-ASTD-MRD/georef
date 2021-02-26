@@ -9,8 +9,7 @@ include(ec_utils)   # Include EC specific cmake utils
 ec_parse_manifest() # Parse MANIFEST file
 ec_build_info()     # Generate build include file
 
-#set(DOXYGEN_FOUND True)
-# include(doxygen)    # Doxygen target
+#include(doxygen)    # Doxygen target
 
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 
@@ -19,10 +18,9 @@ set(CMAKE_INSTALL_PREFIX "" CACHE PATH "..." FORCE)
 enable_language(C)
 enable_language(Fortran)
 enable_testing()
-
-include(compiler_rules)
-#include(compiler_presets)
-include(doxygen)
+#set(USE_ECCC_ENV_IF_AVAIL FALSE)
+#include(compiler_rules)
+include(compiler_presets)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")

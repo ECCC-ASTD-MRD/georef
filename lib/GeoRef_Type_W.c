@@ -135,7 +135,7 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
    if (String && String[0]!='\0') {
       string=strdup(String);
       strtrim(string,' ');
-      App_Log(DEBUG,"%s: Projection string: %s\n",__func__,string);
+      App_Log(APP_DEBUG,"%s: Projection string: %s\n",__func__,string);
    }
 
 //TODO: Reenable ?   GeoRef_Clear(Ref,0);
@@ -172,11 +172,11 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
    if (Spatial) {
       Ref->Spatial=OSRClone(Spatial);
       OSRExportToWkt(Ref->Spatial,&string);
-      App_Log(DEBUG,"%s: Projection from spatial:%p\n",__func__,string);
+      App_Log(APP_DEBUG,"%s: Projection from spatial:%p\n",__func__,string);
    } else if (string) {
       Ref->Spatial=OSRNewSpatialReference(NULL);
       if (OSRSetFromUserInput(Ref->Spatial,string)==OGRERR_FAILURE) {
-        App_Log(WARNING,"%s: Unable to create spatial reference\n",__func__);
+        App_Log(APP_WARNING,"%s: Unable to create spatial reference\n",__func__);
         return(NULL);
       }
    } else {
@@ -200,11 +200,11 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
          Ref->Function=OCTNewCoordinateTransformation(Ref->Spatial,llref);
          Ref->InvFunction=OCTNewCoordinateTransformation(llref,Ref->Spatial);
          if (!Ref->Function || !Ref->InvFunction) {
-            App_Log(ERROR,"%s: Unable to create transformation functions\n",__func__);
+            App_Log(APP_ERROR,"%s: Unable to create transformation functions\n",__func__);
          }
       }
   } else {
-      App_Log(WARNING,"%s: Unable to get spatial reference\n",__func__);
+      App_Log(APP_WARNING,"%s: Unable to get spatial reference\n",__func__);
       return(NULL);
    }
 
@@ -212,7 +212,7 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
 
    return(Ref);
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(NULL);
 #endif
 }
@@ -383,7 +383,7 @@ int GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
          GeoRef_WKTUnRotate(Ref->RotTransform,&Lat[n],&Lon[n]);
    }
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
 #endif
 
    return(0);
@@ -444,7 +444,7 @@ int GeoRef_LL2XY_W(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
       }   
    }
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
 #endif
    return(0);
 }

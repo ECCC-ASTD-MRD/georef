@@ -96,7 +96,7 @@ int GeoRef_SetZoneDefinePole(TGeoRef *RefFrom,TGridSet *GSet,int Zone,int NbPts)
       zone->x = (double*)malloc(zone->npts*sizeof(double));
       zone->y = (double*)malloc(zone->npts*sizeof(double));
       zone->idx = (int *)malloc(zone->npts*sizeof(int));
-      App_Log(DEBUG,"%s: Number of points at pole: %d\n",__func__,zone->npts);
+      App_Log(APP_DEBUG,"%s: Number of points at pole: %d\n",__func__,zone->npts);
       
       for (i=0; i<zone->npts; i++) {
          zone->x[i]   = GSet->X[tmpidx[i]];      
@@ -141,7 +141,7 @@ int GeoRef_SetZoneDefineThem(TGeoRef *RefFrom,TGridSet *GSet,int Zone,int NbPts)
       zone->x = (double*)malloc(zone->npts*sizeof(double));
       zone->y = (double*)malloc(zone->npts*sizeof(double));
       zone->idx = (int *) malloc(zone->npts*sizeof(int));
-      App_Log(DEBUG,"%s: Number of points between pole and limit: %d\n",__func__,zone->npts);
+      App_Log(APP_DEBUG,"%s: Number of points between pole and limit: %d\n",__func__,zone->npts);
     
       for (i=0; i<zone->npts; i++) {
          zone->x[i]   = GSet->X[tmpidx[i]];      
@@ -185,7 +185,7 @@ int GeoRef_SetZoneDefineOut(TGeoRef *RefFrom,TGridSet *GSet,int Zone,int NbPts) 
    }
 */
 
-   App_Log(DEBUG,"%s: NbPoints %d, Offset left: %d, Offset right: %d\n",__func__,NbPts,offsetleft, offsetright);
+   App_Log(APP_DEBUG,"%s: NbPoints %d, Offset left: %d, Offset right: %d\n",__func__,NbPts,offsetleft, offsetright);
    zone->npts=0;
    for (i=0; i<NbPts; i++) {
       ix = (int)(GSet->X[i]+0.5);
@@ -200,7 +200,7 @@ int GeoRef_SetZoneDefineOut(TGeoRef *RefFrom,TGridSet *GSet,int Zone,int NbPts) 
       zone->x = (double*)malloc(zone->npts*sizeof(double));
       zone->y = (double*)malloc(zone->npts*sizeof(double));
       zone->idx = (int *) malloc(zone->npts*sizeof(int));
-      App_Log(DEBUG,"%s: Number of outside pointst: \n",__func__,offsetleft,zone->npts);
+      App_Log(APP_DEBUG,"%s: Number of outside pointst: \n",__func__,offsetleft,zone->npts);
     
       for (i=0; i < zone->npts; i++) {
          zone->x[i]   = GSet->X[tmpidx[i]];      
@@ -496,7 +496,7 @@ int GeoRef_SetRead(int FID,TGridSet *GSet,char GFrom,char GTo){
 
    // Rechercher et lire l'information de l'enregistrement specifie
    if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,-1,typvar,"#>>#"))<0) {
-      App_Log(ERROR,"%s: Could not find gridset index field (c_fstinf failed)\n",__func__);
+      App_Log(APP_ERROR,"%s: Could not find gridset index field (c_fstinf failed)\n",__func__);
       return(FALSE);
    }
    GSet->IndexSize=h.NI;
@@ -504,7 +504,7 @@ int GeoRef_SetRead(int FID,TGridSet *GSet,char GFrom,char GTo){
 
    c_fst_data_length(8);
    if (cs_fstluk(GSet->Index,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
-      App_Log(ERROR,"%s: Could not read gridset index field (c_fstlir failed)\n",__func__);
+      App_Log(APP_ERROR,"%s: Could not read gridset index field (c_fstlir failed)\n",__func__);
       return(FALSE);
    }
    return(TRUE);
@@ -526,7 +526,7 @@ int GeoRef_SetWrite(int FID,TGridSet *GSet){
       c_fst_data_length(8);
 
       if (cs_fstecr(GSet->Index,-64,FID,0,0,0,GSet->IndexSize,1,1,0,0,0,GSet->G2G,"#>>#","GRIDSET","X",0,0,0,0,5,FALSE)<0) {
-         App_Log(ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
+         App_Log(APP_ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
          return(FALSE);
       }
    }
@@ -590,7 +590,7 @@ TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGridSet** GSet) {
    if (GSet) {
       if (gset=*GSet) {
          if (gset->G2G[0]!=RefTo->Sets[i].G2G[0] || gset->G2G[1]!=RefTo->Sets[i].G2G[1]) {
-            App_Log(WARNING,"%s: Invalid grid set %c%c!=%c%c\n",__func__,gset->G2G[0],gset->G2G[1],RefTo->Sets[i].G2G[0],RefTo->Sets[i].G2G[1]);
+            App_Log(APP_WARNING,"%s: Invalid grid set %c%c!=%c%c\n",__func__,gset->G2G[0],gset->G2G[1],RefTo->Sets[i].G2G[0],RefTo->Sets[i].G2G[1]);
          } else {
             RefTo->Sets[i].Index=gset->Index;
             RefTo->Sets[i].IndexSize=gset->IndexSize;
@@ -600,7 +600,7 @@ TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGridSet** GSet) {
       }
    }
 
-   App_Log(DEBUG,"%s: RefFrom : %p RefTo: %p\n",__func__,RefFrom,RefTo);
+   App_Log(APP_DEBUG,"%s: RefFrom : %p RefTo: %p\n",__func__,RefFrom,RefTo);
 
    return(&RefTo->Sets[i]);
 }

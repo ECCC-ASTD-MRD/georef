@@ -32,7 +32,8 @@ export EC_CMAKE_MODULE_PATH="`pwd`/cmake;$EC_CMAKE_MODULE_PATH"
 export DESTDIR=${SSM_DEV}/workspace/${SSM_NAME}
 
 rm -f -r build; mkdir -p build; cd build
-cmake $CMAKE_COMP_FLAGS -DCOMPILER_SUITE=intel -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
+#cmake $CMAKE_COMP_FLAGS -DCOMPILER_SUITE=intel -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
+cmake $CMAKE_COMP_FLAGS -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
 make -j
 make doc
 make install

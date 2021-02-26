@@ -76,20 +76,11 @@
       data pie    /3.1415926535898/
       data rdtodg /57.295779513082/
       data dgtord /1.7453292519943e-2/
-
 !
-
-      integer i,j,k,ntot,npart,ier
+      integer i,j
       real*8 psi,u,v
       real xg1, xg2, xg3, xg4
-      character*1 gtypout
-      real xglst(20)
-      integer nxg
-      real lat45,lat50,delx,dely,alpha
-      real uuu,vvv
-      integer un
       real*8 x1(2*li*lj),y1(2*li*lj),lat(2*li*lj)
-
 
 !     les #define qui suivent rendent le code plus lisible
       if (grtyp .eq. '!') then
@@ -138,6 +129,5 @@
          return
       endif
 
- 600  format('0',' erreur, mauvaise grille (gdwfllw) - grtyp = ', A1)
       return
       end

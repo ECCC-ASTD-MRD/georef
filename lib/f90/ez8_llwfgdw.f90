@@ -71,15 +71,9 @@
 !
 #include "pi.cdk"
 
-   real xg1, xg2, xg3, xg4, dgrw
-   character*1 gtypout
-   real xg(20)
-   integer nxg
-   real delx,dely,alpha
-   real uuu,vvv
-   integer i,j,k,n,ntot
+   real xg1, xg2, xg3, xg4
+   integer i,j
    real*8 spd0, dir0
-   integer npts,ier
    real*8 x1(2*li*lj),y1(2*li*lj),lat(2*li*lj)
 
 
