@@ -5,19 +5,21 @@ foreach(PATH $ENV{EC_CMAKE_MODULE_PATH})
    list(APPEND CMAKE_MODULE_PATH ${PATH})
 endforeach()
 
-include(ec_utils)   # Include EC specific cmake utils
-ec_parse_manifest() # Parse MANIFEST file
-ec_build_info()     # Generate build include file
+include(ec_init)           # Initialise compilers and ec specific functions
+include(ec_parse_manifest) # Parse MANIFEST file
+include(ec_build_info)     # Generate build include file
 
 #include(doxygen)    # Doxygen target
 
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
+option(BUILD_SHARED_LIBS "Build shared libraries instead of static ones." TRUE)
 
 set(CMAKE_INSTALL_PREFIX "" CACHE PATH "..." FORCE)
 
 enable_language(C)
 enable_language(Fortran)
 enable_testing()
+
 #set(USE_ECCC_ENV_IF_AVAIL FALSE)
 #include(compiler_rules)
 include(compiler_presets)
@@ -28,8 +30,12 @@ set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 add_compile_definitions(HAVE_GPC)
 
-#TODO --- COMPONENTS shared threaded
-find_package(RMN ${RMN_REQ_VERSION} COMPONENTS beta shared OPTIONAL)
+#TODO --- TEST with only static
+if(BUILD_SHARED_LIBS)
+   find_package(RMN ${RMN_REQ_VERSION} COMPONENTS SHARED THREADED REQUIRED)
+else()
+   find_package(RMN ${RMN_REQ_VERSION} COMPONENTS REQUIRED)
+endif()
 if (RMN_FOUND) 
    add_compile_definitions(HAVE_RMN)
    include_directories(${RMN_INCLUDE_DIR})
