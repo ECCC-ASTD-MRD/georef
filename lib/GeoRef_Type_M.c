@@ -76,7 +76,7 @@ int GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
          }
       } else {
          // Otherwise loop on all
-         for(idx=0;idx<Ref->NIdx-3;idx+=3) {
+         for(idx=0;idx<Ref->NIdx;idx+=3) {
             if (Bary_Get(b,Ref->Wght?Ref->Wght[idx/3]:0.0,Lon[d],Lat[d],Ref->AX[Ref->Idx[idx]],Ref->AY[Ref->Idx[idx]],
                Ref->AX[Ref->Idx[idx+1]],Ref->AY[Ref->Idx[idx+1]],Ref->AX[Ref->Idx[idx+2]],Ref->AY[Ref->Idx[idx+2]])) {
 

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 #----- Append EC specific module path
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 foreach(PATH $ENV{EC_CMAKE_MODULE_PATH})
    list(APPEND CMAKE_MODULE_PATH ${PATH})
 endforeach()
