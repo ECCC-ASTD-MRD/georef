@@ -464,29 +464,5 @@ void c_ez_calcarea2(double *area, float lats[], float lons[])
 //      printf("area1:%f\n", area1);
 //      printf("area2:%f\n", area2);
       }
-
 }
-/*
-main()
-{
-float distance, area, lat1, lon1, lat2, lon2;
-int i;
-lat1=0.0;
-lat2=1.0;
-lon1=0.0,
-lon2=1.0;
 
-c_ez_calcdist(&distance, lat1, lon1, lat2, lon2);
-printf("%f\n", distance);
-c_ez_calcarea(&area, lat1, lon1, lat2, lon2);
-printf("%f\n", area/1.0e6);
-
-for (i=-90; i < 89; i++)
-   {
-   lat1 = (float) i+0.01;
-   lat2 = lat1 + 1.0;
-   c_ez_calcarea(&area, lat2, lon2, lat1, lon1);
-   printf("Aire: (%f %f) (%f %f) %f\n", lat1, lon1, lat2, lon2, area/1.0e6);
-   }
-
-}*/
