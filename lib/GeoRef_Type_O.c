@@ -52,7 +52,7 @@ int GeoRef_XY2LL_O(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
 
    for (i=0; i < Nb; i++) {
       Lon[i]=VertexValS(Ref->AX,NULL,Ref->NX,Ref->NY,X[i],Y[i],TRUE);
-      Lat[i]=VertexValS(Ref->AY,NULL,Ref->NX,Ref->NY,X[i],Y[i],FALSE);
+      Lat[i]=VertexValS(Ref->AY,NULL,Ref->NX,Ref->NY,X[i],Y[i],TRUE);
    }
    return(0);
 }

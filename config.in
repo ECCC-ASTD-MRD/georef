@@ -3,21 +3,20 @@
 # This forms the basis for the xx-config utility, which tells you
 # various things about the library installation.
 
-cc=CMAKE_CC
-ftn=CMAKE_FTN
-cflags=CMAKE_CFLAGS
-fflags=CMAKE_FFLAGS
-libs=CMAKE_LIBS
+cc="@CMAKE_C_COMPILER_ID@ @CMAKE_C_COMPILER_VERSION@"
+ftn="@CMAKE_Fortran_COMPILER_ID@ @CMAKE_Fortran_COMPILER_VERSION@"
+cflags="@CMAKE_C_FLAGS@"
+fflags="@CMAKE_Fortran_Flags@"
 
-version=CMAKE_VERSION
-has_rmn=CMAKE_RMN
-has_gdal=CMAKE_GDAL
-has_vgrid=CMAKE_VGRID
+version=@VERSION@@STATE@
+has_rmn=@RMN_VERSION@@RMN_STATE@
+has_gdal=@GDAL_VERSION@
+has_vgrid=@VGRID_VERSION@@VGRID_STATE@
 
 usage()
 {
     cat <<EOF
-Usage: CMAKE_NAME-config [OPTION]
+Usage: @NAME@-config [OPTION]
 
 Available values for OPTION include:
 

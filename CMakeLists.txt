@@ -7,12 +7,13 @@ foreach(PATH $ENV{EC_CMAKE_MODULE_PATH})
 endforeach()
 
 include(ec_init)           # Initialise compilers and ec specific functions
-include(ec_parse_manifest) # Parse MANIFEST file
-include(ec_build_info)     # Generate build include file
-
+ec_parse_manifest()        # Parse MANIFEST file
+ec_build_info()            # Generate build include file
+ec_git_version()
 #include(doxygen)    # Doxygen target
 
-project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
+project(${NAME} DESCRIPTION "${DESCRIPTION}")
+set(PROJECT_VERSION ${GIT_VERSION})
 option(BUILD_SHARED_LIBS "Build shared libraries instead of static ones." TRUE)
 
 set(CMAKE_INSTALL_PREFIX "" CACHE PATH "..." FORCE)
@@ -23,7 +24,7 @@ enable_testing()
 
 #set(USE_ECCC_ENV_IF_AVAIL FALSE)
 #include(compiler_rules)
-include(compiler_presets)
+include(ec_compiler_presets)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
@@ -77,4 +78,5 @@ if(NOT DEFINED ENV{OMPI})
    add_subdirectory(test test)
 endif()
 
-include(ec_bin_config)
+configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)
+install(PROGRAMS ${CMAKE_BINARY_DIR}/${NAME}-config DESTINATION bin)

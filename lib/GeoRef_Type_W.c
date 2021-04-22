@@ -193,6 +193,7 @@ TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTran
          // Create global latlon reference on perfect sphere
          llref=OSRNewSpatialReference(NULL);
          OSRSetFromUserInput(llref,"EPSG:4047");
+         OSRSetAxisMappingStrategy(llref,OAMS_TRADITIONAL_GIS_ORDER);
       }
 
       if (llref) {

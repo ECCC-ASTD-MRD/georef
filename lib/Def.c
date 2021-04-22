@@ -1601,7 +1601,7 @@ int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,
       } else {
          App_Log(APP_ERROR,"%s: Unable ot allocate subgrid\n",__func__);
          return(0);
-      }
+      }  
    }
 
    d=1.0/(ToDef->SubSample-1);
@@ -1616,7 +1616,7 @@ int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,
 
                di=(double)x-0.5+d*i;
                dj=(double)y-0.5+d*j;
-//TODO: make this one call
+
                GeoRef_XY2LL(FromRef,&la,&lo,&di,&dj,1,TRUE);
                if (GeoRef_LL2XY(ToRef,&di,&dj,&la,&lo,1,FALSE)) {
                   if (Def_GetValue(FromRef,FromDef,Degree,0,di,dj,FromDef->Level,&val,&val1) && DEFVALID(FromDef,val)) {

@@ -30,10 +30,11 @@ SSM_NAME=${NAME}_${SSM_VERSION}_${ORDENV_PLAT}
 
 export EC_CMAKE_MODULE_PATH="`pwd`/cmake;$EC_CMAKE_MODULE_PATH"
 export DESTDIR=${SSM_DEV}/workspace/${SSM_NAME}
+type gdal-config >/dev/null 2>&1 && CMAKE_COMP_FLAGS="$CMAKE_COMP_FLAGS -DGDAL_ROOT=`gdal-config --prefix`" 2>/dev/null
 
 rm -f -r build; mkdir -p build; cd build
-#cmake $CMAKE_COMP_FLAGS -DCOMPILER_SUITE=intel -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
-cmake $CMAKE_COMP_FLAGS -DCMAKE_INSTALL_PREFIX=$DESTDIR ..
+#cmake $CMAKE_COMP_FLAGS -DCOMPILER_SUITE=intel -DCMAKE_INSTALL_PREFIX=$DESTDIR ../
+cmake $CMAKE_COMP_FLAGS -DCMAKE_INSTALL_PREFIX=$DESTDIR -DVERSION=${VERSION} ../
 make -j
 make doc
 make install

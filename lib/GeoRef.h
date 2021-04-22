@@ -70,6 +70,7 @@
 #define CLAMPLON(LON)        (LON=LON>180?LON-360:(LON<-180?LON+360:LON))                                                 ///< Clamp longitude between -180 and 180
 #define CLAMPLONRAD(LON)     (LON=(LON>M_PI?(fmod(LON+M_PI,M_2PI)-M_PI):(LON<=-M_PI?(fmod(LON-M_PI,M_2PI)+M_PI):LON)))    ///< Clamp longitude in radians -PI and PI
 #define CLAMPLONREF(LON,REF) (LON>(360.0+REF)?(LON-360.0):LON<REF?(LON+360.0):LON)                                        ///< Clamp longitude between -180 and 180
+#define SIDELON(SIDE,L)      (((SIDE)>0 && (L)<0)?L+360.0:((SIDE)>0 && (L)<0)?(L)-360.0:(L))                              ///< Force longitude to be all positive or negative
 #define COORD_CLEAR(C)       (C.Lat=C.Lon=C.Elev=-999.0)                                                                  ///< Clear the coordinates values to -999 (undefined)
 
 #define BITPOS(i)     (i - ((i >> 5) << 5))

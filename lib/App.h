@@ -58,16 +58,18 @@
 
 #define APP_ERRORSIZE 2048
 
-#define APP_COLOR_BLINK   "\x1b[5m"
-#define APP_COLOR_BLACK   "\x1b[0;30m"
-#define APP_COLOR_RED     "\x1b[0;31m"
-#define APP_COLOR_GREEN   "\x1b[0;32m"
-#define APP_COLOR_YELLOW  "\x1b[0;33m"
-#define APP_COLOR_BLUE    "\x1b[0;34m"
-#define APP_COLOR_MAGENTA "\x1b[0;35m"
-#define APP_COLOR_CYAN    "\x1b[0;36m"
-#define APP_COLOR_GRAY    "\x1b[0;37m"
-#define APP_COLOR_RESET   "\x1b[0m"
+#define APP_COLOR_BLINK     "\x1b[5m"
+#define APP_COLOR_BLACK     "\x1b[0;30m"
+#define APP_COLOR_RED       "\x1b[0;31m"
+#define APP_COLOR_GREEN     "\x1b[0;32m"
+#define APP_COLOR_ORANGE    "\x1b[33m" 
+#define APP_COLOR_YELLOW    "\x1b[1m\x1b[33m"
+#define APP_COLOR_BLUE      "\x1b[0;34m"
+#define APP_COLOR_MAGENTA   "\x1b[0;35m"
+#define APP_COLOR_CYAN      "\x1b[0;36m"
+#define APP_COLOR_LIGHTCYAN "\x1b[1m\x1b[36m"
+#define APP_COLOR_GRAY      "\x1b[0;37m"
+#define APP_COLOR_RESET     "\x1b[0m"
 
 #define APP_MASTER    0
 #define APP_THREAD    1

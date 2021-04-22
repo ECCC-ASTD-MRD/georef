@@ -110,7 +110,7 @@ int GeoRef_XY2LL_M(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
 
    for (i=0; i < Nb; i++) {
       Lon[i]=VertexValS(Ref->AX,NULL,Ref->NX,Ref->NY,X[i]-1.0,Y[i]-1.0,TRUE);
-      Lat[i]=VertexValS(Ref->AY,NULL,Ref->NX,Ref->NY,X[i]-1.0,Y[i]-1.0,FALSE);
+      Lat[i]=VertexValS(Ref->AY,NULL,Ref->NX,Ref->NY,X[i]-1.0,Y[i]-1.0,TRUE);
    }
    return(0);
 }

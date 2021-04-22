@@ -587,7 +587,7 @@ void App_LogClose(void) {
 void App_Log(TApp_LogLevel Level,const char *Format,...) {
 
    static char *levels[] = { "ERROR","WARNING","INFO","DEBUG","EXTRA" };
-   static char *colors[] = { APP_COLOR_RED, APP_COLOR_BLUE, "", APP_COLOR_CYAN, APP_COLOR_CYAN };
+   static char *colors[] = { APP_COLOR_RED, APP_COLOR_YELLOW, "", APP_COLOR_LIGHTCYAN, APP_COLOR_CYAN };
    char        *color;
    va_list      args;
 
