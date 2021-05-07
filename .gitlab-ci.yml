@@ -1,0 +1,27 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+stages:
+#  - configure
+  - build
+  - test
+#  - ssm
+#configure_job:
+#  stage: configure
+#  script:
+#    - mkdir -p ${build_dir}
+#    - cd "$CI_PROJECT_DIR"
+#    - cmake ${CI_PROJECT_DIR}
+#      -DCMAKE_INSTALL_PREFIX=${install_dir}
+build:
+  stage: build
+  script:
+    - makeit.sh
+ #   - cd ${build_dir}
+ #   - make -j8
+test:
+  stage: test
+  script:
+    - cd ${build_dir}
+    - make test
+#ssm:
+#  stage: ssm
