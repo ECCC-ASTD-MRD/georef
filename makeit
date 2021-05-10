@@ -50,6 +50,7 @@ while IFS= read -r line; do
 done < MANIFEST
 
 #----- Load dependencies if not done
+if [[ -n $EC_ARCH ]]; then
 `type pgsm &>/dev/null` || {
     . r.load.dot \
          main/opt/cmake/cmake-3.16.4 \
