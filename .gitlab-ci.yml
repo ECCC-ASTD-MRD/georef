@@ -17,17 +17,24 @@ stages:
 #      -DCMAKE_INSTALL_PREFIX=${install_dir}
 before_script:
   - export CLICOLOR_FORCE=true
-  - export ORDENV_SITE_PROFILE=20210129
-  - export ORDENV_COMM_PROFILE=eccc/20210309
-  - export ORDENV_GROUP_PROFILE=eccc/cmc/1.9.5-b
-  - . /fs/ssm/main/env/ordenv-boot-20201118.sh
-#  - source SETUP.sh
+  - . /fs/ssm/eccc/mrd/ordenv/profile/1.13.0
 
-build:
+build_gnu:
   stage: build
   script:
     - git submodule update --init --recursive
-    - ./makeit.sh
+    - ./makeit -build -reconf 
+ #   - cd ${build_dir}
+ #   - make -j8
+
+build_intel:
+  stage: build
+  script:
+    - r.load.dot comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
+      main/opt/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199 \
+      main/opt/openmpi-setup/openmpi-setup-0.2 
+    - git submodule update --init --recursive
+    - ./makeit -build -reconf 
  #   - cd ${build_dir}
  #   - make -j8
 
