@@ -69,8 +69,18 @@ ORDENV_PLAT=${ORDENV_PLAT:-`uname -s`-`uname -m`}
 SSM_VERSION=${VERSION}${SSM_COMP}
 SSM_NAME=${NAME}_${SSM_VERSION}_${ORDENV_PLAT}
 
-export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
-#export LIBGEOREF_DATA=/local/drive1/afsr005/GRIDS
+case `domainname -d` in
+   *science.gc.ca)
+      export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
+      ;;
+   *ec.gc.ca)
+      export LIBGEOREF_DATA=/local/drive1/afsr005/GRIDS
+      ;;
+   *)
+      export LIBGEOREF_DATA=EXT_HOME=NIL
+      echo "(WARNING) Not running on GC network, test data will not be available"
+      ;;
+esac
 
 if [[ $CLR -eq 1 ]]; then
    rm -f -r build "${SSM_DEV}/workspace/${SSM_NAME}"

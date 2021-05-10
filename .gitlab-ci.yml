@@ -34,7 +34,7 @@ build_intel:
       - git submodule update --init --recursive
       - ./makeit -build -reconf 
  
-test:
+test_intel:
    stage: test
    script:
       - . r.load.dot comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
@@ -44,6 +44,12 @@ test:
       - export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
       - ./makeit -test
 
+test_gnu:
+   stage: test
+   script:
+      - . r.load.dot rpn/code-tools/1.5.0-b
+      - export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
+      - ./makeit -test
 #ssm:
 #   stage: package
 #   script:
