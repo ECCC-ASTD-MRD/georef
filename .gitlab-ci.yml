@@ -47,7 +47,6 @@ build_intel:
 test:
   stage: test
   script:
-    - cd ${build_dir}
     - export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
     - make test
 #ssm:
