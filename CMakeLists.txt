@@ -22,8 +22,6 @@ enable_language(C)
 enable_language(Fortran)
 enable_testing()
 
-#set(USE_ECCC_ENV_IF_AVAIL FALSE)
-#include(compiler_rules)
 include(ec_compiler_presets)
 
 set(CMAKE_CXX_STANDARD 11)
