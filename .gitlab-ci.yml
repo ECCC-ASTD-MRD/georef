@@ -2,9 +2,12 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
 stages:
 #  - configure
-  - build
-  - test
-#  - ssm
+   - build
+   - test
+#   - package
+#   - deploy
+#   - doc
+
 #configure_job:
 #  stage: configure
 #  script:
@@ -12,12 +15,22 @@ stages:
 #    - cd "$CI_PROJECT_DIR"
 #    - cmake ${CI_PROJECT_DIR}
 #      -DCMAKE_INSTALL_PREFIX=${install_dir}
+before_script:
+  - export CLICOLOR_FORCE=true
+  - export ORDENV_SITE_PROFILE=20210129
+  - export ORDENV_COMM_PROFILE=eccc/20210309
+  - export ORDENV_GROUP_PROFILE=eccc/cmc/1.9.5-b
+  - . /fs/ssm/main/env/ordenv-boot-20201118.sh
+#  - source SETUP.sh
+
 build:
   stage: build
   script:
+    - git submodule update --init --recursive
     - makeit.sh
  #   - cd ${build_dir}
  #   - make -j8
+
 test:
   stage: test
   script:
