@@ -70,7 +70,7 @@ SSM_VERSION=${VERSION}${SSM_COMP}
 SSM_NAME=${NAME}_${SSM_VERSION}_${ORDENV_PLAT}
 
 export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
-export LIBGEOREF_DATA=/local/drive1/afsr005/GRIDS
+#export LIBGEOREF_DATA=/local/drive1/afsr005/GRIDS
 
 if [[ $CLR -eq 1 ]]; then
    rm -f -r build "${SSM_DEV}/workspace/${SSM_NAME}"

@@ -1,58 +1,49 @@
 variables:
-  GIT_SUBMODULE_STRATEGY: recursive
+   GIT_SUBMODULE_STRATEGY: recursive
 stages:
-#  - configure
-   - build
-   - test
-#   - package
-#   - deploy
-#   - doc
+#   - configure
+    - build
+    - test
+#    - package
+#    - deploy
+#    - doc
 
-#configure_job:
-#  stage: configure
-#  script:
-#    - mkdir -p ${build_dir}
-#    - cd "$CI_PROJECT_DIR"
-#    - cmake ${CI_PROJECT_DIR}
-#      -DCMAKE_INSTALL_PREFIX=${install_dir}
 before_script:
-  - export CLICOLOR_FORCE=true
-  - . /fs/ssm/eccc/mrd/ordenv/profile/1.13.0
+   - export CLICOLOR_FORCE=true
+   - . /fs/ssm/eccc/mrd/ordenv/profile/1.13.0
 
 build_gnu:
-  stage: build
-  artifacts:
-    untracked: true
-  script:
-    - . r.load.dot rpn/code-tools/1.5.0-b
-    - git submodule update --init --recursive
-    - ./makeit -build -reconf 
- #   - cd ${build_dir}
- #   - make -j8
+   stage: build
+   artifacts:
+      untracked: true
+   script:
+      - . r.load.dot rpn/code-tools/1.5.0-b
+      - git submodule update --init --recursive
+      - ./makeit -build -reconf 
 
 build_intel:
-  stage: build
-  artifacts:
-    untracked: true
-  script:
-    - . r.load.dot comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
-      main/opt/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199 \
-      main/opt/openmpi-setup/openmpi-setup-0.2 \
-      rpn/code-tools/1.5.0-b
-    - git submodule update --init --recursive
-    - ./makeit -build -reconf 
- #   - cd ${build_dir}
- #   - make -j8
-
+   stage: build
+   artifacts:
+      untracked: true
+   script:
+      - . r.load.dot \
+         comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
+         main/opt/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199 \
+         main/opt/openmpi-setup/openmpi-setup-0.2 \
+         rpn/code-tools/1.5.0-b
+      - git submodule update --init --recursive
+      - ./makeit -build -reconf 
+ 
 test:
-  stage: test
-  script:
-    - . r.load.dot comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
-      main/opt/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199 \
-      main/opt/openmpi-setup/openmpi-setup-0.2 \
-      rpn/code-tools/1.5.0-b
-    - cd build
-    - export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
-    - make test
+   stage: test
+   script:
+      - . r.load.dot comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
+         main/opt/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199 \
+         main/opt/openmpi-setup/openmpi-setup-0.2 \
+         rpn/code-tools/1.5.0-b
+      - cd build
+      - export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
+      - ./makeit -test
+
 #ssm:
-#  stage: ssm
+#   stage: ssm
