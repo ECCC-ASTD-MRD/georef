@@ -51,13 +51,14 @@ done < MANIFEST
 
 #----- Load dependencies if not done
 if [[ -n $EC_ARCH ]]; then
-`type pgsm &>/dev/null` || {
-    . r.load.dot \
+   `type pgsm &>/dev/null` || {
+      . r.load.dot \
          main/opt/cmake/cmake-3.16.4 \
          rpn/libs/${RMN} \
          rpn/utils/${RMN} \
          rpn/vgrid/${VGRID}
-}
+   }
+fi
 
 #----- SSM packaging stuff
 if [[ -n $COMP_ARCH ]]; then
@@ -87,7 +88,7 @@ if [[ $BLD -eq 1 ]]; then
    #----- Build
    if [[ $REC -eq 1 ]]; then
       cmake $CMAKE_COMP_FLAGS -DCMAKE_INSTALL_PREFIX=$DESTDIR -DVERSION=${VERSION} ../
-   fi && make -j && make doc && ${VER:+VER=$VER}
+   fi && make -j ${VER:+VER=$VER} && make doc
 
    if [[ $TEST -eq 1 ]]; then
       make test || exit 1
@@ -98,6 +99,7 @@ fi
 
 if [[ $SSM -eq 1 ]]; then
 
+   cd build
    make install || exit 1
 
    printf -- "\n----- Building ssm package : ${SSM_DEV}/workspace/${SSM_NAME} -----\n"
