@@ -137,7 +137,7 @@ int Def_Compat(TDef *DefTo,TDef *DefFrom) {
    // Verifier la dimension verticale
    if (DefTo->NK!=DefFrom->NK || DefTo->NC!=DefFrom->NC) {
       if (DefTo->Idx) {
-         App_Log(ERROR,"%s: Cannot change the data size for a sub 'U' grid\n",__func__);
+         App_Log(APP_ERROR,"%s: Cannot change the data size for a sub 'U' grid\n",__func__);
          return(0);
       }
       if (DefTo->Data[0]) free(DefTo->Data[0]);
@@ -319,7 +319,7 @@ TDef *Def_CopyData(TDef *DefTo,TDef *DefFrom){
    }
 
    if (!DefFrom) {
-      App_Log(ERROR,"%s: Invalid data source\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid data source\n",__func__);
       return(NULL);
    }
    //TODO:Check Def COMPAT
@@ -721,11 +721,11 @@ int Def_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value,TDef_Com
    OGRGeometryH geom;
 
    if (!Ref || !Def) {
-      App_Log(ERROR,"%s: Invalid destination\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid destination\n",__func__);
       return(0);
    }
    if (!Geom) {
-      App_Log(ERROR,"%s: Invalid source\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid source\n",__func__);
       return(0);
    }
 
@@ -908,7 +908,7 @@ int Def_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value,TDef_Com
    }
    return(1);
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(0);
 #endif
 }
@@ -1009,7 +1009,7 @@ int Def_GridCell2OGR(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int
    
    return(pt);
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(0);
 #endif
 }
@@ -1153,7 +1153,7 @@ static int Def_GridInterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,char Mode
 
    return(n);
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(0);
 #endif
 }
@@ -1199,11 +1199,11 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
    OGREnvelope                   env;
 
    if (!ToRef || !ToDef) {
-      App_Log(ERROR,"%s: Invalid destination\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid destination\n",__func__);
       return(0);
    }
    if (!LayerRef || !Layer) {
-      App_Log(ERROR,"%s: Invalid source\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid source\n",__func__);
       return(0);
    }
 
@@ -1232,7 +1232,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
       } else {
          fld=OGR_FD_GetFieldIndex(Layer->Def,Field);
          if (fld==-1) {
-            App_Log(ERROR,"%s: Invalid layer field\n",__func__);
+            App_Log(APP_ERROR,"%s: Invalid layer field\n",__func__);
             return(0);
          }
       }
@@ -1243,7 +1243,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
       if (!ToDef->Accum) {
          ToDef->Accum=malloc(FSIZE2D(ToDef)*sizeof(int));
          if (!ToDef->Accum) {
-            App_Log(ERROR,"%s: Unable to allocate accumulation buffer\n",__func__);
+            App_Log(APP_ERROR,"%s: Unable to allocate accumulation buffer\n",__func__);
             return(0);
          }
       }
@@ -1263,7 +1263,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
          value=*(ip++);
 
          if (f>=Layer->NFeature) {
-            App_Log(ERROR,"%s: Wrong index, feature index too high (%i)\n",__func__,f);
+            App_Log(APP_ERROR,"%s: Wrong index, feature index too high (%i)\n",__func__,f);
             return(0);
          }
 
@@ -1319,20 +1319,20 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
 
             // Try to access geometrie, skipping instead of failing on bad ones
             if (!(hgeom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
-               App_Log(WARNING,"%s: Cannot get handle from geometry: %li\n",__func__,f);
+               App_Log(APP_WARNING,"%s: Cannot get handle from geometry: %li\n",__func__,f);
                continue;
             }
 
             // Copie de la geometrie pour transformation
             if (!(geom=OGR_G_Clone(hgeom))) {
-               App_Log(ERROR,"%s: Could not clone the geometry\n",__func__);
+               App_Log(APP_ERROR,"%s: Could not clone the geometry\n",__func__);
                return(0);
             }
 
             // If the request is in meters
             if (fld==-3 || fld==-5) {
                if (!(utmgeom=OGR_G_Clone(geom))) {
-                  App_Log(ERROR,"%s: Could not clone the UTM geomtry\n",__func__);
+                  App_Log(APP_ERROR,"%s: Could not clone the UTM geomtry\n",__func__);
                   return(0);
                }
 
@@ -1345,7 +1345,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
                   tr=OCTNewCoordinateTransformation(LayerRef->Spatial,srs);
 
                   if (!srs || !tr) {
-                     App_Log(ERROR,"%s: Could not initiate UTM transormation\n",__func__);
+                     App_Log(APP_ERROR,"%s: Could not initiate UTM transormation\n",__func__);
                      return(0);
                   }
                }
@@ -1443,7 +1443,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
                            ip-=1;                       // No intersection found, removed previously inserted feature
                         }
                      }
-                     App_Log(DEBUG,"%s: %i hits on feature %i of %i (%.0f %.0f x %.0f %.0f)\n",__func__,n,f,Layer->NFeature,env.MinX,env.MinY,env.MaxX,env.MaxY);
+                     App_Log(APP_DEBUG,"%s: %i hits on feature %i of %i (%.0f %.0f x %.0f %.0f)\n",__func__,n,f,Layer->NFeature,env.MinX,env.MinY,env.MaxX,env.MaxY);
                   }
                }
             }
@@ -1454,7 +1454,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
       }
       if (ip) *(ip++)=REF_INDEX_END;
 
-      App_Log(DEBUG,"%s: %i total hits\n",__func__,nt);
+      App_Log(APP_DEBUG,"%s: %i total hits\n",__func__,nt);
 
       if (tr)
          OCTDestroyCoordinateTransformation(tr);
@@ -1477,7 +1477,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
    nt=Index?(ip-Index)/sizeof(float):nt;
    return(nt==0?1:nt);
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(0);
 #endif
 }
@@ -1489,11 +1489,11 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDe
    TGridSet  *gset;
 
    if (!ToRef || !ToDef) {
-      App_Log(ERROR,"%s: Invalid destination\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid destination\n",__func__);
       return(0);
    }
    if (!FromRef || !FromDef) {
-      App_Log(ERROR,"%s: Invalid source\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid source\n",__func__);
       return(0);
    }
 
@@ -1542,7 +1542,7 @@ int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDe
    }
 
 #else
-      App_Log(ERROR,"%s: RMNLIB support not included\n",__func__);
+      App_Log(APP_ERROR,"%s: RMNLIB support not included\n",__func__);
 #endif   
    return(ok);
 }
@@ -1574,16 +1574,16 @@ int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,
    double val,val1,di,dj,d,la,lo;
 
    if (!ToRef || !ToDef) {
-      App_Log(ERROR,"%s: Invalid destination\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid destination\n",__func__);
       return(0);
    }
    if (!FromRef || !FromDef) {
-      App_Log(ERROR,"%s: Invalid source\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid source\n",__func__);
       return(0);
    }
 
    if (ToDef->SubSample<=1) {
-      App_Log(ERROR,"%s: Sub sampling is not defined\n",__func__);
+      App_Log(APP_ERROR,"%s: Sub sampling is not defined\n",__func__);
       return(0);
    }
 
@@ -1599,9 +1599,9 @@ int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,
             ToDef->Sub[idx]=ToDef->NoData;
          }
       } else {
-         App_Log(ERROR,"%s: Unable ot allocate subgrid\n",__func__);
+         App_Log(APP_ERROR,"%s: Unable ot allocate subgrid\n",__func__);
          return(0);
-      }
+      }  
    }
 
    d=1.0/(ToDef->SubSample-1);
@@ -1616,7 +1616,7 @@ int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,
 
                di=(double)x-0.5+d*i;
                dj=(double)y-0.5+d*j;
-//TODO: make this on call
+
                GeoRef_XY2LL(FromRef,&la,&lo,&di,&dj,1,TRUE);
                if (GeoRef_LL2XY(ToRef,&di,&dj,&la,&lo,1,FALSE)) {
                   if (Def_GetValue(FromRef,FromDef,Degree,0,di,dj,FromDef->Level,&val,&val1) && DEFVALID(FromDef,val)) {
@@ -1664,11 +1664,11 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
    OGREnvelope  env;
 
    if (!ToRef || !ToDef) {
-      App_Log(ERROR,"%s: Invalid destination\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid destination\n",__func__);
       return(0);
    }
    if (!FromRef || !FromDef) {
-      App_Log(ERROR,"%s: Invalid source\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid source\n",__func__);
       return(0);
    }
 
@@ -1688,7 +1688,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
    if (Mode==IR_NORMALIZED_CONSERVATIVE && !ToDef->Buffer) {
       ToDef->Buffer=(double*)malloc(FSIZE2D(ToDef)*sizeof(double));
       if (!ToDef->Buffer) {
-         App_Log(ERROR,"%s: Unable to allocate area buffer\n",__func__);
+         App_Log(APP_ERROR,"%s: Unable to allocate area buffer\n",__func__);
          return(0);
       }
    }
@@ -1711,7 +1711,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             j=*(ip++);
 
             if (!FIN2D(FromDef,i,j)) {
-               App_Log(ERROR,"%s: Wrong index, index coordinates (%i,%i)\n",__func__,i,j);
+               App_Log(APP_ERROR,"%s: Wrong index, index coordinates (%i,%i)\n",__func__,i,j);
                return(0);
             }
 
@@ -1821,7 +1821,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
                            ip-=2;                       // No intersection found, removed previously inserted gridpoint
                         }
                      }
-                     App_Log(DEBUG,"%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
+                     App_Log(APP_DEBUG,"%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
                   }
 
                   // We have to process the part that was out of the grid limits so translate everything NI points
@@ -1871,14 +1871,14 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
                            ip-=2;                       // No intersection found, removed previously inserted gridpoint
                         }
                      }
-                     App_Log(DEBUG,"%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
+                     App_Log(APP_DEBUG,"%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
                   }
                }
             }
          }
          if (ip) *(ip++)=REF_INDEX_END;
 
-         App_Log(DEBUG,"%s: %i total hits\n",__func__,nt);
+         App_Log(APP_DEBUG,"%s: %i total hits\n",__func__,nt);
       }
 
       // Finalize and reassign
@@ -1902,7 +1902,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
    nt=Index?(ip-Index)+1:nt;
    return(nt==0?1:nt);
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(0);
 #endif
 }
@@ -1939,11 +1939,11 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
    TGeoScan      gscan;
 
    if (!ToRef || !ToDef) {
-      App_Log(ERROR,"%s: Invalid destination\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid destination\n",__func__);
       return(0);
    }
    if ((!FromRef || !FromDef) && (Mode!=IR_NOP && Mode!=IR_ACCUM && Mode!=IR_BUFFER)) {
-      App_Log(ERROR,"%s: Invalid source\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid source\n",__func__);
       return(0);
    }
 
@@ -1964,7 +1964,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
          if (!ToDef->Accum) {
             acc=ToDef->Accum=malloc(nij*sizeof(int));
             if (!ToDef->Accum) {
-               App_Log(ERROR,"%s: Unable to allocate accumulation buffer\n",__func__);
+               App_Log(APP_ERROR,"%s: Unable to allocate accumulation buffer\n",__func__);
                return(0);
             }
             for(n=0;n<nij;n++) acc[n]=0;
@@ -1974,7 +1974,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
       if (!ToDef->Buffer) {
          fld=ToDef->Buffer=malloc(nijk*sizeof(double));
          if (!ToDef->Buffer) {
-            App_Log(ERROR,"%s: Unable to allocate buffer\n",__func__);
+            App_Log(APP_ERROR,"%s: Unable to allocate buffer\n",__func__);
             return(0);
          }
          for(n=0;n<nijk;n++) fld[n]=ToDef->NoData;
@@ -1982,7 +1982,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
         if (Mode==IR_VECTOR_AVERAGE) {
             aux=ToDef->Aux=malloc(nijk*sizeof(double));
             if (!ToDef->Aux) {
-               App_Log(ERROR,"%s: Unable to allocate auxiliary buffer\n",__func__);
+               App_Log(APP_ERROR,"%s: Unable to allocate auxiliary buffer\n",__func__);
                return(0);
             }
             for(n=0;n<nijk;n++) aux[n]=0.0;
@@ -2018,7 +2018,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
                   case IR_AVERAGE          : fld[idxt]+=vx; acc[idxt]++;     break;
                   case IR_VECTOR_AVERAGE   : vx=DEG2RAD(vx); fld[idxt]+=cos(vx); aux[idxt]+=sin(vx); acc[idxt]++; break;
                   default:
-                     App_Log(ERROR,"%s: Invalid interpolation type\n",__func__);
+                     App_Log(APP_ERROR,"%s: Invalid interpolation type\n",__func__);
                      return(0);
                }
             }
@@ -2033,7 +2033,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
          if (lutDef && ToDef->NK > 0) {
             Def_Get(lutDef[0],0,0,val);
             if (val != ToDef->NK) {
-               App_Log(ERROR,"%s: Invalid LUT class size (%d) vs Array size (%d)  \n",__func__,(int)val,ToDef->NK);
+               App_Log(APP_ERROR,"%s: Invalid LUT class size (%d) vs Array size (%d)  \n",__func__,(int)val,ToDef->NK);
                return(0);
             }
             // first row is the class count and idno 
@@ -2061,7 +2061,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
                   Def_Get(lutDef[i],0,0,val);
                   rpnClass[i] = val;
                   if ((val < 1)||(val > ToDef->NK)) {
-                     App_Log(ERROR,"%s: Invalid LUT index(%d)=%f vs Array size (%d)  \n",__func__,i,val,ToDef->NK);
+                     App_Log(APP_ERROR,"%s: Invalid LUT index(%d)=%f vs Array size (%d)  \n",__func__,i,val,ToDef->NK);
                      return(0);
                   }
                }
@@ -2076,7 +2076,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
          dy=((y1-y0)*(x1-x0))>4194304?0:(y1-y0);
          for(y=y0;y<=y1;y+=(dy+1)) {
             if (!(s=GeoScan_Get(&gscan,ToRef,NULL,FromRef,FromDef,x0,y,x1,y+dy,FromDef->CellDim,IR_UNDEF))) {
-               App_Log(ERROR,"%s: Unable to allocate coordinate scanning buffer\n",__func__);
+               App_Log(APP_ERROR,"%s: Unable to allocate coordinate scanning buffer\n",__func__);
                return(0);
             }
 
@@ -2216,7 +2216,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
                                                       break;
                            case IR_VECTOR_AVERAGE   : vx=DEG2RAD(vx); fld[idxt]+=cos(vx); aux[idxt]+=sin(vx); acc[idxt]++; break;
                            default:
-                              App_Log(ERROR,"%s: Invalid interpolation type\n",__func__);
+                              App_Log(APP_ERROR,"%s: Invalid interpolation type\n",__func__);
                               return(0);
                         }
                      }

@@ -165,7 +165,7 @@ int GeoRef_AxisGet(TGeoRef *Ref,double *AX,double *AY) {
       memcpy(AX,Ref->AX, nix*sizeof(double));
       memcpy(AY,Ref->AY, njy*sizeof(double));
    } else {
-      App_Log(ERROR,"%s: Descriptor not found\n",__func__);
+      App_Log(APP_ERROR,"%s: Descriptor not found\n",__func__);
       return(-1);
    }
    return(0);
@@ -253,12 +253,12 @@ int GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY) {
    int istart, jstart;
 
    if (Ref->NbSub > 0) {
-      App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
+      App_Log(APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
       return(-1);
    }
   
    if (!Ref->AX) {
-      App_Log(ERROR,"%s: Grid descriptor not found\n",__func__);
+      App_Log(APP_ERROR,"%s: Grid descriptor not found\n",__func__);
       return(-1);
    }
 

@@ -216,7 +216,7 @@ int GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin)
    if (gset->zones[OUTSIDE].npts > 0) {
       ierc = 2; /* code to indicate extrapolation */
       if (RefFrom->Options.ExtrapDegree == ER_ABORT) {
-         App_Log(ERROR,"%s: Points on destination lie outside source. Aborting as requested\n",__func__);
+         App_Log(APP_ERROR,"%s: Points on destination lie outside source. Aborting as requested\n",__func__);
          return(-1);
       }
 
@@ -230,25 +230,25 @@ int GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin)
                case ER_MAXIMUM:
                   fudgeval = valmax + 0.05 * (valmax - valmin);
                   fudgeval_set = 1;
-                  App_Log(DEBUG,"%s: Maximum: %f \n",__func__,fudgeval);
+                  App_Log(APP_DEBUG,"%s: Maximum: %f \n",__func__,fudgeval);
                   break;
 
                case ER_MINIMUM:
                   fudgeval = valmin - 0.05 * (valmax - valmin);
                   fudgeval_set = 1;
-                  App_Log(DEBUG,"%s: Minimum: %f \n",__func__,fudgeval);
+                  App_Log(APP_DEBUG,"%s: Minimum: %f \n",__func__,fudgeval);
                   break;
 
                case ER_VALUE:
                   fudgeval = RefFrom->Options.ExtrapValue;
                   fudgeval_set = 1;
-                  App_Log(DEBUG,"%s: Value: %f \n",__func__,fudgeval);
+                  App_Log(APP_DEBUG,"%s: Value: %f \n",__func__,fudgeval);
                   break;
             }
          }
 
          if (fudgeval_set == 0) {
-            App_Log(DEBUG,"%s: Fudgeval not set\n",__func__);
+            App_Log(APP_DEBUG,"%s: Fudgeval not set\n",__func__);
          }
          for (i=0; i < gset->zones[OUTSIDE].npts; i++) {
 	          zout[gset->zones[OUTSIDE].idx[i]] = fudgeval;

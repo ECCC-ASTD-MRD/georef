@@ -231,7 +231,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
             switch (Ref->RPNHead.GRREF[0]) {
                case 'N':
                case 'S':
-                  App_Log(ERROR,"%s: Operation not supported - Y/O grid on PS grid\n",__func__);
+                  App_Log(APP_ERROR,"%s: Operation not supported - Y/O grid on PS grid\n",__func__);
                   return(-1);
                   break;
 
@@ -243,7 +243,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                   break;
 
                case 'E':
-                  App_Log(ERROR,"%s: Operation not supported - Y/O grid on E grid\n",__func__);
+                  App_Log(APP_ERROR,"%s: Operation not supported - Y/O grid on E grid\n",__func__);
                   return(-1);
                   break;
 
@@ -323,11 +323,11 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
       CLAMPLONREF(Ref->Lon[i],Ref->Options.LonRef);
    }
 
-   if (App_LogLevel(NULL)==EXTRA) {
-      App_Log(EXTRA,"Grid Lat Lon coordinates %p\n",Ref);
+   if (App_LogLevel(NULL)==APP_EXTRA) {
+      App_Log(APP_EXTRA,"Grid Lat Lon coordinates %p\n",Ref);
 
       for (i=0; i < Ref->NX*Ref->NY; i++) { 
-         App_Log(MUST,"%f %f\n",Ref->Lat[i],Ref->Lon[i]);
+         App_Log(APP_MUST,"%f %f\n",Ref->Lat[i],Ref->Lon[i]);
       }
    }
    return(npts);
@@ -359,7 +359,7 @@ int GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
          if (Lon) memcpy(Lon,Ref->Lon,n*sizeof(double));
          if (Lat) memcpy(Lat,Ref->Lat,n*sizeof(double));
       } else {
-         App_Log(ERROR,"%s: Missing descriptors\n",__func__);
+         App_Log(APP_ERROR,"%s: Missing descriptors\n",__func__);
          return(-1);
       }
    }
@@ -388,7 +388,7 @@ int GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
    int ier;
    
    if (Ref->NbSub > 0) {
-      App_Log(ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
+      App_Log(APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
       return(-1);
    } else {
 

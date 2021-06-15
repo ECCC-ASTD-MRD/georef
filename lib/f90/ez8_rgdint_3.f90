@@ -64,10 +64,7 @@
 #include "cubic8.cdk"
 
       limite  = ni+2-wrap
-      imoins1 = i-1
-      iplus1  = i+1
-      iplus2  = i+2
-
+ 
 !zzzzzz$OMP PARALLEL
 !zzzzzz$OMP DO private(n, i, j, imoins1, iplus1, iplus2, y1, y2, y3, y4) 
       do n=1,npts

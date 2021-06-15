@@ -88,7 +88,7 @@ int GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
          break;
 
       default:
-         App_Log(ERROR,"%s: Undefined reference grid type: %s\n",__func__,Ref->RPNHead.GRREF[0]);
+         App_Log(APP_ERROR,"%s: Undefined reference grid type: %s\n",__func__,Ref->RPNHead.GRREF[0]);
          return(-1);
          break;
    }
@@ -118,7 +118,7 @@ int GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
    previous_val_polar_correction = Ref->Options.PolarCorrect;
    Ref->Options.PolarCorrect = FALSE;
 //TODO: finish this func
-   set->n_wts = MIN(Ref->Options.WeightNum,GOPT_MAXWEIGHTNUM);
+   set->n_wts = FMIN(Ref->Options.WeightNum,GOPT_MAXWEIGHTNUM);
    set->wts =  (double *) malloc(Nb*set->n_wts*sizeof(float));
    set->idx =  (int *) calloc(Nb,set->n_wts*sizeof(int));
    set->mask = (int *) malloc(Nb*sizeof(int));

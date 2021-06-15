@@ -1,0 +1,46 @@
+variables:
+   GIT_SUBMODULE_STRATEGY: recursive
+stages:
+#   - configure
+    - build
+    - test
+#    - package
+#    - deploy
+#    - doc
+
+before_script:
+   - export CLICOLOR_FORCE=true
+
+build_gnu:
+   stage: build
+   artifacts:
+      untracked: true
+   script:
+   script:
+      - source ~/ci-admin-bundle/environments/eccc-setup-gnu.sh
+      - ./makeit -build -reconf 
+
+build_intel:
+   stage: build
+   artifacts:
+      untracked: true
+   script:
+      - source ~/ci-admin-bundle/environments/eccc-setup-intel.sh
+      - ./makeit -build -reconf 
+ 
+test_intel:
+   stage: test
+   script:
+      - source ~/ci-admin-bundle/environments/eccc-setup-intel.sh
+      - export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
+      - ./makeit -test
+
+test_gnu:
+   stage: test
+   script:
+      - source ~/ci-admin-bundle/environments/eccc-setup-gnu.sh
+      - ./makeit -test
+#ssm:
+#   stage: package
+#   script:
+#      - ./makeit -ssm

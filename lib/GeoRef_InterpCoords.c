@@ -138,7 +138,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
    double   *tmpy;
    
    if (!Ref->XY2LL) {
-      App_Log(ERROR,"%s: Invalid transform function (XY2LL): GRTYP=%c\n",__func__,Ref->GRTYP[0]);
+      App_Log(APP_ERROR,"%s: Invalid transform function (XY2LL): GRTYP=%c\n",__func__,Ref->GRTYP[0]);
    }
 
    if (Ref->NbSub > 0) {
@@ -228,7 +228,7 @@ int GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb
    double  *xyin,*xyan,*yyin,*yyan;
 
    if (!Ref->LL2XY) {
-      App_Log(ERROR,"%s: Invalid transform function (LL2XY): GRTYP=%c\n",__func__,Ref->GRTYP[0]);
+      App_Log(APP_ERROR,"%s: Invalid transform function (LL2XY): GRTYP=%c\n",__func__,Ref->GRTYP[0]);
    }
 
    if (Ref->NbSub > 0 ) {

@@ -2,7 +2,6 @@
 
    implicit none
    integer ni_src, nj_src, ni_dst, nj_dst, n_wts, n
-   real :: x(ni_src,nj_src),y(ni_src,nj_src), dist, total_wgt
    real :: infld(ni_src*nj_src), outfld(ni_dst*nj_dst)
    real rmin, rmax
    integer i,j,k

@@ -24,17 +24,14 @@
 
       external permut
       
-      integer i1,i2,j1,j2,ni,nj
+      integer j1,j2,ni,nj
       integer hem,symetrie
-      character*1 grtyp
-      integer i,j,njsur2
+      integer i,j
       
       
       real zout(ni,j1:j2)
       real zi(ni,nj)
-      integer sym
       real sign
-      integer ier,ii
       
       if (symetrie.eq.0) then
          sign = -1.0

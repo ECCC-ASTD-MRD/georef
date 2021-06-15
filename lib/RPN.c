@@ -240,7 +240,7 @@ TRPNField* RPN_FieldNew(int NI,int NJ,int NK,int NC,TDef_Type Type) {
 
    fld=(TRPNField*)calloc(1,sizeof(TRPNField));
    if (!(fld->Def=Def_New(NI,NJ,NK,NC,Type))) {
-      App_Log(ERROR,"%s: Could not allocate memory\n",__func__);
+      App_Log(APP_ERROR,"%s: Could not allocate memory\n",__func__);
       return(NULL);
    }
 
@@ -282,7 +282,7 @@ TRPNField* RPN_FieldReadIndex(int FileId,int Index,TRPNField *Fld) {
          &h.UBC,&h.EX1,&h.EX2,&h.EX3);
 
    if (ok<0) {
-      App_Log(ERROR,"%s: Could not get field information (c_fstprm failed)\n",__func__);
+      App_Log(APP_ERROR,"%s: Could not get field information (c_fstprm failed)\n",__func__);
       return(NULL);
    }
 
@@ -306,7 +306,7 @@ TRPNField* RPN_FieldReadIndex(int FileId,int Index,TRPNField *Fld) {
    } else {
       fld=(TRPNField*)calloc(1,sizeof(TRPNField));
       if (!(fld->Def=Def_New(h.NI,h.NJ,h.NK,1,TD_Float32))) {
-         App_Log(ERROR,"%s: Could not allocate memory for fld\n",__func__);
+         App_Log(APP_ERROR,"%s: Could not allocate memory for fld\n",__func__);
          return(NULL);
       }
    }
@@ -314,7 +314,7 @@ TRPNField* RPN_FieldReadIndex(int FileId,int Index,TRPNField *Fld) {
    // Recuperer les donnees du champs
    c_fst_data_length(TDef_Size[fld->Def->Type]);
    if ((ok=cs_fstlukt(fld->Def->Data[0],h.FID,h.KEY,h.GRTYP,&h.NI,&h.NJ,&h.NK))<0) {
-      App_Log(ERROR,"%s: Could not read field data (c_fstluk failed)\n",__func__);
+      App_Log(APP_ERROR,"%s: Could not read field data (c_fstluk failed)\n",__func__);
       return(NULL);
    }
 
@@ -343,7 +343,7 @@ TRPNField* RPN_FieldRead(int FileId,int DateV,char *Eticket,int IP1,int IP2,int 
    h.KEY=cs_fstinf(FileId,&h.NI,&h.NJ,&h.NK,DateV,Eticket,IP1,IP2,IP3,TypVar,NomVar);
 
    if (h.KEY<0) {
-      App_Log(ERROR,"%s: Specified field does not exist (c_fstinf failed)\n",__func__);
+      App_Log(APP_ERROR,"%s: Specified field does not exist (c_fstinf failed)\n",__func__);
       return(NULL);
    }
 
@@ -395,14 +395,14 @@ int RPN_FieldReadComponent(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int F
 
       if (key<0) {
          // Too many warnings so we catch it later
-         // App_Log(WARNING,"%s: Could not find component field %s (c_fstinf failed)\n",__func__,Var);
+         // App_Log(APP_WARNING,"%s: Could not find component field %s (c_fstinf failed)\n",__func__,Var);
          return(0);
       } else {
          if (!*Ptr) {
             //TODO: 64 bit descriptorspi++
  //           cs_fstprm(key,&i,&i,&i,&i,&i,&i,&Head->NBITS,&i,&i,&i,&i,c,c,c,Head->GRREF,&Head->IGREF[X_IG1],&Head->IGREF[X_IG2],&Head->IGREF[X_IG3],&Head->IGREF[X_IG4],&i,&i,&i,&i,&i,&i,&i);
             if (!(*Ptr=(float*)malloc(ni*nj*nk*sizeof(float)))) {
-               App_Log(ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
+               App_Log(APP_ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
                return(0);
             }
          }
@@ -465,12 +465,12 @@ int RPN_ReadGrid(struct TGeoRef *GRef) {
             if (!GRef->Idx) {
                key=cs_fstinf(h->FID,&ni,&nj,&nk,-1,"",h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],"","##");
                if (key < 0) {
-                  App_Log(ERROR,"%s: Could not find index field %s (c_fstinf failed)",__func__,"##");
+                  App_Log(APP_ERROR,"%s: Could not find index field %s (c_fstinf failed)",__func__,"##");
                   return(FALSE);
                } else {
                   GRef->NIdx=ni*nj*nk;
                   if (!(GRef->Idx=(unsigned int*)malloc(GRef->NIdx*sizeof(unsigned int)))) {
-                     App_Log(ERROR,"%s: Not enough memory to read coordinates fields",__func__);
+                     App_Log(APP_ERROR,"%s: Not enough memory to read coordinates fields",__func__);
                      return(FALSE);
                   }
                   cs_fstluk((float*)GRef->Idx,key,&ni,&nj,&nk);
@@ -582,7 +582,7 @@ int RPN_ReadGrid(struct TGeoRef *GRef) {
          char  *proj=NULL;
 
          if ((key=cs_fstinf(h->FID,&ni,&nj,&nk,-1,"",h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],"","PROJ"))<0) {
-            App_Log(ERROR,"%s: Could not find projection description field PROJ (c_fstinf failed)\n",__func__);
+            App_Log(APP_ERROR,"%s: Could not find projection description field PROJ (c_fstinf failed)\n",__func__);
             return(FALSE);
          } else {
             c_fst_data_length(1);
@@ -591,7 +591,7 @@ int RPN_ReadGrid(struct TGeoRef *GRef) {
             }
          }
          if ((key=cs_fstinf(h->FID,&ni,&nj,&nk,-1,"",h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],"","MTRX"))<0) {
-            App_Log(ERROR,"%s: Could not find trasform matrix field MTRX (c_fstinf failed)\n",__func__);
+            App_Log(APP_ERROR,"%s: Could not find trasform matrix field MTRX (c_fstinf failed)\n",__func__);
             return(FALSE);
          } else {
             cs_fstluk(tmpv,key,&ni,&nj,&nk);
@@ -608,7 +608,7 @@ int RPN_ReadGrid(struct TGeoRef *GRef) {
          GeoRef_SetW(GRef,proj,tm,im,NULL);
          if (proj) free(proj);
 #else
-   App_Log(ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);
    return(FALSE);
 #endif
       }
@@ -645,7 +645,7 @@ int RPN_FieldReadLevels(TRPNField *Field) {
    // If we don't find any level definition, use level index
    if (!Field->ZRef->Levels) {
       if (!(Field->ZRef->Levels=(float*)malloc(Field->Def->NJ*sizeof(float)))) {
-         App_Log(ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
+         App_Log(APP_ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
       } else {
          for(nj=0;nj<Field->Def->NJ;nj++) {
             Field->ZRef->Levels[nj]=nj+1;
@@ -666,7 +666,7 @@ int RPN_FieldWrite(int FileId,TRPNField *Field) {
       Field->Head.NOMVAR,Field->Head.ETIKET,Field->Head.GRTYP,Field->Head.IG[X_IG1],Field->Head.IG[X_IG2],Field->Head.IG[X_IG3],Field->Head.IG[X_IG4],Field->Head.DATYP,FALSE);
 
    if (ok<0) {
-      App_Log(ERROR,"%s: Could not write field data (c_fstecr failed)\n",__func__);
+      App_Log(APP_ERROR,"%s: Could not write field data (c_fstecr failed)\n",__func__);
       return(0);
    }
    return(1);
@@ -904,7 +904,7 @@ int RPN_GetAllFields(int FID,int DateV,char *Etiket,int Ip1,int Ip2,int Ip3,char
     do {
         APP_MEM_ASRT(arr,realloc(arr,(n*=2)*sizeof(*arr)));
         if( (err=cs_fstinl(FID,&ni,&nj,&nk,DateV,Etiket,Ip1,Ip2,Ip3,Typvar,Nomvar,arr,&s,n)) && err!=-4762 ) {
-            App_Log(ERROR,"(%s) Couldn't get list of fields (cs_fstinl) code=%d\n",__func__,s,n,err);
+            App_Log(APP_ERROR,"(%s) Couldn't get list of fields (cs_fstinl) code=%d\n",__func__,s,n,err);
             APP_FREE(arr);
             return(APP_ERR);
         }
@@ -955,7 +955,7 @@ int RPN_GetAllDates(int *Flds,int NbFlds,int Uniq,int **DateV,int *NbDateV) {
         err=cs_fstprm(Flds[i],&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
                 h.GRTYP,&h.IG[X_IG1],&h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
         if( err ) {
-            App_Log(ERROR,"(RPN_GetAllDates) Couldn't get info on field (cs_fstprm)\n");
+            App_Log(APP_ERROR,"(RPN_GetAllDates) Couldn't get info on field (cs_fstprm)\n");
             APP_FREE(dates);
             return(APP_ERR);
         }
@@ -963,7 +963,7 @@ int RPN_GetAllDates(int *Flds,int NbFlds,int Uniq,int **DateV,int *NbDateV) {
         deltat = h.DEET*h.NPAS/3600.0;
         f77name(incdatr)(&dates[i],&h.DATEO,&deltat);
         if( dates[i] == 101010101 ) {
-            App_Log(ERROR,"(RPN_GetAllDates) Couldn't get DateV for dateo(%d),deet(%d),npas(%d),deltat(%f) (incdatr)\n",h.DATEO,h.DEET,h.NPAS,deltat);
+            App_Log(APP_ERROR,"(RPN_GetAllDates) Couldn't get DateV for dateo(%d),deet(%d),npas(%d),deltat(%f) (incdatr)\n",h.DATEO,h.DEET,h.NPAS,deltat);
             APP_FREE(dates);
             return(APP_ERR);
         }
@@ -1018,7 +1018,7 @@ int RPN_GetAllIps(int *Flds,int NbFlds,int IpN,int Uniq,int **Ips,int *NbIp) {
         err=cs_fstprm(Flds[i],&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
                 h.GRTYP,&h.IG[X_IG1],&h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
         if( err ) {
-            App_Log(ERROR,"(RPN_GetAllIps) Couldn't get info on field (cs_fstprm)\n");
+            App_Log(APP_ERROR,"(RPN_GetAllIps) Couldn't get info on field (cs_fstprm)\n");
             APP_FREE(ips);
             return(APP_ERR);
         }
@@ -1028,7 +1028,7 @@ int RPN_GetAllIps(int *Flds,int NbFlds,int IpN,int Uniq,int **Ips,int *NbIp) {
             case 2: ips[i]=h.IP2; break;
             case 3: ips[i]=h.IP3; break;
             default:
-                App_Log(ERROR,"(RPN_GetAllIps) [%d] is not a valid IP number. Valid numbers are 1,2 and 3.\n",IpN);
+                App_Log(APP_ERROR,"(RPN_GetAllIps) [%d] is not a valid IP number. Valid numbers are 1,2 and 3.\n",IpN);
                 free(ips);
                 return(APP_ERR);
         }
@@ -1114,7 +1114,7 @@ int RPN_LinkFiles(char **Files,int N) {
         // Open all the files
         for(i=0; Files[i]; ++i) {
             if( (lst[i+1]=cs_fstouv(Files[i],"STD+RND+R/O")) < 0 ) {
-                App_Log(ERROR,"(%s) Problem opening input file \"%s\"\n",__func__,Files[i]);
+                App_Log(APP_ERROR,"(%s) Problem opening input file \"%s\"\n",__func__,Files[i]);
                 free(lst);
                 return -1;
             }
@@ -1122,14 +1122,14 @@ int RPN_LinkFiles(char **Files,int N) {
 
         // Link all files
         if( f77name(fstlnk)(lst+1,lst) != 0 ) {
-            App_Log(ERROR,"(%s) Could not link the %d input files together\n",__func__,N);
+            App_Log(APP_ERROR,"(%s) Could not link the %d input files together\n",__func__,N);
             free(lst);
             return -1;
         }
 
         // Add the list of FIDs to the global list
         if( !(ptr=realloc(LNK_FID,(LNK_NB+1)*sizeof(*LNK_FID))) ) {
-            App_Log(ERROR,"(%s) Could not allocate memory for the global FIDs array\n",__func__);
+            App_Log(APP_ERROR,"(%s) Could not allocate memory for the global FIDs array\n",__func__);
             free(lst);
             return -1;
         }
@@ -1143,7 +1143,7 @@ int RPN_LinkFiles(char **Files,int N) {
 
         // Only one file, no need to link anything
         if( (h=cs_fstouv(Files[0],"STD+RND+R/O")) < 0 ) {
-            App_Log(ERROR,"(%s) Problem opening input file %s\n",__func__,Files[0]);
+            App_Log(APP_ERROR,"(%s) Problem opening input file %s\n",__func__,Files[0]);
         }
 
         return h;
