@@ -87,7 +87,7 @@ if [[ $CLR -eq 1 ]]; then
 fi
 
 if [[ $REC -eq 1 ]]; then
-   rm -f -r build
+   rm -f -r build/$ARCH
 fi
 
 if [[ $BLD -eq 1 ]]; then
@@ -95,27 +95,27 @@ if [[ $BLD -eq 1 ]]; then
    export DESTDIR=${SSM_DEV}/workspace/${SSM_NAME}
    type gdal-config >/dev/null 2>&1 && CMAKE_COMP_FLAGS="$CMAKE_COMP_FLAGS -DGDAL_ROOT=`gdal-config --prefix`" 2>/dev/null
 
-   mkdir -p build
-   cd build
+   src=`pwd`
+   mkdir -p build/$ARCH
+   cd build/$ARCH
    
    #----- Build
    if [[ $REC -eq 1 ]]; then
-      cmake $CMAKE_COMP_FLAGS -DCMAKE_INSTALL_PREFIX=$DESTDIR -DVERSION=${VERSION} ../
+      cmake $CMAKE_COMP_FLAGS -DCMAKE_INSTALL_PREFIX=$DESTDIR -DVERSION=${VERSION} ${src}
    fi && make -j VERBOSE=${VER} && make doc
-
-   
+ 
    cd ..
 fi
 
 if [[ $TEST -eq 1 ]]; then
-   cd build
+   cd build/$ARCH
    make test || exit 1
    cd ..
 fi
 
 if [[ $SSM -eq 1 ]]; then
 
-   cd build
+   cd build/$ARCH
    make install || exit 1
 
    printf -- "\n----- Building ssm package : ${SSM_DEV}/workspace/${SSM_NAME} -----\n"

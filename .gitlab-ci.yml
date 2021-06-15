@@ -10,15 +10,14 @@ stages:
 
 before_script:
    - export CLICOLOR_FORCE=true
-   - . /fs/ssm/eccc/mrd/ordenv/profile/1.13.0
 
 build_gnu:
    stage: build
    artifacts:
       untracked: true
    script:
-      - . r.load.dot rpn/code-tools/1.5.0-b
-      - git submodule update --init --recursive
+   script:
+      - source ~/ci-admin-bundle/environments/eccc-setup-gnu.sh
       - ./makeit -build -reconf 
 
 build_intel:
@@ -26,29 +25,20 @@ build_intel:
    artifacts:
       untracked: true
    script:
-      - . r.load.dot \
-         comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
-         main/opt/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199 \
-         main/opt/openmpi-setup/openmpi-setup-0.2 \
-         rpn/code-tools/1.5.0-b
-      - git submodule update --init --recursive
+      - source ~/ci-admin-bundle/environments/eccc-setup-intel.sh
       - ./makeit -build -reconf 
  
 test_intel:
    stage: test
    script:
-      - . r.load.dot comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 \
-         main/opt/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199 \
-         main/opt/openmpi-setup/openmpi-setup-0.2 \
-         rpn/code-tools/1.5.0-b
+      - source ~/ci-admin-bundle/environments/eccc-setup-intel.sh
       - export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
       - ./makeit -test
 
 test_gnu:
    stage: test
    script:
-      - . r.load.dot rpn/code-tools/1.5.0-b
-      - export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
+      - source ~/ci-admin-bundle/environments/eccc-setup-gnu.sh
       - ./makeit -test
 #ssm:
 #   stage: package
