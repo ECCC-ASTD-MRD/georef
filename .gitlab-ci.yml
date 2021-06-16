@@ -12,13 +12,22 @@ before_script:
    - export CLICOLOR_FORCE=true
    - source ~/ci-admin-bundle/environments/latest/profile.sh
 
-build_gnu:
+build_gnu-7.4.0:
    stage: build
    artifacts:
       untracked: true
    script:
    script:
       - source ~/ci-admin-bundle/environments/latest/ubuntu-18.04-amd-64/gnu-7.4.0.sh
+      - ./makeit -build -reconf 
+
+build_gnu-9.3.0:
+   stage: build
+   artifacts:
+      untracked: true
+   script:
+   script:
+      - source ~/ci-admin-bundle/environments/latest/ubuntu-18.04-amd-64/gnu-9.3.0.sh
       - ./makeit -build -reconf 
 
 build_intel_amd64:
