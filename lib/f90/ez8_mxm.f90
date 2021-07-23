@@ -22,7 +22,7 @@ subroutine ez8_mxm(a,nar,b,nac,c,nbc)
 
       integer nar,nac,nbc,i,j,k
       real a(nar,1)
-      real*8 b(nac,1),c(nar,1)
+      real(kind=8) b(nac,1),c(nar,1)
 
       do 30 j=1,nbc
             do 20 i = 1,nar

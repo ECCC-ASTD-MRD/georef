@@ -20,15 +20,15 @@
       subroutine ez8_lambfll(x,y,xlat,xlon,npts,grtyp,ig1,ig2,ig3,ig4)
       implicit none
       integer npts
-      character*1 grtyp
-      real*8 x(npts),y(npts),xlat(npts),xlon(npts)
+      character grtyp
+      real(kind=8) x(npts),y(npts),xlat(npts),xlon(npts)
       integer ig1,ig2,ig3,ig4
       real xg(15)
-      character*1 gtypout
+      character gtypout
 
       real xlatninj,xlonninj,dx,dy,latin1,latin2
       real yaxislat,yaxislon
-      real*8 xlat11,xlon11,x11,y11
+      real(kind=8) xlat11,xlon11,x11,y11
 
       integer i,nxg
       

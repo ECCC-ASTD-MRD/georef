@@ -24,8 +24,8 @@
       implicit none
       integer li,lj
       real z1(li,lj), z2(li,lj)
-      real*8 xlon(li,lj)
-      character*1 grtyp
+      real(kind=8) xlon(li,lj)
+      character grtyp
       integer ig1,ig2,ig3,ig4
 
       external cigaxg
@@ -78,9 +78,9 @@
       data dgtord /1.7453292519943e-2/
 !
       integer i,j
-      real*8 psi,u,v
+      real(kind=8) psi,u,v
       real xg1, xg2, xg3, xg4
-      real*8 x1(2*li*lj),y1(2*li*lj),lat(2*li*lj)
+      real(kind=8) x1(2*li*lj),y1(2*li*lj),lat(2*li*lj)
 
 !     les #define qui suivent rendent le code plus lisible
       if (grtyp .eq. '!') then

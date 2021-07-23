@@ -23,10 +23,10 @@
       integer npts,ni,wrap,limite
       integer i,j,j1,j2,n,iplus1
       real    zo(npts)
-      real*8  px(npts),py(npts)
-      real*8  ax(ni),ay(j1:j2)
+      real(kind=8)  px(npts),py(npts)
+      real(kind=8)  ax(ni),ay(j1:j2)
       real    z(ni,j1:j2),nodata
-      real*8  x,y,x1,x2,y1,y2,dx,dy
+      real(kind=8)  x,y,x1,x2,y1,y2,dx,dy
 
 #include "zlin8.cdk"
 
@@ -60,7 +60,8 @@
          dx = (x - x1)/(x2-x1)
          dy = (y - ay(j))/(ay(j+1)-ay(j))
          
-         if (defvalid(z(i,j),nodata) .and. defvalid(z(iplus1,j),nodata) .and. defvalid(z(i,j+1),nodata) .and. defvalid(z(iplus1,j+1),nodata)) then
+         if (defvalid(z(i,j),nodata) .and. defvalid(z(iplus1,j),nodata) .and. defvalid(z(i,j+1),nodata) &
+            .and. defvalid(z(iplus1,j+1),nodata)) then
             y1 = zlin(dble(z(i,j)),dble(z(iplus1,j)),dx)
             y2 = zlin(dble(z(i,j+1)),dble(z(iplus1,j+1)),dx)
             zo(n) = zlin(y1,y2,dy)

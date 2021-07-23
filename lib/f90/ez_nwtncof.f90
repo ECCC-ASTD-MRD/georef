@@ -44,7 +44,7 @@
 
    integer  :: ni,nj,i1,i2,j1,j2,extension
    real ::   x1,x2,x3,x4
-   real*8, dimension(:) :: ax(ni),ay(j1:j2)
+   real(kind=8), dimension(:) :: ax(ni),ay(j1:j2)
    real, dimension(:,:) :: cx(ni,6),cy(j1:j2,6)
    logical sequence_ok
 
@@ -55,29 +55,29 @@
    do i=1,ni-1
       if (ax(i+1) < ax(i)) then
          sequence_ok = .false.
-         exit
+         stop
       endif
    enddo
 
    if (.not.sequence_ok) then
       print *, 'Probleme detecte dans EZ_NWTNCOF code 998'
       print *, '(EZ_NWTNCOF) Probleme : x1..x4  : ', ax(i), ax(i+1)
-      print *, 'EZ_NWTNCOF CALL EXIT'
-      call exit(13)
+      print *, 'EZ_NWTNCOF CALL STOP'
+      error stop 13
    endif
 
    do j=1,nj-1
       if (ay(j+1) < ay(j)) then
          sequence_ok = .false.
-         exit
+         stop
       endif
    enddo
 
    if (.not.sequence_ok) then
       print *, 'Probleme detecte dans EZ_NWTNCOF code 999'
       print *, '(EZ_NWTNCOF) Probleme : y1..y4  : ', ay(j), ay(j+1)
-      print *, 'EZ_NWTNCOF CALL EXIT'
-      call exit(13)
+      print *, 'EZ_NWTNCOF CALL STOP'
+      error stop 13
    endif
 
    do i=1,ni

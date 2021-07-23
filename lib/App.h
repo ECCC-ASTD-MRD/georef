@@ -46,7 +46,7 @@
 #include <limits.h>
 #include <float.h>
 
-#include "build_info.h"
+#include "libgeoref_build_info.h"
 
 #ifdef _OPENMP
 #   include <omp.h>

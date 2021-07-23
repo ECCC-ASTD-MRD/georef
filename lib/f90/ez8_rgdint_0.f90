@@ -22,7 +22,7 @@
       
       integer npts,ni,j1,j2,i,j,n
       real    zo(npts)
-      real*8  px(npts),py(npts)
+      real(kind=8)  px(npts),py(npts)
       real    z(ni,j1:j2)
       
       do n=1,npts

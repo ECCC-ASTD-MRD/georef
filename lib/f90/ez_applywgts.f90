@@ -36,7 +36,7 @@
      if (masque(k) == 1) then
         outfld(k) = 0.0
         do n=1,n_wts
-           if (idxs(i,j,n) < 1) exit
+           if (idxs(i,j,n) < 1) stop
            outfld(k) = outfld(k)+wts(i,j,n)*infld(idxs(i,j,n))
         enddo
      endif

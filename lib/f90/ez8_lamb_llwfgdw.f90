@@ -21,11 +21,11 @@
       implicit none
 
       integer li,lj
-      character*1 grtyp
+      character grtyp
       integer ig1,ig2,ig3,ig4   
       real z1(li*lj), z2(li*lj)
-      real*8 xlon(li*lj),xlat(li*lj,2)
-      real*8 x1(li*lj,2),y1(li*lj,2)
+      real(kind=8) xlon(li*lj),xlat(li*lj,2)
+      real(kind=8) x1(li*lj,2),y1(li*lj,2)
 
       real delx,dely,uuu,vvv,alpha
       integer i

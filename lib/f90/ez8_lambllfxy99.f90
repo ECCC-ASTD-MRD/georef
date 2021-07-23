@@ -20,7 +20,7 @@
       subroutine ez8_lambllfxy99(lat,lon,x,y,n,latin1,latin2,yaxislat,yaxislon)
       implicit none
       integer n
-      real*8 x(n),y(n),lat(n),lon(n)
+      real(kind=8) x(n),y(n),lat(n),lon(n)
       real latin1,latin2,yaxislat,yaxislon
       
       real pi,pisur4,d2r,rn,rphi1,rphi2,r,f,rtan,rho,theta,rhozero

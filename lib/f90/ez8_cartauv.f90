@@ -24,7 +24,7 @@
       implicit none
       INTEGER NI, NJ 
       REAL    U(NI,NJ), V(NI,NJ)
-      REAL*8  UVCART(3,NI*NJ), LON(NI,nj), LAT(ni,NJ)
+      real(kind=8)  UVCART(3,NI*NJ), LON(NI,nj), LAT(ni,NJ)
 !
 !author michel roch - april 90
 !
@@ -40,7 +40,7 @@
 !*
 
       INTEGER I, J, K 
-      REAL*8    A, B, C, D, E, F, DAR
+      real(kind=8)    A, B, C, D, E, F, DAR
 
       DAR = ACOS(-1.)/180.
       K   = 0

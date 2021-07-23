@@ -24,9 +24,9 @@
       integer i,j,ni,nj
       real clat, clon, d60, dgrw
 
-      real*8 tlat(5,5), tlon(5,5)
-      real*8 tlat2(5,5), tlon2(5,5)
-      real*8 x(5,5),y(5,5)
+      real(kind=8) tlat(5,5), tlon(5,5)
+      real(kind=8) tlat2(5,5), tlon2(5,5)
+      real(kind=8) x(5,5),y(5,5)
 
       ni = 11
       nj = 11
@@ -70,10 +70,10 @@
 #include "pi.cdk"
       
       integer i, n, ni, nj
-      real*8 x(n), y(n), lat(n), lon(n)
+      real(kind=8) x(n), y(n), lat(n), lon(n)
       real clat, clon, d60, dgrw
       real r
-      real*8 k
+      real(kind=8) k
       real offsetx, offsety,sinclat,cosclat,sinclon,cosclon
 
       r = 6371000.0 
@@ -102,11 +102,11 @@
 #include "pi.cdk"
       
       integer i, n, ni, nj
-      real*8 x(n), y(n), lat(n), lon(n)
+      real(kind=8) x(n), y(n), lat(n), lon(n)
       real clat, clon, d60, dgrw
       real r
       real offsetx, offsety,sinclat,cosclat,sinclon,cosclon
-      real*8 rho, c, a, b, temp
+      real(kind=8) rho, c, a, b, temp
 
 
       r = 6371000.0 
@@ -130,7 +130,7 @@
             c = 2.0 * atan(rho/(2.0*r))
             
             temp = cos(c)*sinclat + (y(i) * sin(c) * cosclat)/rho
-            lat(i) = rdtodg * asin(max(-1.0, min(temp, 1.0)))
+            lat(i) = rdtodg * asin(max(-1.0D0, min(temp, 1.0D0)))
             lon(i) = clon + rdtodg * atan(((x(i)*sin(c))/            (rho*cosclat*cos(c)-y(i)*sinclat*sin(c))))
             a = x(i) * sin(c)
             b = rho*cosclat*cos(c)-y(i)*sinclat*sin(c)

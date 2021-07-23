@@ -22,9 +22,9 @@
 
       integer li,lj
       real z1(li*lj), z2(li*lj)
-      character*1 grtyp
+      character grtyp
       integer ig1,ig2,ig3,ig4   
-      real*8 x1(li*lj,2),y1(li*lj,2),xlat(li*lj,2),xlon(li*lj)
+      real(kind=8) x1(li*lj,2),y1(li*lj,2),xlat(li*lj,2),xlon(li*lj)
       real delx,dely,uuu,vvv,alpha,psi
       integer i
 

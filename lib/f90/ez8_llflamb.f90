@@ -20,9 +20,9 @@
       subroutine ez8_llflamb(xlat,xlon,x,y,npts,grtyp,ig1,ig2,ig3,ig4)
       implicit none
       integer npts
-      real*8 xlat(npts),xlon(npts)
-      real*8 x(npts),y(npts) 
-      character*1 grtyp,gtypout
+      real(kind=8) xlat(npts),xlon(npts)
+      real(kind=8) x(npts),y(npts) 
+      character grtyp,gtypout
       integer ig1,ig2,ig3,ig4,nxg
 
       real xg(15)

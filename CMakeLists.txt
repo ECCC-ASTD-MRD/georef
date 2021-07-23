@@ -1,20 +1,19 @@
 cmake_minimum_required(VERSION 3.16)
 
 #----- Append EC specific module path
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_rpn)
 foreach(PATH $ENV{EC_CMAKE_MODULE_PATH})
    list(APPEND CMAKE_MODULE_PATH ${PATH})
 endforeach()
 
 include(ec_init)           # Initialise compilers and ec specific functions
 ec_parse_manifest()        # Parse MANIFEST file
-ec_build_info()            # Generate build include file
-ec_git_version()
-#include(doxygen)    # Doxygen target
+ec_git_version()           # Get version from git state
 
 project(${NAME} DESCRIPTION "${DESCRIPTION}")
 set(PROJECT_VERSION ${GIT_VERSION})
 option(BUILD_SHARED_LIBS "Build shared libraries instead of static ones." TRUE)
+ec_build_info()            # Generate build include file
 
 set(CMAKE_INSTALL_PREFIX "" CACHE PATH "..." FORCE)
 
@@ -22,6 +21,7 @@ enable_language(C)
 enable_language(Fortran)
 enable_testing()
 
+#include(doxygen)    # Doxygen target
 include(ec_compiler_presets)
 
 set(CMAKE_CXX_STANDARD 11)

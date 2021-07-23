@@ -22,9 +22,9 @@
       
       integer npts,ni,j1,j2,wrap,i,j,n,limite,iplus1
       real    zo(npts)
-      real*8  px(npts),py(npts)
+      real(kind=8)  px(npts),py(npts)
       real    z(ni,j1:j2),nodata
-      real*8  dx,dy,y2,y3
+      real(kind=8)  dx,dy,y2,y3
 
 #include "zlin8.cdk"
       

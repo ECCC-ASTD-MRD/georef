@@ -31,7 +31,7 @@
 
       integer npts,ni,j1,j2,wrap
       real zo(npts)
-      real*8 px(npts),py(npts)
+      real(kind=8) px(npts),py(npts)
       real z(ni,j1:j2)
 !
 !  npts   : nombre de points a interpoler
@@ -61,7 +61,7 @@
 !
 !===========================================
 
-      real*8 y1,y2,y3,y4
+      real(kind=8) y1,y2,y3,y4
       integer n,i,j
       integer imoins1, iplus1, iplus2, limite
 

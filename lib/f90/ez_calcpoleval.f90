@@ -23,8 +23,8 @@
       
       integer ni
       real poleval,z(ni)
-      real*8 ax(ni)
-      character*1 grtyp, grref
+      real(kind=8) ax(ni)
+      character grtyp, grref
       
       integer i
       

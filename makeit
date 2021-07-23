@@ -49,17 +49,6 @@ while IFS= read -r line; do
    fi
 done < MANIFEST
 
-#----- Load dependencies if not done
-if [[ -n $EC_ARCH ]]; then
-   `type pgsm &>/dev/null` || {
-      . r.load.dot \
-         main/opt/cmake/cmake-3.16.4 \
-         rpn/libs/${RMN} \
-         rpn/utils/${RMN} \
-         rpn/vgrid/${VGRID}
-   }
-fi
-
 #----- SSM packaging stuff
 if [[ -n $COMP_ARCH ]]; then
    SSM_COMP=-${COMP_ARCH}
@@ -68,19 +57,6 @@ ORDENV_PLAT=${ORDENV_PLAT:-`uname -s`-`uname -m`}
    
 SSM_VERSION=${VERSION}${SSM_COMP}
 SSM_NAME=${NAME}_${SSM_VERSION}_${ORDENV_PLAT}
-
-case `domainname -d` in
-   *science.gc.ca)
-      export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
-      ;;
-   *ec.gc.ca)
-      export LIBGEOREF_DATA=/local/drive1/afsr005/GRIDS
-      ;;
-   *)
-      export LIBGEOREF_DATA=EXT_HOME=NIL
-      echo "(WARNING) Not running on GC network, test data will not be available"
-      ;;
-esac
 
 if [[ $CLR -eq 1 ]]; then
    rm -f -r build "${SSM_DEV}/workspace/${SSM_NAME}"
@@ -91,7 +67,6 @@ if [[ $REC -eq 1 ]]; then
 fi
 
 if [[ $BLD -eq 1 ]]; then
-   export EC_CMAKE_MODULE_PATH="`pwd`/cmake;$EC_CMAKE_MODULE_PATH"
    export DESTDIR=${SSM_DEV}/workspace/${SSM_NAME}
    type gdal-config >/dev/null 2>&1 && CMAKE_COMP_FLAGS="$CMAKE_COMP_FLAGS -DGDAL_ROOT=`gdal-config --prefix`" 2>/dev/null
 

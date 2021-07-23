@@ -10,7 +10,6 @@ stages:
 
 before_script:
    - export CLICOLOR_FORCE=true
-   - source ~/ci-admin-bundle/environments/latest/profile.sh
 
 build_gnu-7.4.0:
    stage: build
@@ -18,7 +17,7 @@ build_gnu-7.4.0:
       untracked: true
    script:
    script:
-      - source ~/ci-admin-bundle/environments/latest/ubuntu-18.04-amd-64/gnu-7.4.0.sh
+      - source ci-env/latest/ubuntu-18.04-amd-64/gnu-7.4.0.sh
       - ./makeit -build -reconf 
 
 build_gnu-9.3.0:
@@ -27,7 +26,7 @@ build_gnu-9.3.0:
       untracked: true
    script:
    script:
-      - source ~/ci-admin-bundle/environments/latest/ubuntu-18.04-amd-64/gnu-9.3.0.sh
+      - source ci-env/latest/ubuntu-18.04-amd-64/gnu-9.3.0.sh
       - ./makeit -build -reconf 
 
 build_intel_amd64:
@@ -35,7 +34,7 @@ build_intel_amd64:
    artifacts:
       untracked: true
    script:
-      - source ~/ci-admin-bundle/environments/latest/ubuntu-18.04-amd-64/intel-19.0.3.199.sh
+      - source ci-env/latest/ubuntu-18.04-amd-64/intel-19.0.3.199.sh
       - ./makeit -build -reconf 
 
 build_intel_skylake:
@@ -43,13 +42,13 @@ build_intel_skylake:
    artifacts:
       untracked: true
    script:
-      - source ~/ci-admin-bundle/environments/latest/ubuntu-18.04-skylake-64/intel-19.0.3.199.sh
+      - source ci-env/latest/ubuntu-18.04-skylake-64/intel-19.0.3.199.sh
       - ./makeit -build -reconf 
 
 test_intel:
    stage: test
    script:
-      - source ~/ci-admin-bundle/environments/latest/ubuntu-18.04-amd-64/intel-19.0.3.199.sh
+      - source ci-env/latest/ubuntu-18.04-amd-64/intel-19.0.3.199.sh
       - export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
       - ./makeit -test
 
@@ -57,6 +56,7 @@ test_gnu:
    stage: test
    script:
       - source ~/ci-admin-bundle/environments/latest/ubuntu-18.04-amd-64/gnu-7.4.0.sh
+      - export LIBGEOREF_DATA=/space/hall3/sitestore/eccc/cmd/s/nil000/Projects/libgeoref/GRIDS
       - ./makeit -test
 #ssm:
 #   stage: package

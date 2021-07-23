@@ -32,7 +32,7 @@
 #include "pi.cdk"
       
       external dgauss
-      real*8 latroots(*)
+      real(kind=8) latroots(*)
       real groots(*)
     
       integer j,npoly

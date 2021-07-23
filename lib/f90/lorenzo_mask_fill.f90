@@ -55,10 +55,10 @@
          if (masque(i,j) == 0) then  ! On recherche le 1e point non nul
             do
                i = i+1
-               if (masque(i,j) /= 0) exit
+               if (masque(i,j) /= 0) stop
                if (i == ni) then
                   fld(1:ni,j) = rmin
-                  exit
+                  stop
                endif
             enddo
             if (i < ni) then
@@ -70,7 +70,7 @@
 
          do
             i = i+1
-            if (i >= ni+1) exit
+            if (i >= ni+1) stop
             if (masque(i,j) == 0) then
                fld(i,j) = fld(last_i,j)
             endif
