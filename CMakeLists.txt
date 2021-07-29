@@ -80,8 +80,8 @@ endif()
 configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/${NAME}-config DESTINATION bin)
 
-ec_prepare_ssm()
-#tar --exclude=.nfs* -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
+# Packaging with CPack
+ec_prepare_ssm()          # Prepare ssm control file and post/pre install script
 
 set(CPACK_GENERATOR "TGZ")
 set(CPACK_PACKAGE_VENDOR "ECCC")
