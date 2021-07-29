@@ -35,19 +35,6 @@ build:gnu-7.4.0:
     paths:
       - build_gnu-7.4.0
 
-build:gnu-9.3.0:
-  stage: build
-  script:
-    - source ci-env/latest/ubuntu-18.04-amd-64/gnu-9.3.0.sh
-    - mkdir build_gnu-9.3.0
-    - cd build_gnu-9.3.0
-    - cmake ../ -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install-dir
-    - make
-  artifacts:
-    expire_in: 2 hrs
-    paths:
-      - build_gnu-9.3.0
-
 test:intel-19.0.3:
    stage: test
    script:
