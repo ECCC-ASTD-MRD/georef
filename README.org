@@ -39,6 +39,6 @@ mkdir build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${your_choice}
 make -j 4
-make check
+make test
 make install
 #+end_src
