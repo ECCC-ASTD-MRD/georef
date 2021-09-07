@@ -13,7 +13,7 @@ set_target_properties(georef$ENV{OMPI} PROPERTIES
    COMPILE_FLAGS "${MPI_COMPILE_FLAGS}"
    LINK_FLAGS "${MPI_LINK_FLAGS}")
 
-add_dependencies(georef$ENV{OMPI} build_info)
+add_dependencies(georef$ENV{OMPI} ${PROJECT_NAME}_build_info)
 
 target_link_libraries(georef$ENV{OMPI} ${RMN_LIBRARIES} ${VGRID_LIBRARIES})
 #target_link_libraries(georef$ENV{OMPI} ${LIBXML2_LIBRARIES})

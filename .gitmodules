@@ -1,7 +1,7 @@
 [submodule "cmake"]
 	path = cmake_rpn
 	url = ../cmake_rpn
-	branch = dev_jp
+	branch = dev
 [submodule "ci-env"]
 	path = ci-env
 	url = ../ci-env
