@@ -5,11 +5,13 @@
 
 cc="@CMAKE_C_COMPILER_ID@ @CMAKE_C_COMPILER_VERSION@"
 fc="@CMAKE_Fortran_COMPILER_ID@ @CMAKE_Fortran_COMPILER_VERSION@"
-cflags="@CMAKE_C_FLAGS@"
-fflags="@CMAKE_Fortran_FLAGS@"
+cflags="@EC_C_FLAGS@"
+fflags="@EC_Fortran_FLAGS@"
 defs="@EC_CMAKE_DEFINITIONS@"
 
-version=@VERSION@@STATE@
+version=@PROJECT_VERSION@
+env=@EC_CI_ENV@
+
 has_rmn=@RMN_VERSION@@RMN_STATE@
 has_gdal=@GDAL_VERSION@
 has_vgrid=@VGRID_VERSION@@VGRID_STATE@
@@ -29,6 +31,7 @@ Available values for OPTION include:
   --defs         Preprocessor definitions [${defs}]
   --libs         library linking information [${libs}]
   --version      library version [${version}]
+  --env          environment version used [${env}]
   --has-rmn      which version of librmn is it compiled with [${has_rmn}]
   --has-gdal     which version of gdal is it compiled with [${has_gdal}]
   --has-vgrid    which version of vgrid is it compiled with [${has_vgrid}]
@@ -98,6 +101,10 @@ while test $# -gt 0; do
     --version)
 	    echo $version
 	    ;;
+
+    --env)
+       echo ${env}
+       ;;
 
     *)
         echo "unknown option: $1"
