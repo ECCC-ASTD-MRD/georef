@@ -9,8 +9,32 @@ stages:
 before_script:
    - export CLICOLOR_FORCE=true
 
+build:XC50_intel-19.0.5:
+   stage: build
+   tags:
+      - XC50-login
+   only:
+      - master
+      - dev
+      - tags
+   script:
+      - set +e
+      - source ci-env/latest/sles-15-skylake-64/intel-19.0.5.281.sh
+      - mkdir build_XC50_intel-19.0.5
+      - cd build_XC50_intel-19.0.5
+      - cmake ../ 
+      - make
+   artifacts:
+      expire_in: 2 hrs
+      paths:
+         - build_XC50_intel-19.0.5
+         
 build:intel-19.0.3:
   stage: build
+   only:
+      - master
+      - dev
+      - tags
   script:
     - source ci-env/latest/ubuntu-18.04-skylake-64/intel-19.0.3.199.sh
     - mkdir build_intel-19.0.3
@@ -24,6 +48,10 @@ build:intel-19.0.3:
 
 build:gnu-7.4.0:
   stage: build
+   only:
+      - master
+      - dev
+      - tags
   script:
     - source ci-env/latest/ubuntu-18.04-amd-64/gnu-7.4.0.sh
     - mkdir build_gnu-7.4.0
@@ -49,10 +77,26 @@ test:gnu-7.4.0:
       - cd build_gnu-7.4.0
       - make test
 
+package:XC50_intel-19.0.5:
+   stage: package
+   only:
+      - tags
+   dependencies:
+      - build:XC50_intel-19.0.5
+   environment:
+      name: testing
+   script:
+      - source ci-env/latest/sles-15-skylake-64/intel-19.0.5.281.sh
+      - cd build_XC50_intel-19.0.5
+      - make package
+      - ~/ci-admin-bundle/bin/ci-deploy-ssm.sh package
+
 package:intel-19.0.3:
    stage: package
    only:
       - tags
+   dependencies:
+      - build:intel-19.0.3
    environment:
       name: testing
    script:
@@ -65,6 +109,8 @@ package:gnu-7.4.0:
    stage: package
    only:
       - tags
+   dependencies:
+      - build:gnu-7.4.0
    environment:
       name: testing
    script:
