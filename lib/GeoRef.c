@@ -1016,6 +1016,7 @@ TGeoRef* GeoRef_New() {
    ref->GRTYP[2]='\0';
    ref->Sets=NULL;
    ref->LastSet=NULL;
+   ref->NbSet=0;
 
    // Assign default options
    GeoRef_Options.NoData=nan("NaN"); // TODO: Move this init for only once

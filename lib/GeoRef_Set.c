@@ -562,7 +562,7 @@ TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGridSet** GSet) {
    }
 
    if (RefTo->NbSet>=SET_MAX) {
-      for (i=0; i< RefTo->NbSet; i++) {
+      for (i=0; i<RefTo->NbSet; i++) {
          if (RefTo->Sets[i].RefFrom!=NULL) {
             GeoRef_SetFree(&RefTo->Sets[i]);
          }
