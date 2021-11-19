@@ -201,7 +201,7 @@ int GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
 
    /* To use both Yin and Yang grids in Yin-yang input grid */
    /* Masquer les grilles YY input pour enlever overlap et calculer les X,Y */
-   GeoRef_SetCalcYYXY(RefTo,RefFrom);
+   GeoRef_SetCalcYYXY(gset);
 
    // Interp yinyang to one grid
    if (yyin == 1 && yyout == 0) {
@@ -423,7 +423,7 @@ int GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
 
    /* To use both Yin and Yang grids in Yin-yang input grid */
    /* Masquer les grilles YY input pour enlever overlap et calculer les X,Y */
-   GeoRef_SetCalcYYXY(RefTo,RefFrom);
+   GeoRef_SetCalcYYXY(gset);
 
    // Interp yinyang to one grid 
    if (yyin == 1 && yyout == 0) {

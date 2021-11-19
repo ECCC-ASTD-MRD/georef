@@ -267,10 +267,10 @@ int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,TGridSe
       }
 
       if (GeoRef_CalcLL(RefTo)) {
-         GeoRef_SetCalcXY(RefTo,RefFrom);
+         GeoRef_SetCalcXY(gset);
          if (GeoRef_InterpFinally(RefTo,RefFrom,zout,lxzin,gset->X,gset->Y,RefTo->NX*RefTo->NY)==0) {
             if (RefFrom->Options.PolarCorrect) {
-               GeoRef_SetZoneDefine(RefTo,RefFrom);
+               GeoRef_SetZoneDefine(gset);
                GeoRef_CorrectValue(RefTo,RefFrom,zout,lxzin);
             } else {
                ok=FALSE;
@@ -374,7 +374,7 @@ int GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,float *zout,float *zin,TGri
   
   // TO USE both Yin and Yang grids in Yin-yang input grid 
   // Masquer les grilles YY input pour enlever overlap et calculer les X,Y
-  GeoRef_SetCalcYYXY(RefTo,RefFrom);
+  GeoRef_SetCalcYYXY(gset);
 
    // Interp yinyang to one grid
    if (yyin == 1 && yyout == 0) {

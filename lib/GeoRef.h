@@ -273,7 +273,7 @@ typedef struct {
 } TGeoZone;
 
 typedef struct {
-   struct TGeoRef* RefFrom;
+   struct TGeoRef *RefFrom,*RefTo;
    TGeoZone zones[SET_NZONES];
    char G2G[2];                          ///<GRTYP of source and destination for index identification
    int flags;
@@ -441,10 +441,11 @@ void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
 // Internal functions
 TGridSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom,TGridSet** GSet);
 void      GeoRef_SetFree(TGridSet *GSet);
-int       GeoRef_SetWrite(int FID,TGridSet *GSet);
-int       GeoRef_SetZoneDefine(TGeoRef *RefTo,TGeoRef *RefFrom);
-int       GeoRef_SetCalcXY(TGeoRef* RefTo, TGeoRef* RefFrom);
-int       GeoRef_SetCalcYYXY(TGeoRef *RefTo,TGeoRef *RefFrom);
+int       GeoRef_SetWrite(TGridSet *GSet,int FID);
+int       GeoRef_SetZoneDefine(TGridSet *GSet);
+int       GeoRef_SetCalcXY(TGridSet *GSet);
+int       GeoRef_SetCalcYYXY(TGridSet *GSet);
+
 int       GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,double *x,double *y,int npts);
 int       GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin);
 int       GeoRef_CorrectVector(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout, float *vvout, float *uuin, float *vvin);

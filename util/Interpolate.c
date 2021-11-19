@@ -82,20 +82,19 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    }
   
    // Create index field
-   if (!(idx=RPN_FieldNew(in->Def->NIJ*100,1,1,1,TD_Float64))) {
-      return(0);       
-   }
+//   if (!(idx=RPN_FieldNew(in->Def->NIJ*100,1,1,1,TD_Float64))) {
+//      return(0);       
+//   }
 
    RPN_CopyDesc(fout,&grid->Head);
   
-   memcpy(&idx->Head,&grid->Head,sizeof(TRPNHeader));
-   strcpy(idx->Head.NOMVAR,"#%");
-   idx->Head.NJ=1;
-   idx->Head.GRTYP[0]='X';
-   idx->Head.NBITS=32;
-   idx->Head.DATYP=5;
-
-   if (Etiket) strncpy(idx->Head.ETIKET,Etiket,12);
+//   memcpy(&idx->Head,&grid->Head,sizeof(TRPNHeader));
+//   strcpy(idx->Head.NOMVAR,"#%");
+//   idx->Head.NJ=1;
+//   idx->Head.GRTYP[0]='X';
+//   idx->Head.NBITS=64;
+//   idx->Head.DATYP=5;  
+//   if (Etiket) strncpy(idx->Head.ETIKET,Etiket,12);
    if (Etiket) strncpy(in->Head.ETIKET,Etiket,12);
 
    grid->Def->NoData=0.0;
@@ -131,7 +130,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    if (gset) {
       App_Log(APP_DEBUG,"Saving index containing %i items\n",gset->IndexSize);
       
-      if (!GeoRef_SetWrite(fout,gset)) {
+      if (!GeoRef_SetWrite(gset,fout)) {
          return(0);
       }
    }
