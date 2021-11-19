@@ -226,6 +226,19 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
             }
             break;
 
+         case 'W':
+            npts=0;
+            for (j=0;j<nj;j++) {
+               for (i=0;i<ni;i++) {
+                  Ref->Lat[npts]=j;
+                  Ref->Lon[npts]=i;
+                  npts++;
+               }
+            }
+            // We can reuse the same lat lon array because the transform function makes internal copies
+            GeoRef_XY2LL_W(Ref,Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts);
+            break;
+
          case 'O':
          case 'Y':
             switch (Ref->RPNHead.GRREF[0]) {
@@ -282,6 +295,10 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                      Ref->Lon[i] = Ref->RPNHead.XGREF[X_SWLON] + Ref->RPNHead.XGREF[X_DLON] * Ref->Lon[i];
                      Ref->Lat[i] = Ref->RPNHead.XGREF[X_SWLAT] + Ref->RPNHead.XGREF[X_DLAT] * Ref->Lat[i];
                   }   
+                  break;
+
+               case 'W':
+                  GeoRef_XY2LL_W(Ref,Ref->Lat,Ref->Lon,Ref->AX,Ref->AY,npts);
                   break;
 
                case 'E':

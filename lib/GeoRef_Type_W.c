@@ -444,7 +444,7 @@ int GeoRef_LL2XY_W(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
          } else if (Ref->RPCTransform) {
             GDALRPCTransform(Ref->RPCTransform,TRUE,1,&X[n],&Y[n],&z,&ok);
          }
-      }   
+      }  
    }
 #else
    App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
