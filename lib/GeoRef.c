@@ -868,7 +868,7 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
             ref->ResR=Ref->ResR;
             ref->ResA=Ref->ResA;
          case 'W' :
-            GeoRef_SetW(ref,Ref->String,Ref->Transform,Ref->InvTransform,Ref->Spatial);
+            GeoRef_DefineW(ref,Ref->String,Ref->Transform,Ref->InvTransform,Ref->Spatial);
             if (Ref->RotTransform) {
                ref->RotTransform=(TRotationTransform*)malloc(sizeof(TRotationTransform));
                memcpy(ref->RotTransform,Ref->RotTransform,sizeof(TRotationTransform));
@@ -978,6 +978,171 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
       return((TGeoRef*)item->Data);
    }
    return(NULL);
+}
+
+/**----------------------------------------------------------------------------
+ * @brief  Insert a grid entry into the list of grids managed by ezscint.  Can be used
+ *         with regular and irregular ('Y', 'Z') grids, although it is not very useful
+ *         for regular grids.
+ *         If the grid type corresponds to a regular grid type (eg. 'A', 'G', 'N', etc.),
+ *         then the parameters IG1 through IG4 are taken from an ordinary data record
+ *         and grref, ax and ay are not used.
+ *  
+ *         If grtyp == 'Z' or '#', the dimensions of ax=ni and ay=nj.
+ *         If grtyp == 'Y', the dimensions of ax=ay=ni*nj. 
+ * @author Yves Chartier
+ * @date   Avril 2005
+ *
+ *   @param Ref   Georeference
+ *   @param NI    Horizontal size of the grid
+ *   @param NJ    Vertical size of the grid
+ *   @param GRTYP Grid type ('A', 'B', 'E', 'G', 'L', 'N', 'S','Y', 'Z', '#', '!')
+ *   @param GRREF Reference grid type ('E', 'G', 'L', 'N', 'S')
+ *   @param IG1   ig1 value associated to the reference grid
+ *   @param IG2   ig2 value associated to the reference grid
+ *   @param IG3   ig3 value associated to the reference grid
+ *   @param IG4   ig4 value associated to the reference grid
+ *   @param AX    Positional axis mapped to the '>>' record
+ *   @param AY    Positional axis mapped to the '^^' record
+ *  
+ *    @return              New geo reference pointer
+*/
+TGeoRef* GeoRef_Define(TGeoRef *Ref,int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,double* AX,double* AY) {
+   
+   TGeoRef* ref,*fref;
+
+   ref=Ref?Ref:GeoRef_New();
+   if (!ref)
+      return(NULL);
+
+   ref->RPNHead.GRTYP[0]=ref->GRTYP[0] = GRTYP[0];
+   ref->RPNHead.GRTYP[1]=ref->GRTYP[1] = '\0';
+   ref->RPNHead.GRREF[0] = GRREF?GRREF[0]:'\0';
+   ref->RPNHead.GRREF[1] = '\0';
+   ref->RPNHead.NI=ref->NX = NI;
+   ref->RPNHead.NJ=ref->NY = NJ;
+   ref->RPNHead.IG[X_IG1] = IG1;
+   ref->RPNHead.IG[X_IG2] = IG2;
+   ref->RPNHead.IG[X_IG3] = IG3;
+   ref->RPNHead.IG[X_IG4] = IG4;
+   ref->i1 = 1;
+   ref->i2 = NI;
+   ref->j1 = 1;
+   ref->j2 = NJ;
+
+   switch (GRTYP[0]) {
+      case 'Z':
+         f77name(cigaxg)(ref->RPNHead.GRREF,&ref->RPNHead.XGREF[X_LAT1],&ref->RPNHead.XGREF[X_LON1],&ref->RPNHead.XGREF[X_LAT2],&ref->RPNHead.XGREF[X_LON2],&ref->RPNHead.IGREF[X_IG1],&ref->RPNHead.IGREF[X_IG2],&ref->RPNHead.IGREF[X_IG3],&ref->RPNHead.IGREF[X_IG4]);
+      case '#':
+      case 'Y':
+         ref->AX = AX;
+         ref->AY = AY;
+         break;
+   }
+
+   GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
+
+   if (!Ref) {
+      // TODO: Would be more efficient to find without creating one
+      if (fref = GeoRef_Find(ref)) {
+         // This georef already exists
+         free(ref);
+         GeoRef_Incr(fref);
+         return(fref);
+      }
+
+      // This is a new georef
+      GeoRef_Add(ref);
+   }
+
+   GeoRef_DefRPNXG(ref);
+   GeoRef_AxisDefine(ref,AX,AY);
+   GeoRef_Qualify(ref);
+
+   return(ref);
+}
+
+/**----------------------------------------------------------------------------
+ * @brief  Create new geo reference
+ * @author Jean-Philippe Gauthier
+ * @date   Avril 2005
+ *
+ *   @param NI    Horizontal size of the grid
+ *   @param NJ    Vertical size of the grid
+ *   @param GRTYP Grid type ('A', 'B', 'E', 'G', 'L', 'N', 'S','Y', 'Z', '#', '!')
+ *   @param IG1   ig1 value associated to the reference grid
+ *   @param IG2   ig2 value associated to the reference grid
+ *   @param IG3   ig3 value associated to the reference grid
+ *   @param IG4   ig4 value associated to the reference grid
+ *   @param FID   FSTD file identifier where to look for grid descriptors
+ * 
+ *   @return              New geo reference pointer
+*/
+TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID) {
+
+   TGeoRef *ref,*fref;
+   int      id;
+
+   ref=GeoRef_New();
+
+   // If not specified, type is X
+   if (GRTYP[0]==' ') GRTYP[0]='X';
+   
+   GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
+   ref->RPNHead.GRTYP[0]=ref->GRTYP[0]=GRTYP[0];
+   ref->RPNHead.GRTYP[0]=ref->GRTYP[1]=GRTYP[1];
+
+   if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='P' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
+
+#ifdef HAVE_RMN
+      if (GRTYP[1]=='#') {
+         //TODO: CHECK For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
+      }
+
+      if (ref->GRTYP[0]=='L' || ref->GRTYP[0]=='A' || ref->GRTYP[0]=='B' || ref->GRTYP[0]=='N' || ref->GRTYP[0]=='S' || ref->GRTYP[0]=='G') {
+         // No need to look for grid descriptors
+         return(GeoRef_Define(NULL,NI,NJ,GRTYP," ",IG1,IG2,IG3,IG4,NULL,NULL));
+      }
+  
+      ref->RPNHead.FID=FID;
+      ref->RPNHead.IG[X_IG1] = IG1;
+      ref->RPNHead.IG[X_IG2] = IG2;
+      ref->RPNHead.IG[X_IG3] = IG3;
+      ref->RPNHead.IG[X_IG4] = (GRTYP[0]=='#' || GRTYP[0]=='U')?IG4:0;
+ 
+      // This georef already exists
+      if (fref=GeoRef_Find(ref)) {
+         free(ref);
+         GeoRef_Incr(fref);
+         return(fref);
+      }
+
+      // This is a new georef
+      GeoRef_Add(ref);
+      if (!RPN_ReadGrid(ref)) {
+         // problems with reading grid descriptors
+         return(NULL);
+      }
+
+      if (GRTYP[0] != 'U') {
+         GeoRef_AxisCalcExpandCoeff(ref);
+         ref->i1 = 1;
+         ref->i2 = ref->NX;
+         ref->j1 = 1;
+         ref->j2 = ref->NY;
+         if (GRTYP[0]!='Y' && GRTYP[0]!='M' && GRTYP[0]!='O') {
+            GeoRef_DefRPNXG(ref);           
+            GeoRef_AxisCalcNewtonCoeff(ref);
+         } else {
+            GeoRef_CalcLL(ref);
+         }
+      }
+#endif
+   }
+
+   GeoRef_Qualify(ref);
+
+   return(ref);
 }
 
 /**----------------------------------------------------------------------------
@@ -1987,4 +2152,155 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
    }
    
    return(TRUE);
+}
+
+int GeoRef_DefRPNXG(TGeoRef* Ref) {
+
+   switch (Ref->GRTYP[0]) {
+      case 'A':
+      case 'G':
+         Ref->RPNHead.XG[X_DLON]  = 360. /Ref->NX;
+         Ref->RPNHead.XG[X_SWLON] = 0.0;
+         switch (Ref->RPNHead.IG[X_IG1]) {
+				case 0:
+				   Ref->RPNHead.XG[X_DLAT] = 180./Ref->NY;
+				   Ref->RPNHead.XG[X_SWLAT] = -90. + 0.5*Ref->RPNHead.XG[X_DLAT];
+				   break;
+
+				case 1:
+				   Ref->RPNHead.XG[X_DLAT] = 90./Ref->NY;
+				   Ref->RPNHead.XG[X_SWLAT] = 0.5*Ref->RPNHead.XG[X_DLAT];
+				   Ref->Type |= GRID_EXPAND;
+				   break;
+
+				case 2:
+				   Ref->RPNHead.XG[X_DLAT] = 90./Ref->NY;
+				   Ref->RPNHead.XG[X_SWLAT] = -90. + 0.5*Ref->RPNHead.XG[X_DLAT];
+				   Ref->Type |= GRID_EXPAND;
+				   break;
+
+				default:
+			      App_Log(APP_ERROR,"%s: 'A' grid has to be Global/North/South\n",__func__);
+               return(-1);
+				   break;
+			}
+
+         switch(Ref->RPNHead.IG[X_IG2]) {
+	         case 1:
+	            Ref->Type|=GRID_YINVERT;
+	            break;
+
+	         default:
+	            break;
+	      }
+         break;
+
+      case 'B':
+         Ref->RPNHead.XG[X_DLON] = 360. /(Ref->NX-1);
+         Ref->RPNHead.XG[X_SWLON] = 0.0;
+         switch (Ref->RPNHead.IG[X_IG1]) {
+	         case 0:
+	            Ref->RPNHead.XG[X_DLAT] = 180./(Ref->NY-1);
+	            Ref->RPNHead.XG[X_SWLAT] = -90.;
+	            break;
+
+	         case 1:
+	            Ref->RPNHead.XG[X_DLAT] = 90./(Ref->NY-1);
+	            Ref->RPNHead.XG[X_SWLAT] = 0.;
+	            Ref->Type |= GRID_EXPAND;
+	            break;
+
+	         case 2:
+	            Ref->RPNHead.XG[X_DLAT] = 90./(Ref->NY-1);
+	            Ref->RPNHead.XG[X_SWLAT] = -90.;
+	            Ref->Type |= GRID_EXPAND;
+	            break;
+
+	         default:
+  			      App_Log(APP_ERROR,"%s: 'B' grid has to be Global/North/South\n",__func__);
+	            return(-1);
+	      }
+
+         switch(Ref->RPNHead.IG[X_IG2]) {
+	         case 1:
+	            Ref->Type|=GRID_YINVERT;
+	            break;
+
+	         default:
+	            break;
+	      }
+         break;
+
+      case 'E':
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_LAT1],&Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2],&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
+      /*      Ref->RPNHead.XG[X_DLAT] = 180./Ref->NY;
+	      Ref->RPNHead.XG[X_DLON] = 360./(Ref->NX-1);
+	      Ref->RPNHead.XG[X_SWLON] = 0.0;
+	      Ref->RPNHead.XG[X_SWLAT] = -90. + 0.5*Ref->RPNHead.XG[X_DLAT];
+      */
+         break;
+
+      case 'H':
+      case 'Y':
+      case '!':
+         break;
+
+      case '#':
+      case 'Z':
+         if (Ref->RPNHead.GRREF[0] == 'N') Ref->Hemi = NORTH;
+         if (Ref->RPNHead.GRREF[0] == 'S') Ref->Hemi = SOUTH;
+         if (Ref->RPNHead.GRREF[0] == 'E' || Ref->RPNHead.GRREF[0]== 'L') {
+            f77name(cigaxg)(Ref->RPNHead.GRREF,&Ref->RPNHead.XGREF[X_LAT1], &Ref->RPNHead.XGREF[X_LON1], &Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2],&Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4]);
+         }
+         break;
+
+      case 'L':
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_SWLAT], &Ref->RPNHead.XG[X_SWLON], &Ref->RPNHead.XG[X_DLAT], &Ref->RPNHead.XG[X_DLON],&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
+         break;
+
+      case 'N':
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_PI], &Ref->RPNHead.XG[X_PJ], &Ref->RPNHead.XG[X_D60], &Ref->RPNHead.XG[X_DGRW],&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
+         Ref->Hemi = NORTH;
+         break;
+
+      case 'S':
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_PI], &Ref->RPNHead.XG[X_PJ], &Ref->RPNHead.XG[X_D60], &Ref->RPNHead.XG[X_DGRW],&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
+         Ref->Hemi = SOUTH;
+         break;
+
+      case 'T':
+		   //TODO: What's T
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_TD60], &Ref->RPNHead.XG[X_TDGRW], &Ref->RPNHead.XG[X_CLAT], &Ref->RPNHead.XG[X_CLON],&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
+         break;
+
+      default:
+	      App_Log(APP_DEBUG,"%s: Grid type not supported %c\n",__func__,Ref->GRTYP[0]);
+         return(-1);
+    }
+
+   return(0);
+}
+
+
+
+wordint GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,int *IG2,int *IG3,int *IG4,char *GRREF,int *IG1REF,int *IG2REF,int *IG3REF,int *IG4REF) {
+   
+   *NI     = Ref->RPNHead.NI;
+   *NJ     = Ref->RPNHead.NJ;
+
+   GRTYP[0]  = Ref->RPNHead.GRTYP[0];
+   GRTYP[1]  = '\0';
+   GRREF[0]  = Ref->RPNHead.GRREF[0];
+   GRREF[1]  = '\0';
+  
+   *IG1    = Ref->RPNHead.IG[X_IG1];
+   *IG2    = Ref->RPNHead.IG[X_IG2];
+   *IG3    = Ref->RPNHead.IG[X_IG3];
+   *IG4    = Ref->RPNHead.IG[X_IG4];
+   *IG1REF = Ref->RPNHead.IGREF[X_IG1];
+   *IG2REF = Ref->RPNHead.IGREF[X_IG2];
+   *IG3REF = Ref->RPNHead.IGREF[X_IG3];
+   *IG4REF = Ref->RPNHead.IGREF[X_IG4];
+
+   return(0);
 }

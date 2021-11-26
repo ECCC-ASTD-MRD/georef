@@ -309,19 +309,14 @@ int GeoRef_SetCalcXY(TGridSet *GSet) {
 */
 int GeoRef_SetCalcYYXY(TGridSet *GSet) {
 
-   TGeoRef *yin_gdin, *yan_gdin, *yin_gdout, *yan_gdout;
-   int icode,nij,i,j,k,ivalue,ni,nj,yni,ynj,yin_mgid;
-   int idx_gdin;
+   TGeoRef *yin_gdin,*yan_gdin,*yin_gdout,*yan_gdout;
+   int icode,k,nij,ni,nj;
    int yancount_yin,yincount_yin, yancount_yan,yincount_yan;
-   int yyin,yyout;
    double *yin2yin_lat,*yin2yin_lon,*yan2yin_lat,*yan2yin_lon;
    double *yin2yan_lat,*yin2yan_lon,*yan2yan_lat,*yan2yan_lon;
-   float *yin_fld;
     
    //  Need only access to either yin or Yang info for the lat and lon val
       
-   yyin=0; yyout=0;
-
    /* Mettre du code au cas ou gdx_gdin == -1 */
 
    if (!GSet || (GSet->flags & SET_YYXY)) {
@@ -331,13 +326,11 @@ int GeoRef_SetCalcYYXY(TGridSet *GSet) {
    /* Dans un premier temps on calcule la position x-y de tous les points sur la grille */
 
    /* To be in this routine, input source grid should be Yin-Yang */
-   yyin=1;
    yin_gdin = GSet->RefFrom->Subs[0];
    yan_gdin = GSet->RefFrom->Subs[1];
 
    /* Check what the destination grid is */
    if (GSet->RefTo->NbSub > 0) {
-      yyout=1;
       yin_gdout = GSet->RefTo->Subs[0];
       yan_gdout = GSet->RefTo->Subs[1];
       ni = yin_gdout->NX;
@@ -347,7 +340,6 @@ int GeoRef_SetCalcYYXY(TGridSet *GSet) {
       ni = GSet->RefTo->NX;
       nj = GSet->RefTo->NY;
    }
-
    nij = ni*nj;
 
    /* Masquer les grilles YY input pour enlever overlap si TRUE */
@@ -362,9 +354,9 @@ int GeoRef_SetCalcYYXY(TGridSet *GSet) {
 
    /* destination grid is one grid */ 
    /* create mask with Yin as a priority choice and store x,y,lat,lon pos */
-   GSet->yin_maskout = (float *) malloc(ni*nj*sizeof(float));
-   GSet->yinlat = (double*) malloc(ni*nj*sizeof(double));
-   GSet->yinlon = (double*) malloc(ni*nj*sizeof(double));
+   GSet->yin_maskout = (float *) malloc(nij*sizeof(float));
+   GSet->yinlat = (double*) malloc(nij*sizeof(double));
+   GSet->yinlon = (double*) malloc(nij*sizeof(double));
    icode = GeoRef_GetLL(yin_gdout,GSet->yinlat,GSet->yinlon);
    icode = GeoRef_MaskYYApply(yin_gdout,yin_gdin,ni,nj,GSet->yin_maskout,GSet->yinlat,GSet->yinlon,yin2yin_lat,yin2yin_lon,&yincount_yin,yan2yin_lat,yan2yin_lon,&yancount_yin);
    /* store the lats and lons */
@@ -384,12 +376,14 @@ int GeoRef_SetCalcYYXY(TGridSet *GSet) {
    GSet->yin2yin_y = (double*) malloc(yincount_yin*sizeof(double));
    GSet->yan2yin_x = (double*) malloc(yancount_yin*sizeof(double));
    GSet->yan2yin_y = (double*) malloc(yancount_yin*sizeof(double));
-   icode = GeoRef_LL2XY(yin_gdin,GSet->yin2yin_x,GSet->yin2yin_y,yin2yin_lat,yin2yin_lon,yincount_yin,TRUE);
-   icode = GeoRef_LL2XY(yan_gdin,GSet->yan2yin_x,GSet->yan2yin_y,yan2yin_lat,yan2yin_lon,yancount_yin,TRUE);
+   icode = GeoRef_LL2XY(yin_gdin,GSet->yin2yin_x,GSet->yin2yin_y,GSet->yin2yin_lat,GSet->yin2yin_lon,GSet->yincount_yin,TRUE);
+   icode = GeoRef_LL2XY(yan_gdin,GSet->yan2yin_x,GSet->yan2yin_y,GSet->yan2yin_lat,GSet->yan2yin_lon,GSet->yancount_yin,TRUE);
 
    free(yin2yin_lat);
 
-   if (yyout == 1) { 
+   // If destination grid is YY
+   if (GSet->RefTo->NbSub > 0) {
+
       k=0;
       yin2yan_lat = (double*)malloc(4*nij*sizeof(double));
       yin2yan_lon = &yin2yan_lat[k+=nij];
@@ -398,9 +392,9 @@ int GeoRef_SetCalcYYXY(TGridSet *GSet) {
 
       /* create mask (Yin priority) with src Yin,src Yang onto dest Yang and store x,y pos */
 
-      GSet->yan_maskout = (float *) malloc(ni*nj*sizeof(float));
-      GSet->yanlat = (double*) malloc(ni*nj*sizeof(double));
-      GSet->yanlon = (double*) malloc(ni*nj*sizeof(double));
+      GSet->yan_maskout = (float *) malloc(nij*sizeof(float));
+      GSet->yanlat = (double*) malloc(nij*sizeof(double));
+      GSet->yanlon = (double*) malloc(nij*sizeof(double));
       icode = GeoRef_GetLL(yan_gdout,GSet->yanlat,GSet->yanlon);
       icode = GeoRef_MaskYYApply(yan_gdout,yin_gdin,ni,nj,GSet->yan_maskout,GSet->yanlat,GSet->yanlon,yin2yan_lat,yin2yan_lon,&yincount_yan,yan2yan_lat,yan2yan_lon,&yancount_yan);
       GSet->yincount_yan = yincount_yan;

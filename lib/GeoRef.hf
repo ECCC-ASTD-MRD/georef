@@ -187,8 +187,8 @@ module libgeoref
 !      TGeoRef* GeoRef_CreateU(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,int NbSub,TGeoRef **Subs);
 !      TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int R,double ResR,double ResA);
 !      TGeoRef* GeoRef_CreateW(int ni,int nj,char *grtyp,int ig1,int ig2,int ig3,int ig4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
-!      TGeoRef* GeoRef_SetZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2);
-!      TGeoRef* GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
+!      TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2);
+!      TGeoRef* GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
 !      int      GeoRef_Positional(TGeoRef *Ref,struct TDef *XDef,struct TDef *YDef);
 !      TQTree*  GeoRef_BuildIndex(TGeoRef* __restrict const Ref);
 !      int      GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,double *Dists,int NbNear,double MaxDist);
@@ -213,22 +213,6 @@ module libgeoref
          integer(C_INT), intent(IN), value :: iunit
          type(C_PTR) :: gref
       end function c_georef_rpncreate
-
-!      TGeoRef* GeoRef_CreateInMemory(int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,float* AX,float* AY)
-      function c_georef_rpncreateinmemory(ni,nj,grtyp,grref,ig1,ig2,ig3,ig4,ax,ay) result(gref) bind(C,name='GeoRef_CreateInMemory')
-         import :: C_PTR, C_CHAR, C_INT
-         integer(C_INT), intent(IN), value :: ni
-         integer(C_INT), intent(IN), value :: nj
-         character(C_CHAR), dimension(*), intent(IN) :: grtyp
-         character(C_CHAR), dimension(*), intent(IN) :: grref
-         integer(C_INT), intent(IN), value :: ig1
-         integer(C_INT), intent(IN), value :: ig2
-         integer(C_INT), intent(IN), value :: ig3
-         integer(C_INT), intent(IN), value :: ig4
-         type(C_PTR), intent(IN), value :: ax
-         type(C_PTR), intent(IN), value :: ay
-         type(C_PTR) :: gref
-      end function c_georef_rpncreateinmemory
 
 !      int      GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin);                                                  // c_ezsint
       function c_georef_interp(grefout,grefin,zout,zin) result(status) bind(C,name='GeoRef_Interp') 

@@ -126,7 +126,7 @@
 
  *    @return        GeoRef object (NULL=Error)
 */
-TGeoRef *GeoRef_SetW(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
+TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
 
 #ifdef HAVE_GDAL
    static OGRSpatialReferenceH llref=NULL;
@@ -244,7 +244,7 @@ TGeoRef *GeoRef_CreateW(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG
 
    ref=GeoRef_New();
    GeoRef_Size(ref,0,0,NI>0?NI-1:0,NJ>0?NJ-1:0,0);
-   if (!GeoRef_SetW(ref,String,Transform,InvTransform,Spatial)) {
+   if (!GeoRef_DefineW(ref,String,Transform,InvTransform,Spatial)) {
       return(NULL);
    }
    

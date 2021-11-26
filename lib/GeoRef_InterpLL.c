@@ -131,7 +131,7 @@ static inline void grps(double *Lat,double *Lon,int NI,int NJ,double PI,double P
    }
 }
 
-void Permut(double *Z,int NI,int NJ) {
+static inline void Permut(double *Z,int NI,int NJ) {
 
    int    i,j,ncc,idx,idxn;
    double t;
@@ -383,6 +383,19 @@ int GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
    return(n);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Interpolate values at latlon positions
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Geographic reference pointer
+ *    @param[out] zout    Array of interpolated values
+ *    @param[in]  zin     Array of input values on the source grid
+ *    @param[in]  Lat     Latitudes of interpolation
+ *    @param[in]  Lon     Longitudes of interpolation
+ *    @param[in]  Nb      Number on position tu interpolate to
+ *  
+ *    @return             Number of interpolated values
+*/
 int GeoRef_LLVal(TGeoRef *Ref,float *zout,float *zin,double *Lat,double *Lon,int Nb) { 
 
    double *x,*y;
@@ -399,9 +412,24 @@ int GeoRef_LLVal(TGeoRef *Ref,float *zout,float *zin,double *Lat,double *Lon,int
    return(0);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Interpolate vector values at latlon positions
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Geographic reference pointer
+ *    @param[out] uuout   Array of interpolated U values
+ *    @param[out] vvout   Array of interpolated V values
+ *    @param[in]  uuin    Array of input U values on the source grid
+ *    @param[in]  vvin    Array of input V values on the source grid
+ *    @param[in]  Lat     Latitudes of interpolation
+ *    @param[in]  Lon     Longitudes of interpolation
+ *    @param[in]  Nb      Number on position tu interpolate to
+ *  
+ *    @return             Number of interpolated values
+*/
 int GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
 
-   double *x, *y;
+   double *x,*y;
    int ier;
    
    if (Ref->NbSub > 0) {
@@ -421,6 +449,21 @@ int GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
    }
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Interpolate vector values as speed and directions at latlon positions
+ * @author Jean-Philippe Gauthier
+ * @date   June 2015
+ *    @param[in]  Ref     Geographic reference pointer
+ *    @param[out] uuout   Array of interpolated speed values
+ *    @param[out] vvout   Array of interpolated direction values
+ *    @param[in]  uuin    Array of input U values on the source grid
+ *    @param[in]  vvin    Array of input V values on the source grid
+ *    @param[in]  Lat     Latitudes of interpolation
+ *    @param[in]  Lon     Longitudes of interpolation
+ *    @param[in]  Nb      Number on position tu interpolate to
+ *  
+ *    @return             Number of interpolated values
+*/
 int GeoRef_LLWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
 
    TGeoRef *yin_gd, *yan_gd;

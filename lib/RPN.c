@@ -558,7 +558,7 @@ int RPN_ReadGrid(struct TGeoRef *GRef) {
                idx=11;
                for(s=0;s<GRef->NbSub;s++) {
                   f77name(cxgaig)(grref,&ig1,&ig2,&ig3,&ig4,&ax[idx],&ax[idx+1],&ax[idx+2],&ax[idx+3]);
-                  GRef->Subs[s] = GeoRef_CreateInMemory(ni,nj,"Z",grref,ig1,ig2,ig3,ig4,GRef->AX,GRef->AY);
+                  GRef->Subs[s] = GeoRef_Define(NULL,ni,nj,"Z",grref,ig1,ig2,ig3,ig4,GRef->AX,GRef->AY);
                   //TODO: Do we need to do this here ?
                   GeoRef_MaskYYDefine(GRef->Subs[s]);
                   idx+=ni+nj+10;
@@ -605,7 +605,7 @@ int RPN_ReadGrid(struct TGeoRef *GRef) {
                im=inv;
             }
          }
-         GeoRef_SetW(GRef,proj,tm,im,NULL);
+         GeoRef_DefineW(GRef,proj,tm,im,NULL);
          if (proj) free(proj);
 #else
    App_Log(APP_ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);

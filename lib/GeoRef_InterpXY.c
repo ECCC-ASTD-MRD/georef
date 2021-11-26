@@ -34,14 +34,14 @@ int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,doubl
       memcpy(lzin, zin, RefFrom->NX*RefFrom->NY*sizeof(float));
       f77name(permut)(lzin, &RefFrom->NX, &RefFrom->NY);
    } else {
-     lzin = zin;
+      lzin = zin;
    }
 
    if (RefFrom->Type&GRID_EXPAND) {
-     lxzin = (float *) malloc(2*RefFrom->NX*RefFrom->NY*sizeof(float));
-     GeoRef_GridGetExpanded(RefFrom,lxzin,lzin);
+      lxzin = (float *) malloc(2*RefFrom->NX*RefFrom->NY*sizeof(float));
+      GeoRef_GridGetExpanded(RefFrom,lxzin,lzin);
    } else  {
-     lxzin = lzin;
+      lxzin = lzin;
    }
 
    ier = GeoRef_InterpFinally(RefTo,RefFrom,zout,lxzin,X,Y,npts);
@@ -62,15 +62,13 @@ int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,doubl
      }*/
 
 
-/*   if (lzin != zin && lzin != NULL)
-      {
+   if (lzin && zin!=zin) {
       free(lzin);
-      }
+   }
 
-   if (lxzin != lzin && lxzin != zin && lxzin != NULL)
-      {
+   if (lxzin && lxzin!=lzin && lxzin!=zin) {
       free(lxzin);
-      }*/
+   }
 
    return(0);
 }

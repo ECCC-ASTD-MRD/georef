@@ -83,7 +83,7 @@ int GeoRef_MaskYYDefine(TGeoRef *Ref) {
       }
    }
    ynj=k;
-   Ref->mymaskgrid = GeoRef_CreateInMemory(yni,ynj,Ref->GRTYP,Ref->RPNHead.GRREF,Ref->RPNHead.IGREF[X_IG1],Ref->RPNHead.IGREF[X_IG2],Ref->RPNHead.IGREF[X_IG3],Ref->RPNHead.IGREF[X_IG4],&Ref->AX[i0],&Ref->AY[j0]);
+   Ref->mymaskgrid = GeoRef_Define(NULL,yni,ynj,Ref->GRTYP,Ref->RPNHead.GRREF,Ref->RPNHead.IGREF[X_IG1],Ref->RPNHead.IGREF[X_IG2],Ref->RPNHead.IGREF[X_IG3],Ref->RPNHead.IGREF[X_IG4],&Ref->AX[i0],&Ref->AY[j0]);
    Ref->mymaskgridi0=i0;
    Ref->mymaskgridi1=i1;
    Ref->mymaskgridj0=j0;
@@ -100,28 +100,20 @@ int GeoRef_MaskYYDefine(TGeoRef *Ref) {
 
 int GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,int ni,int nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int *yyincount,double *yanlat,double *yanlon,int *yyancount) {
 
-   TGeoRef *yin_mg;
    TGeoOptions opt;
-   int ivalue,icode,i,j,k;
-   int yincount,yancount,yni,ynj;
-   float *yin_fld, global_extrap_value, local_extrap_value;
-   int interp_degree,extrap_degree;
-   float extrap_value,local_val;
-   char global_interp_degree[32],global_extrap_degree[32];
+   int i,j,k;
+   int yincount,yancount;
+   float *yin_fld;
   
-   yin_mg=RefFrom->mymaskgrid;
-   yni=yin_mg->NX;
-   ynj=yin_mg->NY;
-
-   yin_fld = (float *) malloc(yni*ynj*sizeof(float));
-   memset(yin_fld,0.0,yni*ynj*sizeof(float));
+   yin_fld = (float*)calloc(RefFrom->mymaskgrid->NX*RefFrom->mymaskgrid->NY,sizeof(float));
  
    // Get original options
    memcpy(&opt,&RefFrom->Options,sizeof(TGeoOptions));
  
    RefFrom->Options.ExtrapValue=1.0;
    RefFrom->Options.ExtrapDegree=ER_VALUE;
-   GeoRef_Interp(RefTo,yin_mg,maskout,yin_fld,NULL);
+   GeoRef_Interp(RefTo,RefFrom->mymaskgrid,maskout,yin_fld,NULL);
+ 
    // Masking is done,reset original interp options
    memcpy(&RefFrom->Options,&opt,sizeof(TGeoOptions));
    free(yin_fld);
@@ -129,22 +121,19 @@ int GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,int ni,int nj,float *mask
    // Now create the destination grids
    yancount=0;
    yincount=0;
-   for (j=0; j<nj; j++) {
-      for (i=0;i<ni; i++) {
-         k=(j*ni)+i; 
-         if (maskout[k] == 1.0) {
-            yanlat[yancount]=dlat[k];
-            yanlon[yancount]=dlon[k];
-            yancount++;
-         } else {
-            yinlat[yincount]=dlat[k];
-            yinlon[yincount]=dlon[k];
-            yincount++;
-         }
+   for (k=0; k<ni*nj; k++) {
+      if (maskout[k] == 1.0) {
+         yanlat[yancount]=dlat[k];
+         yanlon[yancount]=dlon[k];
+         yancount++;
+      } else {
+         yinlat[yincount]=dlat[k];
+         yinlon[yincount]=dlon[k];
+         yincount++;
       }
    }
    *yyincount = yincount;
    *yyancount = yancount;
 
-   return(icode);
+   return(1);
 }
