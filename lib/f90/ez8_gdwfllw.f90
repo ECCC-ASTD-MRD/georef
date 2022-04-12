@@ -90,11 +90,12 @@
       if (grtyp .eq. 'N') then
          call cigaxg(grtyp,xg1,xg2,xg3,xg4,ig1,ig2,ig3,ig4)
 
+         !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i,j,psi,u,v) SHARED(li,lj,xlon,xg4,z1,z2,dgtord)
          do 10 i=1,li
             do 20 j=1,lj
-               psi =xlon(i,j)+xg4-z2(i,j)
-               u = cos(psi*dgtord)*z1(i,j)
-               v = sin(psi*dgtord)*z1(i,j)
+               psi =xlon(i,j)+xg4-z2(i,j)*dgtord
+               u = cos(psi)*z1(i,j)
+               v = sin(psi)*z1(i,j)
                z1(i,j) = u
                z2(i,j) = v
  20         continue
@@ -104,11 +105,12 @@
 
       if (grtyp .eq. 'S') then
          call cigaxg(grtyp,xg1,xg2,xg3,xg4,ig1,ig2,ig3,ig4)
+         !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i,j,psi,u,v) SHARED(li,lj,xlon,xg4,z1,z2,dgtord)
          do 30 i=1,li
             do 40 j=1,lj
-               psi =180.0 - xlon(i,j)+xg4-z2(i,j)
-               u = cos(psi*dgtord)*z1(i,j)
-               v = sin(psi*dgtord)*z1(i,j)
+               psi =(180.0 - xlon(i,j)+xg4-z2(i,j))*dgtord
+               u = cos(psi)*z1(i,j)
+               v = sin(psi)*z1(i,j)
                z1(i,j) = u
                z2(i,j) = v
  40         continue
@@ -117,11 +119,12 @@
       endif
 
       if (grtyp.eq.'A'.or.grtyp.eq.'B'.or.grtyp.eq.'G'.or.grtyp.eq.'L'.or.grtyp.eq.'M') then
+         !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i,j,psi,u,v) SHARED(li,lj,z1,z2,dgtord)
          do 50 i=1,li
             do 60 j=1,lj
-               psi = 270.0 - z2(i,j)
-               u = cos(psi*dgtord)*z1(i,j)
-               v = sin(psi*dgtord)*z1(i,j)
+               psi = (270.0 - z2(i,j))*dgtord
+               u = cos(psi)*z1(i,j)
+               v = sin(psi)*z1(i,j)
                z1(i,j) = u
                z2(i,j) = v
  60         continue

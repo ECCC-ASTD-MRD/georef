@@ -91,6 +91,7 @@
       
 
       limite = ni+2-wrap
+      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(n,i,j,imoins1,iplus1,iplus2,x1,x2,x3,x4,x,y,y1,y2,y3,y4,z1,z2,z3,z4,a11,a12,a13,a14,b1,a21,a22,a23,a24,b2,a31,a32,a33,a34,b3,a41,a42,a43,a44,b4,b11,b12,b13,b14) SHARED(npts,j1,j2,ni,px,py,wrap,ax,ay,cx,cy,z,zo)
       do n=1,npts
          i = min(ni-2+wrap,max(1,max(2-wrap,int(px(n)))))
          j = min(j2-2,max(j1+1,int(py(n))))

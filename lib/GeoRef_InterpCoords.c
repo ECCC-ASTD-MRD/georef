@@ -13,7 +13,7 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
+   * License along with this library; if not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -29,7 +29,7 @@ void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int npts,float
 
    f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
-#pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(Lat,Lon,X,Y)
+   #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(r,ri,npts,Lat,Lon,X,Y)
    for(n=0;n<npts;n++) {
       latr=DEG2RAD(Lat[n]);
       lonr=DEG2RAD(Lon[n]);
@@ -58,7 +58,7 @@ void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int npts
 
    f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
-#pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(Lat,Lon,X,Y)
+   #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(ri,npts,Lat,Lon,X,Y)
    for(n=0;n<npts;n++) {
       latr=DEG2RAD(Y[n]);
       lonr=DEG2RAD(X[n]);

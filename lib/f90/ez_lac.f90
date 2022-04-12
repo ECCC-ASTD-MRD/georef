@@ -38,6 +38,7 @@ subroutine ez_lac(xyz, lon, lat, nbpts)
    real :: dar, cosdar
    dar = acos(-1.0) / 180.0
 
+   !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i,cosdar) SHARED(nbpts,dar,lat,lon,xyz)
    do i = 1, nbpts
       cosdar = cos(dar * lat(i))
       xyz(1,i) = cosdar * cos(dar * lon(i))

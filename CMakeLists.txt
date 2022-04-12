@@ -59,12 +59,13 @@ if(${CMAKE_SYSTEM_PROCESSOR} EQUAL x86_64)
    add_compile_options(-fPIC -DSTDC_HEADERS)
 endif()
 
+set(ENV{OMPI} _ompi)
 if(DEFINED ENV{OMPI})
-   message(STATUS "OMPI build enabled")
+#   message(STATUS "OMPI build enabled")
 
-   find_package(MPI REQUIRED)
-   include_directories(${MPI_INCLUDE_PATH})
-   add_compile_definitions(_MPI)
+#   find_package(MPI REQUIRED)
+#   include_directories(${MPI_INCLUDE_PATH})
+#   add_compile_definitions(_MPI)
 
    find_package(OpenMP REQUIRED) 
    add_compile_options(${OpenMP_C_FLAGS})

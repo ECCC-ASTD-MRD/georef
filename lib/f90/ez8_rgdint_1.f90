@@ -29,6 +29,7 @@
 #include "zlin8.cdk"
       
       limite = ni+1-wrap
+      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(n,i,j,iplus1,y2,y3,dx,dy) SHARED(npts,j1,j2,ni,px,py,wrap,z,zo,nodata,limite)
       do n=1,npts
          if (wrap.gt.0.) then
             i = min(ni-2+wrap,max(1,int(px(n))))

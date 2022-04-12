@@ -74,17 +74,16 @@
       real clat, clon, d60, dgrw
       real r
       real(kind=8) k
-      real offsetx, offsety,sinclat,cosclat,sinclon,cosclon
+      real offsetx, offsety,sinclat,cosclat
 
       r = 6371000.0 
       sinclat = sin (clat * dgtord)
       cosclat = cos (clat * dgtord)
-      sinclon = sin (clon * dgtord)
-      cosclon = cos (clon * dgtord)
 
       offsetx = (-ni-1) * 0.5
       offsety = (-nj-1) * 0.5
 
+      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i,k) SHARED(n,x,y,r,dgtord,sinclat,cosclat,lat,lon,clon,offsetx,offsety,d60)
       do i=1,n
          k = 2.0 / (1.0 + sinclat*sin(lat(i) * dgtord)+ cosclat* cos(lat(i)*dgtord)*cos(dgtord*(lon(i)-clon)))
          x(i) = r * k * cos(lat(i)*dgtord) * sin(dgtord*(lon(i)-clon))
@@ -105,19 +104,18 @@
       real(kind=8) x(n), y(n), lat(n), lon(n)
       real clat, clon, d60, dgrw
       real r
-      real offsetx, offsety,sinclat,cosclat,sinclon,cosclon
+      real offsetx, offsety,sinclat,cosclat
       real(kind=8) rho, c, a, b, temp
 
 
       r = 6371000.0 
       sinclat = sin (clat * dgtord)
       cosclat = cos (clat * dgtord)
-      sinclon = sin (clon * dgtord)
-      cosclon = cos (clon * dgtord)
 
       offsetx = (-ni-1) * 0.5
       offsety = (-nj-1) * 0.5
 
+      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i,rho,temp,a,b) SHARED(n,x,y,r,rdtodg,c,sinclat,cosclat,lat,lon,clat,clon,offsetx,offsety,d60)
       do i=1,n
          x(i) = (x(i) + offsetx) * d60
          y(i) = (y(i) + offsety) * d60

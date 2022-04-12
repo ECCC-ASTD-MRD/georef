@@ -25,6 +25,7 @@
       real(kind=8)  px(npts),py(npts)
       real    z(ni,j1:j2)
       
+      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(n,i,j) SHARED(npts,j1,j2,ni,px,py,z,zo)
       do n=1,npts
          i = min(ni,max(1,nint(px(n))))
          j = min(j2,max(j1,nint(py(n))))

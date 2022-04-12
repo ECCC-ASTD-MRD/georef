@@ -32,6 +32,7 @@
 
       limite = ni+2-wrap
    
+      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(n,i,j,iplus1,x,x1,x2,y,y1,y2,dx,dy) SHARED(npts,j1,j2,ni,px,py,wrap,ax,ay,z,zo,nodata,limite)
       do n=1,npts
          if (wrap.gt.0) then
             i = min(ni-1,max(1,int(px(n))))

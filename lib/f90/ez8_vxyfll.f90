@@ -70,6 +70,7 @@
       re=1.866025d0*6.371d+6/d60
 !     
       if (nhem.eq.NORD) then
+         !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i,rlat,rlon,sinlat,r) SHARED(npts,x,y,dgtord,re,dlat,dlon,pi,pj,dgrw)
          do 10 i=1,npts
             rlon=dgtord*(dlon(i)+dgrw)
             rlat=dgtord*dlat(i)
@@ -82,6 +83,7 @@
       endif
 
       if (nhem.eq.SUD) then
+         !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i,rlat,rlon,sinlat,r) SHARED(npts,x,y,dgtord,re,dlat,dlon,pi,pj,dgrw)
          do 20 i=1,npts
             rlon = dlon(i)
             if (rlon.gt.180.0d0) rlon = rlon - 360.0d0

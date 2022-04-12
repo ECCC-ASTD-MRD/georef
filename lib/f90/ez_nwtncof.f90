@@ -92,6 +92,7 @@
       enddo
    enddo
 
+   !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i) SHARED(ni,cx,ax)
    do i=2,ni-2
       cx(i,1) = 1. / (ax(i  ) - ax(i-1))
       cx(i,2) = 1. / (ax(i+1) - ax(i-1))
@@ -101,6 +102,7 @@
       cx(i,6) = 1. / (ax(i+2) - ax(i+1))
    enddo
 
+   !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(j) SHARED(j1,j2,cy,ay)
    do j=j1+1,j2-2
       cy(j,1) = 1. / (ay(j  ) - ay(j-1))
       cy(j,2) = 1. / (ay(j+1) - ay(j-1))

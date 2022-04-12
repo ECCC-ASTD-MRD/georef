@@ -30,6 +30,7 @@
    endif
 
 
+   !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(k,i,j) SHARED(ni_dst,nj_dst,masque,outfld,wts,n_wts,infld,idxs)
    do k=1,ni_dst*nj_dst
      i = mod((k-1),ni_dst) + 1
      j = 1+k/ni_dst

@@ -45,6 +45,7 @@
       DAR = ACOS(-1.)/180.
       K   = 0
  
+      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(I,J,A,B,C,D,E,F) FIRSTPRIVATE(K) SHARED(NI,NJ,DAR,LAT,LON,UVCART,U,V)
       DO 20 J=1,NJ
          DO 10 I=1,NI
             K      = K+1

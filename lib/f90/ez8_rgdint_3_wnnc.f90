@@ -70,6 +70,7 @@
 
       limite = ni+2-wrap
       
+      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(n,i,j,imoins1,iplus1,iplus2,dx,dy,y1,y2,y3,y4) SHARED(npts,j1,j2,ni,px,py,wrap,z,zo,limite)
       do n=1,npts
          i = min(ni-2+wrap,max(1,max(2-wrap,int(px(n)))))
          j = min(j2-2,max(j1+1,int(py(n))))

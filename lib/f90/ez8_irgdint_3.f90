@@ -88,8 +88,7 @@
       fa3(c1,c2,c3,a1,a2,a3)=c2*(c3*(a3-a2)-c1*(a2-a1))
       fa4(c1,c2,c3,c4,c5,c6,a1,a2,a3,a4)=c4*(c5*(c6*(a4-a3)-      c3*(a3-a2)) - c2*(c3*(a3-a2)-c1*(a2-a1)))
       
-!zzzzzz$OMP PARALLEL
-!zzzzzz$OMP DO PRIVATE(n)
+      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(n,i,j,imoins1,iplus1,iplus2,x1,x2,x3,x4,x,y,y1,y2,y3,y4,z1,z2,z3,z4,a11,a12,a13,a14,b1,a21,a22,a23,a24,b2,a31,a32,a33,a34,b3,a41,a42,a43,a44,b4,b11,b12,b13,b14) SHARED(npts,i1,j1,i2,j2,ni,px,py,wrap,ax,ay,cx,cy,z,zo,nodata)
       do n=1,npts
          i = min(i2-2+wrap,max(1,max(i1+1-wrap,int(px(n)))))
          j = min(j2-2,max(j1+1,int(py(n))))
@@ -240,8 +239,6 @@
             endif
          endif
       enddo
-!zzzzzz$OMP END DO
-!zzzzzz$OMP END PARALLEL
   
       return
       end
