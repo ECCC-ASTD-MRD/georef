@@ -17,7 +17,7 @@
 ! * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ! * Boston, MA 02111-1307, USA.
 ! */
-   subroutine ez_nwtncof(cx,cy,ax,ay,ni,nj,i1,i2,j1,j2,extension)
+   subroutine ez8_nwtncof(cx,cy,ax,ay,ni,nj,i1,i2,j1,j2,extension)
 !*******
 !     Auteur: Y. Chartier, drpn
 !     Fevrier 1991
@@ -60,9 +60,9 @@
    enddo
 
    if (.not.sequence_ok) then
-      print *, 'Probleme detecte dans EZ_NWTNCOF code 998'
-      print *, '(EZ_NWTNCOF) Probleme : x1..x4  : ', ax(i), ax(i+1)
-      print *, 'EZ_NWTNCOF CALL STOP'
+      print *, 'Probleme detecte dans EZ8_NWTNCOF code 998'
+      print *, '(EZ8_NWTNCOF) Probleme : x1..x4  : ', ax(i), ax(i+1)
+      print *, 'EZ8_NWTNCOF CALL STOP'
       error stop 13
    endif
 
@@ -74,9 +74,9 @@
    enddo
 
    if (.not.sequence_ok) then
-      print *, 'Probleme detecte dans EZ_NWTNCOF code 999'
-      print *, '(EZ_NWTNCOF) Probleme : y1..y4  : ', ay(j), ay(j+1)
-      print *, 'EZ_NWTNCOF CALL STOP'
+      print *, 'Probleme detecte dans EZ8_NWTNCOF code 999'
+      print *, '(EZ8_NWTNCOF) Probleme : y1..y4  : ', ay(j), ay(j+1)
+      print *, 'EZ8_NWTNCOF CALL STOP'
       error stop 13
    endif
 
@@ -177,7 +177,7 @@
       cx(ni,6) = 1. / (x4-x3)
    endif
    return
-   end subroutine ez_nwtncof
+   end subroutine ez8_nwtncof
 
 !********************************************************************
 !**

@@ -39,47 +39,15 @@
 #ifndef _eerUtils_h
 #define _eerUtils_h
 
-#include <time.h>
-#include <sys/time.h>
-#include <sys/types.h>
+//#include <time.h>
+//#include <sys/time.h>
+//#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <math.h>
 #include <malloc.h>
-
-// $@#! AIX does not have timersub macro (pasted from /sys/time.h)
-#ifndef timersub
-#define timersub(a, b, result)                       \
-  do {                                 \
-    (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;              \
-    (result)->tv_usec = (a)->tv_usec - (b)->tv_usec;              \
-    if ((result)->tv_usec < 0) {                   \
-      --(result)->tv_sec;                       \
-      (result)->tv_usec += 1000000;                   \
-    }                               \
-  } while (0)
-#endif
-
-// System related constants and functions
-#define SYS_BIG_ENDIAN     0
-#define SYS_LITTLE_ENDIAN  1
-#define SYS_PTR_END        0x1
-
-#define SYS_FIX2(x) ((((x) & 0xff)<<8) | ((unsigned short)(x)>>8))
-#define SYS_FIX4(x) (((x)<<24) | (((x)<<8) & 0x00ff0000) | (((x)>>8) & 0x0000ff00) | ((x)>>24))
-#define SYS_FIX8(x) (((long long)(SYS_SWAP4((unsigned int)((x<<32)>>32)))<<32) | (unsigned int)SYS_SWAP4(((int)(x>>32))))
-
-#define SYS_SWAP2(x) (*(unsigned short*)&(x)=SYS_FIX2(*(unsigned short*)&(x)))
-#define SYS_SWAP4(x) (*(unsigned int*)&(x)=SYS_FIX4(*(unsigned int*)&(x)))
-#define SYS_SWAP8(x) (*(unsigned long long*)&(x)=SYS_FIX8(*(unsigned long long*)&(x)))
-
-#define SYS_IFSWAP2(i,t,x) if (i!=t) SYS_SWAP2(x)
-#define SYS_IFSWAP4(i,t,x) if (i!=t) SYS_SWAP4(x)
-#define SYS_IFSWAP8(i,t,x) if (i!=t) SYS_SWAP8(x)
-
-#define SYS_IOTHREAD_STACKSIZE 83886080
 
 // Mathematical related constants and functions
 #ifndef M_PI
@@ -163,33 +131,6 @@ double InterpCubic(double X0,double X1,double X2, double X3,double F);
 double InterpHermite(double X0,double X1,double X2, double X3,double F,double T,double B);
 
 double HCentile(double *M,int N,int K);
-
-char* strpath(char *Path,char *File);
-char* strcatalloc(char *StrTo,char *StrFrom);
-void  strtrim(char* Str,char Tok);
-void  strrep(char *Str,char Tok,char Rep);
-void  strblank2end(char *Str,int Length);
-int   strtok_count(char *Str,char Sep);
-int   strrindex(char *Str);
-int   strmatch(const char *Str,char *Pattern);
-
-#define strend(S) (S+strlen(S))
-
-#define System_IsStamp(S) (S<999999999)
-
-int    System_IsBigEndian(void);
-int    System_ByteOrder(void);
-int    System_BitCount(unsigned int N);
-time_t System_DateTime2Seconds(int YYYYMMDD,int HHMMSS,int GMT);
-double System_Date2Julian(int Year,int Month,int Day);
-time_t System_Seconds2DateTime(time_t Sec,int *YYYYMMDD,int *HHMMSS,int GMT);
-int    System_Julian2Stamp(int Year,int Day,int Time);
-long   System_Stamp2Seconds(int Stamp);
-char*  System_StampFormat(int Stamp,char *Buf,char *Format);
-int    System_Seconds2Stamp(long Sec);
-void   System_StampDecode(int Stamp,int *YYYY,int *MM,int *DD,int *H,int *M,int *S);
-void   System_StampEncode(int *Stamp,int YYYY,int MM,int DD,int H,int M,int S);
-double System_TimeValSubtract(struct timeval *Result,struct timeval *T0,struct timeval *T1);
 
 void Astro_SunPos(time_t Sec,double *Lat,double *Lon);
 void Astro_MoonPos(time_t ssue,float *lat,float *lon);

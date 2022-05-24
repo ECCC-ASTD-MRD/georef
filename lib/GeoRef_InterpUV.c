@@ -551,8 +551,8 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
    ni = Nb;
    nj = 1;
 
-   memcpy(uugdout, uullin, Nb*sizeof(ftnfloat));
-   memcpy(vvgdout, vvllin, Nb*sizeof(ftnfloat));
+   memcpy(uugdout, uullin, Nb*sizeof(float));
+   memcpy(vvgdout, vvllin, Nb*sizeof(float));
  
    switch (Ref->GRTYP[0]) {
       case 'E':
@@ -603,8 +603,8 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
    ni = Nb;
    nj = 1;
 
-   memcpy(spd_out, uuin, Nb*sizeof(ftnfloat));
-   memcpy(wd_out, vvin, Nb*sizeof(ftnfloat));
+   memcpy(spd_out, uuin, Nb*sizeof(float));
+   memcpy(wd_out, vvin, Nb*sizeof(float));
 
    switch (Ref->GRTYP[0]) {
       case 'E':

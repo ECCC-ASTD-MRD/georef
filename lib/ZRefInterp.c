@@ -52,11 +52,11 @@ static unsigned char ZRefInterp_Options=0x0000;
 
 /* Fortran Interface */
 /*
-wordint f77name(zrefinterp_free)(void) {
+int32_t f77name(zrefinterp_free)(void) {
    return(ZRefInterp_Free(FInterp));
 }
 
-wordint f77name(viqkdef)(wordint *numLevel,wordint *gridType,ftnfloat *levelList,ftnfloat *top,ftnfloat *pRef,ftnfloat *rCoef,ftnfloat *zcoord,ftnfloat *a,ftnfloat *b) {
+int32_t f77name(viqkdef)(int32_t *numLevel,int32_t *gridType,float *levelList,float *top,float *pRef,float *rCoef,float *zcoord,float *a,float *b) {
    TZRef zref;
 
    zref.Type=*gridType;
@@ -72,15 +72,15 @@ wordint f77name(viqkdef)(wordint *numLevel,wordint *gridType,ftnfloat *levelList
    return c_viqkdef(FInterp,&zref);
 }
 
-wordint f77name(videfset)(wordint *ni,wordint *nj,wordint *idGrdDest,wordint *idGrdSrc) {
+int32_t f77name(videfset)(int32_t *ni,int32_t *nj,int32_t *idGrdDest,int32_t *idGrdSrc) {
    return ZRefInterp_Define(FInterp,*ni,*nj,*idGrdDest,*idGrdSrc);
 }
 
-wordint f77name(visetopt)(wordint *option,wordint *value) {
+int32_t f77name(visetopt)(int32_t *option,int32_t *value) {
    return ZRefInterp_SetOption(FInterp,(const char*)option,(const char*)value);
 }
 
-wordint f77name (visint)(ftnfloat *stateOut,ftnfloat *stateIn,ftnfloat *derivOut,ftnfloat *derivIn,ftnfloat *extrapGuideDown,ftnfloat *extrapGuideUp) {
+int32_t f77name (visint)(float *stateOut,float *stateIn,float *derivOut,float *derivIn,float *extrapGuideDown,float *extrapGuideUp) {
    return c_visint(FInterp,stateOut,stateIn,derivOut,derivIn,*extrapGuideDown,*extrapGuideUp);
 }
 */

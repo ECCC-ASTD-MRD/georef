@@ -4,6 +4,8 @@
 # https://cmake.org/cmake/help/v3.0/command/find_package.html
 # [[DOC]] https://cmake.org/cmake/help/v3.14/manual/cmake-developer.7.html
 
+set(${CMAKE_FIND_PACKAGE_NAME}_FOUND TRUE)
+
 #----- Set include directory
 set_and_check(${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIRS "@PACKAGE_INCLUDE_INSTALL_DIR@")
 

@@ -32,6 +32,7 @@
 #include "App.h"
 #include "Def.h"
 #include "GeoRef.h"
+#include  "GeoRef_build_info.h"
 #include "RPN.h"
 
 #define APP_NAME "ReGrid"

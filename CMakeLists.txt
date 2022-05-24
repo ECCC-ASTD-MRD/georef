@@ -12,7 +12,7 @@ ec_parse_manifest()        # Parse MANIFEST file
 
 project(${NAME} DESCRIPTION "${DESCRIPTION}")
 set(PROJECT_VERSION ${VERSION}${STATE})
-set(LIBGEOREF_VERSION ${PROJECT_VERSION} CACHE INTERNAL "libgeoref version" FORCE) # Needed for cascaded version identification
+set(${NAME}_VERSION ${PROJECT_VERSION} CACHE INTERNAL "${NAME} version" FORCE) # Needed for cascaded version identification
 
 option(BUILD_SHARED_LIBS "Build shared libraries instead of static ones." TRUE)
 
@@ -29,24 +29,19 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
+
+if(${CMAKE_SYSTEM_PROCESSOR} EQUAL x86_64)
+   add_compile_options(-fPIC -DSTDC_HEADERS)
+endif()
 add_compile_definitions(HAVE_GPC)
 
-#TODO --- TEST with only static
-if(BUILD_SHARED_LIBS)
-   find_package(RMN ${RMN_REQ_VERSION} COMPONENTS SHARED THREADED REQUIRED)
-else()
-   find_package(RMN ${RMN_REQ_VERSION} COMPONENTS REQUIRED)
-endif()
-if (RMN_FOUND) 
-   add_compile_definitions(HAVE_RMN)
-   include_directories(${RMN_INCLUDE_DIR})
-endif()
+#find_package(MPI REQUIRED)
+#set(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
+#set(CMAKE_C_COMPILER ${MPI_C_COMPILER})
 
-#find_package(VGRID ${VGRID_REQ_VERSION} COMPONENTS shared OPTIONAL)
-#if(VGRID_FOUND)
-#  add_compile_definitions(HAVE_VGRID)
-#   include_directories(${VGRID_INCLUDE_DIR})
-#endif()
+find_package(App ${App_REQ_VERSION} REQUIRED COMPONENTS)
+find_package(rmn ${rmn_REQ_VERSION} REQUIRED)
+find_package(vgrid ${vgrid_REQ_VERSION})
 
 #TODO: might have to do this - type gdal-config >/dev/null 2>&1 && CMAKE_COMP_FLAGS="$CMAKE_COMP_FLAGS -DGDAL_ROOT=`gdal-config --prefix`" 2>/dev/null
 find_package(GDAL)
@@ -55,29 +50,17 @@ if(GDAL_FOUND)
    include_directories(${GDAL_INCLUDE_DIR})
 endif()
 
-if(${CMAKE_SYSTEM_PROCESSOR} EQUAL x86_64)
-   add_compile_options(-fPIC -DSTDC_HEADERS)
-endif()
-
-set(ENV{OMPI} _ompi)
-if(DEFINED ENV{OMPI})
-#   message(STATUS "OMPI build enabled")
-
-#   find_package(MPI REQUIRED)
-#   include_directories(${MPI_INCLUDE_PATH})
-#   add_compile_definitions(_MPI)
-
-   find_package(OpenMP REQUIRED) 
+find_package(OpenMP)
+if (OpenMP_FOUND) 
    add_compile_options(${OpenMP_C_FLAGS})
+   add_compile_definitions(HAVE_OPENMP)
 endif()
 
 add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ _GNU_SOURCE)
 
 add_subdirectory(lib lib)
-if(NOT DEFINED ENV{OMPI})
-   add_subdirectory(util util)
+#add_subdirectory(util util)
 #   add_subdirectory(test test)
-endif()
 
 configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/${NAME}-config DESTINATION bin)

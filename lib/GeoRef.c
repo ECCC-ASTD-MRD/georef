@@ -2283,7 +2283,7 @@ int GeoRef_DefRPNXG(TGeoRef* Ref) {
 
 
 
-wordint GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,int *IG2,int *IG3,int *IG4,char *GRREF,int *IG1REF,int *IG2REF,int *IG3REF,int *IG4REF) {
+int32_t GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,int *IG2,int *IG3,int *IG4,char *GRREF,int *IG1REF,int *IG2REF,int *IG3REF,int *IG4REF) {
    
    *NI     = Ref->RPNHead.NI;
    *NJ     = Ref->RPNHead.NJ;

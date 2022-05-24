@@ -44,6 +44,7 @@
 #include "RPN.h"
 
 #ifdef HAVE_RMN
+#include "rmn.h"
 #include "rpnmacros.h"
 #endif
 
@@ -538,33 +539,33 @@ static inline void GeoRef_LL2GD(double *X,double *Y,double *Lat,double *Lon,int 
    }
 }
 
-void f77name(ez8_rgdint_0)      (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2);
-void f77name(ez8_rgdint_1)      (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap,ftnfloat *nodata);
-void f77name(ez8_rgdint_3)      (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap,ftnfloat *nodata);
-void f77name(ez8_irgdint_1)     (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,double *ax,double *ay,wordint *wrap,ftnfloat *nodata);
-void f77name(ez8_irgdint_3)     (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *i1,wordint *i2,wordint *j1,wordint *j2,double *ax,double *ay,ftnfloat *cx,ftnfloat *cy,wordint *wrap,ftnfloat *nodata);
-void f77name(ez8_rgdint_3_wnnc) (ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,wordint *wrap);
-void f77name(ez8_irgdint_3_wnnc)(ftnfloat *zo,double *px,double *py,wordint *npts,ftnfloat *z,wordint *ni,wordint *j1,wordint *j2,double *ax,double *ay,wordint *wrap);
+void f77name(ez8_rgdint_0)      (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2);
+void f77name(ez8_rgdint_1)      (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,int32_t *wrap,float *nodata);
+void f77name(ez8_rgdint_3)      (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,int32_t *wrap,float *nodata);
+void f77name(ez8_irgdint_1)     (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,double *ax,double *ay,int32_t *wrap,float *nodata);
+void f77name(ez8_irgdint_3)     (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *i1,int32_t *i2,int32_t *j1,int32_t *j2,double *ax,double *ay,float *cx,float *cy,int32_t *wrap,float *nodata);
+void f77name(ez8_rgdint_3_wnnc) (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,int32_t *wrap);
+void f77name(ez8_irgdint_3_wnnc)(float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,double *ax,double *ay,int32_t *wrap);
 
-void f77name(ez8_llwfgdw)(ftnfloat *z1,ftnfloat *z2,double *xlon,wordint *li,wordint *lj,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4,wordint sz);
-void f77name(ez8_gdwfllw)(ftnfloat *z1,ftnfloat *z2,double *xlon,wordint *li,wordint *lj,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4,wordint sz);
-void f77name(ez8_vllfxy)(double *dlat,double *dlon,double *x,double *y,wordint *ni,wordint *nj,ftnfloat *d60,ftnfloat *dgrw,ftnfloat *pi,ftnfloat *pj,wordint *nhem);
-void f77name(ez8_vtllfxy)(double *lat,double *lon,double *x,double *y,ftnfloat *clat,ftnfloat *clon,ftnfloat *d60,ftnfloat *dgrw,wordint *ni,wordint *nj,wordint *n);
-void f77name(ez8_vxyfll)(double *x,double *y,double *dlat,double *dlon,wordint *nb,ftnfloat *d60,ftnfloat *dgrw,ftnfloat *pi,ftnfloat *pj,wordint *nhem);
-void f77name(ez8_vtxyfll)(double *x,double *y,double *dlat,double *dlon,ftnfloat *clat,ftnfloat *clon,ftnfloat *d60,ftnfloat *dgrw,wordint *ni,wordint *nj,wordint *nhem);
-void f77name(ez8_mxm)(ftnfloat *a,int *nar,double *b,int *nac,double *c,int *nbc);
-void f77name(ez8_llflamb)(double *xlat,double *xlon,double *x,double *y,wordint *npts,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4);
-void f77name(ez8_lambfll)(double *x,double *y,double *xlat,double *xlon,wordint *npts,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4);
-void f77name(ez_lambxyfll99)(double *x,double *y,double *lat,double *lon,wordint *nb,float *latin1,float *latin2,float *yaxislat,float *yaxislon);
-void f77name(ez8_lambllfxy99)(double *lat,double *lon,double *x,double *y,wordint *nb,float *latin1,float *latin2,float *yaxislat,float *yaxislon);
-void f77name(igaxg95)(char *gtypout,float *xg,int *nb,char *grtyp,wordint *ig1,wordint *ig2,wordint *ig3,wordint *ig4);
+void f77name(ez8_llwfgdw)(float *z1,float *z2,double *xlon,int32_t *li,int32_t *lj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4,int32_t sz);
+void f77name(ez8_gdwfllw)(float *z1,float *z2,double *xlon,int32_t *li,int32_t *lj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4,int32_t sz);
+void f77name(ez8_vllfxy)(double *dlat,double *dlon,double *x,double *y,int32_t *ni,int32_t *nj,float *d60,float *dgrw,float *pi,float *pj,int32_t *nhem);
+void f77name(ez8_vtllfxy)(double *lat,double *lon,double *x,double *y,float *clat,float *clon,float *d60,float *dgrw,int32_t *ni,int32_t *nj,int32_t *n);
+void f77name(ez8_vxyfll)(double *x,double *y,double *dlat,double *dlon,int32_t *nb,float *d60,float *dgrw,float *pi,float *pj,int32_t *nhem);
+void f77name(ez8_vtxyfll)(double *x,double *y,double *dlat,double *dlon,float *clat,float *clon,float *d60,float *dgrw,int32_t *ni,int32_t *nj,int32_t *nhem);
+void f77name(ez8_mxm)(float *a,int *nar,double *b,int *nac,double *c,int *nbc);
+void f77name(ez8_llflamb)(double *xlat,double *xlon,double *x,double *y,int32_t *npts,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4);
+void f77name(ez8_lambfll)(double *x,double *y,double *xlat,double *xlon,int32_t *npts,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4);
+void f77name(ez_lambxyfll99)(double *x,double *y,double *lat,double *lon,int32_t *nb,float *latin1,float *latin2,float *yaxislat,float *yaxislon);
+void f77name(ez8_lambllfxy99)(double *lat,double *lon,double *x,double *y,int32_t *nb,float *latin1,float *latin2,float *yaxislat,float *yaxislon);
+void f77name(ez8_nwtncof)(float *cx,float *cy,double *ax,double *ay,int32_t *ni,int32_t *nj,int32_t *i1,int32_t *i2,int32_t *j1,int32_t *j2,int32_t *extension);
+void f77name(igaxg95)(char *gtypout,float *xg,int *nb,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4);
 void f77name(ez_avg)();
 void f77name(ez_avg_sph)();
 void f77name(ez_applywgts)();
-void f77name(ez_calcpoleval)(ftnfloat *poleval,ftnfloat *z,wordint *ni,double *ax,char *grtyp,char *grref,wordint c1,wordint c2);
+void f77name(ez_calcpoleval)(float *poleval,float *z,int32_t *ni,double *ax,char *grtyp,char *grref,int32_t c1,int32_t c2);
 void f77name(ez_fillnpole)();
 void f77name(ez_fillspole)();
-void f77name(ez_nwtncof)(ftnfloat *cx,ftnfloat *cy,double *ax,double *ay,wordint *ni,wordint *nj,wordint *i1,wordint *i2,wordint *j1,wordint *j2,wordint *extension);
 void f77name(ez_calcxy_y)();
 void f77name(ez_calcxy_y_m)();
 void f77name(ez_aminmax)();
@@ -572,8 +573,8 @@ void f77name(ez_corrbgd)();
 void f77name(ez_glat)();
 void f77name(ez_crot)();
 void f77name(ez_lac)();
-void f77name(ez8_uvacart)(double *XYZ,ftnfloat *U,ftnfloat *V,double *LON,double *LAT,wordint *NI,wordint *NJ);
-void f77name(ez8_cartauv)(ftnfloat *U,ftnfloat *V,double *UVCART,double *LON,double *LAT,wordint *NI,wordint *NJ);
+void f77name(ez8_uvacart)(double *XYZ,float *U,float *V,double *LON,double *LAT,int32_t *NI,int32_t *NJ);
+void f77name(ez8_cartauv)(float *U,float *V,double *UVCART,double *LON,double *LAT,int32_t *NI,int32_t *NJ);
 void f77name(ez_xpngdb2)();
 void f77name(ez_xpngdag2)();
 void f77name(permut)();

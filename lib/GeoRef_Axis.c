@@ -51,7 +51,7 @@ void GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref) {
 
       Ref->NCX = (float *) malloc(nni*6*sizeof(float));
       Ref->NCY = (float *) malloc(nnj*6*sizeof(float));
-      f77name(ez_nwtncof)(Ref->NCX,Ref->NCY,Ref->AX,Ref->AY,&Ref->NX,&Ref->NY,&Ref->i1,&Ref->i2,&Ref->j1,&Ref->j2,&Ref->Extension);
+      f77name(ez8_nwtncof)(Ref->NCX,Ref->NCY,Ref->AX,Ref->AY,&Ref->NX,&Ref->NY,&Ref->i1,&Ref->i2,&Ref->j1,&Ref->j2,&Ref->Extension);
    }  
 }
 

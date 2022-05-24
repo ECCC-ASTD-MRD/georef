@@ -33,6 +33,7 @@
 #include <pthread.h>
 
 #include "App.h"
+#include "str.h"
 #include "GeoRef.h"
 #include "Def.h"
 #include "fnom.h"
@@ -325,8 +326,7 @@ TRPNField* RPN_FieldReadIndex(int FileId,int Index,TRPNField *Fld) {
       lvl=ZRef_IP2Level(h.IP1,&type);
       type=type==LVL_SIGMA?LVL_ETA:type;
 
-      fld->GRef=GeoRef_Create(h.NI,h.NJ,h.GRTYP,h.IG[X_IG1],h.IG[X_IG2],h.IG[X_IG3],h.IG[X_IG4],h.FID);
-      
+      fld->GRef=GeoRef_Create(h.NI,h.NJ,h.GRTYP,h.IG[X_IG1],h.IG[X_IG2],h.IG[X_IG3],h.IG[X_IG4],h.FID);      
       fld->ZRef=ZRef_Define(type,h.NK,&lvl);
    }
    memcpy(&fld->Head,&h,sizeof(TRPNHeader));

@@ -29,6 +29,7 @@
  *==============================================================================
  */
 #include "GeoRef.h"
+#include  "GeoRef_build_info.h"
 #include "App.h"
 
 int main(int argc, char *argv[]) {

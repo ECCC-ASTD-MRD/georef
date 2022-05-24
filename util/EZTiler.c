@@ -31,6 +31,7 @@
 
 #include "App.h"
 #include "GeoRef.h"
+#include  "GeoRef_build_info.h"
 
 #define APP_NAME "EZTiler"
 #define APP_DESC "SMC/CMC/EERS RPN fstd field tiler."

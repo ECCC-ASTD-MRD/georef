@@ -4,7 +4,9 @@
       "*.hf": "fortran",
       "*.ftn90": "fortran",
       "*.cuh": "c",
-      "complex": "c"
+      "complex": "c",
+      "qtree.h": "c",
+      "def.h": "c"
    },
    "C_Cpp.errorSquiggles": "Disabled",
    "python.pythonPath": "/usr/bin/python3",
