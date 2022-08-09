@@ -17,14 +17,12 @@
 ! * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ! * Boston, MA 02111-1307, USA.
 ! */
-      SUBROUTINE ez_AMINMAX(MIN, MAX, FLD, NI, NJ)
-      REAL MIN, MAX, FLD(NI,NJ)
-      INTEGER NI, NJ
-
-      REAL AMIN, AMAX
-
-      MIN = AMIN(FLD, NI, NJ, 0)
-      MAX = AMAX(FLD, NI, NJ, 0)
-
-      RETURN
-      END
+SUBROUTINE ez_AMINMAX(FLDMIN, FLDMAX, FLD, NI, NJ)
+      REAL, intent(out) :: FLDMIN, FLDMAX
+      INTEGER, intent(in) :: NI, NJ
+      REAL, dimension(NI,NJ), intent(in) :: FLD
+  
+      FLDMIN = MINVAL(FLD)
+      FLDMAX = MAXVAL(FLD)
+  END
+  

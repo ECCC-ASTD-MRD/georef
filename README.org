@@ -43,4 +43,4 @@ make test
 make install
 #+end_src
 
-cmake -DCMAKE_INSTALL_PREFIX=${SSM_DEV}/workspace/georef -DApp_ROOT=${SSM_DEV}/workspace/App -Drmn_ROOT=${SSM_DEV}/workspace/rmn ../
+cmake -DCMAKE_INSTALL_PREFIX=${SSM_DEV}/workspace/georef -DApp_ROOT=${SSM_DEV}/workspace/App -Dvgrid_ROOT=${SSM_DEV}/workspace/vgrid -Drmn_ROOT=${SSM_DEV}/workspace/rmn ../
