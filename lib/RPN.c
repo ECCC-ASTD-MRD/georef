@@ -36,7 +36,7 @@
 #include "str.h"
 #include "GeoRef.h"
 #include "Def.h"
-#include "fnom.h"
+#include "rmn/fnom.h"
 #include <glob.h>
 
 static int **LNK_FID = NULL;

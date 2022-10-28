@@ -45,7 +45,7 @@
 
 #ifdef HAVE_RMN
 #include "rmn.h"
-#include "rpnmacros.h"
+#include "rmn/rpnmacros.h"
 #endif
 
 #ifdef HAVE_GDAL

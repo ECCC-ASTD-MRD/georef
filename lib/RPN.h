@@ -127,7 +127,8 @@ int RPN_UnLinkFiles(int FID);
 int RPN_LinkPattern(const char* Pattern);
 
 #ifdef HAVE_RMN
-#include "rpnmacros.h"
+#include "rmn.h"
+#include "rmn/rpnmacros.h"
 
 // RPN threadsafe (lock) fstd functions
 void cs_fstunlockid(int Unit);
