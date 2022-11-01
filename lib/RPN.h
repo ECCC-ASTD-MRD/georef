@@ -113,7 +113,8 @@ int        RPN_FieldReadComponent(TRPNHeader *Head,float **Ptr,char *Var,int Gri
 int        RPN_FieldReadLevels(TRPNField *Field);
 int        RPN_FieldWrite(int FileId,TRPNField *Field);
 struct TGeoRef* RPN_FieldReadGrid(TRPNField *Field);
-int        RPN_ReadGrid(struct TGeoRef *Ref);
+int        RPN_GridRead(struct TGeoRef *Ref);
+int        RPN_GridWrite(int FileId,struct TGeoRef *GRef);
 void       RPN_CopyHead(TRPNHeader *To,TRPNHeader *From);
 int        RPN_FieldTile(int FID,struct TDef *Def,TRPNHeader *Head,struct TGeoRef *Ref,struct TZRef *ZRef,int Comp,int NI,int NJ,int Halo,int DATYP,int NPack,int Rewrite,int Compress);
 

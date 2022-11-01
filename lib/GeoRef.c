@@ -39,8 +39,8 @@
 #include "RPN.h"
 #include "List.h"
  
-static TList          *GeoRef_List=NULL;                                                                                     ///< Global list of known geo references
-static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                               ///< Thread lock on geo reference access
+static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
+static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
 __thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_MAXIMUM, 0.0, 0, TRUE, FALSE, FALSE, 16, TRUE, FALSE, 10.0, 0.0, 0.0 };  ///< Default options
 
 /**----------------------------------------------------------------------------
@@ -1119,7 +1119,7 @@ TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4
 
       // This is a new georef
       GeoRef_Add(ref);
-      if (!RPN_ReadGrid(ref)) {
+      if (!RPN_GridRead(ref)) {
          // problems with reading grid descriptors
          return(NULL);
       }

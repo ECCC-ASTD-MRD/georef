@@ -408,7 +408,7 @@ int RPN_FieldReadComponent(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int F
          }
          cs_fstluk(*Ptr,key,&ni,&nj,&nk);
          if (Force || (Grid && (Head->GRREF[0]==' ' || Head->GRREF[0]=='\0'))) {
-            cs_fstprm(key,&i,&i,&i,&i,&i,&i,&i,&i,&i,&i,&i,c,c,c,Head->GRREF,&Head->IGREF[X_IG1],&Head->IGREF[X_IG2],&Head->IGREF[X_IG3],&Head->IGREF[X_IG4],&i,&i,&i,&i,&i,&i,&i);
+            cs_fstprm(key,&i,&i,&i,&i,&i,&i,&i,&i,&Head->IP1,&Head->IP2,&Head->IP3,c,c,c,Head->GRREF,&Head->IGREF[X_IG1],&Head->IGREF[X_IG2],&Head->IGREF[X_IG3],&Head->IGREF[X_IG4],&i,&i,&i,&i,&i,&i,&i);
          }
       }
    }
@@ -440,7 +440,7 @@ struct TGeoRef* RPN_FieldReadGrid(TRPNField *Field) {
    return(Field->GRef);
 }
 
-int RPN_ReadGrid(struct TGeoRef *GRef) {
+int RPN_GridRead(struct TGeoRef *GRef) {
 
    int         key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,dx=0,dy=0;
    float      *ax=NULL,*ay=NULL;
@@ -670,6 +670,82 @@ int RPN_FieldWrite(int FileId,TRPNField *Field) {
       return(0);
    }
    return(1);
+}
+
+int RPN_GridWrite(int FileId,struct TGeoRef *GRef) {
+
+   int        i,ok;
+   float      *ax,*ay;
+   TRPNHeader *h=&GRef->RPNHead;
+
+   if (GRef->GRTYP[0]=='L' || GRef->GRTYP[0]=='A' || GRef->GRTYP[0]=='B' || GRef->GRTYP[0]=='N' || GRef->GRTYP[0]=='S' || GRef->GRTYP[0]=='G') {
+      return(TRUE);
+   }
+
+   if (GRef->AY || GRef->AX) {
+      switch(GRef->GRTYP[0]) {
+         case 'M':
+            ok=cs_fstecr(GRef->Idx,-32,FileId,h->DATEO,h->DEET,h->NPAS,GRef->NIdx,1,1,h->IP1,h->IP2,h->IP3,h->TYPVAR,
+               h->NOMVAR,h->ETIKET,h->GRTYP,h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],h->IG[X_IG4],h->DATYP,FALSE);
+            break;
+
+         case 'W':
+            break;
+
+         case 'Y':
+//            if (!GRef->Hgt) RPN_FieldReadComponent(h,&GRef->Hgt,"ZH",0,0);
+           break;
+
+         case 'X':
+         case 'O':
+            ax=(float*)malloc(GRef->NY*GRef->NX*sizeof(double)); for(i=0;i<GRef->NX*GRef->NY;i++) ax[i]=GRef->AX[i];
+            ay=(float*)malloc(GRef->NY*GRef->NX*sizeof(double)); for(i=0;i<GRef->NX*GRef->NY;i++) ay[i]=GRef->AY[i];
+//            c_fst_data_length(64);
+            ok=cs_fstecr(ax,-32,FileId,h->DATEO,h->DEET,h->NPAS,GRef->NX,GRef->NY,1,h->IP1,h->IP2,h->IP3,"X",
+               ">>","GRID",h->GRREF,h->IGREF[X_IG1],h->IGREF[X_IG2],h->IGREF[X_IG3],h->IGREF[X_IG4],h->DATYP,FALSE);
+//            c_fst_data_length(64);
+            ok=cs_fstecr(ay,-32,FileId,h->DATEO,h->DEET,h->NPAS,GRef->NX,GRef->NY,1,h->IP1,h->IP2,h->IP3,"X",
+               "^^","GRID",h->GRREF,h->IGREF[X_IG1],h->IGREF[X_IG2],h->IGREF[X_IG3],h->IGREF[X_IG4],h->DATYP,FALSE);
+            break;
+
+         case 'V':
+            break;
+
+         case 'Z':
+            ax=(float*)malloc(GRef->NX*sizeof(double)); for(i=0;i<GRef->NX;i++) ax[i]=GRef->AX[i];
+            ay=(float*)malloc(GRef->NY*sizeof(double)); for(i=0;i<GRef->NY;i++) ay[i]=GRef->AY[i];
+//            c_fst_data_length(64);
+            ok=cs_fstecr(ax,-32,FileId,h->DATEO,h->DEET,h->NPAS,GRef->NX,1,1,h->IP1,h->IP2,h->IP3,"X",
+               ">>","GRID",h->GRREF,h->IGREF[X_IG1],h->IGREF[X_IG2],h->IGREF[X_IG3],h->IGREF[X_IG4],h->DATYP,FALSE);
+//            c_fst_data_length(64);
+            ok=cs_fstecr(ay,-32,FileId,h->DATEO,h->DEET,h->NPAS,1,GRef->NY,1,h->IP1,h->IP2,h->IP3,"X",
+               "^^","GRID",h->GRREF,h->IGREF[X_IG1],h->IGREF[X_IG2],h->IGREF[X_IG3],h->IGREF[X_IG4],h->DATYP,FALSE);
+            break;
+
+         case '#':
+            break;
+         
+         case 'U':
+            break;
+      }
+
+      // In case of WKT REF
+      if (GRef->GRTYP[0]=='W' || h->GRREF[0] == 'W') {
+#ifdef HAVE_GDAL
+         c_fst_data_length(1);
+         ok=cs_fstecr(GRef->String,-8,FileId,h->DATEO,h->DEET,h->NPAS,strlen(GRef->String),1,1,h->IP1,h->IP2,h->IP3,h->TYPVAR,
+            h->NOMVAR,h->ETIKET,h->GRTYP,h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],h->IG[X_IG4],h->DATYP,FALSE);
+         c_fst_data_length(64);
+         ok=cs_fstecr(GRef->Transform,-64,FileId,h->DATEO,h->DEET,h->NPAS,6,1,1,h->IP1,h->IP2,h->IP3,h->TYPVAR,
+            h->NOMVAR,h->ETIKET,h->GRTYP,h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],h->IG[X_IG4],h->DATYP,FALSE);
+#else
+   App_Log(APP_ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);
+   return(FALSE);
+#endif
+      }
+   }
+
+   return(TRUE);
 }
 
 void RPN_CopyHead(TRPNHeader *To,TRPNHeader *From) {

@@ -59,7 +59,7 @@ endif()
 add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ _GNU_SOURCE)
 
 add_subdirectory(lib lib)
-#add_subdirectory(util util)
+add_subdirectory(util util)
 #   add_subdirectory(test test)
 
 configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)

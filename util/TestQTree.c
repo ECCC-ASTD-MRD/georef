@@ -31,7 +31,7 @@
 
 #include "App.h"
 #include "GeoRef.h"
-#include  "GeoRef_build_info.h"
+#include "georef_build_info.h"
 #include "RPN.h"
 #include "Def.h"
 #include "QTree.h"

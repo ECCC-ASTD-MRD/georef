@@ -19,7 +19,7 @@ link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib)
 target_link_libraries(EZTiler georef -lm rmn vgrid App)
 set_target_properties(EZTiler PROPERTIES VERSION ${PROJECT_VERSION})
 
-target_link_libraries(ReGrid georef -lm rmn vgrid App})
+target_link_libraries(ReGrid georef -lm rmn vgrid App)
 set_target_properties(ReGrid PROPERTIES VERSION ${PROJECT_VERSION})
 
 target_link_libraries(Interpolate georef -lm rmn vgrid App)
@@ -56,3 +56,5 @@ add_test(GridInterp_ZE2ZL  Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/ZL
 add_test(GridInterp_ZE2ZW  Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/ZW.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/HRDPS.fstd -o /tmp/libgeoref.fstd -n TT -e ZE2ZW -v DEBUG)
 add_test(GridInterp_ZE2O   Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/O.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/HRDPS.fstd -o /tmp/libgeoref.fstd -n TT -e ZE2O -v DEBUG)
 add_test(GridInterp_ZE2M   Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/M.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/HRDPS.fstd -o /tmp/libgeoref.fstd -n TT -e ZE2M -v DEBUG)
+
+add_test(GridInterp_O2ZE   Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/ZE.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/O.fstd -o /tmp/libgeoref.fstd -n GRID -e O2ZE -v DEBUG)
