@@ -84,6 +84,10 @@
                if (iplus2.eq.ni) iplus2 = 2
                if (imoins1.eq.ni) imoins1=ni-1
             endif
+         else
+            imoins1 = i-1
+            iplus1  = i+1
+            iplus2  = i+2
          endif
          dx = px(n) - i
          dy = py(n) - j
@@ -105,5 +109,7 @@
          
          zo(n)=cubic(y1,y2,y3,y4,dy)
       enddo
+      !$OMP END PARALLEL DO 
+      
       return
       end
