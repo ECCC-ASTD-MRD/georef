@@ -1,3 +1,15 @@
-doc/
-build/
-test/out/
+#----- Compiled object/library files
+*.o
+*.a
+*.mod
+
+#----- Editor pattern
+*.sw[po]
+*~
+
+#----- buil directory at the root path
+/build/
+/.vscode/
+
+/doc/
+/test/out/
