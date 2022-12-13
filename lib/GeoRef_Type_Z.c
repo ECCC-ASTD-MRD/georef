@@ -55,17 +55,18 @@ int GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
    tmpx = (double*)malloc(3*Nb*sizeof(double));
    tmpy = &tmpx[Nb];
    ytmp = &tmpx[Nb*2];
+
+   #pragma omp parallel for default(none) private(i,indx,indy,delxx,delyy) shared(Nb,Ref,X,Y,Lat,Lon,tmpx,tmpy,ytmp)
    for (i=0; i < Nb; i++) {
       indx = (int)X[i]-1;
-      ytmp[i] = Y[i];
-      if (Ref->RPNHead.IG[X_IG2] == 1) {
-         ytmp[i] = Ref->NY +1.0 - Y[i];
-      }
+      ytmp[i] = (Ref->RPNHead.IG[X_IG2]==1)?Ref->NY+1.0 - Y[i]:Y[i];
+      
       indy = (int)ytmp[i]-1;
       indx = indx < 0 ? 0 : indx;
       indy = indy < 0 ? 0 : indy;
       indx = indx > Ref->NX-2 ? Ref->NX-2 : indx;
       indy = indy > Ref->j2-2 ? Ref->j2-2 : indy;
+ 
       delxx = Ref->AX[indx+1]-Ref->AX[indx];
       tmpx[i] = Ref->AX[indx] + ((X[i]-1.0-indx)*delxx);
 
@@ -96,7 +97,7 @@ int GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
          break;
 
       default:
-         App_Log(APP_ERROR,"%s: Undefined reference grid type: %s\n",__func__,Ref->RPNHead.GRREF[0]);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Undefined reference grid type: %s\n",__func__,Ref->RPNHead.GRREF[0]);
          free(tmpx);
          return(1);
          break;
@@ -126,6 +127,7 @@ int GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
    GeoRef_LL2GREF(Ref,X,Y,Lat,Lon,Nb);
 
    // Look into expansion descriptor
+   #pragma omp parallel for default(none) private(i,d,indx,indy) shared(Nb,Ref,X,Y,Lat,Lon)
    for(i=0;i<Nb;i++) {
       d=(Ref->Type&GRID_AXY2D)?Ref->NX:1;
 

@@ -12,7 +12,7 @@ URL        : https://gitlab.science.gc.ca/RPN-SI/libgeoref
 
 App   ~= 0.1.0
 rmn  ~>= 20.0.0
-vgrid ~= 6.5.0
+vgrid ~>= 6.5.0
 GDAL ~>= 2.0
 
 

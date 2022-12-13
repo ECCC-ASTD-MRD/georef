@@ -19,5 +19,6 @@
    "C_Cpp.errorSquiggles": "Disabled",
    "python.pythonPath": "/usr/bin/python3",
    "C_Cpp.dimInactiveRegions": false,
-   "fortran.ignoreWarning.fortls": true
+   "fortran.ignoreWarning.fortls": true,
+   "cmake.configureOnOpen": false
 }

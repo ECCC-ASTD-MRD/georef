@@ -95,7 +95,7 @@ int GeoRef_SetZoneDefinePole(TGridSet *GSet,int Zone,int NbPts) {
       zone->x = (double*)malloc(zone->npts*sizeof(double));
       zone->y = (double*)malloc(zone->npts*sizeof(double));
       zone->idx = (int *)malloc(zone->npts*sizeof(int));
-      App_Log(APP_DEBUG,"%s: Number of points at pole: %d\n",__func__,zone->npts);
+      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Number of points at pole: %d\n",__func__,zone->npts);
       
       for (i=0; i<zone->npts; i++) {
          zone->x[i]   = GSet->X[tmpidx[i]];      
@@ -139,7 +139,7 @@ int GeoRef_SetZoneDefineThem(TGridSet *GSet,int Zone,int NbPts) {
       zone->x = (double*)malloc(zone->npts*sizeof(double));
       zone->y = (double*)malloc(zone->npts*sizeof(double));
       zone->idx = (int *) malloc(zone->npts*sizeof(int));
-      App_Log(APP_DEBUG,"%s: Number of points between pole and limit: %d\n",__func__,zone->npts);
+      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Number of points between pole and limit: %d\n",__func__,zone->npts);
     
       for (i=0; i<zone->npts; i++) {
          zone->x[i]   = GSet->X[tmpidx[i]];      
@@ -182,7 +182,7 @@ int GeoRef_SetZoneDefineOut(TGridSet *GSet,int Zone,int NbPts) {
    }
 */
 
-   App_Log(APP_DEBUG,"%s: NbPoints %d, Offset left: %d, Offset right: %d\n",__func__,NbPts,offsetleft, offsetright);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: NbPoints %d, Offset left: %d, Offset right: %d\n",__func__,NbPts,offsetleft, offsetright);
    zone->npts=0;
    for (i=0; i<NbPts; i++) {
       ix = (int)(GSet->X[i]+0.5);
@@ -197,7 +197,7 @@ int GeoRef_SetZoneDefineOut(TGridSet *GSet,int Zone,int NbPts) {
       zone->x = (double*)malloc(zone->npts*sizeof(double));
       zone->y = (double*)malloc(zone->npts*sizeof(double));
       zone->idx = (int *) malloc(zone->npts*sizeof(int));
-      App_Log(APP_DEBUG,"%s: Number of outside pointst: \n",__func__,offsetleft,zone->npts);
+      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Number of outside pointst: \n",__func__,offsetleft,zone->npts);
     
       for (i=0; i < zone->npts; i++) {
          zone->x[i]   = GSet->X[tmpidx[i]];      
@@ -288,12 +288,17 @@ int GeoRef_SetCalcXY(TGridSet *GSet) {
 
    if (GSet && !GSet->Index) {
       size=GSet->RefTo->NX*GSet->RefTo->NY;
-      GSet->IndexSize=2*size;
-      GSet->Index = (double*)calloc(GSet->IndexSize,sizeof(double));
-      GSet->X=GSet->Index;
-      GSet->Y=&GSet->Index[size];
+      GSet->IndexDegree=GSet->RefFrom->Options.InterpDegree;
+      GSet->Index = (float*)calloc((GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1))*size,sizeof(float));
+      GSet->X = (double*)calloc(size*2,sizeof(double));
+      GSet->Y=&GSet->X[size];
 
       GeoRef_LL2XY(GSet->RefFrom,GSet->X,GSet->Y,GSet->RefTo->Lat,GSet->RefTo->Lon,size,TRUE);
+   }
+
+   // Reset index
+   if (GSet->IndexDegree!=GSet->RefFrom->Options.InterpDegree) {
+      GSet->Index[0]=0;
    }
 
    return(0);
@@ -441,6 +446,10 @@ void GeoRef_SetFree(TGridSet* GSet) {
    if (GSet->Index) {
       free(GSet->Index);
       GSet->Index=NULL;
+      GSet->IndexDegree=IR_UNDEF;
+   }
+   if (GSet->X) {
+      free(GSet->X);
       GSet->X=NULL;
       GSet->Y=NULL;
    }
@@ -465,10 +474,11 @@ void GeoRef_SetFree(TGridSet* GSet) {
  *    @param[in]  GSet      Gridset pointer
  *    @param[in]  Grom      Destination grid type
  *    @param[in]  GTo       Source grid type
+ *    @param[in]  Level     Interpolation level (2=bilinear,3=bicubic,-1=any)
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetRead(int FID,TGridSet *GSet,char GFrom,char GTo){
+int GeoRef_SetRead(int FID,TGridSet *GSet,char GFrom,char GTo,int Level){
 
    TRPNHeader h;
    char       typvar[2];
@@ -477,19 +487,40 @@ int GeoRef_SetRead(int FID,TGridSet *GSet,char GFrom,char GTo){
    typvar[1]=GTo;
 
    // Rechercher et lire l'information de l'enregistrement specifie
-   if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,-1,typvar,"#>>#"))<0) {
-      App_Log(APP_ERROR,"%s: Could not find gridset index field (c_fstinf failed)\n",__func__);
+   if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,Level,typvar,"####"))<0) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset index field (c_fstinf failed)\n",__func__);
       return(FALSE);
    }
-   GSet->IndexSize=h.NI;
-   GSet->Index=(double*)malloc(GSet->IndexSize*sizeof(double));
+   GSet->IndexDegree=(TDef_InterpR)Level;
+   GSet->Index=(float*)malloc(h.NI*h.NJ*sizeof(double));
+
+   if (cs_fstluk(GSet->Index,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not read gridset index field (c_fstlir failed)\n",__func__);
+      return(FALSE);
+   }
+
+   if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,Level,typvar,"#>>#"))<0) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset longitude field (c_fstinf failed)\n",__func__);
+      return(FALSE);
+   }
+   GSet->X=(double*)malloc(2*h.NI*sizeof(double));
+   GSet->Y=&GSet->X[h.NI];
 
    c_fst_data_length(8);
-   if (cs_fstluk(GSet->Index,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
-      App_Log(APP_ERROR,"%s: Could not read gridset index field (c_fstlir failed)\n",__func__);
+   if (cs_fstluk(GSet->X,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not read gridset longitude (c_fstlir failed)\n",__func__);
       return(FALSE);
    }
-   return(TRUE);
+   if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,Level,typvar,"#^^#"))<0) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset laitude field (c_fstinf failed)\n",__func__);
+      return(FALSE);
+   }
+   c_fst_data_length(8);
+   if (cs_fstluk(GSet->Y,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not read gridset latitude field (c_fstlir failed)\n",__func__);
+      return(FALSE);
+   }
+    return(TRUE);
 }
 
 /*----------------------------------------------------------------------------
@@ -503,12 +534,24 @@ int GeoRef_SetRead(int FID,TGridSet *GSet,char GFrom,char GTo){
 */
 int GeoRef_SetWrite(TGridSet *GSet,int FID){
 
+   int size=0;
 
    if (GSet && GSet->Index) {
-      c_fst_data_length(8);
+      size=GSet->RefTo->NX*GSet->RefTo->NY;
+      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s:  Writing index (%ix%i)\n",__func__,size,GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1));
 
-      if (cs_fstecr(GSet->Index,-64,FID,0,0,0,GSet->IndexSize,1,1,0,0,0,GSet->G2G,"#>>#","GRIDSET","X",0,0,0,0,5,FALSE)<0) {
-         App_Log(APP_ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
+      c_fst_data_length(8);
+      if (cs_fstecr(GSet->X,-64,FID,0,0,0,size,1,1,0,0,0,GSet->G2G,"#>>#","GRIDSET","X",0,0,0,0,5,FALSE)<0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
+         return(FALSE);
+      }
+      c_fst_data_length(8);
+      if (cs_fstecr(GSet->Y,-64,FID,0,0,0,size,1,1,0,0,0,GSet->G2G,"#^^#","GRIDSET","X",0,0,0,0,5,FALSE)<0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
+         return(FALSE);
+      }
+      if (cs_fstecr(GSet->Index,-32,FID,0,0,0,size,GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1),1,0,0,GSet->IndexDegree,GSet->G2G,"####","GRIDSET","X",0,0,0,0,5,FALSE)<0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
          return(FALSE);
       }
    }
@@ -573,17 +616,19 @@ TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGridSet** GSet) {
    if (GSet) {
       if (gset=*GSet) {
          if (gset->G2G[0]!=RefTo->Sets[i].G2G[0] || gset->G2G[1]!=RefTo->Sets[i].G2G[1]) {
-            App_Log(APP_WARNING,"%s: Invalid grid set %c%c!=%c%c\n",__func__,gset->G2G[0],gset->G2G[1],RefTo->Sets[i].G2G[0],RefTo->Sets[i].G2G[1]);
+            Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Invalid grid set %c%c!=%c%c\n",__func__,gset->G2G[0],gset->G2G[1],RefTo->Sets[i].G2G[0],RefTo->Sets[i].G2G[1]);
          } else {
             RefTo->Sets[i].Index=gset->Index;
-            RefTo->Sets[i].IndexSize=gset->IndexSize;
+            RefTo->Sets[i].IndexDegree=gset->IndexDegree;
+            RefTo->Sets[i].X=gset->X;
+            RefTo->Sets[i].Y=gset->Y;
          }
       } else {
          *GSet=&RefTo->Sets[i];
       }
    }
 
-   App_Log(APP_DEBUG,"%s: RefFrom : %p RefTo: %p\n",__func__,RefFrom,RefTo);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RefFrom : %p RefTo: %p\n",__func__,RefFrom,RefTo);
 
    return(&RefTo->Sets[i]);
 }

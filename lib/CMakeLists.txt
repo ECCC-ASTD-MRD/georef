@@ -15,8 +15,6 @@ set_target_properties(georef PROPERTIES
 
 add_dependencies(georef ${PROJECT_NAME}_build_info)
 
-target_link_libraries(georef App)
-
 if (rmn_FOUND)
    target_link_libraries(georef rmn)
 endif()

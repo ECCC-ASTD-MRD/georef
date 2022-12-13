@@ -50,6 +50,7 @@ int GeoRef_XY2LL_O(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
 
    int i;
 
+   #pragma omp parallel for default(none) private(i) shared(Nb,Ref,X,Y,Lat,Lon)
    for (i=0; i < Nb; i++) {
       Lon[i]=VertexValS(Ref->AX,NULL,Ref->NX,Ref->NY,X[i],Y[i],TRUE);
       Lat[i]=VertexValS(Ref->AY,NULL,Ref->NX,Ref->NY,X[i],Y[i],TRUE);
@@ -78,7 +79,7 @@ int GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
    Vect2d  pts[4],pt;
 
    GeoRef_LL2GREF(Ref,X,Y,Lat,Lon,Nb);
-
+   #pragma omp parallel for default(none) private(n,nd,d,dx,dy,x,y,xx,yy,idx,idxs,pt,pts,dists) shared(Nb,Ref,X,Y,Lat,Lon) reduction(+:out)
    for(d=0;d<Nb;d++) {
 
       X[d]=-1.0;
@@ -128,18 +129,18 @@ int GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
                Y[d]+=y+dy+1;
                X[d]+=x+dx+1; 
             } else {
-               App_Log(APP_ERROR,"%s: Invalid coordinate (NAN): ll(%f,%f) xy(%f,%f) %i\n",__func__,Lat[d],Lon[d],X[d],Y[d],idx);
+               Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid coordinate (NAN): ll(%f,%f) xy(%f,%f) %i\n",__func__,Lat[d],Lon[d],X[d],Y[d],idx);
                X[d]=-1,0;
                Y[d]=-1.0;
                out++;
             }
          } else {
-            App_Log(APP_ERROR,"%s: Point not found: %f %f %i\n",__func__,Lat[d],Lon[d],idx);
+            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Point not found: %f %f %i\n",__func__,Lat[d],Lon[d],idx);
             out++;
          }
       } 
    }
-   App_Log(APP_DEBUG,"%s: Points out: %i\n",__func__,out);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Points out: %i\n",__func__,out);
 
    return(0);
 }

@@ -107,6 +107,7 @@ int GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
    double x,y,d;
    int    n;
 
+   #pragma omp parallel for default(none) private(n,loc0,x,y,d) shared(Nb,Ref,X,Y,Lat,Lon)
    for(n=0;n<Nb;n++) {
 
       loc0.Lat=DEG2RAD(Ref->Loc.Lat);
@@ -151,6 +152,7 @@ int GeoRef_LL2XY_R(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
    double  x,d,lat,lon;
    int     n;
 
+   #pragma omp parallel for default(none) private(n,loc0,x,d,lat,lon) shared(Nb,Ref,X,Y,Lat,Lon)
    for(n=0;n<Nb;n++) {
       loc0.Lat=DEG2RAD(Ref->Loc.Lat);
       loc0.Lon=DEG2RAD(Ref->Loc.Lon);

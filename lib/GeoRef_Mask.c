@@ -25,7 +25,7 @@ int GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskI
  
    TGridSet *gset=NULL;
    if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
-      App_Log(APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
       return(FALSE);
    }
 
@@ -45,7 +45,7 @@ int GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int *MaskOut,int *MaskIn) {
    int       npts_in, npts_out;
    
    if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
-      App_Log(APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
       return(-1);
    }
 
@@ -89,11 +89,11 @@ int GeoRef_MaskYYDefine(TGeoRef *Ref) {
    Ref->mymaskgridj0=j0;
    Ref->mymaskgridj1=j1;
 
-   App_Log(APP_DEBUG,"%s: Subgd.mymaskgrid   = %p\n",__func__,Ref->mymaskgrid);
-   App_Log(APP_DEBUG,"%s: Subgd.mymaskgridi0 = %d pt=%f\n",__func__,Ref->mymaskgridi0, Ref->AX[i0]);
-   App_Log(APP_DEBUG,"%s: Subgd.mymaskgridi1 = %d pt=%f\n",__func__,Ref->mymaskgridi1, Ref->AX[i1]);
-   App_Log(APP_DEBUG,"%s: Subgd.mymaskgridj0 = %d pt=%f\n",__func__,Ref->mymaskgridj0, Ref->AY[j0]);
-   App_Log(APP_DEBUG,"%s: Subgd.mymaskgridj1 = %d pt=%f\n",__func__,Ref->mymaskgridj1, Ref->AY[j1]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subgd.mymaskgrid   = %p\n",__func__,Ref->mymaskgrid);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subgd.mymaskgridi0 = %d pt=%f\n",__func__,Ref->mymaskgridi0, Ref->AX[i0]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subgd.mymaskgridi1 = %d pt=%f\n",__func__,Ref->mymaskgridi1, Ref->AX[i1]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subgd.mymaskgridj0 = %d pt=%f\n",__func__,Ref->mymaskgridj0, Ref->AY[j0]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subgd.mymaskgridj1 = %d pt=%f\n",__func__,Ref->mymaskgridj1, Ref->AY[j1]);
  
   return(0);
 }

@@ -128,9 +128,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    }
    
    // Write index
-   if (gset) {
-      App_Log(APP_DEBUG,"Saving index containing %i items\n",gset->IndexSize);
-      
+   if (gset) {      
       if (!GeoRef_SetWrite(gset,fout)) {
          return(0);
       }

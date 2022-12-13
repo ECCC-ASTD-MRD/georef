@@ -77,7 +77,7 @@
 #define BITPOS(i)     (i - ((i >> 5) << 5))
 #define GETMSK(fld,i) ((fld[i >> 5]  & (1 << BITPOS(i))) >> BITPOS(i))
 #define SETMSK(fld,i) (fld[i >> 5] | (fld[i] << BITPOS(i)))
-#define NULLOK      (void*)0x1
+#define NULLOK        (void*)0x1
 
 #define SET_ZONES   0x1          ///< Flag for set zone definitions
 #define SET_YYXY    0x4          ///< Flag for set YinYang calculations
@@ -275,12 +275,13 @@ typedef struct {
 
 typedef struct {
    struct TGeoRef *RefFrom,*RefTo;
-   TGeoZone zones[SET_NZONES];
-   char G2G[2];                          ///<GRTYP of source and destination for index identification
-   int flags;
-   int IndexSize;
-   double *Index;
-   double *X,*Y;
+   TGeoZone        zones[SET_NZONES];
+   char            G2G[2];                          ///<GRTYP of source and destination for index identification
+   int             flags;
+   TDef_InterpR    IndexDegree;
+   float          *Index;
+   double         *X,*Y;
+
    float *yin_maskout,*yan_maskout;
    double *yinlat,*yinlon,*yanlat,*yanlon;
    double *yin2yin_lat,*yin2yin_lon,*yan2yin_lat,*yan2yin_lon;
@@ -446,7 +447,7 @@ int       GeoRef_SetZoneDefine(TGridSet *GSet);
 int       GeoRef_SetCalcXY(TGridSet *GSet);
 int       GeoRef_SetCalcYYXY(TGridSet *GSet);
 
-int       GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,double *x,double *y,int npts);
+int       GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,double *x,double *y,int npts,TGridSet *GSet);
 int       GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin);
 int       GeoRef_CorrectVector(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout, float *vvout, float *uuin, float *vvin);
 void      GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int npts,float xlat1,float xlon1,float xlat2,float xlon2);
@@ -538,13 +539,19 @@ static inline void GeoRef_LL2GD(double *X,double *Y,double *Lat,double *Lon,int 
       Y[i] = (Lat[i]-Lat0)/DLat + 1.0;
    }
 }
+void f77name(ez8_rgd_index_0)(float *index,double *px,double *py,int32_t *npts,int32_t *ni,int32_t *j1,int32_t *j2);
+void f77name(ez8_rgd_index_1)(float *index,double *px,double *py,int32_t *npts,int32_t *ni,int32_t *j1,int32_t *j2,int32_t *wrap);
+void f77name(ez8_rgd_index_3)(float *index,double *px,double *py,int32_t *npts,int32_t *ni,int32_t *j1,int32_t *j2,int32_t *wrap);
+void f77name(ez8_irgd_index_1)(float *index,double *px,double *py,int32_t *npts,int32_t *ni,int32_t *j1,int32_t *j2,double *ax,double *ay,int32_t *wrap);
+void f77name(ez8_apply_0)(float *index,float *zo,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,float *nodata);
+void f77name(ez8_apply_1)(float *index,float *zo,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,float *nodata);
+void f77name(ez8_apply_3)(float *index,float *zo,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,float *nodata);
 
-void f77name(ez8_rgdint_0)      (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2);
+void f77name(ez8_rgdint_0)      (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,float *nodata);
 void f77name(ez8_rgdint_1)      (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,int32_t *wrap,float *nodata);
 void f77name(ez8_rgdint_3)      (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,int32_t *wrap,float *nodata);
 void f77name(ez8_irgdint_1)     (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,double *ax,double *ay,int32_t *wrap,float *nodata);
 void f77name(ez8_irgdint_3)     (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *i1,int32_t *i2,int32_t *j1,int32_t *j2,double *ax,double *ay,float *cx,float *cy,int32_t *wrap,float *nodata);
-void f77name(ez8_rgdint_3_wnnc) (float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,int32_t *wrap);
 void f77name(ez8_irgdint_3_wnnc)(float *zo,double *px,double *py,int32_t *npts,float *z,int32_t *ni,int32_t *j1,int32_t *j2,double *ax,double *ay,int32_t *wrap);
 
 void f77name(ez8_llwfgdw)(float *z1,float *z2,double *xlon,int32_t *li,int32_t *lj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4,int32_t sz);

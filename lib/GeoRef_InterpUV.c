@@ -180,12 +180,12 @@ int GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
    if (RefFrom->Options.SubGrid) { // User specifies to use 1 grid only
       // Output is a Yin-Yang grid 
       if (yyout == 1) { 
-         App_Log(APP_ERROR,"%s: Cannot use subgrid to interpolate to a Yin-Yang grid\n",__func__);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Cannot use subgrid to interpolate to a Yin-Yang grid\n",__func__);
          return(FALSE);
       }
       // Is specified subgrid within the subgrid list
       if (RefFrom->Options.SubGrid>RefFrom->NbSub) { 
-         App_Log(APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Options.SubGrid);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Options.SubGrid);
          return(FALSE);
       }
       // Use yin input grid
@@ -402,12 +402,12 @@ int GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
    if (RefFrom->Options.SubGrid) { // User specifies to use 1 grid only
       // Output is a Yin-Yang grid 
       if (yyout == 1) { 
-         App_Log(APP_ERROR,"%s: Cannot use subgrid to interpolate to a Yin-Yang grid\n",__func__);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Cannot use subgrid to interpolate to a Yin-Yang grid\n",__func__);
          return(FALSE);
       }
       // Is specified subgrid within the subgrid list
       if (RefFrom->Options.SubGrid>RefFrom->NbSub) { 
-         App_Log(APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Options.SubGrid);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Options.SubGrid);
          return(FALSE);
       }
       // Use yin input grid
@@ -545,7 +545,7 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
    double *lat_true,*lon_true;
   
    if (Ref->NbSub > 0 ) {
-      App_Log(APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
       return(-1);
    }
    ni = Nb;
@@ -596,7 +596,7 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
    double *lat_rot,*lon_rot;
    
    if (Ref->NbSub > 0 ) {
-      App_Log(APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
       return(-1);
    }
 

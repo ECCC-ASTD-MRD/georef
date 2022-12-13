@@ -52,11 +52,11 @@ TGeoRef* GeoRef_CreateU(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,int Nb
    TGeoRef *ref,*fref,*sub_gd;
     
    if (NbSub <= 1) {
-      App_Log(APP_ERROR,"%s: NbSub given is less than 2\n",__func__);
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: NbSub given is less than 2\n",__func__);
       return(NULL);
    }
    if (VerCode != 1) {
-      App_Log(APP_ERROR,"%s: Invalid VerCode\n",__func__);
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid VerCode\n",__func__);
       return(NULL);
    }
 
@@ -97,31 +97,31 @@ TGeoRef* GeoRef_CreateU(int NI,int NJ,char *GRTYP,char *GRREF,int VerCode,int Nb
    for (i=0; i < NbSub; i++) {
       ref->Subs[i] = Subs[i];
       GeoRef_MaskYYDefine(Subs[i]);
-      App_Log(APP_DEBUG,"%s: Grille[%p].Subs[%p] has maskgrid=%p\n",__func__,ref,Subs[i],sub_gd->mymaskgrid);
+      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Grille[%p].Subs[%p] has maskgrid=%p\n",__func__,ref,Subs[i],sub_gd->mymaskgrid);
    }
 
    GeoRef_Qualify(ref);
 
-   App_Log(APP_DEBUG,"%s: grtyp     = '%c'\n",__func__, ref->GRTYP[0]);
-   App_Log(APP_DEBUG,"%s: grref     = '%c'\n",__func__, ref->RPNHead.GRREF[0]);
-   App_Log(APP_DEBUG,"%s: ni        = %d\n",__func__,ref->NX);
-   App_Log(APP_DEBUG,"%s: nj        = %d\n",__func__,ref->NY);
-   App_Log(APP_DEBUG,"%s: ig1       = %d\n",__func__,ref->RPNHead.IG[X_IG1]);
-   App_Log(APP_DEBUG,"%s: ig2       = %d\n",__func__,ref->RPNHead.IG[X_IG2]);
-   App_Log(APP_DEBUG,"%s: ig3       = %d\n",__func__,ref->RPNHead.IG[X_IG3]);
-   App_Log(APP_DEBUG,"%s: ig4       = %d\n",__func__,ref->RPNHead.IG[X_IG4]);
-   App_Log(APP_DEBUG,"%s: ig1ref    = %d\n",__func__,ref->RPNHead.IGREF[X_IG1]);
-   App_Log(APP_DEBUG,"%s: ig2ref    = %d\n",__func__,ref->RPNHead.IGREF[X_IG2]);
-   App_Log(APP_DEBUG,"%s: ig3ref    = %d\n",__func__,ref->RPNHead.IGREF[X_IG3]);
-   App_Log(APP_DEBUG,"%s: ig4ref    = %d\n",__func__,ref->RPNHead.IGREF[X_IG4]);
-   App_Log(APP_DEBUG,"%s: NbSub     = %d\n",__func__,ref->NbSub);
-   App_Log(APP_DEBUG,"%s: Subs[0]   = %p\n",__func__,ref->Subs[0]);
-   App_Log(APP_DEBUG,"%s: Subs[1]   = %p\n",__func__,ref->Subs[1]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: grtyp     = '%c'\n",__func__, ref->GRTYP[0]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: grref     = '%c'\n",__func__, ref->RPNHead.GRREF[0]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ni        = %d\n",__func__,ref->NX);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: nj        = %d\n",__func__,ref->NY);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig1       = %d\n",__func__,ref->RPNHead.IG[X_IG1]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig2       = %d\n",__func__,ref->RPNHead.IG[X_IG2]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig3       = %d\n",__func__,ref->RPNHead.IG[X_IG3]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig4       = %d\n",__func__,ref->RPNHead.IG[X_IG4]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig1ref    = %d\n",__func__,ref->RPNHead.IGREF[X_IG1]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig2ref    = %d\n",__func__,ref->RPNHead.IGREF[X_IG2]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig3ref    = %d\n",__func__,ref->RPNHead.IGREF[X_IG3]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig4ref    = %d\n",__func__,ref->RPNHead.IGREF[X_IG4]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: NbSub     = %d\n",__func__,ref->NbSub);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subs[0]   = %p\n",__func__,ref->Subs[0]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subs[1]   = %p\n",__func__,ref->Subs[1]);
 
-   App_Log(APP_DEBUG,"%s: RPNHead.XG[1] = %f\n",__func__,ref->RPNHead.XG[1]);
-   App_Log(APP_DEBUG,"%s: RPNHead.XG[2] = %f\n",__func__,ref->RPNHead.XG[2]);
-   App_Log(APP_DEBUG,"%s: RPNHead.XG[3] = %f\n",__func__,ref->RPNHead.XG[3]);
-   App_Log(APP_DEBUG,"%s: RPNHead.XG[4] = %f\n",__func__,ref->RPNHead.XG[4]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RPNHead.XG[1] = %f\n",__func__,ref->RPNHead.XG[1]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RPNHead.XG[2] = %f\n",__func__,ref->RPNHead.XG[2]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RPNHead.XG[3] = %f\n",__func__,ref->RPNHead.XG[3]);
+   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RPNHead.XG[4] = %f\n",__func__,ref->RPNHead.XG[4]);
 
    return(ref);
 }

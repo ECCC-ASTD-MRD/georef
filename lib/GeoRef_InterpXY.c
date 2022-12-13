@@ -44,7 +44,7 @@ int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,doubl
       lxzin = lzin;
    }
 
-   ier = GeoRef_InterpFinally(RefTo,RefFrom,zout,lxzin,X,Y,npts);
+   ier = GeoRef_InterpFinally(RefTo,RefFrom,zout,lxzin,X,Y,npts,NULL);
 
 /*   gset.gdin = gdin;
    gset.gdout = gdout;

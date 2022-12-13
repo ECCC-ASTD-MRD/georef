@@ -49,6 +49,7 @@ int GeoRef_XY2LL_L(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
 
    int i;
 
+   #pragma omp parallel for default(none) private(i) shared(Nb,Ref,X,Y,Lat,Lon)
    for (i=0; i < Nb; i++) {
       Lat[i] = (Y[i]-1.0)*Ref->RPNHead.XG[X_DLAT]+Ref->RPNHead.XG[X_SWLAT];
       Lon[i] = (X[i]-1.0)*Ref->RPNHead.XG[X_DLON]+Ref->RPNHead.XG[X_SWLON];

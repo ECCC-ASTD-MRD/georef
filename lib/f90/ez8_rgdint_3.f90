@@ -1,22 +1,3 @@
-!/* RMNLIB - Library of useful routines for C and FORTRAN programming
-! * Copyright (C) 1975-2001  Division de Recherche en Prevision Numerique
-! *                          Environnement Canada
-! *
-! * This library is free software; you can redistribute it and/or
-! * modify it under the terms of the GNU Lesser General Public
-! * License as published by the Free Software Foundation,
-! * version 2.1 of the License.
-! *
-! * This library is distributed in the hope that it will be useful,
-! * but WITHOUT ANY WARRANTY; without even the implied warranty of
-! * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-! * Lesser General Public License for more details.
-! *
-! * You should have received a copy of the GNU Lesser General Public
-! * License along with this library; if not, write to the
-! * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-! * Boston, MA 02111-1307, USA.
-! */
       subroutine ez8_rgdint_3(zo,px,py,npts,z,ni,j1,j2,wrap,nodata)
 !*******
 !Auteur: Y.Chartier, drpn
@@ -70,7 +51,7 @@
          i = min(ni-2+wrap,max(1,max(2-wrap,int(px(n)))))
          j = min(j2-2,max(j1+1,int(py(n))))
          
-         if (wrap.gt.0) then
+         if (wrap.gt.0.and.(i.le.1).or.i.ge.(ni-1)) then
             imoins1 = mod(limite+i-1,limite)
             iplus1  = mod(limite+i+1,limite)
             iplus2  = mod(limite+i+2,limite)
@@ -113,3 +94,104 @@
       
       return
       end
+
+      subroutine ez8_rgd_index_3(index,px,py,npts,ni,j1,j2,wrap)
+         implicit none
+   
+         integer       npts,ni,j1,j2,wrap
+         real(kind=4)  index(npts,6)
+         real(kind=8)  px(npts),py(npts)
+         real(kind=8)  dx,dy,y1,y2,y3,y4
+         integer       n,i,j
+         integer       imoins1,iplus1,iplus2,limite
+      
+         limite  = ni+2-wrap
+      
+         !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(n,i,j,imoins1,iplus1,iplus2,dx,dy,y1,y2,y3,y4) SHARED(npts,index,j1,j2,ni,px,py,wrap,limite)
+         do n=1,npts
+            i = min(ni-2+wrap,max(1,max(2-wrap,int(px(n)))))
+            j = min(j2-2,max(j1+1,int(py(n))))
+            
+            if (wrap.gt.0) then
+               imoins1 = mod(limite+i-1,limite)
+               iplus1  = mod(limite+i+1,limite)
+               iplus2  = mod(limite+i+2,limite)
+               
+               if (imoins1.eq.0) imoins1 = ni
+               if (i.eq.0) i = ni
+               if (iplus1.eq.0) iplus1 = ni
+               if (iplus2.eq.0) iplus2 = ni
+               
+               if (wrap.eq.1) then
+                  if (iplus2.eq.ni) iplus2 = 2
+                  if (imoins1.eq.ni) imoins1=ni-1
+               endif
+            else
+               imoins1 = i-1
+               iplus1  = i+1
+               iplus2  = i+2
+            endif
+            dx = px(n) - i
+            dy = py(n) - j
+               
+            index(n,1)=dx
+            index(n,2)=dy
+            index(n,3)=imoins1
+            index(n,4)=i
+            index(n,5)=iplus1
+            index(n,6)=iplus2
+            index(n,7)=j-1
+            index(n,8)=j
+            index(n,9)=j+1
+            index(n,10)=j+2
+         enddo
+         !$OMP END PARALLEL DO 
+         
+         return
+         end
+
+         subroutine ez8_apply_3(index,zo,npts,z,ni,j1,j2,nodata)
+            implicit none
+            
+            integer       npts,ni,j1,j2,i,j,n,iplus1,jplus1,imoins1,jmoins1,iplus2,jplus2
+            real          zo(npts)
+            real(kind=4)  index(npts,6)
+            real          z(ni,j1:j2),nodata
+            real(kind=8)  y1,y2,y3,y4
+      
+#include "cubic8.cdk"
+            
+            !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(n,i,j,imoins1,jmoins1,iplus1,jplus1,iplus2,jplus2,y1,y2,y3,y4,dx,dy) SHARED(npts,index,z,zo,nodata)
+            do n=1,npts            
+               dx     =index(n,1)
+               dy     =index(n,2)
+               imoins1=index(n,3)
+               i      =index(n,3)
+               iplus1 =index(n,5)
+               iplus2 =index(n,6)
+               jmoins1=index(n,7)
+               j      =index(n,8)
+               jplus1 =index(n,9)
+               jplus2 =index(n,10)
+      
+               zo(n)=nodata
+
+               if (defvalid(z(imoins1,jmoins1),nodata) .and. defvalid(z(i ,jmoins1),nodata) .and. defvalid(z(iplus1,jmoins1),nodata) .and. defvalid(z(iplus2,jmoins1),nodata)) then        
+                  y1=cubic(dble(z(imoins1,jmoins1)),dble(z(i ,jmoins1)),dble(z(iplus1,jmoins1)),dble(z(iplus2,jmoins1)),dx)
+                  if (defvalid(z(imoins1,j),nodata) .and. defvalid(z(i,j),nodata) .and. defvalid(z(iplus1,j),nodata) .and. defvalid(z(iplus2,j),nodata)) then        
+                     y2=cubic(dble(z(imoins1,j)),dble(z(i ,j  )),dble(z(iplus1,j  )),dble(z(iplus2,j  )),dx)
+                     if (defvalid(z(imoins1,jplus1),nodata) .and. defvalid(z(i ,jplus1),nodata) .and. defvalid(z(iplus1,jplus1),nodata) .and. defvalid(z(iplus2,jplus1),nodata)) then        
+                        y3=cubic(dble(z(imoins1,jplus1)),dble(z(i ,jplus1)),dble(z(iplus1,jplus1)),dble(z(iplus2,jplus1)),dx)
+                        if (defvalid(z(imoins1,jplus2),nodata) .and. defvalid(z(i ,jplus2),nodata) .and. defvalid(z(iplus1,jplus2),nodata) .and. defvalid(z(iplus2,jplus2),nodata)) then        
+                           y4=cubic(dble(z(imoins1,jplus2)),dble(z(i ,jplus2)),dble(z(iplus1,jplus2)),dble(z(iplus2,jplus2)),dx)
+                        endif
+                     endif
+                  endif
+               endif
+               
+               zo(n)=cubic(y1,y2,y3,y4,dy)
+            enddo
+      
+            return 
+            end
+      

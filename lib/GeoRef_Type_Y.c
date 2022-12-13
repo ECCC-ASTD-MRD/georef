@@ -88,7 +88,7 @@ int GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
          break;
 
       default:
-         App_Log(APP_ERROR,"%s: Undefined reference grid type: %s\n",__func__,Ref->RPNHead.GRREF[0]);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Undefined reference grid type: %s\n",__func__,Ref->RPNHead.GRREF[0]);
          return(-1);
          break;
    }

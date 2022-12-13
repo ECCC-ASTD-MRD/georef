@@ -1,10 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
-#----- Append EC specific module path
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_rpn)
-foreach(PATH $ENV{EC_CMAKE_MODULE_PATH})
-   list(APPEND CMAKE_MODULE_PATH ${PATH})
-endforeach()
+# Append EC specific module path
+list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake_rpn/modules)
 
 include(ec_init)           # Initialise compilers and ec specific functions
 ec_git_version()           # Get version from git state
@@ -39,9 +36,8 @@ add_compile_definitions(HAVE_GPC)
 #set(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
 #set(CMAKE_C_COMPILER ${MPI_C_COMPILER})
 
-find_package(App ${App_REQ_VERSION} REQUIRED COMPONENTS)
-find_package(rmn ${rmn_REQ_VERSION} REQUIRED)
-find_package(vgrid ${vgrid_REQ_VERSION})
+find_package(rmn ${rmn_REQ_VERSION} REQUIRED COMPONENTS ompi)
+find_package(vgrid ${vgrid_REQ_VERSION} REQUIRED)
 
 #TODO: might have to do this - type gdal-config >/dev/null 2>&1 && CMAKE_COMP_FLAGS="$CMAKE_COMP_FLAGS -DGDAL_ROOT=`gdal-config --prefix`" 2>/dev/null
 find_package(GDAL)
