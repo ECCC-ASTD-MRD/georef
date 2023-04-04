@@ -16,13 +16,13 @@ add_executable(Interpolate Interpolate.c)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib)
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib)
 
-target_link_libraries(EZTiler georef -lm rmn vgrid)
+target_link_libraries(EZTiler georef -lm rmn::rmn-ompi vgrid::vgrid)
 set_target_properties(EZTiler PROPERTIES VERSION ${PROJECT_VERSION})
 
-target_link_libraries(ReGrid georef -lm rmn vgrid)
+target_link_libraries(ReGrid georef -lm rmn::rmn-ompi vgrid::vgrid)
 set_target_properties(ReGrid PROPERTIES VERSION ${PROJECT_VERSION})
 
-target_link_libraries(Interpolate georef -lm rmn vgrid)
+target_link_libraries(Interpolate georef -lm rmn::rmn-ompi vgrid::vgrid)
 set_target_properties(Interpolate PROPERTIES VERSION ${PROJECT_VERSION})
 
 install(TARGETS EZTiler ReGrid Interpolate
@@ -48,9 +48,9 @@ install(TARGETS EZTiler ReGrid Interpolate
 #add_test(GridInterp_L2O   Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/O.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/L.fstd -o /tmp/libgeoref.fstd -n GRID -e L2O -v DEBUG)
 #add_test(GridInterp_L2M   Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/M.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/L.fstd -o /tmp/libgeoref.fstd -n GRID -e L2M -v DEBUG)
 
-add_test(GridInterp_ZE2PS  Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/PS.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/HRDPS.fstd -o /tmp/libgeoref.fstd -n TT -e ZE2PS -v DEBUG)
-add_test(GridInterp_ZE2PSN Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/PSN.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/HRDPS.fstd -o /tmp/libgeoref.fstd -n TT -e ZE2PSN -v DEBUG)
-add_test(GridInterp_ZE2PSS Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/PSS.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/HRDPS.fstd -o /tmp/libgeoref.fstd -n TT -e ZE2PSS -v DEBUG)
+add_test(GridInterp_ZE2PS  Interpolate -m LINEAR -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/PS.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/HRDPS.fstd -o /tmp/libgeoref.fstd -n TT -e ZE2PS -v DEBUG)
+add_test(GridInterp_ZE2PSN Interpolate -m LINEAR -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/PSN.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/HRDPS.fstd -o /tmp/libgeoref.fstd -n TT -e ZE2PSN -v DEBUG)
+add_test(GridInterp_ZE2PSS Interpolate -m LINEAR -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/PSS.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/HRDPS.fstd -o /tmp/libgeoref.fstd -n TT -e ZE2PSS -v DEBUG)
 add_test(GridInterp_ZE2ZE  Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/ZE.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/HRDPS.fstd -o /tmp/libgeoref.fstd -n TT -e ZE2ZE -v DEBUG)
 add_test(GridInterp_ZE2ZL  Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/ZL.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/HRDPS.fstd -o /tmp/libgeoref.fstd -n TT -e ZE2ZL -v DEBUG)
 add_test(GridInterp_ZE2ZW  Interpolate -g $ENV{ECCI_DATA_DIR}/libgeoref/grids/ZW.fstd -i $ENV{ECCI_DATA_DIR}/libgeoref/grids/HRDPS.fstd -o /tmp/libgeoref.fstd -n TT -e ZE2ZW -v DEBUG)

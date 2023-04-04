@@ -34,7 +34,7 @@ int GeoRef_CorrValNorth(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) 
    int un = 1;
    int quatre = 4;
 
-   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
+   gset=GeoRef_SetGet(RefTo,RefFrom);
 
    npts = gset->zones[NORTH].npts;
 
@@ -120,7 +120,7 @@ int GeoRef_CorrValSouth(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) 
    int un = 1;
    int quatre = 4;
   
-   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
+   gset=GeoRef_SetGet(RefTo,RefFrom);
 
    npts = gset->zones[SOUTH].npts;
    if (npts > 0) {
@@ -208,7 +208,7 @@ int GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin)
 
    fudgeval_set = 0;
   
-   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
+   gset=GeoRef_SetGet(RefTo,RefFrom);
 
    nj = RefFrom->j2 - RefFrom->j1 +1;
    ierc = 0; /* no extrapolation */
@@ -510,7 +510,7 @@ int GeoRef_CorrVecNorth(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvou
    int       quatre = 4;
    int       un = 1;
 
-   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
+   gset=GeoRef_SetGet(RefTo,RefFrom);
 
    ni = RefFrom->NX;
    nj = RefFrom->j2 - RefFrom->j1 + 1;
@@ -594,7 +594,7 @@ int GeoRef_CorrVecSouth(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvou
    int ni, nj, i1, i2, j1, j2, degree,npts,i;
    int idx_gdin;
 
-   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
+   gset=GeoRef_SetGet(RefTo,RefFrom);
 
    npts = gset->zones[SOUTH].npts;
    ni = RefFrom->NX;
@@ -664,7 +664,7 @@ int GeoRef_CorrectVector(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvo
    TGridSet *gset=NULL;
    int ier;
   
-   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
+   gset=GeoRef_SetGet(RefTo,RefFrom);
   
    if (gset->zones[NORTH].npts > 0) {
       ier = GeoRef_CorrVecNorth(RefTo,RefFrom,uuout,vvout,uuin,vvin);

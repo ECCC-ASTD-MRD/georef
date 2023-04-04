@@ -1168,12 +1168,10 @@ static int Def_GridInterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,char Mode
  *   <Def>      : Definition de la donnee
  *   <Ref>      : Referentiel de la donnee
  *   <Layer>    : Couche a importer
- *   <Mode>     : Mode d'interpolation
  *   <Final>    : Finalisation de l'operation (Averaging en plusieurs passe)
  *   <Field>    : Champs de la couche a utiliser
  *   <Value>    : Valeur a assigner
  *   <Comb>     : Mode de combinaison des valeurs multiples (CB_REPLACE,CB_MIN,CB_MAX,CB_SUM,CB_AVERAGE)
- *   <Index>    : liste des index , a remplir ou a utiliser
  *
  * Retour       :
  *   <OK>       : ERROR=0
@@ -1182,9 +1180,10 @@ static int Def_GridInterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,char Mode
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerRef,TDef_InterpV Mode,int Final,char *Field,double Value,TDef_Combine Comb,float *Index) {
+int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerRef,char *Field,double Value,TDef_Combine Comb,int Final) {
 
 #ifdef HAVE_GDAL
+   TGridSet *gset;
    long     f,n=0,nt=0,idx2;
    double   value,val,area,dp,dx,dy;
    int      fld=-1,pi,pj;
@@ -1250,11 +1249,13 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
       memset(ToDef->Accum,0x0,FSIZE2D(ToDef)*sizeof(int));
    }
 
+   gset=GeoRef_SetGet(ToRef,LayerRef);
+
    // Do we have and index
-   if (Index && Index[0]!=REF_INDEX_EMPTY) {
+   if (gset->Index && gset->Index[0]!=REF_INDEX_EMPTY) {
 
       // As long as the file or the list is not empty
-      ip=Index;
+      ip=gset->Index;
       while(*ip!=REF_INDEX_END) {
 
          // Get the gridpoint
@@ -1308,8 +1309,8 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
          OGR_G_AddGeometryDirectly(ToDef->Poly,ToDef->Pick);
       }
 
-      if (Index && Index[0]==REF_INDEX_EMPTY) {
-         ip=Index;
+      if (gset->Index && gset->Index[0]==REF_INDEX_EMPTY) {
+         ip=gset->Index;
       }
 
       // Trouve la feature en intersection
@@ -1378,7 +1379,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
             }
 
             // In centroid mode, just project the coordinate into field and set value
-            if (Mode==IV_CENTROID) {
+            if (GeoRef_Options.InterpVector==IV_CENTROID) {
                OGM_Centroid2D(geom,&vr[0],&vr[1]);
                GeoRef_XY2LL(LayerRef,&co.Lat,&co.Lon,&vr[0],&vr[1],1,TRUE);
                GeoRef_LL2XY(ToRef,&vr[0],&vr[1],&co.Lat,&co.Lon,1,TRUE);
@@ -1394,13 +1395,13 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
                OGR_G_GetEnvelope(geom,&env);
                if (!(env.MaxX<(ToRef->X0-0.5) || env.MinX>(ToRef->X1+0.5) || env.MaxY<(ToRef->Y0-0.5) || env.MinY>(ToRef->Y1+0.5))) {
 
-                  if (Mode==IV_FAST) {
+                  if (GeoRef_Options.InterpVector==IV_FAST) {
                      Def_Rasterize(ToDef,ToRef,geom,value,0);
                   } else {
 
                      // Get value to split on
                      area=-1.0;
-                     switch(Mode) {
+                     switch(GeoRef_Options.InterpVector) {
                         case IV_FAST                           : break;
                         case IV_WITHIN                         : mode='W'; type='A'; break;
                         case IV_INTERSECT                      : mode='I'; type='A'; break;
@@ -1452,8 +1453,12 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
                OGR_G_DestroyGeometry(utmgeom);
          }
       }
-      if (ip) *(ip++)=REF_INDEX_END;
-
+      if (ip) {
+         *(ip++)=REF_INDEX_END;
+         // Resize index to ritgh size
+         gset->IndexSize=ip-gset->Index;
+         gset->Index=realloc(gset->Index,gset->IndexSize*sizeof(float));
+      }
       Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i total hits\n",__func__,nt);
 
       if (tr)
@@ -1474,77 +1479,12 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
    }
 
    // Return size of index or number of hits, or 1 if nothing found
-   nt=Index?(ip-Index)/sizeof(float):nt;
+   nt=gset->Index?(ip-gset->Index)/sizeof(float):nt;
    return(nt==0?1:nt);
 #else
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(0);
 #endif
-}
-
-int Def_GridInterp(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Interp,TDef_ExtrapR Extrap,TGridSet **GSet) {
-
-   void      *pf0,*pt0,*pf1,*pt1;
-   int        k,ok=TRUE;
-   TGridSet  *gset;
-
-   if (!ToRef || !ToDef) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid destination\n",__func__);
-      return(0);
-   }
-   if (!FromRef || !FromDef) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid source\n",__func__);
-      return(0);
-   }
-
-   // Set interpolation and extrapolation mode
-   if (Interp) FromRef->Options.InterpDegree=Interp;
-   if (Extrap) FromRef->Options.ExtrapDegree=Extrap;
-   
-   if (FromRef->Options.ExtrapDegree==ER_VALUE) {
-      FromRef->Options.ExtrapValue=ToDef->NoData;
-   }
-
-#ifdef HAVE_RMN
-
-   // Same GeoRef
-   if (FromRef == ToRef) {
-      Def_CopyData(ToDef,FromDef);
-      return(TRUE);
-   }
-
-   // Loop on vertical levels
-   for(k=0;k<ToDef->NK;k++) {
-      Def_Pointer(ToDef,0,k*FSIZE2D(ToDef),pt0);
-      Def_Pointer(FromDef,0,k*FSIZE2D(FromDef),pf0);
-
-      if (ToDef->Data[1]) {
-         // Interpolation vectorielle
-         Def_Pointer(ToDef,1,k*FSIZE2D(ToDef),pt1);
-         Def_Pointer(FromDef,1,k*FSIZE2D(FromDef),pf1);
-
-         // In case of Y grid, get the speed and dir instead of wind components
-         // since grid oriented components dont mean much
-         if (ToRef->GRTYP[0]=='Y') {
-            ok=GeoRef_InterpWD(ToRef,FromRef,pt0,pt1,pf0,pf1,GSet);
-         } else {
-            ok=GeoRef_InterpUV(ToRef,FromRef,pt0,pt1,pf0,pf1,GSet);
-         }
-      } else{
-         // Interpolation scalaire
-         ok=GeoRef_Interp(ToRef,FromRef,pt0,pf0,GSet);
-      }
-
-      // Intepolate mask if need be
-      if (FromDef->Mask && ToDef->Mask) {
-         ok=GeoRef_InterpMask(ToRef,FromRef,&ToDef->Mask[k*FSIZE2D(ToDef)],&FromDef->Mask[k*FSIZE2D(FromDef)],GSet);
-      }
-   }
-
-#else
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: RMNLIB support not included\n",__func__);
-#endif   
-   return(ok);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1642,10 +1582,7 @@ int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,
  *  <ToDef>    : Description du champs destination
  *  <FromRef>  : Reference du champs source
  *  <FromDef>  : Description du champs source
- *  <Mode>     : Type d'interpolation (N=NORMALIZE, C=CONSERVATIVE hence not normalized)
  *  <Final>    : Finalisation de l'operation (Averaging en plusieurs passe)
- *  <Prec>     : Nombre de segmentation d'une cellule (1=pas de segmentation)
- *  <Index>    : liste des index , a remplir ou a utiliser
  *
  * Retour:
  *  <OK>       : ERROR=0
@@ -1654,9 +1591,10 @@ int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,
  *
  *----------------------------------------------------------------------------
 */
-int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TDef_InterpR Mode,int Final,int Prec,float *Index) {
+int Def_GridInterpConservative(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final) {
 
 #ifdef HAVE_GDAL
+   TGridSet    *gset=NULL;
    int          i,j,n,nt=0,p=0,pi,pj,idx2,idx3,wrap,k=0;
    double       val0,val1,area,x,y,z,dp;
    float       *ip=NULL;
@@ -1675,6 +1613,8 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
    // Create gridcell geometry object
    cell=OGR_G_CreateGeometry(wkbPolygon);
    ring=OGR_G_CreateGeometry(wkbLinearRing);
+ 
+   gset=GeoRef_SetGet(ToRef,FromRef);
 
    if (!ToDef->Pick)
       ToDef->Pick=OGR_G_CreateGeometry(wkbLinearRing);
@@ -1685,7 +1625,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
    }
 
    // Allocate area buffer if needed
-   if (Mode==IR_NORMALIZED_CONSERVATIVE && !ToDef->Buffer) {
+   if (GeoRef_Options.InterpDegree==IR_NORMALIZED_CONSERVATIVE && !ToDef->Buffer) {
       ToDef->Buffer=(double*)malloc(FSIZE2D(ToDef)*sizeof(double));
       if (!ToDef->Buffer) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate area buffer\n",__func__);
@@ -1700,10 +1640,10 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
          for(i=0;i<FSIZE2D(ToDef);i++) ToDef->Buffer[i]=0.0;
 
       // Do we have and index
-      if (Index && Index[0]!=REF_INDEX_EMPTY) {
+      if (gset->Index && gset->Index[0]!=REF_INDEX_EMPTY) {
 
          // As long as the file or the list is not empty
-         ip=Index;
+         ip=gset->Index;
          while(*ip!=REF_INDEX_END) {
 
             // Get the gridpoint
@@ -1737,7 +1677,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
                val0+=val1*dp;
                Def_Set(ToDef,0,idx3,val0);
 
-               if (Mode==IR_NORMALIZED_CONSERVATIVE) {
+               if (GeoRef_Options.InterpDegree==IR_NORMALIZED_CONSERVATIVE) {
                   ToDef->Buffer[idx2]+=dp;
                }
             }
@@ -1746,8 +1686,8 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
          }
       } else {
          int cnt, intersect;
-         if (Index && Index[0]==REF_INDEX_EMPTY) {
-            ip=Index;
+         if (gset->Index && gset->Index[0]==REF_INDEX_EMPTY) {
+            ip=gset->Index;
          }
 
          // Damn, we dont have the index, do the long run
@@ -1755,7 +1695,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             for(i=0;i<FromDef->NI;i++) {
 
                // Project the source gridcell into the destination
-               wrap=Def_GridCell2OGR(ring,ToRef,FromRef,i,j,Prec);
+               wrap=Def_GridCell2OGR(ring,ToRef,FromRef,i,j,GeoRef_Options.Segment);
                intersect=0;
                cnt = OGR_G_GetPointCount(ring);
                for(p=0;p<cnt;p++) {
@@ -1876,14 +1816,18 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
                }
             }
          }
-         if (ip) *(ip++)=REF_INDEX_END;
-
+         if (ip) {
+            *(ip++)=REF_INDEX_END;
+            // Resize index to ritgh size
+            gset->IndexSize=ip-gset->Index;
+            gset->Index=realloc(gset->Index,gset->IndexSize*sizeof(float));
+         }
          Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i total hits\n",__func__,nt);
       }
 
       // Finalize and reassign
       idx3=FSIZE2D(ToDef)*k;
-      if (Final && Mode==IR_NORMALIZED_CONSERVATIVE) {
+      if (Final && GeoRef_Options.InterpDegree==IR_NORMALIZED_CONSERVATIVE) {
          for(n=0;n<FSIZE2D(ToDef);n++) {
             if (ToDef->Buffer[n]!=0.0) {
                Def_Get(ToDef,0,idx3+n,val0);
@@ -1899,7 +1843,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
    OGR_G_DestroyGeometry(cell);
 
    // Return size of index or number of hits, or 1 if nothing found
-   nt=Index?(ip-Index)+1:nt;
+   nt=gset->Index?gset->IndexSize+1:nt;
    return(nt==0?1:nt);
 #else
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
@@ -1920,7 +1864,6 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
  *  <FromDef>  : Description du champs source
  *  <Table>    : Table de donnees a verifier
  *  <TmpDef>   : Description du champs de precalcul (ex: pour VARIANCE, moyenne)
- *  <Mode>     : Mode d'interpolation (IR_AVERAGE,IR_COUNT,...)
  *  <Final>    : Finalisation de l'operation (Averaging en plusieurs passe)
  *
  * Retour:
@@ -1930,7 +1873,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
  *
  *----------------------------------------------------------------------------
 */
-int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,TDef_InterpR Mode,int Final){
+int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,int Final){
 
    double        val,vx,di[4],dj[4],*fld,*aux,di0,di1,dj0,dj1,ax,ay;
    int          *acc=NULL,x0,x1,y,y0,y1;
@@ -1942,7 +1885,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid destination\n",__func__);
       return(0);
    }
-   if ((!FromRef || !FromDef) && (Mode!=IR_NOP && Mode!=IR_ACCUM && Mode!=IR_BUFFER)) {
+   if ((!FromRef || !FromDef) && (GeoRef_Options.InterpDegree!=IR_NOP && GeoRef_Options.InterpDegree!=IR_ACCUM && GeoRef_Options.InterpDegree!=IR_BUFFER)) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid source\n",__func__);
       return(0);
    }
@@ -1954,13 +1897,13 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
    nijk=FSIZE3D(ToDef);
    val=vx=0.0;
 
-   if (Mode!=IR_NOP && Mode!=IR_ACCUM && Mode!=IR_BUFFER) {
+   if (GeoRef_Options.InterpDegree!=IR_NOP && GeoRef_Options.InterpDegree!=IR_ACCUM && GeoRef_Options.InterpDegree!=IR_BUFFER) {
       if (!GeoRef_Intersect(ToRef,FromRef,&x0,&y0,&x1,&y1,0)) {
          return(1);
       }
 
       // In case of average, we need an accumulator
-      if (Mode==IR_AVERAGE || IR_VECTOR_AVERAGE || Mode==IR_VARIANCE || Mode==IR_SQUARE || Mode==IR_NORMALIZED_COUNT || Mode==IR_COUNT) {
+      if (GeoRef_Options.InterpDegree==IR_AVERAGE || IR_VECTOR_AVERAGE || GeoRef_Options.InterpDegree==IR_VARIANCE || GeoRef_Options.InterpDegree==IR_SQUARE || GeoRef_Options.InterpDegree==IR_NORMALIZED_COUNT || GeoRef_Options.InterpDegree==IR_COUNT) {
          if (!ToDef->Accum) {
             acc=ToDef->Accum=malloc(nij*sizeof(int));
             if (!ToDef->Accum) {
@@ -1979,7 +1922,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
          }
          for(n=0;n<nijk;n++) fld[n]=ToDef->NoData;
 
-        if (Mode==IR_VECTOR_AVERAGE) {
+        if (GeoRef_Options.InterpDegree==IR_VECTOR_AVERAGE) {
             aux=ToDef->Aux=malloc(nijk*sizeof(double));
             if (!ToDef->Aux) {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate auxiliary buffer\n",__func__);
@@ -2008,10 +1951,10 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
 
                // If the previous value is nodata, initialize the counter
                if (!DEFVALID(FromDef,fld[idxt])) {
-                  fld[idxt]=(Mode==IR_SUM || Mode==IR_AVERAGE|| Mode==IR_VECTOR_AVERAGE)?0.0:(Mode==IR_MAXIMUM?-HUGE_VAL:HUGE_VAL);
+                  fld[idxt]=(GeoRef_Options.InterpDegree==IR_SUM || GeoRef_Options.InterpDegree==IR_AVERAGE|| GeoRef_Options.InterpDegree==IR_VECTOR_AVERAGE)?0.0:(GeoRef_Options.InterpDegree==IR_MAXIMUM?-HUGE_VAL:HUGE_VAL);
                   if (aux) aux[idxt]=fld[idxt];
                }
-               switch(Mode) {
+               switch(GeoRef_Options.InterpDegree) {
                   case IR_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx; break;
                   case IR_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx; break;
                   case IR_SUM              : fld[idxt]+=vx;                  break;
@@ -2097,7 +2040,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
 
                // Skip if no data
                Def_Get(FromDef,0,gscan.V[x],vx);
-               if (!DEFVALID(FromDef,vx) && Mode!=IR_COUNT)
+               if (!DEFVALID(FromDef,vx) && GeoRef_Options.InterpDegree!=IR_COUNT)
                   continue;
 
                // Figure out ordered coverage
@@ -2150,11 +2093,11 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
 
                         // If the previous value is nodata, initialize the counter
                         if (!DEFVALID(ToDef,fld[idxt])) {
-                           fld[idxt]=(Mode==IR_SUM || Mode==IR_AVERAGE  || Mode==IR_VECTOR_AVERAGE || Mode==IR_VARIANCE || Mode==IR_SQUARE || Mode==IR_NORMALIZED_COUNT || Mode==IR_COUNT)?0.0:(Mode==IR_MAXIMUM?-HUGE_VAL:HUGE_VAL);
+                           fld[idxt]=(GeoRef_Options.InterpDegree==IR_SUM || GeoRef_Options.InterpDegree==IR_AVERAGE  || GeoRef_Options.InterpDegree==IR_VECTOR_AVERAGE || GeoRef_Options.InterpDegree==IR_VARIANCE || GeoRef_Options.InterpDegree==IR_SQUARE || GeoRef_Options.InterpDegree==IR_NORMALIZED_COUNT || GeoRef_Options.InterpDegree==IR_COUNT)?0.0:(GeoRef_Options.InterpDegree==IR_MAXIMUM?-HUGE_VAL:HUGE_VAL);
                            if (aux) aux[idxt]=fld[idxt];
                         }
 
-                        switch(Mode) {
+                        switch(GeoRef_Options.InterpDegree) {
                            case IR_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx;
                                                       break;
                            case IR_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx;
@@ -2174,7 +2117,7 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
                                                          t=0;
                                                          while(t<ToDef->NK) {
                                                             if (vx==Table[t]) {
-                                                               if (Mode!=IR_COUNT) acc[idxt]++;
+                                                               if (GeoRef_Options.InterpDegree!=IR_COUNT) acc[idxt]++;
                                                                fld[t*nij+idxt]+=1.0;
                                                                break;
                                                             }
@@ -2206,11 +2149,11 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
                                                          }
                                                          // Dont count missing values
                                                          if (hasvalue)
-                                                            if (Mode!=IR_COUNT) acc[idxt]++; 
+                                                            if (GeoRef_Options.InterpDegree!=IR_COUNT) acc[idxt]++; 
                                                       } else {
                                                          if (DEFVALID(FromDef,vx)) {
                                                             fld[idxt]+=vx;
-                                                            if (Mode!=IR_COUNT) acc[idxt]++;
+                                                            if (GeoRef_Options.InterpDegree!=IR_COUNT) acc[idxt]++;
                                                          }
                                                       }
                                                       break;
@@ -2233,13 +2176,13 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
    }
 
    // Finalize and reassign
-   if (Final || Mode==IR_ACCUM || Mode==IR_BUFFER) {
+   if (Final || GeoRef_Options.InterpDegree==IR_ACCUM || GeoRef_Options.InterpDegree==IR_BUFFER) {
       idxk=0;
       for(k=0;k<ToDef->NK;k++) {
          for(x=0;x<nij;x++,idxk++) {
             vx=ToDef->NoData;
 
-            switch(Mode) {
+            switch(GeoRef_Options.InterpDegree) {
                case IR_ACCUM:
                   if (acc) vx=acc[x];
                   break;
@@ -2284,4 +2227,120 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
       }
    }
    return(1);
+}
+
+/*
+GeoRef_Options->Precision
+   // Set interpolation and extrapolation mode
+   if (Interp) FromRef->Options.InterpDegree=Interp;
+   if (Extrap) FromRef->Options.ExtrapDegree=Extrap;
+   
+   if (FromRef->Options.ExtrapDegree==ER_VALUE) {
+      FromRef->Options.ExtrapValue=ToDef->NoData;
+   }
+*/
+
+int Def_GridInterp(TGeoRef *RefTo,TGeoRef *RefFrom,TDef *DefTo,TDef *DefFrom,int Final) {
+
+   int code;
+
+   if (!RefTo || !DefTo) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid destination\n",__func__);
+      return(FALSE);
+   }
+   if (!RefFrom || !DefFrom) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid source\n",__func__);
+      return(FALSE);
+   }
+
+   // Same GeoRef
+   if (GeoRef_Options.InterpDegree<IR_NOP && GeoRef_Equal(RefTo,RefFrom)) {
+      Def_CopyData(DefTo,DefFrom);
+      return(TRUE);
+   }
+
+   switch(GeoRef_Options.InterpDegree) {
+      case IR_NEAREST:
+      case IR_LINEAR:
+      case IR_CUBIC:
+         code=Def_GeoRefInterp(RefTo,RefFrom,DefTo,DefFrom,Final);
+         break;
+
+      case IR_CONSERVATIVE:
+      case IR_NORMALIZED_CONSERVATIVE:
+         // Check compatibility between source and destination
+//         if (!Def_Compat(field0->Def,field1->Def)) {
+//            field0->GRef=GeoRef_Find(GeoRef_Resize(field0->GRef,field0->Def->NI,field0->Def->NJ));
+//         }
+
+         code=Def_GridInterpConservative(RefTo,RefFrom,DefTo,DefFrom,Final);
+         break;
+
+   case IR_MAXIMUM:
+   case IR_MINIMUM:
+   case IR_SUM:
+   case IR_AVERAGE:
+   case IR_VARIANCE:
+   case IR_SQUARE:
+   case IR_NORMALIZED_COUNT:
+   case IR_COUNT:
+   case IR_VECTOR_AVERAGE:
+   case IR_NOP: 
+   case IR_ACCUM:
+   case IR_BUFFER:
+      //ToDo: add double *Table,TDef **lutDef, int lutSize, TDef *TmpDef
+      code=Def_GridInterpAverage(RefTo,DefTo,RefFrom,DefFrom,NULL,NULL,0,NULL,Final);
+     break;
+
+   case IR_SUBNEAREST:
+   case IR_SUBLINEAR:
+      // Is the internal buffer the right size ?
+      if (DefTo->Sub && DefTo->SubSample!=GeoRef_Options.Sampling) {
+         free(DefTo->Sub); DefTo->Sub=NULL;
+      }
+      DefTo->SubSample=GeoRef_Options.Sampling;
+      code=Def_GridInterpSub(RefTo,DefTo,RefFrom,DefFrom,IR_SUBNEAREST?'N':'L');
+      break;
+   }
+
+   return(code);
+}
+
+int Def_GeoRefInterp(TGeoRef *RefTo,TGeoRef *RefFrom,TDef *DefTo,TDef *DefFrom,int Final) {
+
+   void      *pf0,*pt0,*pf1,*pt1;
+   int        k,ok=TRUE;
+
+#ifdef HAVE_RMN
+   // Loop on vertical levels
+   for(k=0;k<DefTo->NK;k++) {
+      Def_Pointer(DefTo,0,k*FSIZE2D(DefTo),pt0);
+      Def_Pointer(DefFrom,0,k*FSIZE2D(DefFrom),pf0);
+
+      if (DefTo->Data[1]) {
+         // Interpolation vectorielle
+         Def_Pointer(DefTo,1,k*FSIZE2D(DefTo),pt1);
+         Def_Pointer(DefFrom,1,k*FSIZE2D(DefFrom),pf1);
+
+         // In case of Y grid, get the speed and dir instead of wind components
+         // since grid oriented components dont mean much
+         if (RefTo->GRTYP[0]=='Y') {
+            ok=GeoRef_InterpWD(RefTo,RefFrom,pt0,pt1,pf0,pf1);
+         } else {
+            ok=GeoRef_InterpUV(RefTo,RefFrom,pt0,pt1,pf0,pf1);
+         }
+      } else{
+         // Interpolation scalaire
+        ok=GeoRef_Interp(RefTo,RefFrom,pt0,pf0);
+      }
+
+      // Interpolate mask if need be
+      if (DefFrom->Mask && DefTo->Mask) {
+         ok=GeoRef_InterpMask(RefTo,RefFrom,&DefTo->Mask[k*FSIZE2D(DefTo)],&DefFrom->Mask[k*FSIZE2D(DefFrom)]);
+      }
+   }
+#else
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: RMNLIB support not included\n",__func__);
+#endif   
+   return(ok);
 }

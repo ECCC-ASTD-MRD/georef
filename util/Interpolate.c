@@ -45,6 +45,8 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    TRPNField *in,*grid,*truth,*idx;
    int  fin,fout,fgrid,ftruth,n=0;
 
+   GeoRef_Options.InterpDegree=IR_LINEAR;
+
    if ((fin=cs_fstouv(In,"STD+RND+R/O"))<0) {
       App_Log(APP_ERROR,"Problems opening input file %s\n",In);
       return(0);
@@ -99,7 +101,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    if (Etiket) strncpy(in->Head.ETIKET,Etiket,12);
 
    grid->Def->NoData=0.0;
- 
+
    while(in->Head.KEY>0 && n++<10) {
       App_Log(APP_INFO,"Processing %s %i\n",Vars[0],in->Head.KEY);
 
@@ -107,8 +109,8 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       Def_Clear(grid->Def);
      
       // Proceed with interpolation
-      if (!(Def_GridInterp(grid->GRef,grid->Def,in->GRef,in->Def,Type,ER_VALUE,&gset))) {
-         App_Log(APP_ERROR,"%s: EZSCINT interpolation problem",__func__);
+      if (!(Def_GridInterp(grid->GRef,in->GRef,grid->Def,in->Def,TRUE))) {
+         App_Log(APP_ERROR,"%s: Interpolation problem",__func__);
          return(0);    
       }
     
@@ -128,12 +130,15 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    }
    
    // Write index
-   if (gset) {      
-      if (!GeoRef_SetWrite(gset,fout)) {
+   gset=GeoRef_SetGet(grid->GRef,in->GRef);
+   if (GeoRef_SetHasIndex(gset)) {
+      App_Log(APP_DEBUG,"Saving index containing %i items\n",gset->IndexSize);
+      
+      if (!GeoRef_SetWrite(gset,fout)){
          return(0);
       }
    }
-   
+    
    cs_fstfrm(fin);
    cs_fstfrm(fout);
    cs_fstfrm(fgrid);
@@ -153,7 +158,7 @@ int main(int argc, char *argv[]) {
         { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
         { APP_CHAR,  &truth, 1,             "t", "truth",  "Truth data file to compare with" },
         { APP_CHAR,  &grid,  1,             "g", "grid",   "Grid file" },
-        { APP_CHAR,  &type,  1,             "t", "type",   "Interpolation type (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC)" },
+        { APP_CHAR,  &type,  1,             "m", "type",   "Interpolation type (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC)" },
         { APP_CHAR,  &etiket,1,             "e", "etiket", "ETIKET for destination field" },
         { APP_CHAR,  vars,  APP_LISTMAX-1,  "n", "nomvar", "List of variable to process" },
         { APP_NIL } };

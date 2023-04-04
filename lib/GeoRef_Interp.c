@@ -96,6 +96,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
    double *gdst_lats, tmp, real_un=1.0, real_j;
 
    // RefTo needed for type 4,5 and Y grid
+   // TODO: Check old type 4 and
    if ((!RefTo && (RefFrom->Options.InterpDegree==4 || RefFrom->Options.InterpDegree==5)) || !RefFrom) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid georeference\n",__func__);
       return(-1);
@@ -135,7 +136,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
                if (!GSet) {
                   f77name(ez8_rgdint_0)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Options.NoData);
                } else {
-                  if (!GSet->Index[0]) {
+                  if (GeoRef_SetEmptyIndex(GSet)) {
                      f77name(ez8_rgd_index_0)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
                   }
                   f77name(ez8_apply_0)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Options.NoData);
@@ -146,7 +147,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
                if (!GSet) {
                   f77name(ez8_irgdint_1)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,&RefFrom->Extension,&RefFrom->Options.NoData);
                } else {
-                  if (!GSet->Index[0]) {
+                  if (GeoRef_SetEmptyIndex(GSet)) {
                      f77name(ez8_irgd_index_1)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,&RefFrom->Extension);
                   }
                   f77name(ez8_apply_1)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Options.NoData);
@@ -154,7 +155,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
                break;
 
             case IR_CUBIC:
-               //TODO: NCX,NCY
+              //TODO: NCX,NCY
                f77name(ez8_irgdint_3)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->i1,&RefFrom->i2,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,RefFrom->NCX,RefFrom->NCY,&RefFrom->Extension,&RefFrom->Options.NoData);
                break;
 
@@ -189,7 +190,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
                if (!GSet) {
                   f77name(ez8_rgdint_0)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Options.NoData);
                } else {
-                  if (!GSet->Index[0]) {
+                  if (GeoRef_SetEmptyIndex(GSet)) {
                      f77name(ez8_rgd_index_0)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
                   }
                   f77name(ez8_apply_0)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Options.NoData);
@@ -200,7 +201,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
                if (!GSet) {
                   f77name(ez8_rgdint_1)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension,&RefFrom->Options.NoData);
                } else {
-                  if (!GSet->Index[0]) {
+                  if (GeoRef_SetEmptyIndex(GSet)) {
                      f77name(ez8_rgd_index_1)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
                   }
                   f77name(ez8_apply_1)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Options.NoData);
@@ -211,7 +212,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
                if (!GSet) {
                   f77name(ez8_rgdint_3)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension,&RefFrom->Options.NoData);
                } else {
-                  if (!GSet->Index[0]) {
+                  if (GeoRef_SetEmptyIndex(GSet)) {
                      f77name(ez8_rgd_index_3)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
                   }
                   f77name(ez8_apply_3)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Options.NoData);
@@ -240,7 +241,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
    return(0);
 }
 
-int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,TGridSet **GSet) {
+int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) {
 
    TGridSet   *gset=NULL;
    TApp_Timer *int_timer = App_TimerCreate();
@@ -264,9 +265,9 @@ int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,TGridSe
 
    if (RefFrom->NbSub > 0 || RefTo->NbSub > 0) {
       // get the subgrids and interpolate accordingly
-      return(GeoRef_InterpYY(RefTo,RefFrom,zout,zin,GSet));
+      return(GeoRef_InterpYY(RefTo,RefFrom,zout,zin));
    } else {
-      gset=GeoRef_SetGet(RefTo,RefFrom,GSet);
+      gset=GeoRef_SetGet(RefTo,RefFrom);
 
       if (RefFrom->Type&GRID_YINVERT) {
          lzin = (float *)malloc(RefFrom->NX * RefFrom->NY * sizeof(float));
@@ -309,7 +310,7 @@ int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,TGridSe
    return(ok);
 }
 
-int GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,float *zout,float *zin,TGridSet **GSet) {
+int GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,float *zout,float *zin) {
 
    TGridSet *gset=NULL;
    TGeoRef *yin_gdin, *yan_gdin, *yin_gdout, *yan_gdout;
@@ -324,7 +325,7 @@ int GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,float *zout,float *zin,TGri
    
    yyin=0; yyout=0; 
 
-   gset=GeoRef_SetGet(RefTo,RefFrom,GSet);
+   gset=GeoRef_SetGet(RefTo,RefFrom);
 
    // Setup for input grid
    if (RefFrom->NbSub > 0) {
@@ -349,7 +350,7 @@ int GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,float *zout,float *zin,TGri
 
    // Interp input one grid to yygrid - no masking needed
    if (yyin == 0 && yyout == 1) {
-      if (GeoRef_Interp(yin_gdout,RefFrom,zout,zin,NULL) && GeoRef_Interp(yan_gdout,RefFrom,&zout[ni*nj],zin,NULL)) {
+      if (GeoRef_Interp(yin_gdout,RefFrom,zout,zin) && GeoRef_Interp(yan_gdout,RefFrom,&zout[ni*nj],zin)) {
          return(TRUE);
       } else {
          return(FALSE);
@@ -358,10 +359,10 @@ int GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,float *zout,float *zin,TGri
 
    /* check if one input sub grid is identical to dest sub grid or dest single grid */
    if (yin_gdin == RefTo) {
-      return(GeoRef_Interp(RefTo,yin_gdin,zout,zin,NULL));
+      return(GeoRef_Interp(RefTo,yin_gdin,zout,zin));
    }
    if (yan_gdin == RefTo) {
-      return(GeoRef_Interp(RefTo,yan_gdin,zout,&zin[(yin_gdin->NX)*(yin_gdin->NY)],NULL));
+      return(GeoRef_Interp(RefTo,yan_gdin,zout,&zin[(yin_gdin->NX)*(yin_gdin->NY)]));
    }
 
    /* User specifies to use 1 subgrid for interpolation ezsetopt(USE_1SUBGRID) */
@@ -381,12 +382,12 @@ int GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,float *zout,float *zin,TGri
       }
       // Use yin input grid
       if (RefFrom->Options.SubGrid==1) { 
-         return(GeoRef_Interp(yin_gdout,yin_gdin,zout,zin,NULL));
+         return(GeoRef_Interp(yin_gdout,yin_gdin,zout,zin));
       }
 
       // Use yang input grid
       if (RefFrom->Options.SubGrid==2) { 
-         return(GeoRef_Interp(yin_gdout,yan_gdin,zout,&zin[(yin_gdin->NX)*(yin_gdin->NY)],NULL));
+         return(GeoRef_Interp(yin_gdout,yan_gdin,zout,&zin[(yin_gdin->NX)*(yin_gdin->NY)]));
       }
    }
 

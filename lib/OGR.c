@@ -61,9 +61,7 @@ Vect3d* OGM_GetVect3d(unsigned int Size,unsigned int No) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not allocate GPC buffers\n",__func__);
          return(NULL);
       }
-#ifdef DEBUG
-         Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Increasing size to %i\n",__func__,OGM_GeomNb);
-#endif
+      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Increasing size to %i\n",__func__,OGM_GeomNb);
    }
    return(No==2?(Vect3d*)OGM_Ptr:OGM_Geom[No]);
 }

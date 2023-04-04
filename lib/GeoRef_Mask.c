@@ -21,7 +21,7 @@
 #include "App.h"
 #include "GeoRef.h"
 
-int GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskIn,TGridSet **GSet) {
+int GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskIn) {
  
    TGridSet *gset=NULL;
    if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
@@ -29,7 +29,7 @@ int GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskI
       return(FALSE);
    }
 
-   gset=GeoRef_SetGet(RefTo,RefFrom,GSet);
+   gset=GeoRef_SetGet(RefTo,RefFrom);
 
    if (RefFrom->GRTYP[0] == 'Y') {
       memcpy(MaskOut,gset->mask,RefTo->NX*RefTo->NY*sizeof(int));
@@ -49,7 +49,7 @@ int GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int *MaskOut,int *MaskIn) {
       return(-1);
    }
 
-   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
+   gset=GeoRef_SetGet(RefTo,RefFrom);
 
    npts_in  = RefFrom->NX*RefFrom->NY;
    npts_out = RefTo->NX*RefTo->NY;
@@ -112,7 +112,7 @@ int GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,int ni,int nj,float *mask
  
    RefFrom->Options.ExtrapValue=1.0;
    RefFrom->Options.ExtrapDegree=ER_VALUE;
-   GeoRef_Interp(RefTo,RefFrom->mymaskgrid,maskout,yin_fld,NULL);
+   GeoRef_Interp(RefTo,RefFrom->mymaskgrid,maskout,yin_fld);
  
    // Masking is done,reset original interp options
    memcpy(&RefFrom->Options,&opt,sizeof(TGeoOptions));

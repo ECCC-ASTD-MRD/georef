@@ -10,11 +10,8 @@ URL        : https://gitlab.science.gc.ca/RPN-SI/libgeoref
 #    =,<,<=,>,>= : Version rules
 #    ~           : Optional
 
-App   ~= 0.1.0
-rmn  ~>= 20.0.0
+App    ~= 0.1.0
+rmn   ~>= 20.0.0
 vgrid ~>= 6.5.0
-GDAL ~>= 2.0
-
-
-#Build: \rm -f -r *; cmake -DCMAKE_INSTALL_PREFIX=$SSM_DEV/workspace/GeoRef -DApp_ROOT=$SSM_DEV/workspace/App -Drmn_ROOT=$SSM_DEV/workspace/rmn -Dvgrid_ROOT=$SSM_DEV/workspace/vgrid ../
+GDAL  ~>= 2.0.0
 

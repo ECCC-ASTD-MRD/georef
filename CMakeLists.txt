@@ -32,18 +32,28 @@ if(${CMAKE_SYSTEM_PROCESSOR} EQUAL x86_64)
 endif()
 add_compile_definitions(HAVE_GPC)
 
-#find_package(MPI REQUIRED)
+find_package(MPI REQUIRED)
 #set(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
 #set(CMAKE_C_COMPILER ${MPI_C_COMPILER})
+add_compile_definitions(HAVE_MPI)
 
-find_package(rmn ${rmn_REQ_VERSION} REQUIRED COMPONENTS ompi)
+find_package(rmn ${rmn_REQ_VERSION} REQUIRED)
 find_package(vgrid ${vgrid_REQ_VERSION} REQUIRED)
 
 #TODO: might have to do this - type gdal-config >/dev/null 2>&1 && CMAKE_COMP_FLAGS="$CMAKE_COMP_FLAGS -DGDAL_ROOT=`gdal-config --prefix`" 2>/dev/null
-find_package(GDAL)
+#----- Look for non system default gdal
+execute_process(
+   COMMAND gdal-config --prefix
+   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+   RESULT_VARIABLE GDAL_RESULT
+   OUTPUT_VARIABLE GDAL_ROOT
+   ERROR_VARIABLE GDAL_ERROR
+   OUTPUT_STRIP_TRAILING_WHITESPACE
+   ERROR_STRIP_TRAILING_WHITESPACE
+)
+find_package(GDAL ${GDAL_REQ_VERSION})
 if(GDAL_FOUND)
-   add_compile_definitions(HAVE_GDAL)
-   include_directories(${GDAL_INCLUDE_DIR})
+   target_compile_definitions(GDAL::GDAL INTERFACE HAVE_GDAL)
 endif()
 
 find_package(OpenMP)
@@ -54,6 +64,7 @@ endif()
 
 add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ _GNU_SOURCE)
 
+link_libraries("-Wl,--disable-new-dtags")
 add_subdirectory(lib lib)
 add_subdirectory(util util)
 #   add_subdirectory(test test)

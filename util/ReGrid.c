@@ -42,10 +42,10 @@
 int ReGrid(char *In,char *Out,char *Grid,char **Vars) {
 
 #ifdef HAVE_RMN
+   TGridSet  *gset;
    TRPNField *in,*grid,*idx;
    int  fin,fout,fgrid;
-   float *index=NULL;
-   
+
   if ((fin=cs_fstouv(In,"STD+RND+R/O"))<0) {
       App_Log(APP_ERROR,"Problems opening input file %s\n",In);
       return(0);
@@ -82,10 +82,6 @@ int ReGrid(char *In,char *Out,char *Grid,char **Vars) {
    idx->Head.GRTYP[0]='X';
    idx->Head.NBITS=32;
    idx->Head.DATYP=5;
-   index=(float*)idx->Def->Data[0];
-
-   // Initialize index to empty
-   index[0]=REF_INDEX_EMPTY;
    grid->Def->NoData=0.0;
  
    while(in->Head.KEY>0) {
@@ -95,7 +91,7 @@ int ReGrid(char *In,char *Out,char *Grid,char **Vars) {
       Def_Clear(grid->Def);
      
       // Proceed with interpolation
-      if (!(idx->Head.NI=Def_GridInterpConservative(grid->GRef,grid->Def,in->GRef,in->Def,IR_CONSERVATIVE,TRUE,1,index))) {
+      if (!(idx->Head.NI=Def_GridInterpConservative(grid->GRef,in->GRef,grid->Def,in->Def,TRUE))) {
          return(0);    
       }
       
@@ -111,10 +107,11 @@ int ReGrid(char *In,char *Out,char *Grid,char **Vars) {
    }
    
    // Write index
-   if (index[0]!=REF_INDEX_EMPTY) {
-      App_Log(APP_DEBUG,"Saving index containing %i items\n",idx->Head.NI);
+   gset=GeoRef_SetGet(grid->GRef,in->GRef);
+   if (GeoRef_SetHasIndex(gset)) {
+      App_Log(APP_DEBUG,"Saving index containing %i items\n",gset->IndexSize);
       
-      if (!RPN_FieldWrite(fout,idx)) {
+      if (!GeoRef_SetWrite(gset,fout)){
          return(0);
       }
    }

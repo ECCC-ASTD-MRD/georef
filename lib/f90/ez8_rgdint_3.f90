@@ -99,7 +99,7 @@
          implicit none
    
          integer       npts,ni,j1,j2,wrap
-         real(kind=4)  index(npts,6)
+         real(kind=4)  index(npts,10)
          real(kind=8)  px(npts),py(npts)
          real(kind=8)  dx,dy,y1,y2,y3,y4
          integer       n,i,j

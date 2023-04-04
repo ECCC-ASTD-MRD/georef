@@ -284,23 +284,27 @@ int GeoRef_SetZoneDefine(TGridSet *GSet) {
 */
 int GeoRef_SetCalcXY(TGridSet *GSet) {
 
-   int size=0;
+   int size=0,mult=0;
 
-   if (GSet && !GSet->Index) {
+   if (GSet) {
       size=GSet->RefTo->NX*GSet->RefTo->NY;
-      GSet->IndexDegree=GSet->RefFrom->Options.InterpDegree;
-      GSet->Index = (float*)calloc((GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1))*size,sizeof(float));
-      GSet->X = (double*)calloc(size*2,sizeof(double));
-      GSet->Y=&GSet->X[size];
 
-      GeoRef_LL2XY(GSet->RefFrom,GSet->X,GSet->Y,GSet->RefTo->Lat,GSet->RefTo->Lon,size,TRUE);
+      if (!GSet->X) {
+
+         GSet->X = (double*)calloc(size*2,sizeof(double));
+         GSet->Y=&GSet->X[size];
+
+         GeoRef_LL2XY(GSet->RefFrom,GSet->X,GSet->Y,GSet->RefTo->Lat,GSet->RefTo->Lon,size,TRUE);
+      }
+
+      if (!GSet->Index || GSet->IndexDegree!=GSet->RefFrom->Options.InterpDegree) {   
+         //TODO: better conservative method
+         GSet->IndexDegree=GSet->RefFrom->Options.InterpDegree;
+         mult=((GSet->IndexDegree==IR_CONSERVATIVE || GSet->IndexDegree==IR_NORMALIZED_CONSERVATIVE)?1024:(GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1)));          
+         GSet->Index = (float*)realloc(GSet->Index,mult*size*sizeof(float));
+         GSet->Index[0]=REF_INDEX_EMPTY;
+      }
    }
-
-   // Reset index
-   if (GSet->IndexDegree!=GSet->RefFrom->Options.InterpDegree) {
-      GSet->Index[0]=0;
-   }
-
    return(0);
 }
 
@@ -470,57 +474,65 @@ void GeoRef_SetFree(TGridSet* GSet) {
  * @brief  Reads a gridset definition and index from a file
  * @author Jean-Philippe Gauthier
  * @date   January 2020
- *    @param[in]  FID       FSTD file identifier
- *    @param[in]  GSet      Gridset pointer
- *    @param[in]  Grom      Destination grid type
- *    @param[in]  GTo       Source grid type
- *    @param[in]  Level     Interpolation level (2=bilinear,3=bicubic,-1=any)
+ *    @param[in]  RefTo      Source grid type
+ *    @param[in]  RefFrom    Destination grid type
+ *    @param[in]  InterpType Interpolation level (2=bilinear,3=bicubic,-1=any)
+ *    @param[in]  FID        FSTD file identifier
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetRead(int FID,TGridSet *GSet,char GFrom,char GTo,int Level){
+TGridSet* GeoRef_SetAdd(TGeoRef* RefTo,TGeoRef* RefFrom,int InterpType,int FID) {
 
+   TGridSet  *gset=NULL;
    TRPNHeader h;
    char       typvar[2];
+   
+   if (!(gset=GeoRef_SetGet(RefTo,RefFrom))) {
+      return(NULL);
+   }
+   
+   if (FID) {
 
-   typvar[0]=GFrom;
-   typvar[1]=GTo;
+      typvar[0]=RefTo->GRTYP[0];
+      typvar[1]=RefFrom->GRTYP[0];
 
-   // Rechercher et lire l'information de l'enregistrement specifie
-   if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,Level,typvar,"####"))<0) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset index field (c_fstinf failed)\n",__func__);
-      return(FALSE);
-   }
-   GSet->IndexDegree=(TDef_InterpR)Level;
-   GSet->Index=(float*)malloc(h.NI*h.NJ*sizeof(double));
+      // Rechercher et lire l'information de l'enregistrement specifie
+      if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,InterpType,typvar,"####"))<0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset index field (c_fstinf failed)\n",__func__);
+         return(NULL);
+      }
+      //TODO: Level should have been saved in the record
+      gset->IndexDegree=(TDef_InterpR)InterpType;
+      gset->Index=(float*)malloc(h.NI*h.NJ*sizeof(double));
 
-   if (cs_fstluk(GSet->Index,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not read gridset index field (c_fstlir failed)\n",__func__);
-      return(FALSE);
-   }
+      if (cs_fstluk(gset->Index,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not read gridset index field (c_fstlir failed)\n",__func__);
+         return(NULL);
+      }
 
-   if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,Level,typvar,"#>>#"))<0) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset longitude field (c_fstinf failed)\n",__func__);
-      return(FALSE);
-   }
-   GSet->X=(double*)malloc(2*h.NI*sizeof(double));
-   GSet->Y=&GSet->X[h.NI];
+      if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,InterpType,typvar,"#>>#"))<0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset longitude field (c_fstinf failed)\n",__func__);
+         return(NULL);
+      }
+      gset->X=(double*)malloc(2*h.NI*sizeof(double));
+      gset->Y=&gset->X[h.NI];
 
-   c_fst_data_length(8);
-   if (cs_fstluk(GSet->X,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not read gridset longitude (c_fstlir failed)\n",__func__);
-      return(FALSE);
+      c_fst_data_length(8);
+      if (cs_fstluk(gset->X,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not read gridset longitude (c_fstlir failed)\n",__func__);
+         return(NULL);
+      }
+      if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,InterpType,typvar,"#^^#"))<0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset laitude field (c_fstinf failed)\n",__func__);
+         return(NULL);
+      }
+      c_fst_data_length(8);
+      if (cs_fstluk(gset->Y,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not read gridset latitude field (c_fstlir failed)\n",__func__);
+         return(NULL);
+      }
    }
-   if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,Level,typvar,"#^^#"))<0) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset laitude field (c_fstinf failed)\n",__func__);
-      return(FALSE);
-   }
-   c_fst_data_length(8);
-   if (cs_fstluk(GSet->Y,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not read gridset latitude field (c_fstlir failed)\n",__func__);
-      return(FALSE);
-   }
-    return(TRUE);
+   return(gset);
 }
 
 /*----------------------------------------------------------------------------
@@ -536,7 +548,8 @@ int GeoRef_SetWrite(TGridSet *GSet,int FID){
 
    int size=0;
 
-   if (GSet && GSet->Index) {
+   if (GSet && GSet->Index && GSet->IndexSize) {
+Lib_Log(APP_LIBGEOREF,APP_DEBUG,"iniini\n");
       size=GSet->RefTo->NX*GSet->RefTo->NY;
       Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s:  Writing index (%ix%i)\n",__func__,size,GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1));
 
@@ -550,10 +563,11 @@ int GeoRef_SetWrite(TGridSet *GSet,int FID){
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
          return(FALSE);
       }
-      if (cs_fstecr(GSet->Index,-32,FID,0,0,0,size,GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1),1,0,0,GSet->IndexDegree,GSet->G2G,"####","GRIDSET","X",0,0,0,0,5,FALSE)<0) {
+      if (cs_fstecr(GSet->Index,-32,FID,0,0,0,GSet->IndexSize,GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1),1,0,0,GSet->IndexDegree,GSet->G2G,"####","GRIDSET","X",0,0,0,0,5,FALSE)<0) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
          return(FALSE);
       }
+Lib_Log(APP_LIBGEOREF,APP_DEBUG,"outututut\n");
    }
    return(TRUE);
 }
@@ -568,7 +582,7 @@ int GeoRef_SetWrite(TGridSet *GSet,int FID){
  *
  *    @return               Found gridset pointer, NULL on error
  */
-TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGridSet** GSet) {
+TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom) {
 
    TGridSet* gset=NULL;
    int i;
@@ -612,22 +626,6 @@ TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGridSet** GSet) {
    RefTo->Sets[i].G2G[0]=RefFrom->GRTYP[0];
    RefTo->Sets[i].G2G[1]=RefTo->GRTYP[0];
    
-   // If a known grid set is passed in, use it
-   if (GSet) {
-      if (gset=*GSet) {
-         if (gset->G2G[0]!=RefTo->Sets[i].G2G[0] || gset->G2G[1]!=RefTo->Sets[i].G2G[1]) {
-            Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Invalid grid set %c%c!=%c%c\n",__func__,gset->G2G[0],gset->G2G[1],RefTo->Sets[i].G2G[0],RefTo->Sets[i].G2G[1]);
-         } else {
-            RefTo->Sets[i].Index=gset->Index;
-            RefTo->Sets[i].IndexDegree=gset->IndexDegree;
-            RefTo->Sets[i].X=gset->X;
-            RefTo->Sets[i].Y=gset->Y;
-         }
-      } else {
-         *GSet=&RefTo->Sets[i];
-      }
-   }
-
    Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RefFrom : %p RefTo: %p\n",__func__,RefFrom,RefTo);
 
    return(&RefTo->Sets[i]);
