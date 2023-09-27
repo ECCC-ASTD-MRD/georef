@@ -38,7 +38,7 @@ find_package(MPI REQUIRED)
 add_compile_definitions(HAVE_MPI)
 
 find_package(rmn ${rmn_REQ_VERSION} REQUIRED)
-find_package(vgrid ${vgrid_REQ_VERSION} REQUIRED)
+#find_package(vgrid ${vgrid_REQ_VERSION} REQUIRED)
 
 #TODO: might have to do this - type gdal-config >/dev/null 2>&1 && CMAKE_COMP_FLAGS="$CMAKE_COMP_FLAGS -DGDAL_ROOT=`gdal-config --prefix`" 2>/dev/null
 #----- Look for non system default gdal
@@ -76,6 +76,10 @@ install(PROGRAMS ${CMAKE_BINARY_DIR}/${NAME}-config DESTINATION bin)
 set(INCLUDE_INSTALL_DIR include)
 set(LIB_INSTALL_DIR     lib)
 set(CONFIG_INSTALL_DIR  "${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}")
+
+install(EXPORT georef-shared-targets
+    NAMESPACE georef::
+    DESTINATION ${CONFIG_INSTALL_DIR})
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
