@@ -1,36 +1,4 @@
-
-/*==============================================================================
- * Environnement Canada
- * Centre Meteorologique Canadian
- * 2100 Trans-Canadienne
- * Dorval, Quebec
- *
- * Projet       : Fonctions et definitions relatives aux fichiers standards et rmnlib
- * Fichier      : GeoRef_Type_Z.h
- * Creation     : October 2020 - J.P. Gauthier
- *
- * Description:
- *
- * License:
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation,
- *    version 2.1 of the License.
- *
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *    Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public
- *    License along with this library; if not, write to the
- *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- *    Boston, MA 02111-1307, USA.
- *
- *==============================================================================
- */
-
-#include "App.h"
+#include <App.h>
 #include "GeoRef.h"
 
 /*----------------------------------------------------------------------------
@@ -59,7 +27,7 @@ int GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
    #pragma omp parallel for default(none) private(i,indx,indy,delxx,delyy) shared(Nb,Ref,X,Y,Lat,Lon,tmpx,tmpy,ytmp)
    for (i=0; i < Nb; i++) {
       indx = (int)X[i]-1;
-      ytmp[i] = (Ref->RPNHead.IG[X_IG2]==1)?Ref->NY+1.0 - Y[i]:Y[i];
+      ytmp[i] = (Ref->RPNHead.ig2==1)?Ref->NY+1.0 - Y[i]:Y[i];
       
       indy = (int)ytmp[i]-1;
       indx = indx < 0 ? 0 : indx;
@@ -74,21 +42,21 @@ int GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
       tmpy[i] = Ref->AY[indy] + ((ytmp[i]-1.0-indy)*delyy);
    }
 
-   switch (Ref->RPNHead.GRREF[0]) {
+   switch (Ref->RPNHeadExt.grref[0]) {
       case 'E':
-         f77name(cigaxg)(Ref->RPNHead.GRREF,&xlat1,&xlon1,&xlat2,&xlon2,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
-         GeoRef_RotateInvertXY(Lat,Lon,tmpx,tmpy,Nb,Ref->RPNHead.XGREF[X_LAT1],Ref->RPNHead.XGREF[X_LON1],Ref->RPNHead.XGREF[X_LAT2],Ref->RPNHead.XGREF[X_LON2]);
+         f77name(cigaxg)(Ref->RPNHeadExt.grref,&xlat1,&xlon1,&xlat2,&xlon2,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
+         GeoRef_RotateInvertXY(Lat,Lon,tmpx,tmpy,Nb,Ref->RPNHeadExt.igref1,Ref->RPNHeadExt.igref2,Ref->RPNHeadExt.igref3,Ref->RPNHeadExt.igref4);
          break;
 
       case 'S':
       case 'N':
-         f77name(ez8_vllfxy)(Lat,Lon,tmpx,tmpy,&Nb,&un,&Ref->RPNHead.XGREF[X_D60],&Ref->RPNHead.XGREF[X_DGRW],&Ref->RPNHead.XGREF[X_PI],&Ref->RPNHead.XGREF[X_PJ],&Ref->Hemi);
+         f77name(ez8_vllfxy)(Lat,Lon,tmpx,tmpy,&Nb,&un,&Ref->RPNHeadExt.xgref3,&Ref->RPNHeadExt.xgref4,&Ref->RPNHeadExt.xgref1,&Ref->RPNHeadExt.xgref2,&Ref->Hemi);
          break;
 
       case 'L':
          for (i=0; i < Nb; i++) {
-            Lat[i] = (tmpy[i])*Ref->RPNHead.XGREF[X_DLAT]+Ref->RPNHead.XGREF[X_SWLAT];
-            Lon[i] = (tmpx[i])*Ref->RPNHead.XGREF[X_DLON]+Ref->RPNHead.XGREF[X_SWLON];
+            Lat[i] = (tmpy[i])*Ref->RPNHeadExt.xgref3+Ref->RPNHeadExt.xgref1;
+            Lon[i] = (tmpx[i])*Ref->RPNHeadExt.xgref4+Ref->RPNHeadExt.xgref2;
          }
          break;
 
@@ -97,7 +65,7 @@ int GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
          break;
 
       default:
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Undefined reference grid type: %s\n",__func__,Ref->RPNHead.GRREF[0]);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Undefined reference grid type: %s\n",__func__,Ref->RPNHeadExt.grref[0]);
          free(tmpx);
          return(1);
          break;
@@ -143,10 +111,10 @@ int GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
    } 
 
    if (Ref->GRTYP[0] == 'G') {
-      if (Ref->RPNHead.IG[X_IG1] == 1) {
+      if (Ref->RPNHead.ig1 == 1) {
          for (j=0; j < Nb; j++) Y[j] = Y[j] - Ref->j2;
       }
-      if (Ref->RPNHead.IG[X_IG2] == 1)  {
+      if (Ref->RPNHead.ig2 == 1)  {
          for (j=0; j < Nb; j++) Y[j] = Ref->j2 +1.0 - Y[j];
       }
       // TODO: From GeoRef_RPN Fix for G grid 0-360 1/5 gridpoint problem
@@ -276,7 +244,6 @@ void GEM_hgrid4(double *F_xgi_8,double *F_ygi_8,int F_Grd_ni,int F_Grd_nj,float 
 */
 TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2) {
 
-#ifdef HAVE_RMN
    int    bsc_base,bsc_ext1,extension;
    double x0,x1,y0,y1;
 
@@ -284,8 +251,8 @@ TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR
       return(NULL);
    }
  
-   f77name(cxgaig)("E",&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4],&XLat1,&XLon1,&XLat2,&XLon2);
-   f77name(cigaxg)("E",&XLat1,&XLon1,&XLat2,&XLon2,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
+   f77name(cxgaig)("E",&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,&XLat1,&XLon1,&XLat2,&XLon2,1);
+   f77name(cigaxg)("E",&XLat1,&XLon1,&XLat2,&XLon2,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
    
    GEM_grid_param(&bsc_base,&bsc_ext1,&extension,MaxCFL,&LonR,&LatR,&NI,&NJ,&DX,&DY,&x0,&y0,&x1,&y1,-1,FALSE);
  
@@ -297,8 +264,7 @@ TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR
    // f77name(set_gemhgrid4)(Ref->AX,Ref->AY,&NI,&NJ,&DX,&DY,&x0,&x1,&y0,&y1,FALSE);
    GEM_hgrid4(Ref->AX,Ref->AY,NI,NJ,&DX,&DY,x0,x1,y0,y1,FALSE);
            
-   GeoRef_Define(Ref,NI,NJ,"Z","E",Ref->RPNHead.IG[X_IG1],Ref->RPNHead.IG[X_IG2],Ref->RPNHead.IG[X_IG3],Ref->RPNHead.IG[X_IG4],Ref->AX,Ref->AY);
- #endif
+   GeoRef_Define(Ref,NI,NJ,"Z","E",Ref->RPNHead.ig1,Ref->RPNHead.ig2,Ref->RPNHead.ig3,Ref->RPNHead.ig4,Ref->AX,Ref->AY);
   
    return(Ref);
 }

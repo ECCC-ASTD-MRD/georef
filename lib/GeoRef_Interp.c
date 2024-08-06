@@ -1,30 +1,10 @@
-/* RMNLIB - Library of useful routines for C and FORTRAN programming
- * Copyright (C) 1975-2001  Division de Recherche en Prevision Numerique
- *                          Environnement Canada
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation,
- * version 2.1 of the License.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
- */
-
-#include "App.h"
+#include <App.h>
 #include "GeoRef.h"
 
 int c_gd_isgridrotated(TGeoRef *gr) {
 
-   if (gr->RPNHead.GRREF[0] == 'E') {
-       if (fabs(gr->RPNHead.XGREF[X_LAT1]-gr->RPNHead.XGREF[X_LAT2]) < 0.001)
+   if (gr->RPNHeadExt.grref[0] == 'E') {
+       if (fabs(gr->RPNHeadExt.igref1-gr->RPNHeadExt.igref3) < 0.001)
          return(0); // non rotated
       else
          return(1); // rotated
@@ -45,9 +25,9 @@ int c_gdcompatible_grids(TGeoRef *RefFrom, TGeoRef* RefTo) {
 
       // This is a fix from previous version that was never reached
       case 'Z':
-         if (RefFrom->RPNHead.GRREF[0] == 'L')
+         if (RefFrom->RPNHeadExt.grref[0] == 'L')
             return(0);
-         else if (RefFrom->RPNHead.GRREF[0] == 'E')
+         else if (RefFrom->RPNHeadExt.grref[0] == 'E')
             if (!c_gd_isgridrotated(RefFrom))
                return(0);
             else
@@ -96,7 +76,8 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
    double *gdst_lats, tmp, real_un=1.0, real_j;
 
    // RefTo needed for type 4,5 and Y grid
-   // TODO: Check old type 4 and
+   // TODO: Check old type 4 and,
+   // TODO: need to use neew types (do not forget subllinear and subnearest)
    if ((!RefTo && (RefFrom->Options.InterpDegree==4 || RefFrom->Options.InterpDegree==5)) || !RefFrom) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid georeference\n",__func__);
       return(-1);

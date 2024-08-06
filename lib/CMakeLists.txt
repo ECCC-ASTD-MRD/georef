@@ -24,9 +24,9 @@ if (rmn_FOUND)
    target_link_libraries(georef rmn::rmn-ompi)
 endif()
 
-#if (vgrid_FOUND)
-#   target_link_libraries(georef vgrid::vgrid)
-#endif()
+if (vgrid_FOUND)
+   target_link_libraries(georef vgrid::vgrid)
+endif()
 
 #target_link_libraries(georef ${LIBXML2_LIBRARIES})
 if(GDAL_FOUND)
@@ -34,7 +34,6 @@ if(GDAL_FOUND)
 endif()
 
 list(APPEND shared_targets georef)
-#list(APPEND static_targets rmn-ompi)
 
 install(TARGETS ${shared_targets}
    EXPORT georef-shared-targets

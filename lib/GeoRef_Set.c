@@ -1,35 +1,4 @@
-/*==============================================================================
- * Environnement Canada
- * Centre Meteorologique Canadian
- * 2100 Trans-Canadienne
- * Dorval, Quebec
- *
- * Projet       : Fonctions et definitions relatives aux fichiers standards et rmnlib
- * Fichier      : GeoRef_Set.c
- * Creation     : Avril 2006 - J.P. Gauthier
- *
- * Description:
- *
- * License:
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation,
- *    version 2.1 of the License.
- *
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *    Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public
- *    License along with this library; if not, write to the
- *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- *    Boston, MA 02111-1307, USA.
- *
- *==============================================================================
- */
-
-#include "App.h"
+#include <App.h>
 #include "GeoRef.h"
 
 /*----------------------------------------------------------------------------
@@ -75,7 +44,7 @@ int GeoRef_SetZoneDefinePole(TGridSet *GSet,int Zone,int NbPts) {
    tmpidx = (int*)malloc(NbPts*sizeof(int));
   
    zone->npts = 0;
-   if (GSet->RefFrom->GRTYP[0] == 'Z' && GSet->RefFrom->RPNHead.GRREF[0] == 'E') {
+   if (GSet->RefFrom->GRTYP[0] == 'Z' && GSet->RefFrom->RPNHeadExt.grref[0] == 'E') {
       xpole = 0.5 * GSet->RefFrom->NX;
       ypole = (Zone==NORTH)?GSet->RefFrom->NY+0.5:0.5;
    } else {
@@ -240,7 +209,7 @@ int GeoRef_SetZoneDefine(TGridSet *GSet) {
       case '#':
       case 'Z':
       case 'Y':
-         switch(GSet->RefFrom->RPNHead.GRREF[0]) {
+         switch(GSet->RefFrom->RPNHeadExt.grref[0]) {
 	          case 'N':
 	          case 'S':
 	          case 'L':
@@ -472,109 +441,129 @@ void GeoRef_SetFree(TGridSet* GSet) {
 
 /*----------------------------------------------------------------------------
  * @brief  Reads a gridset definition and index from a file
- * @author Jean-Philippe Gauthier
  * @date   January 2020
  *    @param[in]  RefTo      Source grid type
  *    @param[in]  RefFrom    Destination grid type
  *    @param[in]  InterpType Interpolation level (2=bilinear,3=bicubic,-1=any)
- *    @param[in]  FID        FSTD file identifier
+ *    @param[in]  File       FSTD file pointer
  *
  *    @return             Error code (0=ok)
 */
-TGridSet* GeoRef_SetAdd(TGeoRef* RefTo,TGeoRef* RefFrom,int InterpType,int FID) {
+TGridSet* GeoRef_SetAdd(TGeoRef* RefTo,TGeoRef* RefFrom,int InterpType,fst_file *File) {
 
    TGridSet  *gset=NULL;
-   TRPNHeader h;
+   fst_record record,crit=default_fst_record;
    char       typvar[2];
    
    if (!(gset=GeoRef_SetGet(RefTo,RefFrom))) {
       return(NULL);
    }
    
-   if (FID) {
+   if (File) {
 
       typvar[0]=RefTo->GRTYP[0];
       typvar[1]=RefFrom->GRTYP[0];
 
       // Rechercher et lire l'information de l'enregistrement specifie
-      if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,InterpType,typvar,"####"))<0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset index field (c_fstinf failed)\n",__func__);
+      strncpy(crit.etiket,"GRIDSET",FST_ETIKET_LEN);
+      strncpy(crit.nomvar,"####",FST_NOMVAR_LEN);
+      strncpy(crit.typvar,typvar,FST_TYPVAR_LEN);
+      crit.ip3=InterpType;
+      if (fst24_read(File,&crit,NULL,&record)!=TRUE) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset index field (fst24_read failed)\n",__func__);
          return(NULL);
       }
       //TODO: Level should have been saved in the record
-      gset->IndexDegree=(TDef_InterpR)InterpType;
-      gset->Index=(float*)malloc(h.NI*h.NJ*sizeof(double));
+      gset->IndexDegree=(TRef_InterpR)InterpType;
+      gset->Index=(float*)record.data;
+      record.data=NULL;
+   
+      strncpy(crit.nomvar,"#>>#",FST_NOMVAR_LEN);
+      if (fst24_read(File,&crit,NULL,&record)!=TRUE) {
+          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset longitude field (fst24_read failed)\n",__func__);
+         return(NULL);
+      }
+      gset->X=record.data;
+      record.data=NULL;
 
-      if (cs_fstluk(gset->Index,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not read gridset index field (c_fstlir failed)\n",__func__);
+      strncpy(crit.nomvar,"#^^#",FST_NOMVAR_LEN);
+      if (fst24_read(File,&crit,NULL,&record)!=TRUE) {
+          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset longitude field (fst24_read failed)\n",__func__);
          return(NULL);
       }
-
-      if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,InterpType,typvar,"#>>#"))<0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset longitude field (c_fstinf failed)\n",__func__);
-         return(NULL);
-      }
-      gset->X=(double*)malloc(2*h.NI*sizeof(double));
-      gset->Y=&gset->X[h.NI];
-
-      c_fst_data_length(8);
-      if (cs_fstluk(gset->X,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not read gridset longitude (c_fstlir failed)\n",__func__);
-         return(NULL);
-      }
-      if ((h.KEY=cs_fstinf(FID,&h.NI,&h.NJ,&h.NK,-1,"GRIDSET",-1,-1,InterpType,typvar,"#^^#"))<0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset laitude field (c_fstinf failed)\n",__func__);
-         return(NULL);
-      }
-      c_fst_data_length(8);
-      if (cs_fstluk(gset->Y,h.KEY,&h.NI,&h.NJ,&h.NK)<0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not read gridset latitude field (c_fstlir failed)\n",__func__);
-         return(NULL);
-      }
+      gset->Y=record.data;
+      record.data=NULL;
    }
    return(gset);
 }
 
 /*----------------------------------------------------------------------------
  * @brief  Writes a gridset definition and index from a file
- * @author Jean-Philippe Gauthier
  * @date   January 2020
  *    @param[in]  GSet      Gridset pointer
- *    @param[in]  FID       FSTD file identifier
+ *    @param[in]  File      FSTD file pointer
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetWrite(TGridSet *GSet,int FID){
+int GeoRef_SetWrite(TGridSet *GSet,fst_file *File){
 
    int size=0;
+   fst_record record=default_fst_record;
 
    if (GSet && GSet->Index && GSet->IndexSize) {
-Lib_Log(APP_LIBGEOREF,APP_DEBUG,"iniini\n");
       size=GSet->RefTo->NX*GSet->RefTo->NY;
       Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s:  Writing index (%ix%i)\n",__func__,size,GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1));
 
-      c_fst_data_length(8);
-      if (cs_fstecr(GSet->X,-64,FID,0,0,0,size,1,1,0,0,0,GSet->G2G,"#>>#","GRIDSET","X",0,0,0,0,5,FALSE)<0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
+      record.data = GSet->X;
+      record.pack_bits = 64;
+      record.ni   = size;
+      record.nj   = 1;
+      record.nk   = 1;
+      record.dateo= 0;
+      record.deet = 0;
+      record.npas = 0;
+      record.ip1  = 0;
+      record.ip2  = 0;
+      record.ip3  = 0;
+      strncpy(record.typvar,GSet->G2G,FST_TYPVAR_LEN);
+      strncpy(record.nomvar,"#>>#",FST_NOMVAR_LEN);
+      strncpy(record.grtyp,"X",FST_GTYP_LEN);
+      strncpy(record.etiket,"GRIDSET",FST_ETIKET_LEN);
+      record.ig1   = 0;
+      record.ig2   = 0;
+      record.ig3   = 0;
+      record.ig4   = 0;
+      record.data_type = FST_TYPE_REAL_IEEE;
+      record.data_bits = 64;
+      if (fst24_write(File,&record,FST_SKIP)<=0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (fst24_write failed)\n",__func__);
          return(FALSE);
       }
-      c_fst_data_length(8);
-      if (cs_fstecr(GSet->Y,-64,FID,0,0,0,size,1,1,0,0,0,GSet->G2G,"#^^#","GRIDSET","X",0,0,0,0,5,FALSE)<0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
+
+      record.data = GSet->Y;
+      strncpy(record.nomvar,"#^^#",FST_NOMVAR_LEN);
+      if (fst24_write(File,&record,FST_SKIP)<=0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (fst24_write failed)\n",__func__);
          return(FALSE);
       }
-      if (cs_fstecr(GSet->Index,-32,FID,0,0,0,GSet->IndexSize,GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1),1,0,0,GSet->IndexDegree,GSet->G2G,"####","GRIDSET","X",0,0,0,0,5,FALSE)<0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (c_fstecr failed)\n",__func__);
+
+      record.data = GSet->Index;
+      record.pack_bits = 32;
+      record.ni   = GSet->IndexSize;
+      record.nj   = GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1);
+      record.ip3  = GSet->IndexDegree;
+      strncpy(record.nomvar,"####",FST_NOMVAR_LEN);
+      record.data_bits = 32;
+      if (fst24_write(File,&record,FST_SKIP)<=0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (fst24_write failed)\n",__func__);
          return(FALSE);
       }
-Lib_Log(APP_LIBGEOREF,APP_DEBUG,"outututut\n");
    }
    return(TRUE);
 }
 
 /*----------------------------------------------------------------------------
  * @brief  Find a gridset within the cached list
- * @author Jean-Philippe Gauthier
  * @date   
  *    @param[in]  RefTo     Destination georeference pointer
  *    @param[in]  RefFrom   Source georeference pointer

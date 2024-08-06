@@ -9,15 +9,11 @@ IF(DEFINED ENV{INTELCOMP_HOME})
    add_link_options(-lintlc -lifcore -lifport)
 endif()
 
-add_executable(EZTiler EZTiler.c)
 add_executable(ReGrid ReGrid.c)
 add_executable(Interpolate Interpolate.c)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib)
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib)
-
-target_link_libraries(EZTiler georef -lm rmn::rmn-ompi)
-set_target_properties(EZTiler PROPERTIES VERSION ${PROJECT_VERSION})
 
 target_link_libraries(ReGrid georef -lm rmn::rmn-ompi)
 set_target_properties(ReGrid PROPERTIES VERSION ${PROJECT_VERSION})
@@ -25,7 +21,7 @@ set_target_properties(ReGrid PROPERTIES VERSION ${PROJECT_VERSION})
 target_link_libraries(Interpolate georef -lm rmn::rmn-ompi)
 set_target_properties(Interpolate PROPERTIES VERSION ${PROJECT_VERSION})
 
-install(TARGETS EZTiler ReGrid Interpolate
+install(TARGETS ReGrid Interpolate
    RUNTIME DESTINATION bin)
 
 #set(LIBGEOREF_DATA /local/drive1/afsr005/GRIDS)

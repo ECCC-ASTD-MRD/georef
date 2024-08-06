@@ -1,24 +1,4 @@
-/* RMNLIB - Library of useful routines for C and FORTRAN programming
- * Copyright (C) 1975-2001  Division de Recherche en Prevision Numerique
- *                          Environnement Canada
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation,
- * version 2.1 of the License.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
- */
-#include "App.h"
-#include "RPN.h"
+#include <App.h>
 #include "GeoRef.h"
 
 /**----------------------------------------------------------------------------
@@ -181,7 +161,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
       switch(Ref->GRTYP[0]) {
          case 'A':
          case 'B':
-            grll(Ref->Lat,Ref->Lon,ni,nj,Ref->RPNHead.XG[X_SWLAT],Ref->RPNHead.XG[X_SWLON],Ref->RPNHead.XG[X_DLAT],Ref->RPNHead.XG[X_DLON]);
+            grll(Ref->Lat,Ref->Lon,ni,nj,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4);
             break;
 
          case 'E':
@@ -191,12 +171,12 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
             xlat00 = -90. + 0.5*dlat;
 
             grll(Ref->Lat,Ref->Lon,ni,nj,xlat00,xlon00,dlat,dlon);
-            f77name(cigaxg)(Ref->GRTYP, &Ref->RPNHead.XG[X_LAT1], &Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2], &Ref->RPNHead.XG[X_LON2],&Ref->RPNHead.IG[X_IG1],  &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
-            GeoRef_RotateInvertXY(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHead.XG[X_LAT1],Ref->RPNHead.XG[X_LON1],Ref->RPNHead.XG[X_LAT2],Ref->RPNHead.XG[X_LON2]);
+            f77name(cigaxg)(Ref->GRTYP, &Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2,&Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1,  &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
+            GeoRef_RotateInvertXY(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4);
             break;
 
          case 'L':
-            grll(Ref->Lat,Ref->Lon,ni,nj,Ref->RPNHead.XG[X_SWLAT],Ref->RPNHead.XG[X_SWLON],Ref->RPNHead.XG[X_DLAT],Ref->RPNHead.XG[X_DLON]);
+            grll(Ref->Lat,Ref->Lon,ni,nj,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4);
             break;
 
          case 'N':
@@ -206,7 +186,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
 	         } else {
                hemisphere = 2;
             }
-            grps(Ref->Lat,Ref->Lon,ni,nj,Ref->RPNHead.XG[X_PI],Ref->RPNHead.XG[X_PJ],Ref->RPNHead.XG[X_D60],Ref->RPNHead.XG[X_DGRW],hemisphere);
+            grps(Ref->Lat,Ref->Lon,ni,nj,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4,hemisphere);
             break;
 
          case 'T':
@@ -221,7 +201,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                }
             }
 
-            f77name(ez8_vtllfxy)(Ref->Lat,Ref->Lon,xp,yp,&Ref->RPNHead.XG[X_CLAT], &Ref->RPNHead.XG[X_CLON],&Ref->RPNHead.XG[X_TD60],&Ref->RPNHead.XG[X_TDGRW],&ni,&nj,&npts);
+            f77name(ez8_vtllfxy)(Ref->Lat,Ref->Lon,xp,yp,&Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHeadExt.xg1,&Ref->RPNHeadExt.xg2,&ni,&nj,&npts);
             free(xp);
             break;
 
@@ -247,7 +227,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
 
          case 'O':
          case 'Y':
-            switch (Ref->RPNHead.GRREF[0]) {
+            switch (Ref->RPNHeadExt.grref[0]) {
                case 'N':
                case 'S':
                   Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Operation not supported - Y/O grid on PS grid\n",__func__);
@@ -281,7 +261,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                }
             }
 
-	         if (Ref->GRTYP[0] == 'G' && Ref->RPNHead.IG[X_IG1] == NORTH) {
+	         if (Ref->GRTYP[0] == 'G' && Ref->RPNHead.ig1 == NORTH) {
                k=0;
 	            for (j=0; j<nj; j++) {
 	               for (i=0; i<ni; i++) {
@@ -290,16 +270,16 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
 	            }
 	         }
 
-            switch (Ref->RPNHead.GRREF[0]) {
+            switch (Ref->RPNHeadExt.grref[0]) {
 	            case 'N':
 	            case 'S':
-	               f77name(ez8_vllfxy)(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,&ni,&nj,&Ref->RPNHead.XGREF[X_D60],&Ref->RPNHead.XGREF[X_DGRW],&Ref->RPNHead.XGREF[X_PI], &Ref->RPNHead.XGREF[X_PJ], &Ref->Hemi);
+	               f77name(ez8_vllfxy)(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,&ni,&nj,&Ref->RPNHeadExt.xgref3,&Ref->RPNHeadExt.xgref4,&Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->Hemi);
                   break;
 
                case 'L':
                   for (i=0; i < npts; i++) {
-                     Ref->Lon[i] = Ref->RPNHead.XGREF[X_SWLON] + Ref->RPNHead.XGREF[X_DLON] * Ref->Lon[i];
-                     Ref->Lat[i] = Ref->RPNHead.XGREF[X_SWLAT] + Ref->RPNHead.XGREF[X_DLAT] * Ref->Lat[i];
+                     Ref->Lon[i] = Ref->RPNHeadExt.igref2 + Ref->RPNHeadExt.igref4 * Ref->Lon[i];
+                     Ref->Lat[i] = Ref->RPNHeadExt.igref1 + Ref->RPNHeadExt.igref3 * Ref->Lat[i];
                   }   
                   break;
 
@@ -308,7 +288,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                   break;
 
                case 'E':
-                  GeoRef_RotateInvertXY(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHead.XGREF[X_LAT1],Ref->RPNHead.XGREF[X_LON1],Ref->RPNHead.XGREF[X_LAT2],Ref->RPNHead.XGREF[X_LON2]);
+                  GeoRef_RotateInvertXY(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHeadExt.igref1,Ref->RPNHeadExt.igref2,Ref->RPNHeadExt.igref3,Ref->RPNHeadExt.igref4);
                   break;
             }
             break;
@@ -324,7 +304,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                   k++;
                }
             }
-            f77name(ez8_llflamb)(Ref->Lat,Ref->Lon,xp,yp,&npts,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
+            f77name(ez8_llflamb)(Ref->Lat,Ref->Lon,xp,yp,&npts,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4);
             break;
       }
 
@@ -332,7 +312,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
          case 'G':
          case 'B':
          case 'A':
-         if (Ref->RPNHead.IG[X_IG2] == 1) {
+         if (Ref->RPNHead.ig2 == 1) {
             Permut(Ref->Lat,Ref->NX,Ref->NY);
          }
          break;

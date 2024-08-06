@@ -1,24 +1,4 @@
-/* RMNLIB - Library of useful routines for C and FORTRAN programming
- * Copyright (C) 1975-2001  Division de Recherche en Prevision Numerique
- *                          Environnement Canada
- *
- * This library is free software you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation,
- * version 2.1 of the License.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
- */
-
-#include "App.h"
+#include <App.h>
 #include "GeoRef.h"
 
 int GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskIn) {
@@ -83,7 +63,7 @@ int GeoRef_MaskYYDefine(TGeoRef *Ref) {
       }
    }
    ynj=k;
-   Ref->mymaskgrid = GeoRef_Define(NULL,yni,ynj,Ref->GRTYP,Ref->RPNHead.GRREF,Ref->RPNHead.IGREF[X_IG1],Ref->RPNHead.IGREF[X_IG2],Ref->RPNHead.IGREF[X_IG3],Ref->RPNHead.IGREF[X_IG4],&Ref->AX[i0],&Ref->AY[j0]);
+   Ref->mymaskgrid = GeoRef_Define(NULL,yni,ynj,Ref->GRTYP,Ref->RPNHeadExt.grref,Ref->RPNHeadExt.igref1,Ref->RPNHeadExt.igref2,Ref->RPNHeadExt.igref3,Ref->RPNHeadExt.igref4,&Ref->AX[i0],&Ref->AY[j0]);
    Ref->mymaskgridi0=i0;
    Ref->mymaskgridi1=i1;
    Ref->mymaskgridj0=j0;

@@ -16,7 +16,14 @@
       "app.h": "c",
       "rpn.h": "c",
       "georef.h": "c",
-      "list.h": "c"
+      "list.h": "c",
+      "georef_build_info.h": "c",
+      "eerutils.h": "c",
+      "vertex.h": "c",
+      "functional": "c",
+      "array": "c",
+      "string": "c",
+      "string_view": "c"
    },
    "C_Cpp.errorSquiggles": "Disabled",
    "python.pythonPath": "/usr/bin/python3",

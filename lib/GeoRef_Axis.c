@@ -1,38 +1,17 @@
-/* RMNLIB - Library of useful routines for C and FORTRAN programming
- * Copyright (C) 1975-2001  Division de Recherche en Prevision Numerique
- *                          Environnement Canada
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation,
- * version 2.1 of the License.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
- */
-
-#include "App.h"
-#include "RPN.h"
-#include "GeoRef.h"
 #include <math.h>
+#include <App.h>
+#include "GeoRef.h"
 
 void GeoRef_GridGetExpanded(TGeoRef *Ref,float *zout,float *zin) {   
 
    switch (Ref->GRTYP[0]) {
       case 'A':
       case 'G':
-         f77name(ez_xpngdag2)(zout,zin,&Ref->NX,&Ref->NY,&Ref->j1,&Ref->j2,&Ref->RPNHead.IG[X_IG1],&Ref->Options.Symmetric);
+         f77name(ez_xpngdag2)(zout,zin,&Ref->NX,&Ref->NY,&Ref->j1,&Ref->j2,&Ref->RPNHead.ig1,&Ref->Options.Symmetric);
          break;
 
       case 'B':
-         f77name(ez_xpngdb2)(zout,zin,&Ref->NX,&Ref->NY,&Ref->j1,&Ref->j2,&Ref->RPNHead.IG[X_IG1],&Ref->Options.Symmetric);
+         f77name(ez_xpngdb2)(zout,zin,&Ref->NX,&Ref->NY,&Ref->j1,&Ref->j2,&Ref->RPNHead.ig1,&Ref->Options.Symmetric);
          break;
 
       default:
@@ -73,7 +52,7 @@ void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
       case 'A':
       case 'G':
 	      Ref->Extension = 2;
-         switch (Ref->RPNHead.IG[X_IG1]) {
+         switch (Ref->RPNHead.ig1) {
 	         case GLOBAL:
 	            Ref->j1 = 1;
 	            Ref->j2 = Ref->NY;
@@ -93,7 +72,7 @@ void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
 
       case 'B':
 	      Ref->Extension = 1;
-         switch (Ref->RPNHead.IG[X_IG1]) {
+         switch (Ref->RPNHead.ig1) {
 	         case GLOBAL:
 	            Ref->j1 = 1;
 	            Ref->j2 = Ref->NY;
@@ -118,7 +97,7 @@ void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
 
       case '#':
       case 'Z':
-         switch (Ref->RPNHead.GRREF[0]) {
+         switch (Ref->RPNHeadExt.grref[0]) {
 	         case 'E':
 	            Ref->j1 = 1;
 	            Ref->j2 = Ref->NY;
@@ -180,8 +159,8 @@ void GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY) {
   switch (Ref->GRTYP[0]) {
     case '#':
     case 'Z':
-      f77name(cigaxg)(Ref->RPNHead.GRREF,&Ref->RPNHead.XGREF[X_LAT1], &Ref->RPNHead.XGREF[X_LON1], &Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2],
-		      &Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4]);
+      f77name(cigaxg)(Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,
+		      &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,1);
 
       Ref->AX = (double*) malloc(Ref->NX*sizeof(double));
       Ref->AY = (double*) malloc(Ref->NY*sizeof(double));
@@ -202,13 +181,13 @@ void GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY) {
       break;
 
     case 'G':
-      Ref->RPNHead.GRREF[0] = 'L';
-      Ref->RPNHead.XGREF[X_SWLAT] = 0.0;
-      Ref->RPNHead.XGREF[X_SWLON] = 0.0;
-      Ref->RPNHead.XGREF[X_DLAT] = 1.0;
-      Ref->RPNHead.XGREF[X_DLON] = 1.0;
-      f77name(cxgaig)(Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4],
-		      &Ref->RPNHead.XGREF[X_SWLAT], &Ref->RPNHead.XGREF[X_SWLON], &Ref->RPNHead.XGREF[X_DLAT], &Ref->RPNHead.XGREF[X_DLON]);
+      Ref->RPNHeadExt.grref[0] = 'L';
+      Ref->RPNHeadExt.igref1 = 0.0;
+      Ref->RPNHeadExt.igref2 = 0.0;
+      Ref->RPNHeadExt.igref3 = 1.0;
+      Ref->RPNHeadExt.igref4 = 1.0;
+      f77name(cxgaig)(Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,
+		      &Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,1);
 
       Ref->AX = (double*)malloc(Ref->NX*sizeof(double));
       dlon = 360.0 / (double) Ref->NX;
@@ -219,7 +198,7 @@ void GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY) {
       zero = 0;
       GeoRef_AxisCalcExpandCoeff(Ref);
 
-      switch (Ref->RPNHead.IG[X_IG1]) {
+      switch (Ref->RPNHead.ig1) {
 	      case GLOBAL:
 	        Ref->AY = (double*) malloc(Ref->NY*sizeof(double));
 	        temp    = (double*) malloc(Ref->NY*sizeof(double));

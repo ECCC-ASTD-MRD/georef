@@ -1,36 +1,3 @@
-/*=========================================================
- * Environnement Canada
- * Centre Meteorologique Canadien
- * 2100 Trans-Canadienne
- * Dorval, Quebec
- *
- * Projet       : Lecture et traitements de fichiers raster
- * Fichier      : GeoRef.c
- * Creation     : Mars 2005 - J.P. Gauthier
- *
- * Description  : Fonctions de manipulations de projections.
- *
- * Remarques    :
- *
- * License      :
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation,
- *    version 2.1 of the License.
- *
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *    Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public
- *    License along with this library; if not, write to the
- *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- *    Boston, MA 02111-1307, USA.
- *
- *=========================================================
- */
-
 #include "GeoRef.h"
 
 /**----------------------------------------------------------------------------
@@ -47,7 +14,6 @@
 */
 double GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1) {
 
-#ifdef HAVE_RMN
    char *unit,geo;
    double i[2],j[2],lat[2],lon[2],u;
 
@@ -90,7 +56,6 @@ double GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1)
       }
       return(hypot(j[1]-j[0],i[1]-i[0])*u);
    }
-#endif
    return(hypot(X1-X0,Y1-Y0));
 }
 

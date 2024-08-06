@@ -1,35 +1,4 @@
-/*==============================================================================
- * Environnement Canada
- * Centre Meteorologique Canadian
- * 2100 Trans-Canadienne
- * Dorval, Quebec
- *
- * Projet       : Fonctions et definitions relatives aux fichiers standards et rmnlib
- * Fichier      : GeoRef_Type_W.h
- * Creation     : October 2020 - J.P. Gauthier
- *
- * Description:
- *
- * License:
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation,
- *    version 2.1 of the License.
- *
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *    Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public
- *    License along with this library; if not, write to the
- *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- *    Boston, MA 02111-1307, USA.
- *
- *==============================================================================
- */
-
-#include "App.h"
+#include <App.h>
 #include "GeoRef.h"
 #include "Def.h"
 #include "Vertex.h"
@@ -57,7 +26,7 @@
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-// int GeoRef_WKTValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
+// int GeoRef_WKTValue(TGeoRef *Ref,TDef *Def,TRef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
 
 //    double       x,y,d,ddir=0.0;
 //    int          valid=0,mem,ix,iy;
@@ -226,7 +195,7 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
  * @date   June 2014
  *    @param[in]     NI           Number of gridpoints in X
  *    @param[in]     NJ           Number of gridpoints in Y
- *    @param[in]     GRTYP        Grid type
+ *    @param[in]     grtyp        Grid type
  *    @param[in]     IG1          Grid descriptor information
  *    @param[in]     IG2          Grid descriptor information
  *    @param[in]     IG3          Grid descriptor information
@@ -238,7 +207,7 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
 
  *    @return        GeoRef object (NULL=Error)
 */
-TGeoRef *GeoRef_CreateW(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
+TGeoRef *GeoRef_CreateW(int NI,int NJ,char *grtyp,int IG1,int IG2,int IG3,int IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
 
    TGeoRef *ref;
 
@@ -248,17 +217,17 @@ TGeoRef *GeoRef_CreateW(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG
       return(NULL);
    }
    
-   if (GRTYP) {
-      ref->GRTYP[0]=GRTYP[0];
-      ref->GRTYP[1]=GRTYP[1];
+   if (grtyp) {
+      ref->GRTYP[0]=grtyp[0];
+      ref->GRTYP[1]=grtyp[1];
    } else {
       ref->GRTYP[0]='W';
       ref->GRTYP[1]='\0';
    }
-   ref->RPNHead.IG[X_IG1]=IG1;
-   ref->RPNHead.IG[X_IG2]=IG2;
-   ref->RPNHead.IG[X_IG3]=IG3;
-   ref->RPNHead.IG[X_IG4]=IG4;
+   ref->RPNHead.ig1=IG1;
+   ref->RPNHead.ig2=IG2;
+   ref->RPNHead.ig3=IG3;
+   ref->RPNHead.ig4=IG4;
    
    return(ref);
 }

@@ -1,35 +1,4 @@
-/*==============================================================================
- * Environnement Canada
- * Centre Meteorologique Canadian
- * 2100 Trans-Canadienne
- * Dorval, Quebec
- *
- * Projet       : Librairie de fonctions utiles
- * Creation     : Janvier 2015
- * Auteur       : Jean-Philippe Gauthier
- *
- * Description: RPN fstd interpolation test
- *
- * License:
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation,
- *    version 2.1 of the License.
- *
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *    Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public
- *    License along with this library; if not, write to the
- *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- *    Boston, MA 02111-1307, USA.
- *
- *==============================================================================
- */
-
-#include "App.h"
+#include <App.h>
 #include "Def.h"
 #include "GeoRef.h"
 #include "georef_build_info.h"
@@ -41,69 +10,68 @@
 
 int ReGrid(char *In,char *Out,char *Grid,char **Vars) {
 
-#ifdef HAVE_RMN
-   TGridSet  *gset;
-   TRPNField *in,*grid,*idx;
-   int  fin,fout,fgrid;
+   TGridSet   *gset;
+   TGeoRef    *refin,*refout;
 
-  if ((fin=cs_fstouv(In,"STD+RND+R/O"))<0) {
+   fst_record  in,grid,idx,crit=default_fst_record;
+   fst_file   *fin,fout,fgrid;
+
+  if ((fin=fst24_open(In,"STD+RND+R/O"))<0) {
       App_Log(APP_ERROR,"Problems opening input file %s\n",In);
       return(0);
    }
 
-   if ((fout=cs_fstouv(Out,"STD+RND+R/W"))<0) {
+   if ((fout=fst24_open(Out,"STD+RND+R/W"))<0) {
       App_Log(APP_ERROR,"Problems opening output file %s\n",Out);
       return(0);
    }
 
-   if ((fgrid=cs_fstouv(Grid,"STD+RND+R/O"))<0) {
+   if ((fgrid=fst24_open(Grid,"STD+RND+R/O"))<0) {
       App_Log(APP_ERROR,"Problems opening grid file %s\n",Grid);
       return(0);
    }
 
-   if (!(grid=RPN_FieldRead(fgrid,-1,"",-1,-1,-1,"","P0"))) {
+   // Create the desination grid
+   strncpy(crit,"P0",FST_NOMVAR_LEN);
+   if (!fst24_read(fgrid,&crit,NULL,&recout))) {
       App_Log(APP_ERROR,"Problems reading grid field\n");
       return(0);    
    }
+   refout=GeoRef_Create(record.ni,record.nj,record.grtyp,record.ig1,record.ig2,record.ig3,record.ig4,record.file);
 
-   if (!(in=RPN_FieldRead(fin,-1,"",-1,-1,-1,"",Vars[0]))) {
-      App_Log(APP_ERROR,"Problems reading input field\n");
-      return(0);  
-   }
- 
    // Create index field
    if (!(idx=RPN_FieldNew(in->Def->NIJ*100,1,1,1,TD_Float32))) {
       return(0);       
    }
-   
-   memcpy(&idx->Head,&grid->Head,sizeof(TRPNHeader));
-   strcpy(idx->Head.NOMVAR,"#%");
-   idx->Head.NJ=1;
-   idx->Head.GRTYP[0]='X';
-   idx->Head.NBITS=32;
-   idx->Head.DATYP=5;
+
    grid->Def->NoData=0.0;
  
-   while(in->Head.KEY>0) {
-      App_Log(APP_INFO,"Processing %s %i\n",Vars[0],in->Head.KEY);
+   strncpy(crit,Vars[0],FST_NOMVAR_LEN);
+   fst_query* query = fst24_new_query(fin,&crit,NULL);
+   while(fst24_read_next(query,&record)>0) {
+      App_Log(APP_INFO,"Processing %s %i\n",Vars[0],record->file_index);
+
+      if (!(def=Def_New(record.ni,record.nj,record.nk,1,TD_Float32))) {
+         Lib_Log(APP_LIBEER,APP_ERROR,"%s: Could not allocate memory for fld\n",__func__);
+         return(NULL);
+      }
+      if (!refin) {
+         refin=GeoRef_Create(record.ni,record.nj,record.grtyp,record.ig1,record.ig2,record.ig3,record.ig4,record.file);
+      }
+
 
       // Reset result grid
       Def_Clear(grid->Def);
      
       // Proceed with interpolation
-      if (!(idx->Head.NI=Def_GridInterpConservative(grid->GRef,in->GRef,grid->Def,in->Def,TRUE))) {
+      if (!(idx->Head.NI=Def_GridInterpConservative(refout,refin,grid->Def,in->Def,TRUE))) {
          return(0);    
       }
       
       // Write results
       RPN_CopyHead(&grid->Head,&in->Head);
-      RPN_FieldWrite(fout,grid);
-      
-      if ((in->Head.KEY=cs_fstsui(fin,&in->Head.NI,&in->Head.NJ,&in->Head.NK))>0) {     
-         if (!RPN_FieldReadIndex(fin,in->Head.KEY,in)) {
-            return(0);
-         }
-      }
+      recout
+      fst24_write(fout,recout);
    }
    
    // Write index
@@ -116,10 +84,9 @@ int ReGrid(char *In,char *Out,char *Grid,char **Vars) {
       }
    }
    
-   cs_fstfrm(fin);
-   cs_fstfrm(fout);
-   cs_fstfrm(fgrid);
-#endif
+   fst24_close(fin);
+   fst24_close(fout);
+   fst24_close(fgrid);
 
    return(1);
 }

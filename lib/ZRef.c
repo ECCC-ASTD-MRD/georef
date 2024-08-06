@@ -1,39 +1,6 @@
-/*=========================================================
- * Environnement Canada
- * Centre Meteorologique Canadien
- * 2100 Trans-Canadienne
- * Dorval, Quebec
- *
- * Projet       : Librairies de fonctions utiles
- * Fichier      : ZRef.c
- * Creation     : Octobre 2011 - J.P. Gauthier
- *
- * Description  : Fonctions generales d'utilites courantes.
- *
- * Remarques    :
- *
- * License      :
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation,
- *    version 2.1 of the License.
- *
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *    Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public
- *    License along with this library; if not, write to the
- *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- *    Boston, MA 02111-1307, USA.
- *
- *=========================================================
- */
-
-#include "App.h"
-#include "RPN.h"
-#include "eerUtils.h"
+#include <App.h>
+#include <vgrid.h>
+#include "GeoRef_Utils.h"
 #include "ZRef.h"
 
 #ifdef HAVE_VGRID
@@ -42,8 +9,8 @@
 
 static float       *ZRef_Levels   = NULL;
 static unsigned int ZRef_LevelsNb = 0;
-static const char  *ZRef_Names[]  = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","COUNT","HOUR","ANGLE","NIL","NIL","NIL","INT","NIL","IDX","NIL","NIL","NIL","MPRES",NULL };
-static const char  *ZRef_Units[]  = { "m","sg","mb","-","m","hy","th","sg","m","nb","hr","dg","--","--","--","i","--","x","--","--","--","mp",NULL };
+static const char  *ZRef_Names[]  = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","MBSL","GALCHEN","COUNT","HOUR","ANGLE","NIL","NIL","NIL","INT","NIL","IDX","NIL","NIL","NIL","MPRES","NIL","NIL","NIL","NIL","NIL","NIL","NIL","NIL","NIL","NIL","ETA",NULL };
+static const char  *ZRef_Units[]  = { "m","sg","mb","-","m","hy","th","m-","m","nb","hr","dg","--","--","--","i","--","x","--","--","--","mp","--","--","--","--","--","--","--","--","--","--","sg",NULL };
 
 int ZREF_IP1MODE=3;
 
@@ -83,7 +50,7 @@ TZRef* ZRef_New(void) {
    TZRef *zref=NULL;
 
    if (!(zref=(TZRef*)calloc(1,sizeof(TZRef)))) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate memory\n",__func__);
+      Lib_Log(APP_LIBEER,APP_ERROR,"%s: Unable to allocate memory\n",__func__);
    }
    
    zref->VGD=NULL;
@@ -93,7 +60,7 @@ TZRef* ZRef_New(void) {
    zref->LevelNb=0;
    zref->POff=zref->PTop=zref->PRef=zref->ETop=0.0;
    zref->RCoef[0]=zref->RCoef[1]=1.0;
-   zref->P0=zref->PCube=zref->A=zref->B=NULL;
+   zref->P0=zref->P0LS=zref->PCube=zref->A=zref->B=NULL;
    zref->Version=-1;
    zref->NRef=1;
    
@@ -135,7 +102,7 @@ TZRef* ZRef_Define(int Type,int NbLevels,float *Levels) {
       }
       
       if (!zref->Levels) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate memory\n",__func__);
+         Lib_Log(APP_LIBEER,APP_ERROR,"%s: Unable to allocate memory\n",__func__);
       } else if (Levels) {
          memcpy(zref->Levels,Levels,zref->LevelNb*sizeof(float));
       }
@@ -172,6 +139,7 @@ int ZRef_Free(TZRef *ZRef) {
       if (ZRef->B)      free(ZRef->B);         ZRef->B=NULL;
 // P0 is owned by other packages
 //      if (ZRef->P0)     free(ZRef->P0);     ZRef->P0=NULL;
+//      if (ZRef->P0LS)   free(ZRef->P0LS);   ZRef->P0LS=NULL;
       if (ZRef->PCube)  free(ZRef->PCube);     ZRef->PCube=NULL;
 
       ZRef->Version=-1;
@@ -270,7 +238,7 @@ TZRef *ZRef_HardCopy(TZRef *ZRef) {
       zref->ETop=ZRef->ETop;
       zref->RCoef[0]=ZRef->RCoef[0];
       zref->RCoef[1]=ZRef->RCoef[1];
-      zref->P0=zref->A=zref->B=NULL;
+      zref->P0=zref->P0LS=zref->A=zref->B=NULL;
       zref->Version=-1;
       zref->NRef=1;
       zref->Style=ZRef->Style;
@@ -295,13 +263,16 @@ TZRef *ZRef_HardCopy(TZRef *ZRef) {
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_DecodeRPN(TZRef *ZRef,int Unit) {
+int ZRef_DecodeRPN(TZRef *ZRef,fst_file* File) {
 
-   TRPNHeader h;
+   fst_record h;
+   fst_query *queryt,*queryh,*queryp;
+   fst_record record = default_fst_record;
    int        cd,key=0,skip,j,k,kind,ip;
-   double    *buf=NULL;
-   float     *pt=NULL;
-
+   double    *dbuf=NULL;
+   float     *fbuf=NULL;
+   char       rfls_S[VGD_LEN_RFLS];
+ 
    if (!ZRef) {
       return(0);
    }
@@ -310,125 +281,115 @@ int ZRef_DecodeRPN(TZRef *ZRef,int Unit) {
      return(1);
    }
 
-   memset(&h,0,sizeof(TRPNHeader));
-   
-#ifdef HAVE_RMN
-
-   RPN_FieldLock();
+   memset(&h,0,sizeof(fst_record));
+   ZRef->SLEVE=0;
 
    // Check for toctoc (field !!)   
-   key=c_fstinf(Unit,&h.NI,&h.NJ,&h.NK,-1,"",-1,-1,-1,"X","!!");
-   if (key>=0) {
-      cd=c_fstprm(key,&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG[X_IG1],
-                     &h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
-      if (cd>=0) {
-         ZRef->Version=h.IG[X_IG1];
-         ZRef->PRef=10.0;
-         ZRef->PTop=h.IG[X_IG2]/10.0;
-         ZRef->ETop=0.0;
-         ZRef->RCoef[0]=0.0f;
-         ZRef->RCoef[1]=0.0f;
+   record.typvar[0]='X';
+   record.nomvar[0]='!';record.nomvar[1]='!';
 
-         buf=(double*)malloc(h.NI*h.NJ*sizeof(double));
-         if (!ZRef->A) ZRef->A=(float*)malloc(ZRef->LevelNb*sizeof(float));
-         if (!ZRef->B) ZRef->B=(float*)malloc(ZRef->LevelNb*sizeof(float));
+   queryt = fst24_new_query(File, &record, NULL);
+   if (fst24_find_next(queryt, &record)) {
+      ZRef->Version=record.ig1;
+      ZRef->PRef=10.0;
+      ZRef->PTop=record.ig2/10.0;
+      ZRef->ETop=0.0;
+      ZRef->RCoef[0]=0.0f;
+      ZRef->RCoef[1]=0.0f;
+
+      if (!ZRef->A) ZRef->A=(float*)malloc(ZRef->LevelNb*sizeof(float));
+      if (!ZRef->B) ZRef->B=(float*)malloc(ZRef->LevelNb*sizeof(float));
 
 #ifdef HAVE_VGRID
-         if (Cvgd_new_read((vgrid_descriptor**)&ZRef->VGD,Unit,-1,-1,-1,-1)==VGD_ERROR) {
-            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to initialize vgrid descriptor.\n",__func__);
-            return(0);
-         }
+      if (Cvgd_new_read((vgrid_descriptor**)&ZRef->VGD,fst24_get_unit(File),-1,-1,-1,-1)==VGD_ERROR) {
+         Lib_Log(APP_LIBEER,APP_ERROR,"%s: Unable to initialize vgrid descriptor.\n",__func__);
+         return(0);
+      }
+      // Is it SLEVE type?
+      Cvgd_get_char((vgrid_descriptor*)ZRef->VGD,"RFLS",rfls_S,1);
+      if (strcmp(rfls_S, VGD_NO_REF_NOMVAR)!=0){
+         ZRef->SLEVE=1;
+      }
 #endif                  
-         cd=c_fstluk(buf,key,&h.NI,&h.NJ,&h.NK);
-         if (cd>=0) {
+      if (fst24_read_record(&record)) {
+         dbuf=(double*)record.data;
 
-            /* Read in header info*/
-            switch(ZRef->Version) {
-               case 1001: ZRef->Type=LVL_SIGMA;  break;
-               case 1002: ZRef->Type=LVL_ETA;    ZRef->PTop=buf[h.NI]*0.01; break;
-               case 2001: ZRef->Type=LVL_PRES;   break;
-               case 1003: ZRef->Type=LVL_ETA;    ZRef->PTop=buf[h.NI]*0.01; ZRef->PRef=buf[h.NI+1]*0.01; ZRef->RCoef[0]=buf[h.NI+2]; break;
-               case 5001: ZRef->Type=LVL_HYBRID; ZRef->PTop=buf[h.NI]*0.01; ZRef->PRef=buf[h.NI+1]*0.01; ZRef->RCoef[0]=buf[h.NI+2]; break;
-               case 5002:
-               case 5003: ZRef->Type=LVL_HYBRID; ZRef->PTop=buf[h.NI]*0.01; ZRef->PRef=buf[h.NI+1]*0.01; ZRef->RCoef[0]=buf[h.NI+2]; ZRef->RCoef[1]=buf[h.NI+h.NI]; break;
-            }
-            skip=buf[2];
+         // Read in header info
+         switch(ZRef->Version) {
+            case 1001: ZRef->Type=LVL_SIGMA;  break;
+            case 1002: ZRef->Type=LVL_ETA;    ZRef->PTop=dbuf[record.ni]*0.01; break;
+            case 2001: ZRef->Type=LVL_PRES;   break;
+            case 1003: ZRef->Type=LVL_ETA;    ZRef->PTop=dbuf[record.ni]*0.01; ZRef->PRef=dbuf[record.ni+1]*0.01; ZRef->RCoef[0]=dbuf[record.ni+2]; break;
+            case 5001: ZRef->Type=LVL_HYBRID; ZRef->PTop=dbuf[record.ni]*0.01; ZRef->PRef=dbuf[record.ni+1]*0.01; ZRef->RCoef[0]=dbuf[record.ni+2]; break;
+            case 5002:
+            case 5003: 
+            case 5004: 
+            case 5005: 
+            case 5100: ZRef->Type=LVL_HYBRID; ZRef->PTop=dbuf[record.ni]*0.01; ZRef->PRef=dbuf[record.ni+1]*0.01; ZRef->RCoef[0]=dbuf[record.ni+2]; ZRef->RCoef[1]=dbuf[record.ni+record.ni]; break;
+         }
+         skip=dbuf[2];
 
-            /* Find corresponding level */
-            for(k=0;k<ZRef->LevelNb;k++) {
-               ip=ZRef_Level2IP(ZRef->Levels[k],ZRef->Type,ZRef->Style);
-               for(j=skip;j<h.NJ;j++) {
-                  if (buf[j*h.NI]==ip) {
-                     ZRef->A[k]=buf[j*h.NI+1];
-                     ZRef->B[k]=buf[j*h.NI+2];
-                     break;
-                  }
-               }
-               if (j==h.NJ) {
-                  Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Could not find level definition for %i.\n",__func__,ip);
+         // Find corresponding level
+         for(k=0;k<ZRef->LevelNb;k++) {
+            ip=ZRef_Level2IP(ZRef->Levels[k],ZRef->Type,ZRef->Style);
+            for(j=skip;j<record.nj;j++) {
+               if (dbuf[j*record.ni]==ip) {
+                  ZRef->A[k]=dbuf[j*record.ni+1];
+                  ZRef->B[k]=dbuf[j*record.ni+2];
+                  break;
                }
             }
-         } else {
-            Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Could not read !! field (c_fstluk).\n",__func__);
+            if (j==h.nj) {
+               Lib_Log(APP_LIBEER,APP_WARNING,"%s: Could not find level definition for %i.\n",__func__,ip);
+            }
          }
       } else {
-         Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Could not get info on !! field (c_fstprm).\n",__func__);
+         Lib_Log(APP_LIBEER,APP_WARNING,"%s: Could not read !! field (fst24_read_record).\n",__func__);
       }
    } else {
 
       // Check fo regular hybrid (field HY)
-      key = c_fstinf(Unit,&h.NI,&h.NJ,&h.NK,-1,"",-1,-1,-1,"X","HY");
-      if (key>=0) {
-         cd=c_fstprm(key,&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,h.GRTYP,&h.IG[X_IG1],
-                     &h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
-         if (cd>=0) {
-            ZRef->PTop=ZRef_IP2Level(h.IP1,&kind);
-            ZRef->RCoef[0]=h.IG[X_IG2]/1000.0f;
-            ZRef->RCoef[1]=0.0f;
-            ZRef->PRef=h.IG[X_IG1];
-//            ZRef->Type=LVL_HYBRID;
-         } else {
-            Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Could not get info on HY field (c_fstprm).\n",__func__);
-         }
+      record.typvar[0]='X';
+      record.nomvar[0]='H';record.nomvar[1]='Y';
+      queryh = fst24_new_query(File, &record, NULL);
+      if (fst24_find_next(queryh, &record)) {
+         ZRef->PTop=ZRef_IP2Level(record.ip1,&kind);
+         ZRef->RCoef[0]=record.ig2/1000.0f;
+         ZRef->RCoef[1]=0.0f;
+         ZRef->PRef=record.ig1;
+//       ZRef->Type=LVL_HYBRID;
          // It might be ETA
          if (ZRef->Type==LVL_SIGMA) {
             ZRef->Type=LVL_ETA;
          }
-
       } else {
 
          // Try to figure out if it's SIGMA or ETA
          if (ZRef->Type==LVL_SIGMA || (ZRef->Type==LVL_ETA && ZRef->Version==-1)) {
             /*If we find a PT field, we have ETA coordinate otherwise, its'SIGMA*/
-            key=c_fstinf(Unit,&h.NI,&h.NJ,&h.NK,-1,"",-1,-1,-1,"","PT");
-            ZRef->PTop=10.0;
-            if (key>=0) {
+            record.typvar[0]=' ';
+            record.nomvar[0]='P';record.nomvar[1]='T';
+            queryp = fst24_new_query(File, &record, NULL);
+            if (fst24_find_next(queryp, &record)) {
+               ZRef->PTop=10.0;
                ZRef->Type=LVL_ETA;
-               if (!(pt=(float*)malloc(h.NI*h.NJ*h.NK*sizeof(float)))) {
-                  Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Could not allocate memory for top pressure, using default PTOP=10.0.\n",__func__);
+               if (fst24_read_record(&record)) {
+                  fbuf=(float*)record.data;
+                  ZRef->PTop=fbuf[0];
                } else {
-                  cd=c_fstluk(pt,key,&h.NI,&h.NJ,&h.NK);
-                  if (cd>=0) {
-                     ZRef->PTop=pt[0];
-                  } else {
-                     Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Could not read PT field (c_fstluk), using default PTOP=10.0.\n",__func__);
-                  }
+                  Lib_Log(APP_LIBEER,APP_WARNING,"%s: Could not read PT field (fst24_read_record), using default PTOP=10.0.\n",__func__);
                }
             }
+            fst24_query_free(queryp);
          }
       }
+      fst24_query_free(queryh);
 
       ZRef->Version=0;
    }
-
-   RPN_FieldUnlock();
+   fst24_query_free(queryt);
 
    if (ZRef->PCube)  free(ZRef->PCube);  ZRef->PCube=NULL;
-   if (buf) free(buf);
-   if (pt)  free(pt);
-#else
-   Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Need RMNLIB\n",__func__);
-#endif
 
    return(key>=0);
 }
@@ -506,47 +467,46 @@ int ZRef_AddRestrictLevel(float Level) {
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_GetLevels(TZRef *ZRef,const TRPNHeader* restrict const H,int Order) {
+int ZRef_GetLevels(TZRef *ZRef,const fst_record* restrict const H,int Order) {
 
-   TRPNHeader h;
-   int        l,key,ip1=0,idlst[RPNMAX];
-   int        k,k2,kx;
-
-#ifdef HAVE_RMN
+   fst_record h,record;
+   fst_query  *query;
+   int        l,ip1=0;
+   int        k;
 
    if (Order) {
       /*Get the number of levels*/
       /*In case of # grid, set IP3 to 1 to get NK just for the first tile*/
-      memcpy(&h,H,sizeof(TRPNHeader));
-      h.IP3=H->GRTYP[0]=='#'?1:-1;
-      c_fstinl(h.FID,&h.NI,&h.NJ,&h.NK,h.DATEV,h.ETIKET,-1,h.IP2,h.IP3,h.TYPVAR,h.NOMVAR,idlst,&h.NK,RPNMAX);
-      if (!(ZRef->Levels=(float*)malloc(h.NK*sizeof(float)))) {
+      memcpy(&h,H,sizeof(fst_record));
+      h.ip3=H->grtyp[0]=='#'?1:-1;
+      h.ip1=-1;
+
+      query = fst24_new_query(h.file, &h, NULL);
+      h.nk=fst24_find_count(query);
+      if (!(ZRef->Levels=(float*)malloc(h.nk*sizeof(float)))) {
          return(0);
       }
 
-      /*Get the levels*/
-      for(k=k2=0;k<h.NK;k++) {
-         key=c_fstprm(idlst[k],&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&kx,&h.NBITS,
-               &h.DATYP,&ip1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
-               h.GRTYP,&h.IG[X_IG1],&h.IG[X_IG2],&h.IG[X_IG3],&h.IG[X_IG4],&h.SWA,&h.LNG,&h.DLTF,
-               &h.UBC,&h.EX1,&h.EX2,&h.EX3);
-
-         ZRef->Levels[k2]=ZRef_IP2Level(ip1,&l);
+      // Get the levels
+      k=0;
+      while(fst24_find_next(query,&record)) {
+         ZRef->Levels[k]=ZRef_IP2Level(record.ip1,&l);
          if (k==0) ZRef->Type=l;
 
-         /* If a list of restrictive levels is defined, check for validity*/
-         if (h.NK>10 && ZRef_Levels) {
-            if (!bsearch(&ZRef->Levels[k2],ZRef_Levels,ZRef_LevelsNb,sizeof(float),QSort_Float)) {
+         // If a list of restrictive levels is defined, check for validity
+         if (h.nk>10 && ZRef_Levels) {
+            if (!bsearch(&ZRef->Levels[k],ZRef_Levels,ZRef_LevelsNb,sizeof(float),QSort_Float)) {
                continue;
             }
          }
 
-         /*Make sure we use a single type of level, the first we get*/
+         // Make sure we use a single type of level, the first we get
          if (l==ZRef->Type) {
-            k2++;
+            k++;
          }
       }
-      ZRef->LevelNb=k2;
+      ZRef->LevelNb=k;
+      fst24_query_free(query);
 
       /*Sort the levels from ground up and remove duplicates*/
       qsort(ZRef->Levels,ZRef->LevelNb,sizeof(float),Order==-1?QSort_DecFloat:QSort_Float);
@@ -556,14 +516,11 @@ int ZRef_GetLevels(TZRef *ZRef,const TRPNHeader* restrict const H,int Order) {
          return(0);
       }
       ZRef->LevelNb=1;
-      ZRef->Levels[0]=ZRef_IP2Level(H->IP1,&ZRef->Type);
+      ZRef->Levels[0]=ZRef_IP2Level(H->ip1,&ZRef->Type);
    }
 
-   ZRef->Style=H->IP1>32768?NEW:OLD;
+   ZRef->Style=H->ip1>32768?NEW:OLD;
    if (ZRef->PCube)  free(ZRef->PCube);  ZRef->PCube=NULL;
-#else
-   Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Need RMNLIB\n",__func__);
-#endif
 
    return(ZRef->LevelNb);
 }
@@ -576,7 +533,8 @@ int ZRef_GetLevels(TZRef *ZRef,const TRPNHeader* restrict const H,int Order) {
  *
  * Parametres  :
  *  <ZRef>     : Vertical reference to free
- *  <P0>       : Pressure at surface in
+ *  <P0>       : Pressure at surface in mb
+ *  <P0LS>     : Pressure at surface in mb (Smoothed)
  *  <K>        : Level index to convert
  *
  * Retour:
@@ -586,9 +544,9 @@ int ZRef_GetLevels(TZRef *ZRef,const TRPNHeader* restrict const H,int Order) {
  *
  *----------------------------------------------------------------------------
  */
-double ZRef_K2Pressure(TZRef* restrict const ZRef,double P0,int K) {
+double ZRef_K2Pressure(TZRef* restrict const ZRef,double P0,double P0LS, int K) {
 
-   return(ZRef_Level2Pressure(ZRef,P0,ZRef->Levels[K]));
+  return(ZRef_Level2Pressure(ZRef,P0,P0LS,ZRef->Levels[K]));
 }
 
 /*----------------------------------------------------------------------------
@@ -600,6 +558,7 @@ double ZRef_K2Pressure(TZRef* restrict const ZRef,double P0,int K) {
  * Parametres  :
  *  <ZRef>     : Vertical reference to free
  *  <P0>       : Pressure at surface in mb
+ *  <P0LS>     : Pressure at surface in mb (Smoothed)
  *  <NIJ>      : 2D dimension of grid
  *  <Log>      : Calculate log of pressure
  *  <Pres>     : Output pressure in mb
@@ -610,14 +569,14 @@ double ZRef_K2Pressure(TZRef* restrict const ZRef,double P0,int K) {
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,int NIJ,int Log,float *Pres) {
+int ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,float *P0LS,int NIJ,int Log,float *Pres) {
 
-   unsigned int k,idxk=0;
-   int          ij,*ips;
-   float        pref,ptop,*p0;
+   int   k,idxk=0,ij;
+   int   *ips;
+   float pref,ptop,*p0,*p0ls;
 
    if (!P0 && ZRef->Type!=LVL_PRES) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Surface pressure is required\n",__func__);
+      Lib_Log(APP_LIBEER,APP_ERROR,"%s: Surface pressure is required\n",__func__);
       return(0);
    }
 
@@ -658,7 +617,6 @@ int ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,int NIJ,int Log,flo
          break;
          
       case LVL_HYBRID:
-#ifdef HAVE_RMN         
          if (ZRef->Version<=0) {
             ij=1;
             f77name(hyb_to_pres)(Pres,ZRef->Levels,&ptop,&ZRef->RCoef[0],&pref,&ij,P0,&NIJ,&ij,&ZRef->LevelNb);
@@ -674,23 +632,33 @@ int ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,int NIJ,int Log,flo
                p0[ij]=P0[ij]*MB2PA;
             }
             
-#ifdef HAVE_VGRID
-            if (Cvgd_levels((vgrid_descriptor*)ZRef->VGD,NIJ,1,ZRef->LevelNb,ips,Pres,p0,0)) {
-               Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Problems in Cvgd_levels\n",__func__);
-               return(0);
+#ifdef HAVE_VGRID	    
+            if(ZRef->SLEVE){
+               p0ls=(float*)malloc(NIJ*sizeof(float));
+               for (ij=0;ij<NIJ;ij++) {
+                  p0ls[ij]=P0LS[ij]*MB2PA;
+               }
+               if (Cvgd_levels_2ref((vgrid_descriptor*)ZRef->VGD,NIJ,1,ZRef->LevelNb,ips,Pres,p0,p0ls,0)) {
+                  Lib_Log(APP_LIBEER,APP_ERROR,"%s: Problems in Cvgd_levels_2ref\n",__func__);
+                  return(0);
+               }	      
+            } else {
+               if (Cvgd_levels((vgrid_descriptor*)ZRef->VGD,NIJ,1,ZRef->LevelNb,ips,Pres,p0,0)) {
+                  Lib_Log(APP_LIBEER,APP_ERROR,"%s: Problems in Cvgd_levels\n",__func__);
+                  return(0);
+               }    
             }
 #else
-            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Library not built with VGRID\n",__func__);
+            Lib_Log(APP_LIBEER,APP_ERROR,"%s: Library not built with VGRID\n",__func__);
 #endif
             for (ij=0;ij<NIJ*ZRef->LevelNb;ij++) Pres[ij]*=PA2MB;
             free(ips);
             free(p0);            
          }
-#endif
          break;
          
       default:
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid level type (%i)\n",__func__,ZRef->Type);
+         Lib_Log(APP_LIBEER,APP_ERROR,"%s: Invalid level type (%i)\n",__func__,ZRef->Type);
          return(0);
    }
    
@@ -743,6 +711,14 @@ int ZRef_KCube2Meter(TZRef* restrict const ZRef,float *GZ,const int NIJ,float *H
          }
          break;
 
+      case LVL_MBSL:
+         for (k=0;k<ZRef->LevelNb;k++,idxk+=NIJ) {
+            for (ij=0;ij<NIJ;ij++) {
+               Height[idxk+ij]=-ZRef->Levels[k];
+            }
+         }
+         break;
+
       case LVL_MAGL:
          /*Add the topography to the gz to get the heigth above the sea*/
          for (k=0;k<ZRef->LevelNb;k++,idxk+=NIJ) {
@@ -768,7 +744,7 @@ int ZRef_KCube2Meter(TZRef* restrict const ZRef,float *GZ,const int NIJ,float *H
          break;
 
       default:
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid level type (%i)\n",__func__,ZRef->Type);
+         Lib_Log(APP_LIBEER,APP_ERROR,"%s: Invalid level type (%i)\n",__func__,ZRef->Type);
          return(0);
    }
    return(1);
@@ -783,6 +759,7 @@ int ZRef_KCube2Meter(TZRef* restrict const ZRef,float *GZ,const int NIJ,float *H
  * Parametres  :
  *  <ZRef>     : Vertical reference to free
  *  <P0>       : Pressure at surface in mb
+ *  <P0LS>     : Pressure at surface in mb (Smoothed)
  *  <K>        : Level index to convert
  *
  * Retour:
@@ -792,9 +769,9 @@ int ZRef_KCube2Meter(TZRef* restrict const ZRef,float *GZ,const int NIJ,float *H
  *
  *----------------------------------------------------------------------------
  */
-double ZRef_Level2Pressure(TZRef* restrict const ZRef,double P0,double Level) {
+double ZRef_Level2Pressure(TZRef* restrict const ZRef,double P0,double P0LS,double Level) {
 
-   double pres=-1.0,p0,pref,ptop,rtop;
+   double pres=-1.0,pref,ptop,rtop;
    int    ip;
 
    pref=ZRef->PRef;
@@ -819,21 +796,29 @@ double ZRef_Level2Pressure(TZRef* restrict const ZRef,double P0,double Level) {
             pres=pref*Level+(P0-pref)*pow((Level-rtop)/(1.0-rtop),ZRef->RCoef[0]);
          } else {
             ip=ZRef_Level2IP(Level,ZRef->Type,ZRef->Style);
-            p0=P0*MB2PA;
-#ifdef HAVE_VGRID
-            if (Cvgd_levels_8((vgrid_descriptor*)ZRef->VGD,1,1,1,&ip,&pres,&p0,0)) {
-               Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Problems in Cvgd_levels_8\n",__func__);
-               return(0);
-            }
+            P0*=MB2PA;
+#ifdef HAVE_VGRID	    
+	      if(ZRef->SLEVE){
+	         P0LS*=MB2PA;
+	         if (Cvgd_levels_2ref_8((vgrid_descriptor*)ZRef->VGD,1,1,1,&ip,&pres,&P0,&P0LS,0)) {
+		         Lib_Log(APP_LIBEER,APP_ERROR,"%s: Problems in Cvgd_levels_2ref_8\n",__func__);
+		         return(0);
+	         }	      
+	      } else {
+	         if (Cvgd_levels_8((vgrid_descriptor*)ZRef->VGD,1,1,1,&ip,&pres,&P0,0)) {
+		         Lib_Log(APP_LIBEER,APP_ERROR,"%s: Problems in Cvgd_levels_8\n",__func__);
+		         return(0);
+	         }    
+	      }
 #else
-            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Library not built with VGRID\n",__func__);
+            Lib_Log(APP_LIBEER,APP_ERROR,"%s: Library not built with VGRID\n",__func__);
 #endif
             pres*=PA2MB;
          }
          break;
 
       default:
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid level type (%i)\n",__func__,ZRef->Type);
+         Lib_Log(APP_LIBEER,APP_ERROR,"%s: Invalid level type (%i)\n",__func__,ZRef->Type);
          return(0);
    }
    
@@ -918,7 +903,7 @@ double ZRef_Pressure2Level(TZRef* restrict const ZRef,double P0,double Pressure)
          break;
 
       default:
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid level type (%i)\n",__func__,ZRef->Type);
+         Lib_Log(APP_LIBEER,APP_ERROR,"%s: Invalid level type (%i)\n",__func__,ZRef->Type);
    }
    return(level);
 }
@@ -951,6 +936,8 @@ double ZRef_Level2Meter(double Level,int Type) {
 
    switch(Type) {
       case LVL_MASL    : m=Level; break;
+
+      case LVL_MBSL    : m=-Level; break;
       
       case LVL_ETA     : m=ETA2METER(Level); break;
       
@@ -1010,12 +997,8 @@ double ZRef_IP2Meter(int IP) {
    if (IP==0)
       return(0);
 
-#ifdef HAVE_RMN
    // Convertir en niveau reel
    f77name(convip_plus)(&IP,&level,&kind,&mode,&format,&flag,1);
-#else
-   Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Need RMNLIB\n",__func__);
-#endif
 
    return(ZRef_Level2Meter(level,kind));
 }
@@ -1043,12 +1026,8 @@ double ZRef_IP2Level(int IP,int *Type) {
    float  level=0.0;
    char   format;
 
-#ifdef HAVE_RMN
    // Convertir en niveau reel
    f77name(convip_plus)(&IP,&level,Type,&mode,&format,&flag,1);
-#else
-   Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Need RMNLIB\n",__func__);
-#endif
 
    return(level);
 }
@@ -1098,11 +1077,7 @@ int ZRef_Level2IP(float Level,int Type,TZRef_IP1Mode Mode) {
          mode=2;
       }
 
-#ifdef HAVE_RMN
       f77name(convip_plus)(&ip,&Level,&Type,&mode,&format,&flag,1);
-#else
-   Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Need RMNLIB\n",__func__);
-#endif
 
       return(ip);
    }
@@ -1136,15 +1111,16 @@ int ZRef_IPFormat(char *Buf,int IP,int Interval) {
       lvl=ZRef_IP2Level(IP,&type);
 
       switch(type) {
-         case LVL_MASL  : sprintf(Buf," %8.1f %-2s",lvl,ZRef_Units[type]); break;
-         case LVL_SIGMA : sprintf(Buf," %8.4f %-2s",lvl,ZRef_Units[type]); break;
-         case LVL_PRES  : sprintf(Buf," %8.1f %-2s",lvl,ZRef_Units[type]); break;
-         case LVL_UNDEF : sprintf(Buf," %8.1f %-2s",lvl,ZRef_Units[type]); break;
-         case LVL_MAGL  : sprintf(Buf," %8.1f %-2s",lvl,ZRef_Units[type]); break;
-         case LVL_HYBRID: sprintf(Buf," %8.6f %-2s",lvl,ZRef_Units[type]); break;
+         case LVL_SIGMA : 
          case LVL_THETA : sprintf(Buf," %8.4f %-2s",lvl,ZRef_Units[type]); break;
-         case LVL_HOUR  : sprintf(Buf," %8.1f %-2s",lvl,ZRef_Units[type]); break;
-         case LVL_MPRES : sprintf(Buf," %8.1f %-2s",lvl,ZRef_Units[type]); break;
+         case LVL_HYBRID: sprintf(Buf," %8.6f %-2s",lvl,ZRef_Units[type]); break;
+         case LVL_UNDEF : sprintf(Buf," %8.3f %-2s",lvl,ZRef_Units[type]); break;
+         case LVL_MASL  : 
+         case LVL_MBSL  : 
+         case LVL_MAGL  : 
+         case LVL_PRES  : 
+         case LVL_HOUR  : 
+         case LVL_MPRES :
          default        : sprintf(Buf," %8.1f %-2s",lvl,ZRef_Units[type]); break;
       }    
    }

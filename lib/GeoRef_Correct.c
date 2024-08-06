@@ -1,24 +1,4 @@
-/* RMNLIB - Library of useful routines for C and FORTRAN programming
- * Copyright (C) 1975-2001  Division de Recherche en Prevision Numerique
- *                          Environnement Canada
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation,
- * version 2.1 of the License.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
- */
-
-#include "App.h"
+#include <App.h>
 #include "GeoRef.h"
 
 int GeoRef_CorrValNorth(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) {
@@ -50,7 +30,7 @@ int GeoRef_CorrValNorth(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) 
 
       temp = (float *) malloc(4 * ni * sizeof(float));
       vals = (float *) malloc(npts * sizeof(float));
-      f77name(ez_calcpoleval)(&poleval,&zin[(nj-1)*ni],&ni,RefFrom->AX,RefFrom->GRTYP,RefFrom->RPNHead.GRREF,1,1);
+      f77name(ez_calcpoleval)(&poleval,&zin[(nj-1)*ni],&ni,RefFrom->AX,RefFrom->GRTYP,RefFrom->RPNHeadExt.grref,1,1);
       f77name(ez_fillnpole)(temp, zin, &ni, &(RefFrom->j1), &(RefFrom->j2), &poleval);
 
       switch (RefFrom->Options.InterpDegree) {
@@ -133,7 +113,7 @@ int GeoRef_CorrValSouth(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) 
 
       temp = (float *) malloc(4 * ni * sizeof(float));
       vals = (float *) malloc(npts * sizeof(float));
-      f77name(ez_calcpoleval)(&vpolesud,zin,&ni,RefFrom->AX,RefFrom->GRTYP,RefFrom->RPNHead.GRREF,1,1);
+      f77name(ez_calcpoleval)(&vpolesud,zin,&ni,RefFrom->AX,RefFrom->GRTYP,RefFrom->RPNHeadExt.grref,1,1);
       f77name(ez_fillspole)(temp, zin, &ni, &RefFrom->j1, &RefFrom->j2, &vpolesud);
 
       switch (RefFrom->Options.InterpDegree) {
@@ -283,19 +263,19 @@ int GeoRef_CorrectValue(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout, float *zin)
    if (gset->zones[NORTH_POLE].npts > 0 || gset->zones[SOUTH_POLE].npts > 0) {
       if (RefFrom->GRTYP[0] != 'w') {
          npts = RefFrom->NX * RefFrom->j2;
-         f77name(ez_calcpoleval)(&vpolnor,&(zin[(nj-1)*RefFrom->NX]),&(RefFrom->NX),RefFrom->AX,RefFrom->GRTYP,RefFrom->RPNHead.GRREF,1,1);
+         f77name(ez_calcpoleval)(&vpolnor,&(zin[(nj-1)*RefFrom->NX]),&(RefFrom->NX),RefFrom->AX,RefFrom->GRTYP,RefFrom->RPNHeadExt.grref,1,1);
          for (i=0; i < gset->zones[NORTH_POLE].npts; i++) {
 	          zout[gset->zones[NORTH_POLE].idx[i]] = vpolnor;
 	       }
 
-         f77name(ez_calcpoleval)(&vpolsud,zin,&(RefFrom->NX),RefFrom->AX,RefFrom->GRTYP,RefFrom->RPNHead.GRREF,1,1);
+         f77name(ez_calcpoleval)(&vpolsud,zin,&(RefFrom->NX),RefFrom->AX,RefFrom->GRTYP,RefFrom->RPNHeadExt.grref,1,1);
          for (i=0; i < gset->zones[SOUTH_POLE].npts; i++) {
 	          zout[gset->zones[SOUTH_POLE].idx[i]] = vpolsud;
 	       }
       }
    }
-   if ((RefFrom->GRTYP[0] == 'Z' || RefFrom->GRTYP[0] == '#') && RefFrom->RPNHead.GRREF[0] == 'E' && RefTo->GRTYP[0] == 'B') {
-      f77name(ez_corrbgd)(zout, &(RefTo->NX), &(RefTo->NY), &(RefTo->RPNHead.IG[X_IG1]));
+   if ((RefFrom->GRTYP[0] == 'Z' || RefFrom->GRTYP[0] == '#') && RefFrom->RPNHeadExt.grref[0] == 'E' && RefTo->GRTYP[0] == 'B') {
+      f77name(ez_corrbgd)(zout, &(RefTo->NX), &(RefTo->NY), &(RefTo->RPNHead.ig1));
    }
 
    return(ierc);
@@ -331,7 +311,7 @@ int GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
   
    GeoRef_XY2LL(Ref,polar_lat,polar_lon,polar_x,polar_y, ni,TRUE);
 
-   if (Ref->GRTYP[0] == 'Z' && Ref->RPNHead.GRREF[0] == 'E') {
+   if (Ref->GRTYP[0] == 'Z' && Ref->RPNHeadExt.grref[0] == 'E') {
       polar_lat_gem   = (double*) malloc(2*ni*sizeof(double));
       polar_lon_gem   = &polar_lat_gem[ni];
     
@@ -340,7 +320,7 @@ int GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
          polar_lon_gem[i] = polar_lon[i];
       }
     
-     f77name(cigaxg)(Ref->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4]);
+     f77name(cigaxg)(Ref->RPNHeadExt.grref, &xlat1, &xlon1, &xlat2, &xlon2, &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,1);
      GeoRef_RotateXY(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
    }
 
@@ -353,12 +333,12 @@ int GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
    d60  = 1000.0;
    dgrw = 0.0;
    grtypn[0] = 'N';
-   f77name(cxgaig)(grtypn, &ig1n, &ig2n, &ig3n, &ig4n, &pi, &pj, &d60, &dgrw);
+   f77name(cxgaig)(grtypn, &ig1n, &ig2n, &ig3n, &ig4n, &pi, &pj, &d60, &dgrw,1);
    gdps = GeoRef_Create(ni, 1, grtypn, ig1n, ig2n, ig3n, ig4n, 0);
    GeoRef_WD2UV(gdps, polar_uu, polar_vv, polar_spd,  polar_wd, polar_lat, polar_lon, ni);
 
-   f77name(ez_calcpoleval)(&uupole,polar_uu,&ni,Ref->AX,Ref->GRTYP,Ref->RPNHead.GRREF,1,1);
-   f77name(ez_calcpoleval)(&vvpole,polar_vv,&ni,Ref->AX,Ref->GRTYP,Ref->RPNHead.GRREF,1,1);
+   f77name(ez_calcpoleval)(&uupole,polar_uu,&ni,Ref->AX,Ref->GRTYP,Ref->RPNHeadExt.grref,1,1);
+   f77name(ez_calcpoleval)(&vvpole,polar_vv,&ni,Ref->AX,Ref->GRTYP,Ref->RPNHeadExt.grref,1,1);
 
    quatrevingtdix = 90.0;
    zero = 0.0;
@@ -393,7 +373,7 @@ int GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
    free(polar_lat);
    free(polar_uu);
 
-   if (Ref->GRTYP[0] == 'Z' && Ref->RPNHead.GRREF[0] == 'E' && polar_lat_gem != NULL)  {
+   if (Ref->GRTYP[0] == 'Z' && Ref->RPNHeadExt.grref[0] == 'E' && polar_lat_gem != NULL)  {
      free(polar_lat_gem);
    }
 
@@ -431,7 +411,7 @@ int GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
   
    GeoRef_XY2LL(Ref,polar_lat,polar_lon,polar_x,polar_y,ni,TRUE);
 
-   if (Ref->GRTYP[0] == 'Z' && Ref->RPNHead.GRREF[0] == 'E') {
+   if (Ref->GRTYP[0] == 'Z' && Ref->RPNHeadExt.grref[0] == 'E') {
       polar_lat_gem   = (double*) malloc(2*ni*sizeof(double));
       polar_lon_gem   = &polar_lat_gem[ni];
     
@@ -440,7 +420,7 @@ int GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
         polar_lon_gem[i] = polar_lon[i];
      }
     
-     f77name(cigaxg)(Ref->RPNHead.GRREF, &xlat1, &xlon1, &xlat2, &xlon2, &Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4]);
+     f77name(cigaxg)(Ref->RPNHeadExt.grref, &xlat1, &xlon1, &xlat2, &xlon2, &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,1);
      GeoRef_RotateXY(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
    }
 
@@ -453,12 +433,12 @@ int GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
    d60  = 1000.0;
    dgrw = 0.0;
    grtyps[0] = 'S';
-   f77name(cxgaig)(grtyps, &ig1n, &ig2n, &ig3n, &ig4n, &pi, &pj, &d60, &dgrw);
+   f77name(cxgaig)(grtyps, &ig1n, &ig2n, &ig3n, &ig4n, &pi, &pj, &d60, &dgrw,1);
    gdps = GeoRef_Create(ni, 1, grtyps, ig1n, ig2n, ig3n, ig4n, 0);
    GeoRef_WD2UV(gdps, polar_uu, polar_vv, polar_spd,  polar_wd, polar_lat, polar_lon, ni);
 
-   f77name(ez_calcpoleval)(&uupole,polar_uu,&ni,Ref->AX,Ref->GRTYP,Ref->RPNHead.GRREF,1,1);
-   f77name(ez_calcpoleval)(&vvpole,polar_vv,&ni,Ref->AX,Ref->GRTYP,Ref->RPNHead.GRREF,1,1);
+   f77name(ez_calcpoleval)(&uupole,polar_uu,&ni,Ref->AX,Ref->GRTYP,Ref->RPNHeadExt.grref,1,1);
+   f77name(ez_calcpoleval)(&vvpole,polar_vv,&ni,Ref->AX,Ref->GRTYP,Ref->RPNHeadExt.grref,1,1);
 
    quatrevingtdix = -90.0;
    zero = 0.0;
@@ -491,7 +471,7 @@ int GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
    free(polar_lat);
    free(polar_uu);
 
-   if (Ref->GRTYP[0] == 'Z' && Ref->RPNHead.GRREF[0] == 'E' && polar_lat_gem != NULL)  {
+   if (Ref->GRTYP[0] == 'Z' && Ref->RPNHeadExt.grref[0] == 'E' && polar_lat_gem != NULL)  {
      free(polar_lat_gem);
    }
 

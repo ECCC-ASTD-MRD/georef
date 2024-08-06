@@ -1,24 +1,4 @@
-/* RMNLIB - Library of useful routines for C and FORTRAN programming
- * Copyright (C) 1975-2001  Division de Recherche en Prevision Numerique
- *                          Environnement Canada
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation,
- * version 2.1 of the License.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
-   * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
- */
-
-#include "App.h"
+#include <App.h>
 #include "GeoRef.h"
 
 void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int npts,float xlat1,float xlon1,float xlat2,float xlon2) {
@@ -82,21 +62,21 @@ int GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
    int   i,hemi;
    float pi,pj,dgrw,d60,dlat,dlon,xlat0,xlon0,xlat1,xlon1,xlat2,xlon2;
     
-   switch(Ref->RPNHead.GRREF[0]) {
+   switch(Ref->RPNHeadExt.grref[0]) {
       case 'N':
-         f77name(cigaxg)(Ref->RPNHead.GRREF,&pi,&pj,&d60,&dgrw,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+         f77name(cigaxg)(Ref->RPNHeadExt.grref,&pi,&pj,&d60,&dgrw,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
          hemi=NORTH;
          f77name(ez8_vxyfll)(X,Y,Lat,Lon,&Nb,&d60,&dgrw,&pi,&pj,&hemi);
          break;
 
       case 'S':
-         f77name(cigaxg)(Ref->RPNHead.GRREF,&pi,&pj,&d60,&dgrw,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+         f77name(cigaxg)(Ref->RPNHeadExt.grref,&pi,&pj,&d60,&dgrw,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
          hemi=SOUTH;
          f77name(ez8_vxyfll)(X,Y,Lat,Lon,&Nb,&d60,&dgrw,&pi,&pj,&hemi);
          break;
 
       case 'L':
-         f77name(cigaxg)(Ref->RPNHead.GRREF,&xlat0,&xlon0,&dlat,&dlon,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+         f77name(cigaxg)(Ref->RPNHeadExt.grref,&xlat0,&xlon0,&dlat,&dlon,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
          GeoRef_LL2GD(X,Y,Lat,Lon,Nb,xlat0,xlon0,dlat,dlon,(Ref->AX[0]<0.0)?-180.0:0.0);
          for(i=0;i<Nb;i++) {
             X[i]-=1.0;
@@ -105,7 +85,7 @@ int GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
          break;
 
       case 'E':
-         f77name(cigaxg)(Ref->RPNHead.GRREF,&xlat1,&xlon1,&xlat2,&xlon2,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+         f77name(cigaxg)(Ref->RPNHeadExt.grref,&xlat1,&xlon1,&xlat2,&xlon2,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
          GeoRef_RotateXY(Lat,Lon,X,Y,Nb,xlat1,xlon1,xlat2,xlon2);
          break;
 
@@ -138,7 +118,7 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
    double   *tmpy;
    
    if (!Ref->XY2LL) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid transform function (XY2LL): GRTYP=%c\n",__func__,Ref->GRTYP[0]);
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid transform function (XY2LL): grtyp=%c\n",__func__,Ref->GRTYP[0]);
    }
 
    if (Ref->NbSub > 0) {
@@ -228,7 +208,7 @@ int GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb
    double  *xyin,*xyan,*yyin,*yyan;
 
    if (!Ref->LL2XY) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid transform function (LL2XY): GRTYP=%c\n",__func__,Ref->GRTYP[0]);
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid transform function (LL2XY): grtyp=%c\n",__func__,Ref->GRTYP[0]);
    }
 
    if (Ref->NbSub > 0 ) {

@@ -1,44 +1,12 @@
-/*=========================================================
- * Environnement Canada
- * Centre Meteorologique Canadien
- * 2100 Trans-Canadienne
- * Dorval, Quebec
- *
- * Projet       : Lecture et traitements de fichiers raster
- * Fichier      : GeoRef.c
- * Creation     : Mars 2005 - J.P. Gauthier
- *
- * Description  : Fonctions de manipulations de projections.
- *
- * Remarques    :
- *
- * License      :
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation,
- *    version 2.1 of the License.
- *
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *    Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public
- *    License along with this library; if not, write to the
- *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- *    Boston, MA 02111-1307, USA.
- *
- *=========================================================
- */
 #define GEOREF_BUILD
 
 #include <pthread.h>
+#include <App.h>
+#include <rmn/List.h>
+
 #include "GeoRef.h"
 #include "georef_build_info.h"
-#include "App.h"
 #include "Def.h"
-#include "RPN.h"
-#include "List.h"
  
 static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
@@ -51,7 +19,6 @@ __attribute__ ((constructor)) int GeoRef_Init() {
 
 /**----------------------------------------------------------------------------
  * @brief  Apply thread lock on GeoRef access
- * @author Jean-Philippe Gauthier
  * @date   February 2008
 */
 void GeoRef_Lock() {
@@ -60,7 +27,6 @@ void GeoRef_Lock() {
 
 /**----------------------------------------------------------------------------
  * @brief  Remove thread lock on GeoRef access
- * @author Jean-Philippe Gauthier
  * @date   February 2008
 */
 void GeoRef_Unlock() {
@@ -69,7 +35,6 @@ void GeoRef_Unlock() {
 
 /**----------------------------------------------------------------------------
  * @brief  Re-initialise reprojection buffer
- * @author Jean-Philippe Gauthier
  * @date   February 2008
  *    @param[in]  Scan     Reprojection buffer
 */
@@ -90,7 +55,6 @@ void GeoScan_Clear(TGeoScan *Scan) {
 
 /**----------------------------------------------------------------------------
  * @brief  Initialiser la structure App
- * @author Jean-Philippe Gauthier
  * @date   Janvier 2017
  *    @param[in]  Type     App type (APP_MASTER=single independent process, APP_THREAD=threaded co-process)
  *    @param[in]  Name     Application name
@@ -111,7 +75,6 @@ void GeoScan_Clear(TGeoScan *Scan) {
 
 /**----------------------------------------------------------------------------
  * @brief  Reproject a stream of coordinates and extracte values
- * @author Jean-Philippe Gauthier
  * @date   February 2008
  *    @param[in]  Scan     Reprojection buffer
  *    @param[in]  ToRef    Destination geo reference
@@ -127,7 +90,7 @@ void GeoScan_Clear(TGeoScan *Scan) {
  *
  *    @return              Size of results
 */
-int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int X0,int Y0,int X1,int Y1,int Dim,TDef_InterpR Degree) {
+int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int X0,int Y0,int X1,int Y1,int Dim) {
 
    register int idx,x,y,n=0;
    int          d=0,sz,dd;
@@ -231,7 +194,6 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
 
    // Other RPN grids
    } else {
-#ifdef HAVE_RMN
       for(y=Y0;y<=Y1+dd;y++) {
          idx=(y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
          for(x=X0;x<=X1+dd;x++,idx++,n++) {
@@ -245,9 +207,6 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
       GeoRef_XY2LL(FromRef,Scan->Y,Scan->X,Scan->X,Scan->Y,n,FALSE);
 
       d=dd?2:1;
-#else
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: RMNLIB support not included\n",__func__);
-#endif
    }
 
    // Project to destination grid
@@ -261,14 +220,14 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
 
       // If we're inside
       if (GeoRef_LL2XY(ToRef,&Scan->X[x],&Scan->Y[x],&y0,&x0,1,FALSE) && ToDef) {
-         Def_GetValue(ToRef,ToDef,Degree,0,Scan->X[x],Scan->Y[x],0,&v,NULL);
+         Def_GetValue(ToRef,ToDef,0,Scan->X[x],Scan->Y[x],0,&v,NULL);
          Scan->D[x]=v;
       }
    }
    return(d);
 }
 
-int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int X0,int Y0,int X1,int Y1,int Dim,TDef_InterpR Degree) {
+int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int X0,int Y0,int X1,int Y1,int Dim) {
 
    register int idx,x,y,n=0;
    int          d=0,sz,dd;
@@ -351,7 +310,6 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
 
    // Other RPN grids
    } else {
-#ifdef HAVE_RMN
       for(y=Y0;y<=Y1+dd;y++) {
          idx=(y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
          for(x=X0;x<=X1+dd;x++,idx++,n++) {
@@ -365,9 +323,6 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
       GeoRef_XY2LL(FromRef,Scan->Y,Scan->X,Scan->X,Scan->Y,n,FALSE);
 
       d=dd?2:1;
-#else
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: RMNLIB support not included\n",__func__);
-#endif
    }
 
    // Project to destination grid
@@ -389,7 +344,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
          }
       }
 
-/*
+/*TODO
          if (ToRef->Function)
             OCTTransform(ToRef->InvFunction,n,Scan->X,Scan->Y,NULL);
 
@@ -404,14 +359,10 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
 */
 #endif
    } else {
-#ifdef HAVE_RMN
       GeoRef_LL2XY(ToRef,Scan->X,Scan->Y,Scan->Y,Scan->X,n,FALSE);
 //EZFIX
       // If we have the data of source and they're float, get it's values right now
-      if (ToDef && ToDef->Type==TD_Float32) {
-         if (Degree)
-            ToRef->Options.InterpDegree=Degree;
-         
+      if (ToDef && ToDef->Type==TD_Float32) {        
          GeoRef_XYVal(ToRef,Scan->D,(float*)ToDef->Mode,Scan->X,Scan->Y,n);         
       }
 
@@ -434,16 +385,12 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
             }
          }
       }
-#else
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: RMNLIB support not included\n",__func__);
-#endif
    }
    return(d);
 }
 
 /**----------------------------------------------------------------------------
  * @brief  Initialise the georeference grid limits
- * @author Jean-Philippe Gauthier
  * @date   July 2005
  *    @param[in]  Ref   Pointer to geo reference
  *    @param[in]  X0    X lower limit
@@ -465,7 +412,6 @@ void GeoRef_Size(TGeoRef *Ref,int X0,int Y0,int X1,int Y1,int BD) {
 
 /**----------------------------------------------------------------------------
  * @brief  Free the geo reference resources
- * @author Jean-Philippe Gauthier
  * @date   July 2005
  *    @param[in]  Ref   Pointer to geo reference
  *
@@ -499,7 +445,6 @@ int GeoRef_Free(TGeoRef *Ref) {
 
 /**----------------------------------------------------------------------------
  * @brief  Increment reference count
- * @author Jean-Philippe Gauthier
  * @date   July 2005
  *    @param[in]  Ref   Pointer to geo reference
  *
@@ -516,7 +461,6 @@ int GeoRef_Incr(TGeoRef *Ref) {
 
 /**----------------------------------------------------------------------------
  * @brief  Initialiser la structure App
- * @author Jean-Philippe Gauthier
  * @date   July 2005
  *    @param[in]  Ref   Pointer to geo reference
  *    @param[in]  New   Clear the name associated
@@ -540,6 +484,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       if (Ref->NCX)          free(Ref->NCX);          Ref->NCX=NULL;
       if (Ref->NCY)          free(Ref->NCY);          Ref->NCY=NULL;
       if (Ref->Subs)         free(Ref->Subs);         Ref->Subs=NULL;
+      if (Ref->Name)         free(Ref->Name);         Ref->Name=NULL;
 
       // Free interpolation sets
       for (n=0;n<Ref->NbSet;n++) {
@@ -564,7 +509,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
          Ref->QTree=NULL;
       }
 
-      memset(&Ref->RPNHead,0x0,sizeof(TRPNHeader));
+      memset(&Ref->RPNHead,0x0,sizeof(fst_record_ext));
 
       if (New) {
          if (Ref->Name)      free(Ref->Name);         Ref->Name=NULL;
@@ -607,7 +552,6 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
 
 /**----------------------------------------------------------------------------
  * @brief  Define qualifying flags for the geo refrence
- * @author Jean-Philippe Gauthier
  * @date   Janvier 2015
  *    @param[in]  Ref   Pointer to geo reference
  */
@@ -628,7 +572,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          case 'T': Ref->LL2XY=GeoRef_LL2XY_T; Ref->XY2LL=GeoRef_XY2LL_T; break;
          case '!': Ref->LL2XY=GeoRef_LL2XY_LAMBERT; Ref->XY2LL=GeoRef_XY2LL_LAMBERT; break;
          case '#':
-//TODO: There's sometinhg about the G grid         
+//TODO: There's something about the G grid         
          case 'G': //GeoRef_LL2XY_G(Ref,X,Y,Lat,Lon,Nb); Ref->XY2LL=GeoRef_XY2LL_G; break;
          case 'Z': Ref->LL2XY=GeoRef_LL2XY_Z; Ref->XY2LL=GeoRef_XY2LL_Z; break;
          case 'O': Ref->LL2XY=GeoRef_LL2XY_O; Ref->XY2LL=GeoRef_XY2LL_O; break;
@@ -640,8 +584,6 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid grid type: %c\n",__func__,Ref->GRTYP[0]);
             break;
       }
-
-      Ref->Type=GRID_NONE;
 
       if (Ref->GRTYP[0]=='M' || Ref->GRTYP[0]=='Y' || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='O') {
          Ref->Type|=GRID_SPARSE;
@@ -724,7 +666,6 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
 
 /**----------------------------------------------------------------------------
  * @brief  Test two GeoRef for equality
- * @author Jean-Philippe Gauthier
  * @date   July 2005
  *    @param[in]  Ref0    First geo reference
  *    @param[in]  Ref1    Second geo reference
@@ -740,9 +681,9 @@ int GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) 
    if (Ref0->GRTYP[0]!=Ref1->GRTYP[0] || Ref0->GRTYP[1]!=Ref1->GRTYP[1])
       return(0);
    
-   if (Ref0->RPNHead.IG[X_IG1]!=Ref1->RPNHead.IG[X_IG1] || Ref0->RPNHead.IG[X_IG2]!=Ref1->RPNHead.IG[X_IG2] || Ref0->RPNHead.IG[X_IG3]!=Ref1->RPNHead.IG[X_IG3] || Ref0->RPNHead.IG[X_IG4]!=Ref1->RPNHead.IG[X_IG4])
+   if (Ref0->RPNHead.ig1!=Ref1->RPNHead.ig1 || Ref0->RPNHead.ig2!=Ref1->RPNHead.ig2 || Ref0->RPNHead.ig3!=Ref1->RPNHead.ig3 || Ref0->RPNHead.ig4!=Ref1->RPNHead.ig4)
      return(0);
-   //TOTO: Check AX,AY
+   //TODO: Check AX,AY
 
    // Cloud point should never be tested as equal
    if (Ref0->GRTYP[0]=='Y' || Ref0->GRTYP[1]=='Y')
@@ -786,7 +727,6 @@ int GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) 
 
 /**----------------------------------------------------------------------------
  * @brief  Copy a GeoRef only by incrementing the reference count
- * @author Jean-Philippe Gauthier
  * @date   Janvier 2015
  *    @param[in]  Ref     Pointeur sur la reference
  *
@@ -800,7 +740,6 @@ TGeoRef *GeoRef_Copy(TGeoRef* __restrict const Ref) {
 
 /**----------------------------------------------------------------------------
  * @brief  Create e new GeoRef but link it to an already existing GeoRef
- * @author Jean-Philippe Gauthier
  * @date   Janvier 2015
  *    @param[in]  Ref     Pointeur sur la reference
  *
@@ -830,7 +769,6 @@ TGeoRef *GeoRef_Reference(TGeoRef* __restrict const Ref) {
 
 /**----------------------------------------------------------------------------
  * @brief  Make a hard(real) copy of the GeoRef structure, not just a reference count increment
- * @author Jean-Philippe Gauthier
  * @date   Janvier 2015
  *    @param[in]  Ref     Pointeur sur la reference
  *
@@ -853,16 +791,14 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       ref->NbSub=Ref->NbSub;
       ref->QTree=NULL;
       
-#ifdef HAVE_RMN
       if (Ref->Subs) {
          ref->Subs=(TGeoRef**)malloc(Ref->NbSub*sizeof(TGeoRef*));
          memcpy(ref->Subs,Ref->Subs,Ref->NbSub*sizeof(TGeoRef*));
          for(i=0;i<ref->NbSub;i++)
             GeoRef_Incr(ref->Subs[i]);
       }
-#endif
 
-      memcpy(&ref->RPNHead,&Ref->RPNHead,sizeof(TRPNHeader));
+      memcpy(&ref->RPNHead,&Ref->RPNHead,sizeof(fst_record_ext));
       memcpy(&ref->Options,&Ref->Options,sizeof(TGeoOptions));
 
       switch(ref->GRTYP[0]) {
@@ -886,7 +822,6 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
 
 /**----------------------------------------------------------------------------
  * @brief  Resize a geo reference
- * @author Jean-Philippe Gauthier
  * @date   Janvier 2015
  *    @param[in]  Ref     Pointeur sur la reference
  *    @param[in]  NI      New x size
@@ -945,7 +880,6 @@ int GeoRef_UnProject(TGeoRef* __restrict const Ref,double *X,double *Y,double La
 
 /**----------------------------------------------------------------------------
  * @brief  Add a geo reference to the list of known geo reference
- * @author Jean-Philippe Gauthier
  * @date   Janvier 2019
  *    @param[in]  Ref     Pointeur sur la reference
  *
@@ -966,7 +900,6 @@ TGeoRef* GeoRef_Add(TGeoRef *Ref) {
 
 /**----------------------------------------------------------------------------
  * @brief  Find a geo reference
- * @author Jean-Philippe Gauthier
  * @date   Janvier 2015
  *    @param[in]  Ref     Pointeur sur la reference
  *
@@ -1003,7 +936,7 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
  *   @param NI    Horizontal size of the grid
  *   @param NJ    Vertical size of the grid
  *   @param GRTYP Grid type ('A', 'B', 'E', 'G', 'L', 'N', 'S','Y', 'Z', '#', '!')
- *   @param GRREF Reference grid type ('E', 'G', 'L', 'N', 'S')
+ *   @param grref Reference grid type ('E', 'G', 'L', 'N', 'S')
  *   @param IG1   ig1 value associated to the reference grid
  *   @param IG2   ig2 value associated to the reference grid
  *   @param IG3   ig3 value associated to the reference grid
@@ -1013,7 +946,7 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
  *  
  *    @return              New geo reference pointer
 */
-TGeoRef* GeoRef_Define(TGeoRef *Ref,int NI,int NJ,char* GRTYP,char* GRREF,int IG1,int IG2,int IG3,int IG4,double* AX,double* AY) {
+TGeoRef* GeoRef_Define(TGeoRef *Ref,int NI,int NJ,char* GRTYP,char* grref,int IG1,int IG2,int IG3,int IG4,double* AX,double* AY) {
    
    TGeoRef* ref,*fref;
 
@@ -1021,24 +954,25 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int NI,int NJ,char* GRTYP,char* GRREF,int IG
    if (!ref)
       return(NULL);
 
-   ref->RPNHead.GRTYP[0]=ref->GRTYP[0] = GRTYP[0];
-   ref->RPNHead.GRTYP[1]=ref->GRTYP[1] = '\0';
-   ref->RPNHead.GRREF[0] = GRREF?GRREF[0]:'\0';
-   ref->RPNHead.GRREF[1] = '\0';
-   ref->RPNHead.NI=ref->NX = NI;
-   ref->RPNHead.NJ=ref->NY = NJ;
-   ref->RPNHead.IG[X_IG1] = IG1;
-   ref->RPNHead.IG[X_IG2] = IG2;
-   ref->RPNHead.IG[X_IG3] = IG3;
-   ref->RPNHead.IG[X_IG4] = IG4;
+   ref->RPNHead.grtyp[0]=ref->GRTYP[0] = GRTYP[0];
+   ref->RPNHead.grtyp[1]=ref->GRTYP[1] = '\0';
+   ref->RPNHeadExt.grref[0] = grref?grref[0]:'\0';
+   ref->RPNHeadExt.grref[1] = '\0';
+   ref->RPNHead.ni=ref->NX = NI;
+   ref->RPNHead.nj=ref->NY = NJ;
+   ref->RPNHead.ig1 = IG1;
+   ref->RPNHead.ig2 = IG2;
+   ref->RPNHead.ig3 = IG3;
+   ref->RPNHead.ig4 = IG4;
    ref->i1 = 1;
    ref->i2 = NI;
    ref->j1 = 1;
    ref->j2 = NJ;
+   ref->Type=GRID_NONE;
 
    switch (GRTYP[0]) {
       case 'Z':
-         f77name(cigaxg)(ref->RPNHead.GRREF,&ref->RPNHead.XGREF[X_LAT1],&ref->RPNHead.XGREF[X_LON1],&ref->RPNHead.XGREF[X_LAT2],&ref->RPNHead.XGREF[X_LON2],&ref->RPNHead.IGREF[X_IG1],&ref->RPNHead.IGREF[X_IG2],&ref->RPNHead.IGREF[X_IG3],&ref->RPNHead.IGREF[X_IG4]);
+         f77name(cigaxg)(ref->RPNHeadExt.grref,&ref->RPNHeadExt.xgref1,&ref->RPNHeadExt.xgref2,&ref->RPNHeadExt.xgref3,&ref->RPNHeadExt.xgref4,&ref->RPNHeadExt.igref1,&ref->RPNHeadExt.igref2,&ref->RPNHeadExt.igref3,&ref->RPNHeadExt.igref4,1);
       case '#':
       case 'Y':
          ref->AX = AX;
@@ -1068,9 +1002,234 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int NI,int NJ,char* GRTYP,char* GRREF,int IG
    return(ref);
 }
 
+int GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int Grid,TApp_Type Type) {
+
+   fst_record *h=&GRef->RPNHead;
+   fst_record record=default_fst_record,crit=default_fst_record;
+   int ok=0,sz=0,i;
+
+   if (Var && !*Ptr) {
+      crit.datev= h->datev;
+      crit.ip1  = h->ig1;
+      crit.ip2  = h->ig2;
+      crit.ip3  = h->ig3;
+      strncpy(crit.nomvar,Var,FST_NOMVAR_LEN);
+
+      if (Grid==1) {
+         // Look for corresponding time and if not use any time
+         if ((ok=fst24_read(h->file,&crit,NULL,&record))<=0) {
+            crit.datev= -1;
+            ok=fst24_read(h->file,&crit,NULL,&record);
+         }
+      } else if (Grid==0) {
+         strncpy(crit.etiket,h->etiket,FST_ETIKET_LEN);
+         strncpy(crit.typvar,h->typvar,FST_TYPVAR_LEN);
+         crit.ip1  = h->ip1;
+         crit.ip2  = h->ip2;
+         crit.ip3  = h->ip3;
+         ok=fst24_read(h->file,&crit,NULL,&record);
+      } else {
+         strncpy(crit.etiket,h->etiket,FST_ETIKET_LEN);
+         strncpy(crit.typvar,h->typvar,FST_TYPVAR_LEN);
+         crit.ip2  = h->ip2;
+         crit.ip3  = h->ip3;
+         ok=fst24_read(h->file,&crit,NULL,&record);
+      }
+
+      if (ok<=0) {
+         return(0);
+      } else {
+         sz=record.ni*record.nj*record.nk;
+         switch(Type) {
+            case APP_FLOAT32:
+               *Ptr=record.data;
+               break;
+
+            case APP_FLOAT64:
+               if (record.data_bits==64) {
+                  *Ptr=record.data;
+               } else {
+                  if (!(*Ptr=(double*)malloc(sz*sizeof(double)))) {
+                     Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Not enough memory to read descriptor field %s\n",__func__,Var);
+                     return(0);
+                  } 
+                  for(i=0;i<sz;i++) ((double*)*Ptr)[i]=((float*)record.data)[i];
+                  fst24_record_free(&record);
+               }
+               break;
+
+            case APP_INT32:
+               if (record.data_bits==32 && record.data_type==FST_TYPE_UNSIGNED) {
+                  *Ptr=record.data;
+               } else {
+                  if (!(*Ptr=(unsigned int*)malloc(sz*sizeof(unsigned int)))) {
+                     Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Not enough memory to read descriptor field\n",__func__,Var);
+                     return(0);
+                  } 
+                  for(i=0;i<sz;i++) ((unsigned int*)*Ptr)[i]=((float*)record.data)[i];
+                  fst24_record_free(&record);
+               }
+               break;
+
+            default:
+               *Ptr=record.data;
+                break;
+         }
+      }
+
+      strncpy(GRef->RPNHeadExt.grref,record.grtyp,FST_GTYP_LEN);
+      GRef->RPNHeadExt.igref1=record.ig1;
+      GRef->RPNHeadExt.igref2=record.ig2;
+      GRef->RPNHeadExt.igref3=record.ig3;
+      GRef->RPNHeadExt.igref4=record.ig4;
+   }
+   
+   return(sz);
+}
+
+
+int GeoRef_ReadGrid(struct TGeoRef *GRef) {
+
+   int         key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz;
+   float      *ax=NULL,*ay=NULL;
+   char        grref[2];
+
+   if (GRef->GRTYP[0]=='L' || GRef->GRTYP[0]=='A' || GRef->GRTYP[0]=='B' || GRef->GRTYP[0]=='N' || GRef->GRTYP[0]=='S' || GRef->GRTYP[0]=='G') {
+      return(TRUE);
+   }
+
+   if ((!GRef->AY || !GRef->AX) && GRef->RPNHead.file) {
+
+      switch(GRef->GRTYP[0]) {
+         case 'M':
+            if (!GRef->AY)  GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
+            if (!GRef->AX)  sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
+            if (!GRef->Idx) GeoRef_ReadDescriptor(GRef,(void **)&GRef->Idx,"##",1,APP_UINT32);
+            GeoRef_BuildIndex(GRef);
+            break;
+
+         case 'W':
+            break;
+
+         case 'Y':
+            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"LA",0,APP_FLOAT64);
+            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
+            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,"LO",0,APP_FLOAT64);
+            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
+            if (!GRef->Hgt) GeoRef_ReadDescriptor(GRef,(void **)&GRef->Hgt,"ZH",0,APP_FLOAT32);
+
+           break;
+
+         case 'X':
+         case 'O':
+            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
+            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
+            GeoRef_BuildIndex(GRef);          
+            break;
+
+         case 'V':
+            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
+            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
+//TODO:            RPN_FieldReadLevels(Field);
+            break;
+
+         case 'Z':
+            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
+            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
+            break;
+
+         case '#':
+            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
+            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
+   // TODO: Check with LireEnrPositionel
+   //        if (ax && ay) {
+   //            GRef->AX = (double*) malloc(GRef->NX*sizeof(double));
+   //            GRef->AY = (double*) malloc(GRef->NY*sizeof(double));
+   //            offsetx = ip3 - 1;
+   //            offsety = ip4 - 1;
+   //            for (j=0; j < GRef->NY; j++) GRef->AY[j] = ay[j+offsety];
+   //            for (i=0; i < GRef->NX; i++) GRef->AX[i] = ax[i+offsetx];
+   //         }
+            break;
+         
+         case 'U':
+   //         if (!GRef->AX) RPN_FieldReadComponent(h,&ax,"^>",1,0);
+
+            if (ax) {
+               GRef->NbSub=(int)ax[2];            // Number of LAM grids (YY=2)
+               ni=(int)ax[5];                     // NI size of LAM grid 
+               nj=(int)ax[6];                     // NJ size of LAM grid
+               GRef->NX = ni;                     // NI size of U grid
+               GRef->NY = nj*GRef->NbSub;         // NJ size of U grid
+               GRef->AX = (double*)malloc(ni*sizeof(double));
+               GRef->AY = (double*)malloc(nj*sizeof(double));
+               for(i=0;i<ni;i++) GRef->AX[i]=ax[15+i];
+               for(i=0;i<nj;i++) GRef->AY[i]=ax[15+ni+i];
+
+               // Get subgrids
+               GRef->Subs = (TGeoRef**)malloc(GRef->NbSub*sizeof(TGeoRef*));
+               strcpy(grref,"E");
+               idx=11;
+               for(s=0;s<GRef->NbSub;s++) {
+                  f77name(cxgaig)(grref,&ig1,&ig2,&ig3,&ig4,&ax[idx],&ax[idx+1],&ax[idx+2],&ax[idx+3],1);
+                  GRef->Subs[s] = GeoRef_Define(NULL,ni,nj,"Z",grref,ig1,ig2,ig3,ig4,GRef->AX,GRef->AY);
+                //TODO: Do we need to do this here ?
+                  GeoRef_MaskYYDefine(GRef->Subs[s]);
+                  idx+=ni+nj+10;
+               }
+               free(ax);
+            }
+      }
+
+      // Check for 2D AX/AY
+      if (sz>GRef->NX) {
+         GRef->Type|=GRID_AXY2D;
+      }
+      // In case of WKT REF
+      if (GRef->GRTYP[0]=='W' || GRef->RPNHeadExt.grref[0] == 'W') {
+#ifdef HAVE_GDAL
+         float  tmpv[6];
+         double mtx[6],inv[6],*tm=NULL,*im=NULL;
+         char  *proj=NULL;
+
+         if ((key=cs_fstinf(h->fID,&ni,&nj,&nk,-1,"",h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],"","PROJ"))<0) {
+            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find projection description field PROJ (c_fstinf failed)\n",__func__);
+            return(FALSE);
+         } else {
+            c_fst_data_length(1);
+            if ((proj=(char*)malloc(ni*nj*4))) {
+               cs_fstluk(proj,key,&ni,&nj,&nk);
+            }
+         }
+         if ((key=cs_fstinf(h->fID,&ni,&nj,&nk,-1,"",h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],"","MTRX"))<0) {
+            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find trasform matrix field MTRX (c_fstinf failed)\n",__func__);
+            return(FALSE);
+         } else {
+            cs_fstluk(tmpv,key,&ni,&nj,&nk);
+            for(i=0;i<ni;i++) {
+               mtx[i]=tmpv[i];
+            }
+            tm=mtx;
+            if (!GDALInvGeoTransform(mtx,inv)) {
+               im=NULL;
+            } else {
+               im=inv;
+            }
+         }
+         GeoRef_SetW(GRef,proj,tm,im,NULL);
+         if (proj) free(proj);
+#else
+   Lib_Log(APP_LIBGEOREF,APP_ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);
+   return(FALSE);
+#endif
+      }
+   }
+
+   return(TRUE);
+}
+
 /**----------------------------------------------------------------------------
  * @brief  Create new geo reference
- * @author Jean-Philippe Gauthier
  * @date   Avril 2005
  *
  *   @param NI    Horizontal size of the grid
@@ -1084,7 +1243,7 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int NI,int NJ,char* GRTYP,char* GRREF,int IG
  * 
  *   @return              New geo reference pointer
 */
-TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID) {
+TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,fst_file *File) {
 
    TGeoRef *ref,*fref;
    int      id;
@@ -1095,12 +1254,15 @@ TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4
    if (GRTYP[0]==' ') GRTYP[0]='X';
    
    GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
-   ref->RPNHead.GRTYP[0]=ref->GRTYP[0]=GRTYP[0];
-   ref->RPNHead.GRTYP[0]=ref->GRTYP[1]=GRTYP[1];
+   ref->RPNHead.grtyp[0]=ref->GRTYP[0]=GRTYP[0];
+   ref->RPNHead.grtyp[1]=ref->GRTYP[1]=GRTYP[1];
+   ref->RPNHead.ip1 = 0;
+   ref->RPNHead.ip2 = 0;
+   ref->RPNHead.ip3 = 0;
+   ref->Type=GRID_NONE;
 
-   if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='P' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
+   if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='P' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || File)) {
 
-#ifdef HAVE_RMN
       if (GRTYP[1]=='#') {
          //TODO: CHECK For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
       }
@@ -1110,11 +1272,11 @@ TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4
          return(GeoRef_Define(NULL,NI,NJ,GRTYP," ",IG1,IG2,IG3,IG4,NULL,NULL));
       }
   
-      ref->RPNHead.FID=FID;
-      ref->RPNHead.IG[X_IG1] = IG1;
-      ref->RPNHead.IG[X_IG2] = IG2;
-      ref->RPNHead.IG[X_IG3] = IG3;
-      ref->RPNHead.IG[X_IG4] = (GRTYP[0]=='#' || GRTYP[0]=='U')?IG4:0;
+      ref->RPNHead.file= File;
+      ref->RPNHead.ig1 = IG1;
+      ref->RPNHead.ig2 = IG2;
+      ref->RPNHead.ig3 = IG3;
+      ref->RPNHead.ig4 = (GRTYP[0]=='#' || GRTYP[0]=='U')?IG4:0;
  
       // This georef already exists
       if (fref=GeoRef_Find(ref)) {
@@ -1125,7 +1287,7 @@ TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4
 
       // This is a new georef
       GeoRef_Add(ref);
-      if (!RPN_GridRead(ref)) {
+      if (!GeoRef_ReadGrid(ref)) {
          // problems with reading grid descriptors
          return(NULL);
       }
@@ -1143,7 +1305,6 @@ TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4
             GeoRef_CalcLL(ref);
          }
       }
-#endif
    }
 
    GeoRef_Qualify(ref);
@@ -1153,7 +1314,6 @@ TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4
 
 /**----------------------------------------------------------------------------
  * @brief  Create new geo reference
- * @author Jean-Philippe Gauthier
  * @date   Janvier 2015
  *
  *    @return              New geo reference pointer
@@ -1194,13 +1354,13 @@ TGeoRef* GeoRef_New() {
    memcpy(&ref->Options,&GeoRef_Options,sizeof(TGeoOptions));
 
    // RPN Specific
-   memset(&ref->RPNHead,0x0,sizeof(TRPNHeader));
+   memset(&ref->RPNHead,0x0,sizeof(fst_record));
 
    // WKT Specific
    ref->String=NULL;
    ref->Spatial=NULL;
-   ref->Function=NULL;
-   ref->InvFunction=NULL;
+   ref->Function=0;
+   ref->InvFunction=0;
    ref->Transform=NULL;
    ref->RotTransform=NULL;
    ref->InvTransform=NULL;
@@ -1232,7 +1392,6 @@ TGeoRef* GeoRef_New() {
 
 /**----------------------------------------------------------------------------
  * @brief  Create spatial index
- * @author Jean-Philippe Gauthier
  * @date   Janvier 2016
  *    @param[in]  Ref     Pointeur sur la reference
  *
@@ -1333,7 +1492,6 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
 
 /**----------------------------------------------------------------------------
  * @brief  Find closest point(s) to a grid position
- * @author Jean-Philippe Gauthier
  * @date   Janvier 2015
  *    @param[in]  Ref     Pointeur sur la reference
  *    @param[in]  X       X coordinate
@@ -1476,7 +1634,6 @@ int GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,dou
 
 /**----------------------------------------------------------------------------
  * @brief  Check for intersection of 2 gep reference
- * @author Jean-Philippe Gauthier
  * @date   Aout 2006 
  *    @param[in]  Ref0     Pointeur sur la reference 0
  *    @param[in]  Ref1     Pointeur sur la reference 1
@@ -1612,7 +1769,6 @@ int GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Re
 
 /**----------------------------------------------------------------------------
  * @brief  Calculates geographical limits of a geo reference
- * @author Jean-Philippe Gauthier
  * @date   Aout 2006
  *    @param[in]  Ref      Pointeur sur la reference
  *    @param[out] Lat0     Latitude of first corner
@@ -1691,7 +1847,6 @@ int GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double
 
 /**----------------------------------------------------------------------------
  * @brief  Check if a georef is within another
- * @author Jean-Philippe Gauthier
  * @date   February 2009
  *    @param[in]  Ref0     Pointeur sur la reference inclusive
  *    @param[in]  Ref1     Pointeur sur la reference a tester
@@ -1738,7 +1893,6 @@ int GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1)
                     
 /**----------------------------------------------------------------------------
  * @brief  Check if a geographic range is within a georef
- * @author Jean-Philippe Gauthier
  * @date   February 2009
  *    @param[in]  Ref      Pointeur sur la reference
  *    @param[in]  Lat0     Latitude of first corner
@@ -1850,7 +2004,6 @@ int GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int Idx0,int Idx1,int
                      
 /**----------------------------------------------------------------------------
  * @brief  Project a latlon geographic bounding box into grid coordinates
- * @author Jean-Philippe Gauthier
  * @date   February 2009
  *    @param[in]  Ref      Pointeur sur la reference
  *    @param[in]  Lat0     Latitude of first corner
@@ -1917,7 +2070,6 @@ int GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,dou
 /**----------------------------------------------------------------------------
  * @brief  Verifier la validite d'une georeference
  * @remark On projete la bounding box et si les latitudes sont en dehors de -90,90 alors c'est pas bon
- * @author Jean-Philippe Gauthier
  * @date   Fevrier 2009
  *    @param[in]  Ref      Pointeur sur la reference
  *
@@ -1941,7 +2093,6 @@ int GeoRef_Valid(TGeoRef* __restrict const Ref) {
 
 /**----------------------------------------------------------------------------
  * @brief  Assigner des vecteurs de positions X et Y
- * @author Jean-Philippe Gauthier
  * @date   Mars 2010 
  *    @param[in]  Ref      Pointeur sur la reference
  *    @param[in]  XDef     Data definition des positions en X
@@ -2035,7 +2186,6 @@ int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
  * @brief  Obtenir les valeurs de distance en X et Y ainsi que l'aire
  *         pour chaque cellule de la grille
  * @remark Si un des tableau est NULL, il ne sera pas remplie
- * @author Jean-Philippe Gauthier
  * @date   Avril 2010 
  *    @param[in]  Grid     Grille
  *    @param[in]  Invert   Invert (1/area)
@@ -2096,7 +2246,6 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
       }
 
    } else {
-#ifdef HAVE_RMN            
       pnid=Ref->Options.SubGrid;
       pidx=0;
       nx = Ref->NX;
@@ -2152,9 +2301,6 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
          Ref->NX = nx;
          Ref->NY = ny;
       }
-#else
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: RMNLIB support not included\n",__func__);
-#endif
    }
    
    return(TRUE);
@@ -2165,23 +2311,23 @@ int GeoRef_DefRPNXG(TGeoRef* Ref) {
    switch (Ref->GRTYP[0]) {
       case 'A':
       case 'G':
-         Ref->RPNHead.XG[X_DLON]  = 360. /Ref->NX;
-         Ref->RPNHead.XG[X_SWLON] = 0.0;
-         switch (Ref->RPNHead.IG[X_IG1]) {
+         Ref->RPNHeadExt.xg4  = 360. /Ref->NX;
+         Ref->RPNHeadExt.xg2 = 0.0;
+         switch (Ref->RPNHead.ig1) {
 				case 0:
-				   Ref->RPNHead.XG[X_DLAT] = 180./Ref->NY;
-				   Ref->RPNHead.XG[X_SWLAT] = -90. + 0.5*Ref->RPNHead.XG[X_DLAT];
+				   Ref->RPNHeadExt.xg3 = 180./Ref->NY;
+				   Ref->RPNHeadExt.xg1 = -90. + 0.5*Ref->RPNHeadExt.xg3;
 				   break;
 
 				case 1:
-				   Ref->RPNHead.XG[X_DLAT] = 90./Ref->NY;
-				   Ref->RPNHead.XG[X_SWLAT] = 0.5*Ref->RPNHead.XG[X_DLAT];
+				   Ref->RPNHeadExt.xg3 = 90./Ref->NY;
+				   Ref->RPNHeadExt.xg1 = 0.5*Ref->RPNHeadExt.xg3;
 				   Ref->Type |= GRID_EXPAND;
 				   break;
 
 				case 2:
-				   Ref->RPNHead.XG[X_DLAT] = 90./Ref->NY;
-				   Ref->RPNHead.XG[X_SWLAT] = -90. + 0.5*Ref->RPNHead.XG[X_DLAT];
+				   Ref->RPNHeadExt.xg3 = 90./Ref->NY;
+				   Ref->RPNHeadExt.xg1 = -90. + 0.5*Ref->RPNHeadExt.xg3;
 				   Ref->Type |= GRID_EXPAND;
 				   break;
 
@@ -2191,7 +2337,7 @@ int GeoRef_DefRPNXG(TGeoRef* Ref) {
 				   break;
 			}
 
-         switch(Ref->RPNHead.IG[X_IG2]) {
+         switch(Ref->RPNHead.ig2) {
 	         case 1:
 	            Ref->Type|=GRID_YINVERT;
 	            break;
@@ -2202,23 +2348,23 @@ int GeoRef_DefRPNXG(TGeoRef* Ref) {
          break;
 
       case 'B':
-         Ref->RPNHead.XG[X_DLON] = 360. /(Ref->NX-1);
-         Ref->RPNHead.XG[X_SWLON] = 0.0;
-         switch (Ref->RPNHead.IG[X_IG1]) {
+         Ref->RPNHeadExt.xg4 = 360. /(Ref->NX-1);
+         Ref->RPNHeadExt.xg2 = 0.0;
+         switch (Ref->RPNHead.ig1) {
 	         case 0:
-	            Ref->RPNHead.XG[X_DLAT] = 180./(Ref->NY-1);
-	            Ref->RPNHead.XG[X_SWLAT] = -90.;
+	            Ref->RPNHeadExt.xg3 = 180./(Ref->NY-1);
+	            Ref->RPNHeadExt.xg1 = -90.;
 	            break;
 
 	         case 1:
-	            Ref->RPNHead.XG[X_DLAT] = 90./(Ref->NY-1);
-	            Ref->RPNHead.XG[X_SWLAT] = 0.;
+	            Ref->RPNHeadExt.xg3 = 90./(Ref->NY-1);
+	            Ref->RPNHeadExt.xg1 = 0.;
 	            Ref->Type |= GRID_EXPAND;
 	            break;
 
 	         case 2:
-	            Ref->RPNHead.XG[X_DLAT] = 90./(Ref->NY-1);
-	            Ref->RPNHead.XG[X_SWLAT] = -90.;
+	            Ref->RPNHeadExt.xg3 = 90./(Ref->NY-1);
+	            Ref->RPNHeadExt.xg1 = -90.;
 	            Ref->Type |= GRID_EXPAND;
 	            break;
 
@@ -2227,7 +2373,7 @@ int GeoRef_DefRPNXG(TGeoRef* Ref) {
 	            return(-1);
 	      }
 
-         switch(Ref->RPNHead.IG[X_IG2]) {
+         switch(Ref->RPNHead.ig2) {
 	         case 1:
 	            Ref->Type|=GRID_YINVERT;
 	            break;
@@ -2238,11 +2384,11 @@ int GeoRef_DefRPNXG(TGeoRef* Ref) {
          break;
 
       case 'E':
-         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_LAT1],&Ref->RPNHead.XG[X_LON1],&Ref->RPNHead.XG[X_LAT2],&Ref->RPNHead.XG[X_LON2],&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
-      /*      Ref->RPNHead.XG[X_DLAT] = 180./Ref->NY;
-	      Ref->RPNHead.XG[X_DLON] = 360./(Ref->NX-1);
-	      Ref->RPNHead.XG[X_SWLON] = 0.0;
-	      Ref->RPNHead.XG[X_SWLAT] = -90. + 0.5*Ref->RPNHead.XG[X_DLAT];
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1,&Ref->RPNHeadExt.xg2,&Ref->RPNHeadExt.xg3,&Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
+      /*      Ref->RPNHeadExt.xg3 = 180./Ref->NY;
+	      Ref->RPNHeadExt.xg4 = 360./(Ref->NX-1);
+	      Ref->RPNHeadExt.xg2 = 0.0;
+	      Ref->RPNHeadExt.xg1 = -90. + 0.5*Ref->RPNHeadExt.xg3;
       */
          break;
 
@@ -2253,30 +2399,30 @@ int GeoRef_DefRPNXG(TGeoRef* Ref) {
 
       case '#':
       case 'Z':
-         if (Ref->RPNHead.GRREF[0] == 'N') Ref->Hemi = NORTH;
-         if (Ref->RPNHead.GRREF[0] == 'S') Ref->Hemi = SOUTH;
-         if (Ref->RPNHead.GRREF[0] == 'E' || Ref->RPNHead.GRREF[0]== 'L') {
-            f77name(cigaxg)(Ref->RPNHead.GRREF,&Ref->RPNHead.XGREF[X_LAT1], &Ref->RPNHead.XGREF[X_LON1], &Ref->RPNHead.XGREF[X_LAT2], &Ref->RPNHead.XGREF[X_LON2],&Ref->RPNHead.IGREF[X_IG1], &Ref->RPNHead.IGREF[X_IG2], &Ref->RPNHead.IGREF[X_IG3], &Ref->RPNHead.IGREF[X_IG4]);
+         if (Ref->RPNHeadExt.grref[0] == 'N') Ref->Hemi = NORTH;
+         if (Ref->RPNHeadExt.grref[0] == 'S') Ref->Hemi = SOUTH;
+         if (Ref->RPNHeadExt.grref[0] == 'E' || Ref->RPNHeadExt.grref[0]== 'L') {
+            f77name(cigaxg)(Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,&Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,1);
          }
          break;
 
       case 'L':
-         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_SWLAT], &Ref->RPNHead.XG[X_SWLON], &Ref->RPNHead.XG[X_DLAT], &Ref->RPNHead.XG[X_DLON],&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
          break;
 
       case 'N':
-         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_PI], &Ref->RPNHead.XG[X_PJ], &Ref->RPNHead.XG[X_D60], &Ref->RPNHead.XG[X_DGRW],&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
          Ref->Hemi = NORTH;
          break;
 
       case 'S':
-         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_PI], &Ref->RPNHead.XG[X_PJ], &Ref->RPNHead.XG[X_D60], &Ref->RPNHead.XG[X_DGRW],&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
          Ref->Hemi = SOUTH;
          break;
 
       case 'T':
 		   //TODO: What's T
-         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHead.XG[X_TD60], &Ref->RPNHead.XG[X_TDGRW], &Ref->RPNHead.XG[X_CLAT], &Ref->RPNHead.XG[X_CLON],&Ref->RPNHead.IG[X_IG1], &Ref->RPNHead.IG[X_IG2], &Ref->RPNHead.IG[X_IG3], &Ref->RPNHead.IG[X_IG4]);
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
          break;
 
       default:
@@ -2289,24 +2435,113 @@ int GeoRef_DefRPNXG(TGeoRef* Ref) {
 
 
 
-int32_t GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,int *IG2,int *IG3,int *IG4,char *GRREF,int *IG1REF,int *IG2REF,int *IG3REF,int *IG4REF) {
+int32_t GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,int *IG2,int *IG3,int *IG4,char *grref,int *IG1REF,int *IG2REF,int *IG3REF,int *IG4REF) {
    
-   *NI     = Ref->RPNHead.NI;
-   *NJ     = Ref->RPNHead.NJ;
+   *NI     = Ref->RPNHead.ni;
+   *NJ     = Ref->RPNHead.nj;
 
-   GRTYP[0]  = Ref->RPNHead.GRTYP[0];
+   GRTYP[0]  = Ref->RPNHead.grtyp[0];
    GRTYP[1]  = '\0';
-   GRREF[0]  = Ref->RPNHead.GRREF[0];
-   GRREF[1]  = '\0';
+   grref[0]  = Ref->RPNHeadExt.grref[0];
+   grref[1]  = '\0';
   
-   *IG1    = Ref->RPNHead.IG[X_IG1];
-   *IG2    = Ref->RPNHead.IG[X_IG2];
-   *IG3    = Ref->RPNHead.IG[X_IG3];
-   *IG4    = Ref->RPNHead.IG[X_IG4];
-   *IG1REF = Ref->RPNHead.IGREF[X_IG1];
-   *IG2REF = Ref->RPNHead.IGREF[X_IG2];
-   *IG3REF = Ref->RPNHead.IGREF[X_IG3];
-   *IG4REF = Ref->RPNHead.IGREF[X_IG4];
+   *IG1    = Ref->RPNHead.ig1;
+   *IG2    = Ref->RPNHead.ig2;
+   *IG3    = Ref->RPNHead.ig3;
+   *IG4    = Ref->RPNHead.ig4;
+   *IG1REF = Ref->RPNHeadExt.igref1;
+   *IG2REF = Ref->RPNHeadExt.igref2;
+   *IG3REF = Ref->RPNHeadExt.igref3;
+   *IG4REF = Ref->RPNHeadExt.igref4;
 
    return(0);
+}
+
+/*----------------------------------------------------------------------------
+ * @brief  Writes a grid definition
+ * @date   January 2020
+ *    @param[in]  GRef      GeoRef pointer
+ *    @param[in]  File      FSTD file pointer
+ *
+ *    @return             Error code (0=ok)
+*/
+int GeoRef_Write(TGeoRef *GRef,fst_file *File){
+
+   fst_record record=default_fst_record;
+   int i;
+
+   if (!GRef->Name) GRef->Name=strdup("Undefined");
+
+   record.data = (float*)calloc(GRef->NX*GRef->NY,sizeof(float));
+   record.ni   = GRef->NX;
+   record.nj   = GRef->NY;
+   record.dateo = 0;
+   record.deet  = 0;
+   record.npas  = 0;
+   record.ip1  = 0;
+   record.ip2  = 0;
+   record.ip3  = 0;
+   record.ip3  = 0;
+   strncpy(record.typvar,"X",FST_TYPVAR_LEN);
+   strncpy(record.nomvar,"GRID",FST_NOMVAR_LEN);
+   strncpy(record.grtyp,GRef->RPNHead.grtyp,FST_GTYP_LEN);
+   strncpy(record.etiket,GRef->Name,FST_ETIKET_LEN);
+   record.ig1   = GRef->RPNHead.ig1;
+   record.ig2   = GRef->RPNHead.ig2;
+   record.ig3   = GRef->RPNHead.ig3;
+   record.ig4   = GRef->RPNHead.ig4;
+   record.data_type = FST_TYPE_REAL_IEEE;
+   record.data_bits = 32;
+   record.pack_bits = 32;
+   if (fst24_write(File,&record,FST_SKIP)<=0) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write grid record field (fst24_write failed)\n",__func__);
+   }
+
+// TODO: put var for 64 bit
+   if (!32)
+      free(record.data);
+
+   if (GRef->AX && GRef->AY) {
+      if (32) {
+         for(i=0;i<(GRef->Type&GRID_AXY2D?GRef->NX*GRef->NY:GRef->NX);i++) ((float*)record.data)[i]=GRef->AX[i];
+         record.pack_bits = 32;
+         record.data_bits = 32;
+      } else {
+         record.data = GRef->AX;
+         record.pack_bits = 64;
+         record.data_bits = 64;
+      }
+      record.data_type = FST_TYPE_REAL_IEEE;
+      record.ni   = GRef->NX;
+      record.nj   = GRef->Type&GRID_AXY2D?GRef->NY:1;
+      record.nk   = 1;
+      record.ip1  = GRef->RPNHead.ig1;
+      record.ip2  = GRef->RPNHead.ig2;
+      record.ip3  = GRef->RPNHead.ig3;
+      strncpy(record.nomvar,">>",FST_NOMVAR_LEN);
+      strncpy(record.grtyp,GRef->RPNHeadExt.grref,FST_GTYP_LEN);
+      record.ig1   = GRef->RPNHeadExt.igref1;
+      record.ig2   = GRef->RPNHeadExt.igref2;
+      record.ig3   = GRef->RPNHeadExt.igref3;
+      record.ig4   = GRef->RPNHeadExt.igref4;
+      if (fst24_write(File,&record,FST_SKIP)<=0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
+         return(FALSE);
+      }
+
+      if (32) {
+         for(i=0;i<(GRef->Type&GRID_AXY2D?GRef->NX*GRef->NY:GRef->NY);i++) ((float*)record.data)[i]=GRef->AY[i];
+      } else {
+         record.data = GRef->AY;
+      }
+      record.ni   = GRef->Type&GRID_AXY2D?GRef->NX:1;
+      record.nj   = GRef->NY;
+      strncpy(record.nomvar,"^^",FST_NOMVAR_LEN);
+      if (fst24_write(File,&record,FST_SKIP)<=0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
+         return(FALSE);
+      }
+   }
+
+   return(TRUE);
 }

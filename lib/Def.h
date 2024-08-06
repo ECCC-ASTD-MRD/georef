@@ -1,40 +1,8 @@
-/*=========================================================
- * Environnement Canada
- * Centre Meteorologique Canadien
- * 2100 Trans-Canadienne
- * Dorval, Quebec
- *
- * Projet       : Lecture et traitements de divers fichiers de donnees
- * Fichier      : Def.h
- * Creation     : Fevrier 2003 - J.P. Gauthier
- *
- * Description  : Fonctions generales applicables a divers types de donnees.
- *
- * Remarques    :
- *
- * License      :
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation,
- *    version 2.1 of the License.
- *
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *    Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public
- *    License along with this library; if not, write to the
- *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- *    Boston, MA 02111-1307, USA.
- *
- *=========================================================
- */
-
 #ifndef _Def_h
 #define _Def_h
 
-#include "List.h"
+#include <rmn/List.h>
+#include "Array.h"
 #include "OGR.h"
 
 #define DEFSELECTTYPE(A,B)  (A->Type>B->Type?A:B)
@@ -259,51 +227,51 @@ typedef enum {
 extern int TDef_Size[];
 
 typedef struct TDef {
-   double *Buffer,*Aux;       // Buffer temporaire
-   int    *Accum;             // Accumulation Buffer temporaire
-   char   *Mask;              // Masque a appliquer au traitement sur le champs
-   char   *Data[4];           // Composantes du champs (Pointeurs sur les donnees)
-   char   *Mode;              // Module des champs Data is vectoriel
-   char   *Dir;               // Direction si vectoriel
-   float  *Pres,*Height;      // Pression au sol
-   float  *Sub;               // Sub grid resolutions values
-   OGRGeometryH *Pick,*Poly;  // Geometry used in various interpolation method
-   TList  *Segments;          // Liste d'objets de rendue
+   double *Buffer,*Aux;          // Buffer temporaire
+   int    *Accum;                // Accumulation Buffer temporaire
+   char   *Mask;                 // Masque a appliquer au traitement sur le champs
+   char   *Data[4];              // Composantes du champs (Pointeurs sur les donnees)
+   char   *Mode;                 // Module des champs Data is vectoriel
+   char   *Dir;                  // Direction si vectoriel
+   float  *Pres,*PresLS,*Height; // Pression au sol
+   float  *Sub;                  // Sub grid resolutions values
+   OGRGeometryH *Pick,*Poly;     // Geometry used in various interpolation method
+   TList  *Segments;             // Liste d'objets de rendue
 
-   double  NoData;            // Valeur de novalue
-   TDef_Type Type;            // Type de donnees du champs
-   int NI,NJ,NK,NC,NIJ;       // Dimensions du champs
-   int Idx;                   // Index displacement into supergrid
+   double  NoData;               // Valeur de novalue
+   TDef_Type Type;               // Type de donnees du champs
+   int NI,NJ,NK,NC,NIJ;          // Dimensions du champs
+   int Idx;                      // Index displacement into supergrid
 
-   int     CellDim;           // Defined grid point coverage, point=1 or area=2
-   double  CoordLimits[2][2]; // Limits of processing in latlon
-   int     Limits[3][2];      // Limits of processing in grid points
-   int     Level;             // Niveau courant
-   int     Sample,SubSample;  // Sample interval in grid points
-   char    Alias;             // Alias d'un autre TDef (Pointe sur d'autres donnees)
+   int     CellDim;              // Defined grid point coverage, point=1 or area=2
+   double  CoordLimits[2][2];    // Limits of processing in latlon
+   int     Limits[3][2];         // Limits of processing in grid points
+   int     Level;                // Niveau courant
+   int     Sample,SubSample;     // Sample interval in grid points
+   char    Alias;                // Alias d'un autre TDef (Pointe sur d'autres donnees)
 } TDef;
 
 struct TGeoRef;
 
 void  Def_Clear(TDef *Def);
-int   Def_Compat(TDef *DefTo,TDef *DefFrom);
+int   Def_Compat(TDef *ToDef,TDef *FromDef);
 TDef *Def_Copy(TDef *Def);
 TDef *Def_CopyPromote(TDef *Def,TDef_Type Type);
-int   Def_Free(TDef *Def);
+void  Def_Free(TDef *Def);
 TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type);
 TDef *Def_Resize(TDef *Def,int NI,int NJ,int NK);
-int   Def_Paste(TDef *DefTo,TDef *DefPaste,int X0,int Y0);
+int   Def_Paste(TDef *ToDef,TDef *DefPaste,int X0,int Y0);
 
-int   Def_Rasterize(TDef *Def,struct TGeoRef *Ref,OGRGeometryH Geom,double Value,TDef_Combine Comb);
-int   Def_GridCell2OGR(OGRGeometryH Geom,struct TGeoRef *RefTo,struct TGeoRef *RefFrom,int I,int J,int Seg);
+int   Def_Rasterize(TDef *Def,struct TGeoRef *Ref,OGRGeometryH Geom,double Value);
+int   Def_GridCell2OGR(OGRGeometryH Geom,struct TGeoRef *ToRef,struct TGeoRef *FromRef,int I,int J,int Seg);
 
-int   Def_GetValue(TGeoRef *Ref,TDef *Def,TDef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
+int   Def_GetValue(TGeoRef *Ref,TDef *Def,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
 
-int   Def_GeoRefInterp(TGeoRef *RefTo,TGeoRef *RefFrom,TDef *DefTo,TDef *DefFrom,int Final);
-int   Def_GridInterp(TGeoRef *RefTo,TGeoRef *RefFrom,TDef *DefTo,TDef *DefFrom,int Final);
+int   Def_GeoRefInterp(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final);
+int   Def_GridInterp(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final);
 int   Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,int Final);
-int   Def_GridInterpConservative(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final);
-int   Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,char Degree);
-int   Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerRef,char *Field,double Value,TDef_Combine Comb,int Final);
+int   Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int Final);
+int   Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef);
+int   Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerRef,char *Field,double Value,int Final);
 
 #endif

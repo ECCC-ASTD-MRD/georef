@@ -1,35 +1,4 @@
-/*==============================================================================
- * Environnement Canada
- * Centre Meteorologique Canadian
- * 2100 Trans-Canadienne
- * Dorval, Quebec
- *
- * Projet       : Librairie de fonctions utiles
- * Creation     : Janvier 2015
- * Auteur       : Jean-Philippe Gauthier
- *
- * Description: RPN fstd interpolation test
- *
- * License:
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation,
- *    version 2.1 of the License.
- *
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *    Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public
- *    License along with this library; if not, write to the
- *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- *    Boston, MA 02111-1307, USA.
- *
- *==============================================================================
- */
-
-#include "App.h"
+#include <App.h>
 #include "Def.h"
 #include "GeoRef.h"
 #include "georef_build_info.h"
@@ -40,7 +9,6 @@
 
 int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket,TDef_InterpR Type) {
 
-#ifdef HAVE_RMN
    TGridSet  *gset=NULL;
    TRPNField *in,*grid,*truth,*idx;
    int  fin,fout,fgrid,ftruth,n=0;
@@ -142,7 +110,6 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    cs_fstfrm(fin);
    cs_fstfrm(fout);
    cs_fstfrm(fgrid);
-#endif
 
    return(1);
 }

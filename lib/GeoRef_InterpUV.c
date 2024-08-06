@@ -1,29 +1,103 @@
-/* RMNLIB - Library of useful routines for C and FORTRAN programming
- * Copyright (C) 1975-2001  Division de Recherche en Prevision Numerique
- *                          Environnement Canada
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation,
- * version 2.1 of the License.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
- */
-
-#include "App.h"
-#include "RPN.h"
+#include <App.h>
 #include "GeoRef.h"
 
 void c_ezgfwfllw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
 void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
+
+/* int32_t c_gdlluvfuv_orig(int32_t gdid, float *uullout, float *vvllout, float *uuin, float *vvin,
+              float *latin, float *lonin, int32_t npts)
+{
+    int32_t gdrow_id, gdcol_id;
+    c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
+
+   int32_t ni = npts;
+   int32_t nj = 1;
+
+    memcpy(uullout, uuin, npts*sizeof(float));
+    memcpy(vvllout, vvin, npts*sizeof(float));
+
+    float * lat_rot;
+    float * lon_rot;
+    switch (Grille[gdrow_id][gdcol_id].grtyp[0]) {
+        case 'E':
+            lat_rot = (float *)(malloc(npts*sizeof(float)));
+            lon_rot = (float *)(malloc(npts*sizeof(float)));
+            f77name(ez_gfxyfll)(lonin, latin, lon_rot,lat_rot, &ni,
+                                &Grille[gdrow_id][gdcol_id].fstExt.xg[XLAT1],&Grille[gdrow_id][gdcol_id].fstExt.xg[XLON1],
+                                &Grille[gdrow_id][gdcol_id].fstExt.xg[XLAT2],&Grille[gdrow_id][gdcol_id].fstExt.xg[XLON2]);
+
+            c_ezllwfgff(uullout,vvllout, latin,lonin, lat_rot,lon_rot,
+                        &ni,&nj,Grille[gdrow_id][gdcol_id].grtyp,
+                        &Grille[gdrow_id][gdcol_id].fst.ig[IG1],&Grille[gdrow_id][gdcol_id].fst.ig[IG2],
+                        &Grille[gdrow_id][gdcol_id].fst.ig[IG3],&Grille[gdrow_id][gdcol_id].fst.ig[IG4]);
+            free(lat_rot);
+            free(lon_rot);
+            return 0;
+            break;
+
+        case '#':
+        case 'Y':
+        case 'Z':
+            switch (Grille[gdrow_id][gdcol_id]Ext.grref[0]) {
+                case 'E':
+                    lat_rot = (float *)(malloc(npts*sizeof(float)));
+                    lon_rot = (float *)(malloc(npts*sizeof(float)));
+                    f77name(ez_gfxyfll)(lonin,latin,lon_rot, lat_rot, &ni,
+                        &Grille[gdrow_id][gdcol_id].fstExt.grref[XLAT1],&Grille[gdrow_id][gdcol_id].fstExt.grref[XLON1],
+                        &Grille[gdrow_id][gdcol_id].fstExt.grref[XLAT2],&Grille[gdrow_id][gdcol_id].fstExt.grref[XLON2]);
+
+                    c_ezllwfgff(uullout,vvllout,latin,lonin,lat_rot, lon_rot,
+                    &ni,&nj,Grille[gdrow_id][gdcol_id]Ext.grref,
+                    &Grille[gdrow_id][gdcol_id].fstExt.grref[IG1],&Grille[gdrow_id][gdcol_id].fstExt.grref[IG2],
+                    &Grille[gdrow_id][gdcol_id].fstExt.grref[IG3],&Grille[gdrow_id][gdcol_id].fstExt.grref[IG4]);
+                    free(lat_rot);
+                    free(lon_rot);
+                    return 0;
+                    break;
+
+                default:
+                    f77name(ez_llwfgdw)(uullout,vvllout,lonin,
+                                &ni,&nj,
+                                &Grille[gdrow_id][gdcol_id]Ext.grref,
+                                &Grille[gdrow_id][gdcol_id].fstExt.grref[IG1],&Grille[gdrow_id][gdcol_id].fstExt.grref[IG2],
+                                &Grille[gdrow_id][gdcol_id].fstExt.grref[IG3],&Grille[gdrow_id][gdcol_id].fstExt.grref[IG4]);
+                    break;
+            }
+            break;
+
+            default:
+                f77name(ez_llwfgdw)(uullout,vvllout,lonin,
+                        &ni,&nj,
+                        &Grille[gdrow_id][gdcol_id].grtyp,
+                        &Grille[gdrow_id][gdcol_id].fst.ig[IG1],&Grille[gdrow_id][gdcol_id].fst.ig[IG2],
+                        &Grille[gdrow_id][gdcol_id].fst.ig[IG3],&Grille[gdrow_id][gdcol_id].fst.ig[IG4]);
+                break;
+    }
+
+    return 0;
+}
+
+
+int32_t c_gdlluvfuv(int32_t gdid, float *uullout, float *vvllout, float *uuin, float *vvin,
+              float *latin, float *lonin, int32_t npts)
+{
+    int32_t gdrow_id, gdcol_id;
+    c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
+    if (Grille[gdrow_id][gdcol_id].nsubgrids > 0 ) {
+        fprintf(stderr, "<gdlluvfuv>: This operation is not supported for 'U' grids\n");
+        return -1;
+    } else {
+        return c_gdlluvfuv_orig(gdid, uullout, vvllout, uuin, vvin, latin, lonin, npts);
+    }
+}
+
+
+int32_t f77name(gdlluvfuv)(int32_t *gdid, float *uullout, float *vvllout, float *uuin, float *vvin,
+                     float *latin, float *lonin, int32_t *npts)
+{
+    return c_gdlluvfuv(*gdid, uullout, vvllout, uuin, vvin,latin, lonin, *npts);
+} */
+
 
 int GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin) {
    
@@ -558,8 +632,8 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
       case 'E':
          lat_true=(double *)(malloc(2*Nb*sizeof(double)));
          lon_true=&lat_true[Nb];
-         GeoRef_RotateXY(lat_true,lon_true,Lon,Lat,ni,Ref->RPNHead.XG[X_LAT1],Ref->RPNHead.XG[X_LON1],Ref->RPNHead.XG[X_LAT2],Ref->RPNHead.XG[X_LON2]);
-         c_ezgfwfllw8(uugdout,vvgdout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
+         GeoRef_RotateXY(lat_true,lon_true,Lon,Lat,ni,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4);
+         c_ezgfwfllw8(uugdout,vvgdout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4);
          free(lat_true);
          return(0);
          break;   
@@ -567,23 +641,23 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
       case '#':
       case 'Y':
       case 'Z':
-         switch(Ref->RPNHead.GRREF[0]) {
+         switch(Ref->RPNHeadExt.grref[0]) {
             case 'E':
                lat_true=(double *)(malloc(2*Nb*sizeof(double)));
                lon_true=&lat_true[Nb];
-               GeoRef_RotateXY(Lat,Lon,lon_true,lat_true,ni,Ref->RPNHead.XGREF[X_LAT1],Ref->RPNHead.XGREF[X_LON1],Ref->RPNHead.XGREF[X_LAT2],Ref->RPNHead.XGREF[X_LON2]);         
-               c_ezgfwfllw8(uugdout,vvgdout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+               GeoRef_RotateXY(Lat,Lon,lon_true,lat_true,ni,Ref->RPNHeadExt.igref1,Ref->RPNHeadExt.igref2,Ref->RPNHeadExt.igref3,Ref->RPNHeadExt.igref4);         
+               c_ezgfwfllw8(uugdout,vvgdout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4);
                free(lat_true);
                return(0);
                break;
 	    
             default:
-               f77name(ez8_gdwfllw)(uugdout,vvgdout,Lon,&ni,&nj,Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4], 1);
+               f77name(ez8_gdwfllw)(uugdout,vvgdout,Lon,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4, 1);
                break;
          }
         
       default:
-         f77name(ez8_gdwfllw)(uugdout,vvgdout,Lon,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4], 1);
+         f77name(ez8_gdwfllw)(uugdout,vvgdout,Lon,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4, 1);
          break;
    }
    
@@ -610,8 +684,8 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
       case 'E':
          lat_rot=(double *)(malloc(2*Nb*sizeof(double)));
          lon_rot=&lat_rot[Nb];
-         GeoRef_RotateXY(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHead.XG[X_LAT1],Ref->RPNHead.XG[X_LON1],Ref->RPNHead.XG[X_LAT2],Ref->RPNHead.XG[X_LON2]);
-         c_ezllwfgfw8(spd_out,wd_out,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4]);
+         GeoRef_RotateXY(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4);
+         c_ezllwfgfw8(spd_out,wd_out,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4);
          free(lat_rot);
          return(0);  
          break;
@@ -619,24 +693,24 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
       case '#':
       case 'Y':
       case 'Z':
-         switch(Ref->RPNHead.GRREF[0]) {
+         switch(Ref->RPNHeadExt.grref[0]) {
 	         case 'E':
                lat_rot=(double *)(malloc(2*Nb*sizeof(double)));
                lon_rot=&lat_rot[Nb];
-	            GeoRef_RotateXY(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHead.XGREF[X_LAT1],Ref->RPNHead.XGREF[X_LON1],Ref->RPNHead.XGREF[X_LAT2],Ref->RPNHead.XGREF[X_LON2]);
-	            c_ezllwfgfw8(spd_out,wd_out,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4]);
+	            GeoRef_RotateXY(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHeadExt.igref1,Ref->RPNHeadExt.igref2,Ref->RPNHeadExt.igref3,Ref->RPNHeadExt.igref4);
+	            c_ezllwfgfw8(spd_out,wd_out,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4);
 	            free(lat_rot);
 	            return(0);
 	            break;
 	   
 	         default:
-	            f77name(ez8_llwfgdw)(spd_out,wd_out,Lon,&ni,&nj,Ref->RPNHead.GRREF,&Ref->RPNHead.IGREF[X_IG1],&Ref->RPNHead.IGREF[X_IG2],&Ref->RPNHead.IGREF[X_IG3],&Ref->RPNHead.IGREF[X_IG4],1);
+	            f77name(ez8_llwfgdw)(spd_out,wd_out,Lon,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
 	            break;
 	      }
          break;
        
       default:
-         f77name(ez8_llwfgdw)(spd_out,wd_out,Lon,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.IG[X_IG1],&Ref->RPNHead.IG[X_IG2],&Ref->RPNHead.IG[X_IG3],&Ref->RPNHead.IG[X_IG4],1);
+         f77name(ez8_llwfgdw)(spd_out,wd_out,Lon,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
          break;
    }
       
@@ -663,7 +737,7 @@ void c_ezgfwfllw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *
    uvcart = (double *)malloc(2*3*npts*sizeof(double));
    xyz    = &uvcart[3*npts];
   
-   f77name(cigaxg)(grtyp, &xlat1, &xlon1, &xlat2, &xlon2, ig1, ig2, ig3, ig4);
+   f77name(cigaxg)(grtyp, &xlat1, &xlon1, &xlat2, &xlon2, ig1, ig2, ig3, ig4,1);
    f77name(ez_crot)(r, ri, &xlon1, &xlat1, &xlon2, &xlat2);
    grtypl[0] = 'L';
    f77name(ez8_gdwfllw)(uullout,vvllout,Lon,ni,nj,grtypl, &zero, &zero, &zero, &zero, 1);
@@ -694,7 +768,7 @@ void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *
    uvcart = (double *) malloc(2*3*npts*sizeof(double));
    xyz    = &uvcart[3*npts];  
   
-   f77name(cigaxg)(grtyp, &xlat1, &xlon1, &xlat2, &xlon2, ig1, ig2, ig3, ig4);
+   f77name(cigaxg)(grtyp, &xlat1, &xlon1, &xlat2, &xlon2, ig1, ig2, ig3, ig4,1);
    f77name(ez_crot)(r, ri, &xlon1, &xlat1, &xlon2, &xlat2);
    f77name(ez8_uvacart)(xyz, uullout, vvllout, xloningf, xlatingf, ni, nj); 
    f77name(ez8_mxm)(ri, &trois, xyz, &trois, uvcart, &npts);
