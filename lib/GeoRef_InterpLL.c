@@ -171,7 +171,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
             xlat00 = -90. + 0.5*dlat;
 
             grll(Ref->Lat,Ref->Lon,ni,nj,xlat00,xlon00,dlat,dlon);
-            f77name(cigaxg)(Ref->GRTYP, &Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2,&Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1,  &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
+            f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1,&Ref->RPNHeadExt.xg2,&Ref->RPNHeadExt.xg3,&Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
             GeoRef_RotateInvertXY(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4);
             break;
 
@@ -278,8 +278,8 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
 
                case 'L':
                   for (i=0; i < npts; i++) {
-                     Ref->Lon[i] = Ref->RPNHeadExt.igref2 + Ref->RPNHeadExt.igref4 * Ref->Lon[i];
-                     Ref->Lat[i] = Ref->RPNHeadExt.igref1 + Ref->RPNHeadExt.igref3 * Ref->Lat[i];
+                     Ref->Lon[i] = Ref->RPNHeadExt.xgref2 + Ref->RPNHeadExt.xgref4 * Ref->Lon[i];
+                     Ref->Lat[i] = Ref->RPNHeadExt.xgref1 + Ref->RPNHeadExt.xgref3 * Ref->Lat[i];
                   }   
                   break;
 
@@ -288,7 +288,7 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
                   break;
 
                case 'E':
-                  GeoRef_RotateInvertXY(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHeadExt.igref1,Ref->RPNHeadExt.igref2,Ref->RPNHeadExt.igref3,Ref->RPNHeadExt.igref4);
+                  GeoRef_RotateInvertXY(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHeadExt.xgref1,Ref->RPNHeadExt.xgref2,Ref->RPNHeadExt.xgref3,Ref->RPNHeadExt.xgref4);
                   break;
             }
             break;

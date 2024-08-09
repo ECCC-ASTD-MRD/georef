@@ -4,7 +4,7 @@
 int c_gd_isgridrotated(TGeoRef *gr) {
 
    if (gr->RPNHeadExt.grref[0] == 'E') {
-       if (fabs(gr->RPNHeadExt.igref1-gr->RPNHeadExt.igref3) < 0.001)
+       if (fabs(gr->RPNHeadExt.xgref1-gr->RPNHeadExt.xgref3) < 0.001)
          return(0); // non rotated
       else
          return(1); // rotated
@@ -268,7 +268,7 @@ int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin) {
       if (GeoRef_CalcLL(RefTo)) {
          GeoRef_SetCalcXY(gset);
          if (GeoRef_InterpFinally(RefTo,RefFrom,zout,lxzin,gset->X,gset->Y,RefTo->NX*RefTo->NY,gset)==0) {
-           if (RefFrom->Options.PolarCorrect) {
+        if (RefFrom->Options.PolarCorrect) {
                GeoRef_SetZoneDefine(gset);
                GeoRef_CorrectValue(RefTo,RefFrom,zout,lxzin);
             } 

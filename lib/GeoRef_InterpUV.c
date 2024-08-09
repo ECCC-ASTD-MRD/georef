@@ -645,7 +645,7 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
             case 'E':
                lat_true=(double *)(malloc(2*Nb*sizeof(double)));
                lon_true=&lat_true[Nb];
-               GeoRef_RotateXY(Lat,Lon,lon_true,lat_true,ni,Ref->RPNHeadExt.igref1,Ref->RPNHeadExt.igref2,Ref->RPNHeadExt.igref3,Ref->RPNHeadExt.igref4);         
+               GeoRef_RotateXY(Lat,Lon,lon_true,lat_true,ni,Ref->RPNHeadExt.xgref1,Ref->RPNHeadExt.xgref2,Ref->RPNHeadExt.xgref3,Ref->RPNHeadExt.xgref4);         
                c_ezgfwfllw8(uugdout,vvgdout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4);
                free(lat_true);
                return(0);
@@ -697,7 +697,7 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
 	         case 'E':
                lat_rot=(double *)(malloc(2*Nb*sizeof(double)));
                lon_rot=&lat_rot[Nb];
-	            GeoRef_RotateXY(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHeadExt.igref1,Ref->RPNHeadExt.igref2,Ref->RPNHeadExt.igref3,Ref->RPNHeadExt.igref4);
+	            GeoRef_RotateXY(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHeadExt.xgref1,Ref->RPNHeadExt.xgref2,Ref->RPNHeadExt.xgref3,Ref->RPNHeadExt.xgref4);
 	            c_ezllwfgfw8(spd_out,wd_out,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4);
 	            free(lat_rot);
 	            return(0);

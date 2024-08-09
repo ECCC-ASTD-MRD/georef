@@ -10,7 +10,7 @@
  
 static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
-__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_MAXIMUM, IV_FAST, 0.0, 0, TRUE, FALSE, FALSE, 16, 1, 1, TRUE, FALSE, 10.0, 0.0, 0.0 };  ///< Default options
+__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_MAXIMUM, IV_FAST, CB_REPLACE, 0.0, 0, TRUE, FALSE, FALSE, 16, 1, 1, TRUE, FALSE, 10.0, 0.0, 0.0 };  ///< Default options
 
 __attribute__ ((constructor)) int GeoRef_Init() {
    App_LibRegister(APP_LIBGEOREF,VERSION);
@@ -338,7 +338,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
 
          if (GeoRef_LL2XY(ToRef,&Scan->X[x],&Scan->Y[x],&y0,&x0,1,FALSE)) {
             if (ToDef) {
-              Def_GetValue(ToRef,ToDef,Degree,0,Scan->X[x],Scan->Y[x],0,&v,NULL);
+              Def_GetValue(ToRef,ToDef,0,Scan->X[x],Scan->Y[x],0,&v,NULL);
               Scan->D[x]=v;
             }
          }
@@ -1041,6 +1041,7 @@ int GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int Grid,TApp_Type 
       } else {
          sz=record.ni*record.nj*record.nk;
          switch(Type) {
+            case APP_NIL:
             case APP_FLOAT32:
                *Ptr=record.data;
                break;
@@ -1053,7 +1054,7 @@ int GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int Grid,TApp_Type 
                      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Not enough memory to read descriptor field %s\n",__func__,Var);
                      return(0);
                   } 
-                  for(i=0;i<sz;i++) ((double*)*Ptr)[i]=((float*)record.data)[i];
+                  for(i=0;i<sz;i++) ((double*)*Ptr)[i]=((float*)record.data)[i]; 
                   fst24_record_free(&record);
                }
                break;
@@ -1188,27 +1189,17 @@ int GeoRef_ReadGrid(struct TGeoRef *GRef) {
       // In case of WKT REF
       if (GRef->GRTYP[0]=='W' || GRef->RPNHeadExt.grref[0] == 'W') {
 #ifdef HAVE_GDAL
-         float  tmpv[6];
-         double mtx[6],inv[6],*tm=NULL,*im=NULL;
+         double *mtx=NULL,inv[6],*tm=NULL,*im=NULL;
          char  *proj=NULL;
 
-         if ((key=cs_fstinf(h->fID,&ni,&nj,&nk,-1,"",h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],"","PROJ"))<0) {
+         if (!GeoRef_ReadDescriptor(GRef,(void **)&proj,"PROJ",1,APP_NIL)) {
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find projection description field PROJ (c_fstinf failed)\n",__func__);
             return(FALSE);
-         } else {
-            c_fst_data_length(1);
-            if ((proj=(char*)malloc(ni*nj*4))) {
-               cs_fstluk(proj,key,&ni,&nj,&nk);
-            }
          }
-         if ((key=cs_fstinf(h->fID,&ni,&nj,&nk,-1,"",h->IG[X_IG1],h->IG[X_IG2],h->IG[X_IG3],"","MTRX"))<0) {
-            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find trasform matrix field MTRX (c_fstinf failed)\n",__func__);
+         if (!GeoRef_ReadDescriptor(GRef,(void **)&mtx,"MTRX",1,APP_FLOAT64)) {
+            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find transform matrix field MTRX (c_fstinf failed)\n",__func__);
             return(FALSE);
          } else {
-            cs_fstluk(tmpv,key,&ni,&nj,&nk);
-            for(i=0;i<ni;i++) {
-               mtx[i]=tmpv[i];
-            }
             tm=mtx;
             if (!GDALInvGeoTransform(mtx,inv)) {
                im=NULL;
@@ -1216,8 +1207,9 @@ int GeoRef_ReadGrid(struct TGeoRef *GRef) {
                im=inv;
             }
          }
-         GeoRef_SetW(GRef,proj,tm,im,NULL);
+         GeoRef_DefineW(GRef,proj,tm,im,NULL);
          if (proj) free(proj);
+         if (mtx)  free(mtx);
 #else
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);
    return(FALSE);
@@ -2541,6 +2533,47 @@ int GeoRef_Write(TGeoRef *GRef,fst_file *File){
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
          return(FALSE);
       }
+   }
+
+   return(TRUE);
+}
+
+int GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec) {
+
+   fst_record  srec = default_fst_record;
+   fst_record  rec;
+   fst_query  *query;
+   char       *data=NULL;
+   const char *desc,**descs;
+   int         d=0,ni,nj,nk,sz=0,ip1,ip2;
+   int         key;
+
+   if (Rec->file) {
+
+      // Loop through possible descriptors NOMVAR
+      descs=fst24_record_get_descriptors();
+      while((desc=descs[d++])) {
+         if (strncmp(desc,"HY  ",FST_NOMVAR_LEN)!=0) {
+            srec.ip1=Rec->ig1;
+            srec.ip2=Rec->ig2;
+         }
+
+         // Does it already exists in the destination file
+         strncmp(srec.nomvar,desc,FST_NOMVAR_LEN);
+         query = fst24_new_query(FileTo,&srec,NULL);
+         if (fst24_find_next(query,&rec)) {
+            // If not already existing in destination
+            if (fst24_read(Rec->file,&srec,NULL,&rec)) {
+               if (!fst24_write(FileTo,&rec,TRUE)) {
+                  return(FALSE);
+               }
+            }
+         }
+      }
+
+      fst24_record_free(&rec);
+   } else {
+      return(FALSE);
    }
 
    return(TRUE);

@@ -45,7 +45,7 @@ int GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
    switch (Ref->RPNHeadExt.grref[0]) {
       case 'E':
          f77name(cigaxg)(Ref->RPNHeadExt.grref,&xlat1,&xlon1,&xlat2,&xlon2,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
-         GeoRef_RotateInvertXY(Lat,Lon,tmpx,tmpy,Nb,Ref->RPNHeadExt.igref1,Ref->RPNHeadExt.igref2,Ref->RPNHeadExt.igref3,Ref->RPNHeadExt.igref4);
+         GeoRef_RotateInvertXY(Lat,Lon,tmpx,tmpy,Nb,Ref->RPNHeadExt.xgref1,Ref->RPNHeadExt.xgref2,Ref->RPNHeadExt.xgref3,Ref->RPNHeadExt.xgref4);
          break;
 
       case 'S':

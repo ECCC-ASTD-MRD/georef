@@ -182,10 +182,10 @@ void GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY) {
 
     case 'G':
       Ref->RPNHeadExt.grref[0] = 'L';
-      Ref->RPNHeadExt.igref1 = 0.0;
-      Ref->RPNHeadExt.igref2 = 0.0;
-      Ref->RPNHeadExt.igref3 = 1.0;
-      Ref->RPNHeadExt.igref4 = 1.0;
+      Ref->RPNHeadExt.xgref1 = 0.0;
+      Ref->RPNHeadExt.xgref2 = 0.0;
+      Ref->RPNHeadExt.xgref3 = 1.0;
+      Ref->RPNHeadExt.xgref4 = 1.0;
       f77name(cxgaig)(Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,
 		      &Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,1);
 

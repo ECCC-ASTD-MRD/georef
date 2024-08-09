@@ -716,7 +716,7 @@ int Def_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                dmaxy=dy;
          }
       } else {
-         Def_Rasterize(Def,Ref,geom,Value,0);
+         Def_Rasterize(Def,Ref,geom,Value);
       }
    }
    if (!(n+=OGR_G_GetPointCount(Geom)))
@@ -729,7 +729,7 @@ int Def_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
             dy1=OGR_G_GetY(Geom,i);
             x=lrint(dx1);
             y=lrint(dy1);
-            Def_SetValue(Def,x,y,0,Value,Comb);
+            Def_SetValue(Def,x,y,0,Value,Ref->Options.Combine);
          }
          break;
 
@@ -774,7 +774,7 @@ int Def_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                   }
                   x0+=sx;
                   fr+=dny;
-                  Def_SetValue(Def,x0,y0,0,Value,Ref->Options.Comb);
+                  Def_SetValue(Def,x0,y0,0,Value,Ref->Options.Combine);
                }
             } else {
                fr=dnx-(dny>>1);
@@ -785,7 +785,7 @@ int Def_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                   }
                   y0+=sy;
                   fr+=dnx;
-                  Def_SetValue(Def,x0,y0,0,Value,Ref->Options.Comb);
+                  Def_SetValue(Def,x0,y0,0,Value,Ref->Options.Combine);
                }
             }
          }
@@ -851,7 +851,7 @@ int Def_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 
                         // fill the horizontal segment (separately from the rest)
                         for(x=horizontal_x1;x<horizontal_x2;x++)
-                           Def_SetValue(Def,x,y,0,Value,Comb);
+                           Def_SetValue(Def,x,y,0,Value,Ref->Options.Combine);
                         continue;
                      } else {
                         // skip top horizontal segments (they are already filled in the regular loop)
@@ -870,7 +870,7 @@ int Def_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
             for (i=0;i<ints;i+=2) {
                if (polyInts[i]<=maxx && polyInts[i+1]>=minx) {
                   for(x=polyInts[i];x<=polyInts[i+1];x++)
-                     Def_SetValue(Def,x,y,0,Value,Ref->Options.Comb);
+                     Def_SetValue(Def,x,y,0,Value,Ref->Options.Combine);
                }
             }
          }
@@ -1089,7 +1089,7 @@ static int Def_GridInterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Poly,OGRGeomet
             //Create thread safe region.
             #pragma omp critical
             {
-               Def_SetValue(Def,X0,Y0,Z,val,Ref->Options.Comb);
+               Def_SetValue(Def,X0,Y0,Z,val,Ref->Options.Combine);
 
                if (Mode=='N' && Def->Buffer) {
                   Def->Buffer[idx2]+=dp;
@@ -1155,7 +1155,7 @@ static int Def_GridInterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Poly,OGRGeomet
  *---------------------------------------------------------------------------------------------------------------
 */
 int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerRef,char *Field,double Value,int Final) {
-
+/*TODO
 #ifdef HAVE_GDAL
    TGridSet *gset;
    long     f,n=0,nt=0,idx2;
@@ -1163,7 +1163,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
    int      fld=-1,pi,pj,error=0,isize=0;
    char     mode,type,*c;
    float   *ip=NULL,*lp=NULL,**index=NULL;
-   Coord    co;
+   TCoord   co;
    Vect3d   vr;
 
    OGRSpatialReferenceH          srs=NULL;
@@ -1212,7 +1212,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
    }
 
    // In case of average, we need an accumulator
-   if (ToRef->Options.Comb==CB_AVERAGE) {
+   if (ToRef->Options.Combine==CB_AVERAGE) {
       if (!ToDef->Accum) {
          ToDef->Accum=malloc(FSIZE2D(ToDef)*sizeof(int));
          if (!ToDef->Accum) {
@@ -1264,7 +1264,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
 
             val+=value*dp;
 
-            if (ToRef->Options.Comb==CB_AVERAGE)  {
+            if (ToRef->Options.Combine==CB_AVERAGE)  {
                ToDef->Accum[idx2]+=1;
             }
             Def_Set(ToDef,0,idx2,val);
@@ -1280,7 +1280,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
          isize=atoi(c);
       }
 
-      if (gset->Index && gset->Index[0]==DEF_INDEX_EMPTY) {
+      if (gset->Index && gset->Index[0]==REF_INDEX_EMPTY) {
          if (!(index=(float**)malloc(Layer->NFeature*sizeof(float*)))) {
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate local index arrays\n",__func__);
             return(0);
@@ -1291,7 +1291,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
       // If the request is in meters
       if (fld==-3 || fld==-5) {
          // Create an UTM referential and transform to convert to meters
-         LayerRef->Project(LayerRef,LayerRef->X0,LayerRef->Y0,&co.Lat,&co.Lon,1,1);
+         LayerRef->XY2LL(LayerRef,LayerRef->X0,LayerRef->Y0,&co.Lat,&co.Lon,1,1);
          srs=OSRNewSpatialReference(NULL);
          OSRSetUTM(srs,(int)ceil((180+co.Lon)/6),(int)co.Lat);
          tr=OCTNewCoordinateTransformation(LayerRef->Spatial,srs);
@@ -1386,7 +1386,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
                if (!(env.MaxX<(ToRef->X0-0.5) || env.MinX>(ToRef->X1+0.5) || env.MaxY<(ToRef->Y0-0.5) || env.MinY>(ToRef->Y1+0.5))) {
 
                   if ((ToRef->Options.InterpDegree==IV_FAST) {
-                     Def_Rasterize(ToDef,ToRef,geom,value,0);
+                     Def_Rasterize(ToDef,ToRef,geom,value);
                   } else {
 
                      // Get value to split on
@@ -1436,7 +1436,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
                            if (n) {
                               *(lp++)=DEF_INDEX_SEPARATOR;
                            } else {
-                              index[f][0]=DEF_INDEX_EMPTY;  // No intersection found, removed previously inserted feature
+                              index[f][0]=REF_INDEX_EMPTY;  // No intersection found, removed previously inserted feature
                            }
                         }
                         Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i hits on feature %i of %i (%.0f %.0f x %.0f %.0f)\n",__func__,n,f,Layer->NFeature,env.MinX,env.MinY,env.MaxX,env.MaxY);
@@ -1455,7 +1455,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
       n=0;
       if (ip && nt && !error) {
          for(f=0;f<Layer->NFeature;f++) {
-            if ((lp=index[f]) && *lp!=DEF_INDEX_EMPTY) {
+            if ((lp=index[f]) && *lp!=REF_INDEX_EMPTY) {
                *(ip++)=f;
                while(*lp!=DEF_INDEX_SEPARATOR) {
                   *(ip++)=*(lp++);
@@ -1475,7 +1475,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
          OSRDestroySpatialReference(srs);
    }
 
-   if ((ToRef->Options.Comb==CB_AVERAGE) {
+   if ((ToRef->Options.Combine==CB_AVERAGE) {
       for(n=0;n<FSIZE2D(ToDef);n++) {
          if (ToDef->Accum[n]!=0.0) {
             Def_Get(ToDef,0,n,value);
@@ -1492,6 +1492,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(0);
 #endif
+*/
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1598,7 +1599,7 @@ int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef)
  *----------------------------------------------------------------------------
 */
 int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int Final) {
-
+/*TODO
 #ifdef HAVE_GDAL
    TGridSet    *gset=NULL;
    int          i,j,n,na,nt=0,p=0,pi,pj,idx2,idx3,wrap,k=0,isize,nidx,error=0;
@@ -1687,7 +1688,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
       } else {
          int cnt, intersect;
 
-         if (gset->Index && gset->Index[0]==DEF_INDEX_EMPTY) {
+         if (gset->Index && gset->Index[0]==REF_INDEX_EMPTY) {
             if (!(index=(float**)malloc(FSIZE2D(FromDef)*sizeof(float*)))) {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate local index arrays\n",__func__);
                return(0);
@@ -1740,7 +1741,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
                      error=1;
                      continue;
                   } 
-                  index[nidx][0]=DEF_INDEX_EMPTY;
+                  index[nidx][0]=REF_INDEX_EMPTY;
                   lp=index[nidx];
                }
                n=na=0;
@@ -1832,7 +1833,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
                for(i=0;i<FromDef->NI;i++) {
                   nidx=j*FromDef->NI+i;
 
-                  if ((lp=index[nidx]) && *lp!=DEF_INDEX_EMPTY) {
+                  if ((lp=index[nidx]) && *lp!=REF_INDEX_EMPTY) {
                      // Append gridpoint to the index
                      *(ip++)=i;
                      *(ip++)=j;
@@ -1876,6 +1877,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(0);
 #endif
+*/
 }
 
 /*----------------------------------------------------------------------------

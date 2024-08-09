@@ -1,104 +1,85 @@
 #include <App.h>
-#include "Def.h"
+#include <rmn.h>
 #include "GeoRef.h"
 #include "georef_build_info.h"
-#include "RPN.h"
 
 #define APP_NAME "Interpolate"
 #define APP_DESC "ECCC/CMC RPN fstd interpolation tool."
 
-int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket,TDef_InterpR Type) {
+int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket,TRef_InterpR Type) {
 
-   TGridSet  *gset=NULL;
-   TRPNField *in,*grid,*truth,*idx;
-   int  fin,fout,fgrid,ftruth,n=0;
+   TGridSet   *gset=NULL;
+   TGeoRef    *refin=NULL,*refout=NULL;
+   fst_record  crit=default_fst_record,truth,grid=default_fst_record,record=default_fst_record;
+   fst_file   *fin,*fout,*fgrid,*ftruth;
+   int         n=0;
 
-   GeoRef_Options.InterpDegree=IR_LINEAR;
-
-   if ((fin=cs_fstouv(In,"STD+RND+R/O"))<0) {
+  if ((fin=fst24_open(In,"R/O"))<0) {
       App_Log(APP_ERROR,"Problems opening input file %s\n",In);
-      return(0);
+      return(FALSE);
    }
 
-   if ((fout=cs_fstouv(Out,"STD+RND+R/W"))<0) {
+   if ((fout=fst24_open(Out,"R/W"))<0) {
       App_Log(APP_ERROR,"Problems opening output file %s\n",Out);
-      return(0);
+      return(FALSE);
    }
 
-   if ((fgrid=cs_fstouv(Grid,"STD+RND+R/O"))<0) {
+   if ((fgrid=fst24_open(Grid,"R/O"))<0) {
       App_Log(APP_ERROR,"Problems opening grid file %s\n",Grid);
-      return(0);
+      return(FALSE);
    }
 
-   if (!(grid=RPN_FieldRead(fgrid,-1,"",-1,-1,-1,"","GRID"))) {
+   // Create the desination grid
+   strncpy(crit.nomvar,"GRID",FST_NOMVAR_LEN);
+   if (!fst24_read(fgrid,&crit,NULL,&grid)) {
       App_Log(APP_ERROR,"Problems reading grid field\n");
-      return(0);    
+      return(FALSE);    
    }
-  
+   refout=GeoRef_Create(grid.ni,grid.nj,grid.grtyp,grid.ig1,grid.ig2,grid.ig3,grid.ig4,(fst_file*)grid.file);
+
    if (Truth) {
-      if ((ftruth=cs_fstouv(Out,"STD+RND+R"))<0) {
-         App_Log(APP_ERROR,"Problems opening truth file %s\n",Out);
-         return(0);
+      if ((ftruth=fst24_open(Truth,"R/O"))<0) {
+         App_Log(APP_ERROR,"Problems opening truth file %s\n",Truth);
+         return(FALSE);
       }
 
-      if (!(truth=RPN_FieldRead(ftruth,-1,"",-1,-1,-1,"","GRID"))) {
+      strncpy(crit.nomvar,"GRID",FST_NOMVAR_LEN);
+      if (!fst24_read(ftruth,&crit,NULL,&truth)) {
          App_Log(APP_ERROR,"Problems reading truth field\n");
-         return(0);    
+         return(FALSE);    
       }
    }
-
-   if (!(in=RPN_FieldRead(fin,-1,"",-1,-1,-1,"",Vars[0]))) {
-      App_Log(APP_ERROR,"Problems reading input field\n");
-      return(0);  
-   }
   
-   // Create index field
-//   if (!(idx=RPN_FieldNew(in->Def->NIJ*100,1,1,1,TD_Float64))) {
-//      return(0);       
-//   }
+//   GeoRef_CopyDesc(fout,&grid);
+   GeoRef_Write(refout,fout);   
 
-   RPN_CopyDesc(fout,&grid->Head);
-  
-//   memcpy(&idx->Head,&grid->Head,sizeof(TRPNHeader));
-//   strcpy(idx->Head.NOMVAR,"#%");
-//   idx->Head.NJ=1;
-//   idx->Head.GRTYP[0]='X';
-//   idx->Head.NBITS=64;
-//   idx->Head.DATYP=5;  
-//   if (Etiket) strncpy(idx->Head.ETIKET,Etiket,12);
-   if (Etiket) strncpy(in->Head.ETIKET,Etiket,12);
+   strncpy(crit.nomvar,Vars[0],FST_NOMVAR_LEN);
+   fst_query* query = fst24_new_query(fin,&crit,NULL);
+   while(fst24_read_next(query,&record)>0 && n++<10) {
+//      App_Log(APP_INFO,"Processing %s %i\n",Vars[0],record->file_index);
 
-   grid->Def->NoData=0.0;
+      if (!refin) {
+         refin=GeoRef_Create(record.ni,record.nj,record.grtyp,record.ig1,record.ig2,record.ig3,record.ig4,(fst_file*)record.file);
+      }
 
-   while(in->Head.KEY>0 && n++<10) {
-      App_Log(APP_INFO,"Processing %s %i\n",Vars[0],in->Head.KEY);
-
-      // Reset result grid
-      Def_Clear(grid->Def);
-     
       // Proceed with interpolation
-      if (!(Def_GridInterp(grid->GRef,in->GRef,grid->Def,in->Def,TRUE))) {
-         App_Log(APP_ERROR,"%s: Interpolation problem",__func__);
-         return(0);    
-      }
+      if (!GeoRef_Interp(refout,refin,grid.data,record.data)) {
+         App_Log(APP_ERROR,"Interpolation problem");
+         return(FALSE);
+      }   
     
       // Write results
-      RPN_CopyHead(&grid->Head,&in->Head);
-      RPN_FieldWrite(fout,grid);
-	
-      if ((in->Head.KEY=cs_fstsui(fin,&in->Head.NI,&in->Head.NJ,&in->Head.NK))>0) {     
-         if (!RPN_FieldReadIndex(fin,in->Head.KEY,in)) {
-            return(0);
-         }
-      }
-
-      if (truth) {
-
+	   fst24_record_copy_metadata(&grid,&record,FST_META_TIME|FST_META_INFO);
+      if (Etiket) strncpy(grid.etiket,Etiket,FST_ETIKET_LEN);
+      if (fst24_write(fout, &grid, FST_NO) < 0) {
+         App_Log(APP_ERROR, "Unable to write record\n");
+         return FALSE;
       }
    }
+
    
    // Write index
-   gset=GeoRef_SetGet(grid->GRef,in->GRef);
+   gset=GeoRef_SetGet(refout,refin);
    if (GeoRef_SetHasIndex(gset)) {
       App_Log(APP_DEBUG,"Saving index containing %i items\n",gset->IndexSize);
       
@@ -107,16 +88,16 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       }
    }
     
-   cs_fstfrm(fin);
-   cs_fstfrm(fout);
-   cs_fstfrm(fgrid);
+   fst24_close(fin);
+   fst24_close(fout);
+   fst24_close(fgrid);
 
    return(1);
 }
 
 int main(int argc, char *argv[]) {
 
-   TDef_InterpR interp=IR_LINEAR;
+   TRef_InterpR interp=IR_LINEAR;
    int          ok=0,code=EXIT_FAILURE;
    char         *etiket=NULL,*in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
 
@@ -168,6 +149,9 @@ int main(int argc, char *argv[]) {
       default:
          App_Log(APP_ERROR,"Invalid interpolation method: %s\n",type);
    }
+
+   GeoRef_Options.InterpDegree=IR_LINEAR;
+   GeoRef_Options.NoData=0.0;
 
    ok=Interpolate(in,out,truth,grid,vars,etiket,interp);
    code=App_End(ok?0:EXIT_FAILURE);
