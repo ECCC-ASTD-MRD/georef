@@ -66,7 +66,7 @@ add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ _GNU_SOURCE)
 
 link_libraries("-Wl,--disable-new-dtags")
 add_subdirectory(lib lib)
-#add_subdirectory(util util)
+add_subdirectory(util util)
 #   add_subdirectory(test test)
 
 configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)
@@ -77,9 +77,13 @@ set(INCLUDE_INSTALL_DIR include)
 set(LIB_INSTALL_DIR     lib)
 set(CONFIG_INSTALL_DIR  "${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}")
 
-install(EXPORT georef-shared-targets
-    NAMESPACE georef::
-    DESTINATION ${CONFIG_INSTALL_DIR})
+install(EXPORT ${PROJECT_NAME}-shared-targets
+   NAMESPACE ${PROJECT_NAME}::
+   DESTINATION ${CONFIG_INSTALL_DIR})
+
+install(EXPORT ${PROJECT_NAME}-static-targets
+   NAMESPACE ${PROJECT_NAME}::
+   DESTINATION ${CONFIG_INSTALL_DIR})
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
