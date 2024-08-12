@@ -1,12 +1,7 @@
 #ifndef _GeoRef_Utils_h
 #define _GeoRef_Utils_h
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
 #include <math.h>
-#include <malloc.h>
 
 // Mathematical related constants and functions
 #ifndef M_PI

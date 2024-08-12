@@ -258,20 +258,19 @@ int   Def_Compat(TDef *ToDef,TDef *FromDef);
 TDef *Def_Copy(TDef *Def);
 TDef *Def_CopyPromote(TDef *Def,TDef_Type Type);
 void  Def_Free(TDef *Def);
-TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type);
+TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type,int Alias);
+TDef *Def_Create(int NI,int NJ,int NK,TDef_Type Type,char* Comp0,char* Comp1,char* Mask);
 TDef *Def_Resize(TDef *Def,int NI,int NJ,int NK);
 int   Def_Paste(TDef *ToDef,TDef *DefPaste,int X0,int Y0);
 
-int   Def_Rasterize(TDef *Def,struct TGeoRef *Ref,OGRGeometryH Geom,double Value);
-int   Def_GridCell2OGR(OGRGeometryH Geom,struct TGeoRef *ToRef,struct TGeoRef *FromRef,int I,int J,int Seg);
-
 int   Def_GetValue(TGeoRef *Ref,TDef *Def,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
 
-int   Def_GeoRefInterp(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final);
-int   Def_GridInterp(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final);
-int   Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,int Final);
-int   Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int Final);
-int   Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef);
-int   Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerRef,char *Field,double Value,int Final);
+int   GeoRef_Rasterize(TDef *Def,struct TGeoRef *Ref,OGRGeometryH Geom,double Value);
+int   GeoRef_Cell2OGR(OGRGeometryH Geom,struct TGeoRef *ToRef,struct TGeoRef *FromRef,int I,int J,int Seg);
+int   GeoRef_InterpDef(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final);
+int   GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,int Final);
+int   GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int Final);
+int   GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef);
+int   GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerRef,char *Field,double Value,int Final);
 
 #endif

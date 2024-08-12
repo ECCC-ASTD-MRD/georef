@@ -7,16 +7,12 @@
 #include "Def.h"
 #include "GeoRef.h"
 #include "GeoRef_Utils.h"
-#include "Vertex.h"
 
 // Sizes in bytes of the different data types
 // TODO: revisit for architecture dependencies
 int         TDef_Size[]          = { 0,1,1,1,2,2,4,4,8,8,4,8 };
+int         TDef_Mult[]          = { 0,0,0,0,1,1,2,2,3,3,2,3 };
 int         TDef_DTYP[]          = { 0,2,4,2,4,2,4,2,4,5,5,-1 };
-
-const char *TRef_InterpVString[] = { "UNDEF","FAST","WITHIN","INTERSECT","CENTROID","ALIASED","CONSERVATIVE","NORMALIZED_CONSERVATIVE","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
-const char *TRef_InterpRString[] = { "UNDEF","NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
-
 
 /*----------------------------------------------------------------------------
  * Nom      : <Def_Clear>
@@ -365,6 +361,7 @@ void Def_Free(TDef *Def){
  *  <NK>      : Dimension du champs a allouer
  *  <Dim>     : Nombre de composantes
  *  <Type>    : Type de donnnes
+ *  <Alias>   : Alias data arrays
  *
  * Retour:
  *  <Def>:      Nouvelle structure
@@ -373,7 +370,7 @@ void Def_Free(TDef *Def){
  *
  *----------------------------------------------------------------------------
 */
-TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type) {
+TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type,int Alias) {
 
    int   n,nijk;
    TDef *def;
@@ -386,7 +383,7 @@ TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type) {
    def->NK=NK;
    def->NIJ=NI*NJ;
    def->NC=abs(Dim);
-   def->Alias=Dim<=0;
+   def->Alias=Alias;
    def->CellDim=2;
    def->NoData=nan("NaN");
    def->Level=0;
@@ -436,6 +433,71 @@ TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type) {
 
    return(def);
 }
+
+TDef *Def_Create(int NI,int NJ,int NK,TDef_Type Type,char* Comp0,char* Comp1,char* Mask) {
+   
+   TDef *def=NULL;
+   int dim;
+
+   if (def=(TDef*)malloc(sizeof(TDef))) {
+      dim=(Comp0!=NULL)+(Comp1!=NULL);
+      def=Def_New(NI,NJ,NK,dim,Type,TRUE);
+
+      def->Data[0]=Comp0;
+      def->Data[1]=Comp1;
+      def->Mask=Mask;
+   }
+   return (def);
+}
+/*
+static inline float* Def_ToFloat(TDef *Def,char* Buffer) {
+
+   int n,sz;
+   float *buf=NULL;
+
+   sz=FSIZE3D(Def);
+   *buf=(float*)malloc(Size*sizeof(float));
+
+   switch(Def->Type) {
+      case TD_Unknown:break;
+      case TD_Binary: break;
+      case TD_UByte:  for(n=0;n<sz;n++) buf[n]=((unsigned char*)Buffer)[n];break;
+      case TD_Byte:   for(n=0;n<sz;n++) buf[n]=((char*)Buffer)[n];break;
+      case TD_UInt16: for(n=0;n<sz;n++) buf[n]=((unsigned short*)Buffer)[n];break;
+      case TD_Int16:  for(n=0;n<sz;n++) buf[n]=((short*)Buffer)[n];break;
+      case TD_UInt32: for(n=0;n<sz;n++) buf[n]=((unsigned int*)Buffer)[n];break;
+      case TD_Int32:  for(n=0;n<sz;n++) buf[n]=((int*)Buffer)[n];break;
+      case TD_UInt64: for(n=0;n<sz;n++) buf[n]=((unsigned long long*)Buffer)[n];break;
+      case TD_Int64:  for(n=0;n<sz;n++) buf[n]=((long long*)Buffer)[n];break;
+      case TD_Float32: buf=(float*)Buffer;break; 
+      case TD_Float64: for(n=0;n<sz;n++) buf[n]=((double*)Buffer)[n];break;
+   }
+
+   return(buf);
+}
+static inline float* Def_FromFloat(TDef *Def) {
+
+   int n;
+
+   sz=FSIZE3D(Def);
+   switch(Def->Type) {
+      case TD_Unknown:break;
+      case TD_Binary: break;
+      case TD_UByte:  for(n=0;n<sz;n++) ((unsigned char*)Buffer)[n]=buf[n];break;
+      case TD_Byte:   for(n=0;n<sz;n++) ((char*)Buffer)[n]=buf[n];break;
+      case TD_UInt16: for(n=0;n<sz;n++) ((unsigned short*)Buffer)[n]=buf[n];break;
+      case TD_Int16:  for(n=0;n<sz;n++) ((short*)Buffer)[n]=buf[n];break;
+      case TD_UInt32: for(n=0;n<sz;n++) ((unsigned int*)Buffer)[n]=buf[n];break;
+      case TD_Int32:  for(n=0;n<sz;n++) ((int*)Buffer)[n]=buf[n];break;
+      case TD_UInt64: for(n=0;n<sz;n++) ((unsigned long long*)Buffer)[n]=buf[n];break;
+      case TD_Int64:  for(n=0;n<sz;n++) ((long long*)Buffer)[n]=buf[n];break;
+      case TD_Float32: (float*)Buffer=buf;break; 
+      case TD_Float64: for(n=0;n<sz;n++) ((double*)Buffer)[n]=buf[n];break;
+   }
+
+   return(buf);
+}
+*/
 
 /*----------------------------------------------------------------------------
  * Nom      : <Def_Resize>
@@ -632,26 +694,6 @@ int Def_GetValue(TGeoRef *Ref,TDef *Def,int C,double X,double Y,double Z,double 
    return(FALSE);
 }
 
-/*----------------------------------------------------------------------------------------------------------
- * Nom          : <Def_Rasterize>
- * Creation     : Juin 2004 J.P. Gauthier - CMC/CMOE
- *
- * But          : Rasteriser des donnees vectorielles dans une bande ou champs
- *
- * Parametres   :
- *   <Def>      : Definition des donnees raster
- *   <Ref>      : Referentiel des donnnes raster
- *   <Geom>     : Donnees vectorielle a rasteriser
- *   <Value>    : Valuer a assigner
- *   <Comb>    : Mode de combinaison des valeurs multiples (CB_REPLACE,CB_MIN,CB_MAX,CB_SUM,CB_AVERAGE)
- *
- * Retour       :
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-
 static void inline Def_SetValue(TDef *Def,int X, int Y,int Z, double Value,TRef_Combine Comb) {
 
    unsigned long idx;
@@ -677,7 +719,26 @@ static void inline Def_SetValue(TDef *Def,int X, int Y,int Z, double Value,TRef_
    }
 }
 
-int Def_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
+/*----------------------------------------------------------------------------------------------------------
+ * Nom          : <GeoRef_Rasterize>
+ * Creation     : Juin 2004 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Rasteriser des donnees vectorielles dans une bande ou champs
+ *
+ * Parametres   :
+ *   <Def>      : Definition des donnees raster
+ *   <Ref>      : Referentiel des donnnes raster
+ *   <Geom>     : Donnees vectorielle a rasteriser
+ *   <Value>    : Valuer a assigner
+ *   <Comb>    : Mode de combinaison des valeurs multiples (CB_REPLACE,CB_MIN,CB_MAX,CB_SUM,CB_AVERAGE)
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int GeoRef_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 
 #ifdef HAVE_GDAL
    int    i,j,g,ind1,ind2;
@@ -716,7 +777,7 @@ int Def_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                dmaxy=dy;
          }
       } else {
-         Def_Rasterize(Def,Ref,geom,Value);
+         GeoRef_Rasterize(Def,Ref,geom,Value);
       }
    }
    if (!(n+=OGR_G_GetPointCount(Geom)))
@@ -885,7 +946,7 @@ int Def_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Def_GridCell2OGR>
+ * Nom          : <GeoRef_Cell2OGR>
  * Creation     : Mars 2006 J.P. Gauthier - CMC/CMOE
  *
  * But          : Projecter une cellule de grille dans le referentiel d'une autre
@@ -905,7 +966,7 @@ int Def_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Def_GridCell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int I,int J,int Seg) {
+int GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int I,int J,int Seg) {
 
 #ifdef HAVE_GDAL
    double n,dn,df;
@@ -986,7 +1047,7 @@ int Def_GridCell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int I,int
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Def_GridInterpQuad>
+ * Nom          : <GeoRef_InterpQuad>
  * Creation     : Novembre 2004 J.P. Gauthier - CMC/CMOE
  *
  * But          : Importer des donnees dans une bande raster
@@ -1011,7 +1072,7 @@ int Def_GridCell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int I,int
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-static int Def_GridInterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Poly,OGRGeometryH Geom,char Mode,char Type,double Area,double Value,int X0,int Y0,int X1,int Y1,int Z,float **Index) {
+static int GeoRef_InterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Poly,OGRGeometryH Geom,char Mode,char Type,double Area,double Value,int X0,int Y0,int X1,int Y1,int Z,float **Index) {
 
 #ifdef HAVE_GDAL
    double        dx,dy,dp=1.0,val=0.0;
@@ -1112,14 +1173,14 @@ static int Def_GridInterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Poly,OGRGeomet
          if (x==0 || y==0) {
             for (x=X0;x<=X1;x++) {
                for (y=Y0;y<=Y1;y++) {
-                  n+=Def_GridInterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,x,y,x,y,Z,Index);
+                  n+=GeoRef_InterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,x,y,x,y,Z,Index);
                }
             }
          } else {
-            n+=Def_GridInterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,X0,Y0,X0+x,Y0+y,Z,Index);
-            n+=Def_GridInterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,X0+x+1,Y0,X1,Y0+y,Z,Index);
-            n+=Def_GridInterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,X0,Y0+y+1,X0+x,Y1,Z,Index);
-            n+=Def_GridInterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,X0+x+1,Y0+y+1,X1,Y1,Z,Index);
+            n+=GeoRef_InterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,X0,Y0,X0+x,Y0+y,Z,Index);
+            n+=GeoRef_InterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,X0+x+1,Y0,X1,Y0+y,Z,Index);
+            n+=GeoRef_InterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,X0,Y0+y+1,X0+x,Y1,Z,Index);
+            n+=GeoRef_InterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,X0+x+1,Y0+y+1,X1,Y1,Z,Index);
          }
       }
    }
@@ -1132,7 +1193,7 @@ static int Def_GridInterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Poly,OGRGeomet
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Def_GridInterpOGR>
+ * Nom          : <GeoRef_InterpOGR>
  * Creation     : Novembre 2004 J.P. Gauthier - CMC/CMOE
  *
  * But          : Importer des donnees vectorielles dans une bande raster
@@ -1154,12 +1215,12 @@ static int Def_GridInterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Poly,OGRGeomet
  *      [ogr feature index] [feature value area] [grid cell x] [grid cell y] [factor] [grid cell x] [grid cell y] [factor] ... -1.0 ...
  *---------------------------------------------------------------------------------------------------------------
 */
-int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerRef,char *Field,double Value,int Final) {
-/*TODO
+int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerRef,char *Field,double Value,int Final) {
+
 #ifdef HAVE_GDAL
    TGridSet *gset;
    long     f,n=0,nt=0,idx2;
-   double   value,val,area,dp;
+   double   value,val,area,dp,x0,y0;
    int      fld=-1,pi,pj,error=0,isize=0;
    char     mode,type,*c;
    float   *ip=NULL,*lp=NULL,**index=NULL;
@@ -1291,7 +1352,9 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
       // If the request is in meters
       if (fld==-3 || fld==-5) {
          // Create an UTM referential and transform to convert to meters
-         LayerRef->XY2LL(LayerRef,LayerRef->X0,LayerRef->Y0,&co.Lat,&co.Lon,1,1);
+         x0=LayerRef->X0;
+         y0=LayerRef->Y0;
+         LayerRef->XY2LL(LayerRef,&x0,&y0,&co.Lat,&co.Lon,1);
          srs=OSRNewSpatialReference(NULL);
          OSRSetUTM(srs,(int)ceil((180+co.Lon)/6),(int)co.Lat);
          tr=OCTNewCoordinateTransformation(LayerRef->Spatial,srs);
@@ -1385,13 +1448,13 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
                OGR_G_GetEnvelope(geom,&env);
                if (!(env.MaxX<(ToRef->X0-0.5) || env.MinX>(ToRef->X1+0.5) || env.MaxY<(ToRef->Y0-0.5) || env.MinY>(ToRef->Y1+0.5))) {
 
-                  if ((ToRef->Options.InterpDegree==IV_FAST) {
-                     Def_Rasterize(ToDef,ToRef,geom,value);
+                  if (ToRef->Options.InterpDegree==IV_FAST) {
+                     GeoRef_Rasterize(ToDef,ToRef,geom,value);
                   } else {
 
                      // Get value to split on
                      area=-1.0;
-                     switch((ToRef->Options.InterpDegree) {
+                     switch(ToRef->Options.InterpDegree) {
                         case IV_FAST                           : break;
                         case IV_WITHIN                         : mode='W'; type='A'; break;
                         case IV_INTERSECT                      : mode='I'; type='A'; break;
@@ -1406,7 +1469,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
                      }
 
                      // If it's nil then nothing to distribute on
-                     if (area>0.0 || (ToRef->Options.InterpDegree<=IV_CENTROID) {
+                     if (area>0.0 || ToRef->Options.InterpDegree<=IV_CENTROID) {
 
                         env.MaxX+=0.5;env.MaxY+=0.5;
                         env.MinX=env.MinX<0?0:env.MinX;
@@ -1430,11 +1493,11 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
                            *(lp++)=(fld<0 && fld>=-9)?value:-999.0;
                         }
 
-                        nt+=n=Def_GridInterpQuad(ToDef,ToRef,poly,geom,mode,type,area,value,env.MinX,env.MinY,env.MaxX,env.MaxY,0,&lp);
+                        nt+=n=GeoRef_InterpQuad(ToDef,ToRef,poly,geom,mode,type,area,value,env.MinX,env.MinY,env.MaxX,env.MaxY,0,&lp);
 
                         if (lp) {
                            if (n) {
-                              *(lp++)=DEF_INDEX_SEPARATOR;
+                              *(lp++)=REF_INDEX_SEPARATOR;
                            } else {
                               index[f][0]=REF_INDEX_EMPTY;  // No intersection found, removed previously inserted feature
                            }
@@ -1457,14 +1520,14 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
          for(f=0;f<Layer->NFeature;f++) {
             if ((lp=index[f]) && *lp!=REF_INDEX_EMPTY) {
                *(ip++)=f;
-               while(*lp!=DEF_INDEX_SEPARATOR) {
+               while(*lp!=REF_INDEX_SEPARATOR) {
                   *(ip++)=*(lp++);
                }
-               *(ip++)=DEF_INDEX_SEPARATOR;
+               *(ip++)=REF_INDEX_SEPARATOR;
             }
             if (index[f]) free(index[f]);
          }
-         *(ip++)=DEF_INDEX_END;
+         *(ip++)=REF_INDEX_END;
          free(index);
       }
 
@@ -1475,7 +1538,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
          OSRDestroySpatialReference(srs);
    }
 
-   if ((ToRef->Options.Combine==CB_AVERAGE) {
+   if (ToRef->Options.Combine==CB_AVERAGE) {
       for(n=0;n<FSIZE2D(ToDef);n++) {
          if (ToDef->Accum[n]!=0.0) {
             Def_Get(ToDef,0,n,value);
@@ -1492,11 +1555,10 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(0);
 #endif
-*/
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Def_GridInterpSub>
+ * Nom          : <GeoRef_InterpSub>
  * Creation     : Aout 2013 J.P. Gauthier - CMC/CMOE
  *
  * But          : Interpolate at sub grid resolution
@@ -1515,7 +1577,7 @@ int Def_GridInterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *Layer
  *    like sub grid variance.
  *---------------------------------------------------------------------------------------------------------------
 */
-int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef) {
+int GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef) {
 
    int  idx,i,j,x,y,x0,x1,y0,y1,s;
    double val,val1,di,dj,d,la,lo;
@@ -1579,7 +1641,7 @@ int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef)
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Def_GridInterpConservative>
+ * Nom      : <GeoRef_InterpConservative>
  * Creation : Mai 2006 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Effectue l'interpolation conservative
@@ -1598,8 +1660,8 @@ int Def_GridInterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef)
  *
  *----------------------------------------------------------------------------
 */
-int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int Final) {
-/*TODO
+int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int Final) {
+
 #ifdef HAVE_GDAL
    TGridSet    *gset=NULL;
    int          i,j,n,na,nt=0,p=0,pi,pj,idx2,idx3,wrap,k=0,isize,nidx,error=0;
@@ -1626,7 +1688,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
          return(0);
       }
    }
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   gset=GeoRef_SetGet(ToRef,FromRef);
 
    // Define the max size of the indexes
    isize=100;
@@ -1719,7 +1781,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
                }
 
                // Project the source gridcell into the destination
-               wrap=Def_GridCell2OGR(ring,ToRef,FromRef,i,j,ToRef->Options.Segment);
+               wrap=GeoRef_Cell2OGR(ring,ToRef,FromRef,i,j,ToRef->Options.Segment);
                intersect=0;
                cnt = OGR_G_GetPointCount(ring);
                for(p=0;p<cnt;p++) {
@@ -1780,7 +1842,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
                      env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
                      env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
 
-                     nt+=na=Def_GridInterpQuad(ToDef,ToRef,poly,cell,ToRef->Options.InterpDegree==IR_CONSERVATIVE?'C':'N','A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k,CB_SUM,&lp);
+                     nt+=na=GeoRef_InterpQuad(ToDef,ToRef,poly,cell,ToRef->Options.InterpDegree==IR_CONSERVATIVE?'C':'N','A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k,&lp);
 
                      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,na,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
                   }
@@ -1815,13 +1877,13 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
                      env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
                      env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
 
-                     nt+=n=Def_GridInterpQuad(ToDef,ToRef,poly,cell,ToRef->Options.InterpDegree=IR_CONSERVATIVE?'C':'N','A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k,CB_SUM,&lp);
+                     nt+=n=GeoRef_InterpQuad(ToDef,ToRef,poly,cell,ToRef->Options.InterpDegree=IR_CONSERVATIVE?'C':'N','A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k,&lp);
 
                      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
                   }
                }
                if (lp && (n || na)) {
-                  *(lp++)=DEF_INDEX_SEPARATOR; // End the list for this gridpoint
+                  *(lp++)=REF_INDEX_SEPARATOR; // End the list for this gridpoint
                }
             }
          }
@@ -1839,15 +1901,15 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
                      *(ip++)=j;
 
                      // This gridpoint wraps around
-                     while(*lp!=DEF_INDEX_SEPARATOR) {
+                     while(*lp!=REF_INDEX_SEPARATOR) {
                         *(ip++)=*(lp++);
                      }
-                     *(ip++)=DEF_INDEX_SEPARATOR;
+                     *(ip++)=REF_INDEX_SEPARATOR;
                   }
                   if (index[nidx]) free(index[nidx]);
                }
             }
-            *(ip++)=DEF_INDEX_END;
+            *(ip++)=REF_INDEX_END;
             free(index);
          }
          Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i total hits\n",__func__,nt);
@@ -1877,11 +1939,11 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(0);
 #endif
-*/
+
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Def_GridInterpAverage>
+ * Nom      : <GeoRef_InterpAverage>
  * Creation : Mai 2006 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Effectue l'interpolation par moyennage minimum ou maximum
@@ -1902,7 +1964,7 @@ int Def_GridInterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef 
  *
  *----------------------------------------------------------------------------
 */
-int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,int Final){
+int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,int Final){
 
    double        val,vx,di[4],dj[4],*fld,*aux,di0,di1,dj0,dj1,ax,ay;
    int          *acc=NULL,x0,x1,y,y0,y1;
@@ -2259,9 +2321,10 @@ int Def_GridInterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *From
    return(1);
 }
 
-int Def_GridInterp(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final) {
+int GeoRef_InterpDef(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final) {
 
-   int code;
+   void *pf0,*pt0,*pf1,*pt1;
+   int   k,code=FALSE;
 
    if (!ToRef || !ToDef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid destination\n",__func__);
@@ -2282,7 +2345,33 @@ int Def_GridInterp(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int
       case IR_NEAREST:
       case IR_LINEAR:
       case IR_CUBIC:
-         code=Def_GeoRefInterp(ToRef,FromRef,ToDef,FromDef,Final);
+         // Loop on vertical levels
+         for(k=0;k<ToDef->NK;k++) {
+            Def_Pointer(ToDef,0,k*FSIZE2D(ToDef),pt0);
+            Def_Pointer(FromDef,0,k*FSIZE2D(FromDef),pf0);
+
+            if (ToDef->Data[1]) {
+               // Interpolation vectorielle
+               Def_Pointer(ToDef,1,k*FSIZE2D(ToDef),pt1);
+               Def_Pointer(FromDef,1,k*FSIZE2D(FromDef),pf1);
+
+               // In case of Y grid, get the speed and dir instead of wind components
+               // since grid oriented components dont mean much
+               if (ToRef->GRTYP[0]=='Y') {
+                  code=GeoRef_InterpWD(ToRef,FromRef,pt0,pt1,pf0,pf1);
+               } else {
+                  code=GeoRef_InterpUV(ToRef,FromRef,pt0,pt1,pf0,pf1);
+               }
+            } else{
+               // Interpolation scalaire
+               code=GeoRef_Interp(ToRef,FromRef,pt0,pf0);
+            }
+
+            // Interpolate mask if need be
+            if (FromDef->Mask && ToDef->Mask) {
+               code=GeoRef_InterpMask(ToRef,FromRef,&ToDef->Mask[k*FSIZE2D(ToDef)],&FromDef->Mask[k*FSIZE2D(FromDef)]);
+            }
+         }
          break;
 
       case IR_CONSERVATIVE:
@@ -2292,70 +2381,35 @@ int Def_GridInterp(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int
 //            field0->GRef=GeoRef_Find(GeoRef_Resize(field0->GRef,field0->Def->NI,field0->Def->NJ));
 //         }
 
-         code=Def_GridInterpConservative(ToRef,ToDef,FromRef,FromDef,Final);
+         code=GeoRef_InterpConservative(ToRef,ToDef,FromRef,FromDef,Final);
          break;
 
-   case IR_MAXIMUM:
-   case IR_MINIMUM:
-   case IR_SUM:
-   case IR_AVERAGE:
-   case IR_VARIANCE:
-   case IR_SQUARE:
-   case IR_NORMALIZED_COUNT:
-   case IR_COUNT:
-   case IR_VECTOR_AVERAGE:
-   case IR_NOP: 
-   case IR_ACCUM:
-   case IR_BUFFER:
-      //ToDo: add double *Table,TDef **lutDef, int lutSize, TDef *TmpDef
-      code=Def_GridInterpAverage(ToRef,ToDef,FromRef,FromDef,NULL,NULL,0,NULL,Final);
+      case IR_MAXIMUM:
+      case IR_MINIMUM:
+      case IR_SUM:
+      case IR_AVERAGE:
+      case IR_VARIANCE:
+      case IR_SQUARE:
+      case IR_NORMALIZED_COUNT:
+      case IR_COUNT:
+      case IR_VECTOR_AVERAGE:
+      case IR_NOP: 
+      case IR_ACCUM:
+      case IR_BUFFER:
+         //ToDo: add double *Table,TDef **lutDef, int lutSize, TDef *TmpDef
+         code=GeoRef_InterpAverage(ToRef,ToDef,FromRef,FromDef,NULL,NULL,0,NULL,Final);
      break;
 
-   case IR_SUBNEAREST:
-   case IR_SUBLINEAR:
-      // Is the internal buffer the right size ?
-      if (ToDef->Sub && ToDef->SubSample!=GeoRef_Options.Sampling) {
-         free(ToDef->Sub); ToDef->Sub=NULL;
-      }
-      ToDef->SubSample=GeoRef_Options.Sampling;
-      code=Def_GridInterpSub(ToRef,ToDef,FromRef,FromDef);
-      break;
+      case IR_SUBNEAREST:
+      case IR_SUBLINEAR:
+         // Is the internal buffer the right size ?
+         if (ToDef->Sub && ToDef->SubSample!=GeoRef_Options.Sampling) {
+            free(ToDef->Sub); ToDef->Sub=NULL;
+         }
+         ToDef->SubSample=GeoRef_Options.Sampling;
+         code=GeoRef_InterpSub(ToRef,ToDef,FromRef,FromDef);
+         break;
    }
 
    return(code);
-}
-
-int Def_GeoRefInterp(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final) {
-
-   void      *pf0,*pt0,*pf1,*pt1;
-   int        k,ok=TRUE;
-
-   // Loop on vertical levels
-   for(k=0;k<ToDef->NK;k++) {
-      Def_Pointer(ToDef,0,k*FSIZE2D(ToDef),pt0);
-      Def_Pointer(FromDef,0,k*FSIZE2D(FromDef),pf0);
-
-      if (ToDef->Data[1]) {
-         // Interpolation vectorielle
-         Def_Pointer(ToDef,1,k*FSIZE2D(ToDef),pt1);
-         Def_Pointer(FromDef,1,k*FSIZE2D(FromDef),pf1);
-
-         // In case of Y grid, get the speed and dir instead of wind components
-         // since grid oriented components dont mean much
-         if (ToRef->GRTYP[0]=='Y') {
-            ok=GeoRef_InterpWD(ToRef,FromRef,pt0,pt1,pf0,pf1);
-         } else {
-            ok=GeoRef_InterpUV(ToRef,FromRef,pt0,pt1,pf0,pf1);
-         }
-      } else{
-         // Interpolation scalaire
-        ok=GeoRef_Interp(ToRef,FromRef,pt0,pf0);
-      }
-
-      // Interpolate mask if need be
-      if (FromDef->Mask && ToDef->Mask) {
-         ok=GeoRef_InterpMask(ToRef,FromRef,&ToDef->Mask[k*FSIZE2D(ToDef)],&FromDef->Mask[k*FSIZE2D(FromDef)]);
-      }
-   }
-   return(ok);
 }

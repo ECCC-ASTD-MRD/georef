@@ -12,6 +12,9 @@ static TList          *GeoRef_List=NULL;                                        
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
 __thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_MAXIMUM, IV_FAST, CB_REPLACE, 0.0, 0, TRUE, FALSE, FALSE, 16, 1, 1, TRUE, FALSE, 10.0, 0.0, 0.0 };  ///< Default options
 
+const char *TRef_InterpVString[] = { "UNDEF","FAST","WITHIN","INTERSECT","CENTROID","ALIASED","CONSERVATIVE","NORMALIZED_CONSERVATIVE","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
+const char *TRef_InterpRString[] = { "UNDEF","NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
+
 __attribute__ ((constructor)) int GeoRef_Init() {
    App_LibRegister(APP_LIBGEOREF,VERSION);
    return(TRUE);

@@ -23,7 +23,9 @@
       "functional": "c",
       "array": "c",
       "string": "c",
-      "string_view": "c"
+      "string_view": "c",
+      "georef_utils.h": "c",
+      "math.h": "c"
    },
    "C_Cpp.errorSquiggles": "Disabled",
    "python.pythonPath": "/usr/bin/python3",

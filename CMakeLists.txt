@@ -51,6 +51,7 @@ execute_process(
    OUTPUT_STRIP_TRAILING_WHITESPACE
    ERROR_STRIP_TRAILING_WHITESPACE
 )
+
 find_package(GDAL ${GDAL_REQ_VERSION})
 if(GDAL_FOUND)
    target_compile_definitions(GDAL::GDAL INTERFACE HAVE_GDAL)

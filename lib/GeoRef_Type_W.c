@@ -1,4 +1,5 @@
 #include <App.h>
+#include <str.h>
 #include "GeoRef.h"
 #include "Def.h"
 #include "Vertex.h"
