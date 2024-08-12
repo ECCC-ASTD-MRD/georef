@@ -606,7 +606,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
             Ref->Type|=GRID_WRAP;
          }
       }  
-     
+    
       if (Ref->GRTYP[0]=='A' || Ref->GRTYP[0]=='B' || Ref->GRTYP[0]=='G') {
          Ref->Type|=GRID_WRAP;
       } else if (Ref->GRTYP[0]!='V' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
@@ -1045,7 +1045,7 @@ int GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int Grid,TApp_Type 
          sz=record.ni*record.nj*record.nk;
          switch(Type) {
             case APP_NIL:
-            case APP_FLOAT32:
+            case APP_FLOAT32:      // Suppose default is float32
                *Ptr=record.data;
                break;
 
@@ -1062,7 +1062,7 @@ int GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int Grid,TApp_Type 
                }
                break;
 
-            case APP_INT32:
+            case APP_UINT32:     // Suppose default as int
                if (record.data_bits==32 && record.data_type==FST_TYPE_UNSIGNED) {
                   *Ptr=record.data;
                } else {
@@ -1070,7 +1070,20 @@ int GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int Grid,TApp_Type 
                      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Not enough memory to read descriptor field\n",__func__,Var);
                      return(0);
                   } 
-                  for(i=0;i<sz;i++) ((unsigned int*)*Ptr)[i]=((float*)record.data)[i];
+                  for(i=0;i<sz;i++) ((unsigned int*)*Ptr)[i]=((int*)record.data)[i];
+                  fst24_record_free(&record);
+               }
+               break;
+
+            case APP_INT32:      // Suppose default as unsigned int
+               if (record.data_bits==32 && record.data_type==FST_TYPE_SIGNED) {
+                  *Ptr=record.data;
+               } else {
+                  if (!(*Ptr=(int*)malloc(sz*sizeof(int)))) {
+                     Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Not enough memory to read descriptor field\n",__func__,Var);
+                     return(0);
+                  } 
+                  for(i=0;i<sz;i++) ((int*)*Ptr)[i]=((int*)record.data)[i];
                   fst24_record_free(&record);
                }
                break;
@@ -1081,6 +1094,7 @@ int GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int Grid,TApp_Type 
          }
       }
 
+      // Define reference grid parameters
       strncpy(GRef->RPNHeadExt.grref,record.grtyp,FST_GTYP_LEN);
       GRef->RPNHeadExt.igref1=record.ig1;
       GRef->RPNHeadExt.igref2=record.ig2;
@@ -1106,9 +1120,9 @@ int GeoRef_ReadGrid(struct TGeoRef *GRef) {
 
       switch(GRef->GRTYP[0]) {
          case 'M':
+            if (!GRef->Idx) GRef->NIdx=GeoRef_ReadDescriptor(GRef,(void **)&GRef->Idx,"##",1,APP_UINT32);
             if (!GRef->AY)  GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
             if (!GRef->AX)  sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
-            if (!GRef->Idx) GeoRef_ReadDescriptor(GRef,(void **)&GRef->Idx,"##",1,APP_UINT32);
             GeoRef_BuildIndex(GRef);
             break;
 
@@ -1210,9 +1224,11 @@ int GeoRef_ReadGrid(struct TGeoRef *GRef) {
                im=inv;
             }
          }
+         GRef->RPNHeadExt.grref[0]='W';
          GeoRef_DefineW(GRef,proj,tm,im,NULL);
          if (proj) free(proj);
          if (mtx)  free(mtx);
+
 #else
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);
    return(FALSE);
@@ -2497,15 +2513,6 @@ int GeoRef_Write(TGeoRef *GRef,fst_file *File){
       free(record.data);
 
    if (GRef->AX && GRef->AY) {
-      if (32) {
-         for(i=0;i<(GRef->Type&GRID_AXY2D?GRef->NX*GRef->NY:GRef->NX);i++) ((float*)record.data)[i]=GRef->AX[i];
-         record.pack_bits = 32;
-         record.data_bits = 32;
-      } else {
-         record.data = GRef->AX;
-         record.pack_bits = 64;
-         record.data_bits = 64;
-      }
       record.data_type = FST_TYPE_REAL_IEEE;
       record.ni   = GRef->NX;
       record.nj   = GRef->Type&GRID_AXY2D?GRef->NY:1;
@@ -2519,25 +2526,103 @@ int GeoRef_Write(TGeoRef *GRef,fst_file *File){
       record.ig2   = GRef->RPNHeadExt.igref2;
       record.ig3   = GRef->RPNHeadExt.igref3;
       record.ig4   = GRef->RPNHeadExt.igref4;
+      if (32) {
+         for(i=0;i<(GRef->Type&GRID_AXY2D?record.ni*record.nj:record.ni);i++) ((float*)record.data)[i]=GRef->AX[i];
+         record.pack_bits = 32;
+         record.data_bits = 32;
+      } else {
+         record.data = GRef->AX;
+         record.pack_bits = 64;
+         record.data_bits = 64;
+      }
       if (fst24_write(File,&record,FST_SKIP)<=0) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
          return(FALSE);
       }
 
+      strncpy(record.nomvar,"^^",FST_NOMVAR_LEN);
+      record.ni   = GRef->Type&GRID_AXY2D?GRef->NX:1;
+      record.nj   = GRef->GRTYP[0]=='M'?GRef->NX:GRef->NY;
       if (32) {
-         for(i=0;i<(GRef->Type&GRID_AXY2D?GRef->NX*GRef->NY:GRef->NY);i++) ((float*)record.data)[i]=GRef->AY[i];
+         for(i=0;i<(GRef->Type&GRID_AXY2D?record.ni*record.nj:record.nj);i++) ((float*)record.data)[i]=GRef->AY[i];
       } else {
          record.data = GRef->AY;
       }
-      record.ni   = GRef->Type&GRID_AXY2D?GRef->NX:1;
-      record.nj   = GRef->NY;
-      strncpy(record.nomvar,"^^",FST_NOMVAR_LEN);
       if (fst24_write(File,&record,FST_SKIP)<=0) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
          return(FALSE);
       }
    }
 
+   if (GRef->Idx) {
+      record.data = GRef->Idx;
+      record.pack_bits = 32;
+      record.data_bits = 32;
+      record.data_type = FST_TYPE_UNSIGNED;
+      record.ni   = GRef->NIdx;
+      record.nj   = 1;
+      record.nk   = 1;
+      record.ip1  = GRef->RPNHead.ig1;
+      record.ip2  = GRef->RPNHead.ig2;
+      record.ip3  = GRef->RPNHead.ig3;
+      strncpy(record.nomvar,"##",FST_NOMVAR_LEN);
+      strncpy(record.grtyp,"X",FST_GTYP_LEN);
+      record.ig1   = GRef->RPNHeadExt.igref1;
+      record.ig2   = GRef->RPNHeadExt.igref2;
+      record.ig3   = GRef->RPNHeadExt.igref3;
+      record.ig4   = GRef->RPNHeadExt.igref4;
+      if (fst24_write(File,&record,FST_SKIP)<=0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write ## field (fst24_write failed)\n",__func__);
+         return(FALSE);
+      }
+   }
+
+   if (GRef->Transform) {
+      record.data = GRef->Transform;
+      record.pack_bits = 64;
+      record.data_bits = 64;
+      record.data_type = FST_TYPE_REAL_IEEE;
+      record.ni   = 6;
+      record.nj   = 1;
+      record.nk   = 1;
+      record.ip1  = GRef->RPNHead.ig1;
+      record.ip2  = GRef->RPNHead.ig2;
+      record.ip3  = GRef->RPNHead.ig3;
+      strncpy(record.nomvar,"MTRX",FST_NOMVAR_LEN);
+      strncpy(record.grtyp,"X",FST_GTYP_LEN);
+      record.ig1   = GRef->RPNHeadExt.igref1;
+      record.ig2   = GRef->RPNHeadExt.igref2;
+      record.ig3   = GRef->RPNHeadExt.igref3;
+      record.ig4   = GRef->RPNHeadExt.igref4;
+      if (fst24_write(File,&record,FST_SKIP)<=0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write MTRX field (fst24_write failed)\n",__func__);
+         return(FALSE);
+      }
+   }
+
+   if (GRef->String) {
+      record.data = GRef->String;
+      record.pack_bits = 8;
+      record.data_bits = 8;
+      record.data_type = FST_TYPE_UNSIGNED;
+      record.ni   = strlen(GRef->String);
+      record.nj   = 1;
+      record.nk   = 1;
+      record.ip1  = GRef->RPNHead.ig1;
+      record.ip2  = GRef->RPNHead.ig2;
+      record.ip3  = GRef->RPNHead.ig3;
+      strncpy(record.nomvar,"PROJ",FST_NOMVAR_LEN);
+      strncpy(record.grtyp,"X",FST_GTYP_LEN);
+      record.ig1   = GRef->RPNHeadExt.igref1;
+      record.ig2   = GRef->RPNHeadExt.igref2;
+      record.ig3   = GRef->RPNHeadExt.igref3;
+      record.ig4   = GRef->RPNHeadExt.igref4;
+      if (fst24_write(File,&record,FST_SKIP)<=0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write PROJ field (fst24_write failed)\n",__func__);
+         return(FALSE);
+      }
+   }
+   
    return(TRUE);
 }
 

@@ -176,7 +176,7 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to create transformation functions\n",__func__);
          }
       }
-  } else {
+   } else {
       Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Unable to get spatial reference\n",__func__);
       return(NULL);
    }
