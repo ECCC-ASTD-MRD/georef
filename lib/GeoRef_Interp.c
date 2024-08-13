@@ -131,6 +131,7 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
                   if (GeoRef_SetEmptyIndex(GSet)) {
                      f77name(ez8_irgd_index_1)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,&RefFrom->Extension);
                   }
+
                   f77name(ez8_apply_1)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Options.NoData);
                }
                break;
@@ -218,7 +219,6 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,
    }
 
    RefFrom->Options.InterpDegree = old_degre_interp;
-
    return(0);
 }
 

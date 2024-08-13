@@ -1528,6 +1528,7 @@ int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerR
             if (index[f]) free(index[f]);
          }
          *(ip++)=REF_INDEX_END;
+         gset->IndexSize=(ip-gset->Index)+1;
          free(index);
       }
 
@@ -1549,7 +1550,7 @@ int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerR
    }
 
    // Return size of index or number of hits, or 1 if nothing found
-   nt=gset->Index?(ip-gset->Index)+1:nt;
+   nt=gset->Index?gset->IndexSize:nt;
    return((error || nt==0)?1:nt);
 #else
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
@@ -1910,6 +1911,7 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
                }
             }
             *(ip++)=REF_INDEX_END;
+            gset->IndexSize=(ip-gset->Index)+1;
             free(index);
          }
          Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i total hits\n",__func__,nt);
@@ -1927,13 +1929,14 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
             }
          }
       }
+
    }
 
    OGR_G_DestroyGeometry(ring);
    OGR_G_DestroyGeometry(cell);
 
    // Return size of index or number of hits, or 1 if nothing found
-   nt=gset->Index?(ip-gset->Index)+1:nt;
+   nt=gset->Index?gset->IndexSize:nt;
    return(nt==0?1:nt);
 #else
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
@@ -2380,7 +2383,6 @@ int GeoRef_InterpDef(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,i
 //         if (!Def_Compat(field0->Def,field1->Def)) {
 //            field0->GRef=GeoRef_Find(GeoRef_Resize(field0->GRef,field0->Def->NI,field0->Def->NJ));
 //         }
-
          code=GeoRef_InterpConservative(ToRef,ToDef,FromRef,FromDef,Final);
          break;
 

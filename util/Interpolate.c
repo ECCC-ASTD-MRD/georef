@@ -50,6 +50,9 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       }
    }
   
+   GeoRef_Options.InterpDegree=Type;
+   GeoRef_Options.NoData=0.0;
+
 //   GeoRef_CopyDesc(fout,&grid);
    GeoRef_Write(refout,fout);   
 
@@ -149,10 +152,7 @@ int main(int argc, char *argv[]) {
       default:
          App_Log(APP_ERROR,"Invalid interpolation method: %s\n",type);
    }
-
-   GeoRef_Options.InterpDegree=IR_LINEAR;
-   GeoRef_Options.NoData=0.0;
-
+ 
    ok=Interpolate(in,out,truth,grid,vars,etiket,interp);
    code=App_End(ok?0:EXIT_FAILURE);
    App_Free();

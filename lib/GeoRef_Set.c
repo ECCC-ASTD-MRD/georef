@@ -270,7 +270,8 @@ int GeoRef_SetCalcXY(TGridSet *GSet) {
          //TODO: better conservative method
          GSet->IndexDegree=GSet->RefFrom->Options.InterpDegree;
          mult=((GSet->IndexDegree==IR_CONSERVATIVE || GSet->IndexDegree==IR_NORMALIZED_CONSERVATIVE)?1024:(GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1)));          
-         GSet->Index = (float*)realloc(GSet->Index,mult*size*sizeof(float));
+         GSet->IndexSize=size;
+         GSet->Index = (float*)realloc(GSet->Index,GSet->IndexSize*mult*sizeof(float));
          GSet->Index[0]=REF_INDEX_EMPTY;
       }
    }
@@ -510,14 +511,13 @@ int GeoRef_SetWrite(TGridSet *GSet,fst_file *File){
    int size=0;
    fst_record record=default_fst_record;
 
-   if (GSet && GSet->Index && GSet->IndexSize) {
-      size=GSet->RefTo->NX*GSet->RefTo->NY;
+   if (GeoRef_SetHasIndex(GSet)) {
       Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s:  Writing index (%ix%i)\n",__func__,size,GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1));
 
       record.data = GSet->X;
       record.pack_bits = 64;
-      record.ni   = size;
-      record.nj   = 1;
+      record.ni   = GSet->RefTo->NX;
+      record.nj   = GSet->RefTo->NY;
       record.nk   = 1;
       record.dateo= 0;
       record.deet = 0;
