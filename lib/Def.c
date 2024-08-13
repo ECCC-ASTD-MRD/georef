@@ -15,19 +15,10 @@ int         TDef_Mult[]          = { 0,0,0,0,1,1,2,2,3,3,2,3 };
 int         TDef_DTYP[]          = { 0,2,4,2,4,2,4,2,4,5,5,-1 };
 
 /*----------------------------------------------------------------------------
- * Nom      : <Def_Clear>
- * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
+ * @brief  Re-initialise a data definition
+ * @date   Fevrier 2003
+ *    @param[in]     Def    Data definition to be re-initialised
  *
- * But      : Reinitialiser les valeurs a nodata
- *
- * Parametres :
- *  <Def>     : Structure a reinitialiser
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
 */
 void Def_Clear(TDef *Def){
 
@@ -67,28 +58,19 @@ void Def_Clear(TDef *Def){
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Def_Compat>
- * Creation : Mars 2009- J.P. Gauthier - CMC/CMOE
- *
- * But      : Verifier les dimensiont entre 2 Def et les ajuster en consequence.
- *
- * Parametres :
- *  <ToDef>   : Definition a redimensionner
- *  <DefTFrom>: Definition de laquelle redimensionner
- *
- * Retour:
- *  <Compat>  : Compatibles?
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
+ * @brief  Check dimensions compatibility betweed 2 data definition and adjust if needed
+ * @date   Mars 2009
+ *    @param[inout]  ToDef      Data definition to be adjusted
+ *    @param[in]     FromDef    Data definition
+ * 
+ *    @return        Compatible, FALSE or TRUE
+ */
 int Def_Compat(TDef *ToDef,TDef *FromDef) {
 
-   int ch=1,n,nijk;
+   int ch=TRUE,n,nijk;
 
    if (FromDef->Idx) {
-      return(0);
+      return(FALSE);
    }
 
    if (ToDef->Mode && ToDef->Mode!=ToDef->Data[0]) {
@@ -100,8 +82,8 @@ int Def_Compat(TDef *ToDef,TDef *FromDef) {
    // Verifier la dimension verticale
    if (ToDef->NK!=FromDef->NK || ToDef->NC!=FromDef->NC) {
       if (ToDef->Idx) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Cannot change the data size for a sub 'U' grid\n",__func__);
-         return(0);
+         Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Cannot change the data size for a sub 'U' grid\n",__func__);
+         return(FALSE);
       }
       if (ToDef->Data[0]) free(ToDef->Data[0]);
       ToDef->Data[0]=ToDef->Data[1]=ToDef->Data[2]=ToDef->Data[3]=NULL;
@@ -110,19 +92,19 @@ int Def_Compat(TDef *ToDef,TDef *FromDef) {
       ToDef->NC=FromDef->NC;
       nijk=FSIZE3D(ToDef);
       if (!(ToDef->Data[0]=(char*)calloc(nijk*ToDef->NC,TDef_Size[ToDef->Type]))) {
-         return(0);
+         return(FALSE);
       }
       for(n=1;n<ToDef->NC;n++) {
          ToDef->Data[n]=&ToDef->Data[0][nijk*n*TDef_Size[ToDef->Type]];
       }
-      ch=0;      
+      ch=FALSE;      
    }
 
    // Verifier le masque
    if (FromDef->Mask) {
       if (!ToDef->Mask || ch==0) {
          if (!(ToDef->Mask=(char*)realloc(ToDef->Mask,FSIZE3D(ToDef)))) {
-            return(0);
+            return(FALSE);
          }
       }
    } else if (ToDef->Mask) {
@@ -134,21 +116,12 @@ int Def_Compat(TDef *ToDef,TDef *FromDef) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Def_Copy>
- * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
- *
- * But      : Copier une structure TDef.
- *
- * Parametres :
- *  <Def>     : Structure a copier
- *
- * Retour:
- *  <def>     : Pointeur sur le copie de la structure
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
+ * @brief  Copy a data definition
+ * @date   Fevrier 2003
+ *    @param[in]  Def      Data definition to copy
+ * 
+ *    @return     new data definition, NULL on error
+ */
 TDef *Def_Copy(TDef *Def){
 
    int   n,nijk;
@@ -214,6 +187,14 @@ TDef *Def_Copy(TDef *Def){
    return(def);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Copy a data definition but change the internal data type
+ * @date   Fevrier 2003
+ *    @param[in]  Def      Data definition to copy
+ *    @param[in]  Type     New data type
+ * 
+ *    @return     new data definition, NULL on error
+ */
 TDef *Def_CopyPromote(TDef *Def,TDef_Type Type){
 
    int   n,nijk;
@@ -274,6 +255,14 @@ TDef *Def_CopyPromote(TDef *Def,TDef_Type Type){
    return(def);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Copy a data from a data definition to another data definition
+ * @date   Fevrier 2003
+ *    @param[in]  ToDef      Destination data definition
+ *    @param[in]  FromDef    Source data definition
+ * 
+ *    @return     new data definition, NULL on error
+ */
 TDef *Def_CopyData(TDef *ToDef,TDef *FromDef){
 
    TDef *def=ToDef;
@@ -309,20 +298,11 @@ TDef *Def_CopyData(TDef *ToDef,TDef *FromDef){
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Def_Free>
- * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
- *
- * But      : Liberer la structure TDef.
- *
- * Parametres :
- *  <Def>     : Structure a liberer
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
+ * @brief  Free a data from a data definition 
+ * @date   Fevrier 2003
+ *    @param[in]  Def      Data definition to free
+ * 
+ */
 void Def_Free(TDef *Def){
 
    if (Def) {
@@ -350,26 +330,17 @@ void Def_Free(TDef *Def){
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Def_New>
- * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
- *
- * But      : Initialiser la structure TDef.
- *
- * Parametres :
- *  <NI>      : Dimension du champs a allouer
- *  <NJ>      : Dimension du champs a allouer
- *  <NK>      : Dimension du champs a allouer
- *  <Dim>     : Nombre de composantes
- *  <Type>    : Type de donnnes
- *  <Alias>   : Alias data arrays
- *
- * Retour:
- *  <Def>:      Nouvelle structure
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
+ * @brief  Create a new data definition
+ * @date   Fevrier 2003
+ *    @param[in]  NI     X dimension
+ *    @param[in]  NJ     Y dimension
+ *    @param[in]  NK     Z dimension
+ *    @param[in]  Dim    Number of components (1-4)
+ *    @param[in]  Type   Data type
+ *    @param[in]  Alias  Is this an alias to another data definition
+ * 
+ *    @return     new data definition, NULL on error
+ */
 TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type,int Alias) {
 
    int   n,nijk;
@@ -434,6 +405,19 @@ TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type,int Alias) {
    return(def);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Create a new data definition and initialize the internal data pointers
+ * @date   August 2024
+ *    @param[in]  NI     X dimension
+ *    @param[in]  NJ     Y dimension
+ *    @param[in]  NK     Z dimension
+ *    @param[in]  Dim    Number of components (1-4)
+ *    @param[in]  Comp0  1st component
+ *    @param[in]  Comp1  2nd component (if vectorial field)
+ *    @param[in]  Mask   Mask, if available
+ * 
+ *    @return     new data definition, NULL on error
+ */
 TDef *Def_Create(int NI,int NJ,int NK,TDef_Type Type,char* Comp0,char* Comp1,char* Mask) {
    
    TDef *def=NULL;
@@ -449,6 +433,7 @@ TDef *Def_Create(int NI,int NJ,int NK,TDef_Type Type,char* Comp0,char* Comp1,cha
    }
    return (def);
 }
+
 /*
 static inline float* Def_ToFloat(TDef *Def,char* Buffer) {
 
@@ -500,23 +485,14 @@ static inline float* Def_FromFloat(TDef *Def) {
 */
 
 /*----------------------------------------------------------------------------
- * Nom      : <Def_Resize>
- * Creation : Avril 2004- J.P. Gauthier - CMC/CMOE
+ * @brief  Resize the data field of a data definition
+ * @date   Avril 2004
+ *    @param[in]     Def    Data definition to be resized
+ *    @param[in]     NI     X dimensionn
+ *    @param[in]     NJ     Y dimension
+ *    @param[in]     NK     Z dimension
  *
- * But      : Redimensionner le champs de donnees.
- *
- * Parametres :
- *  <Def>     : Definition a redimensionner
- *  <NI>      : Dimension du champs a allouer
- *  <NJ>      : Dimension du champs a allouer
- *  <NK>      : Dimension du champs a allouer
- *
- * Retour:
- *  <Def>:      Nouvelle structure
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
+ *    @return        New data definition
 */
 TDef *Def_Resize(TDef *Def,int NI,int NJ,int NK){
 
@@ -576,23 +552,14 @@ TDef *Def_Resize(TDef *Def,int NI,int NJ,int NK){
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Def_Paste>
- * Creation : Novembre 2007- J.P. Gauthier - CMC/CMOE
+ * @brief  Copie data from a data definition to another one
+ * @date   Novembre 2007
+ *    @param[in]     ToDef    Destination data definition
+ *    @param[in]     DefPaste Source data definition
+ *    @param[in]     X0       X start coordinate
+ *    @param[in]     Y0       Y start Coordinate
  *
- * But      : Copier les donnees d'un TDef dans un autres (Paste).
- *
- * Parametres :
- *  <ToDef>   : Destination
- *  <DefPaste>: Paste
- *  <X0>      : Point de depart de la tuile en X
- *  <Y0>      : Point de depart de la tuile en Y
- *
- * Retour:
- *  <Code>    : In(1) ou Out(0)
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
+ *    @return        FALSE if out of grid, TRUE otherwise
 */
 int Def_Paste(TDef *ToDef,TDef *DefPaste,int X0, int Y0) {
 
@@ -609,7 +576,7 @@ int Def_Paste(TDef *ToDef,TDef *DefPaste,int X0, int Y0) {
 
    // If paste is out of destination
    if (x0>ToDef->NI || x1<0 || y0>ToDef->NJ || y1<0) {
-      return(0);
+      return(FALSE);
    }
 
    // Maximum number of band to paste
@@ -639,9 +606,23 @@ int Def_Paste(TDef *ToDef,TDef *DefPaste,int X0, int Y0) {
       }
       dy++;
    }
-   return(1);
+   return(TRUE);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Get a value within a data definition, possibly interpolated
+ * @date   June 2004
+ *    @param[in]     Ref     GeoRef pointer
+ *    @param[in]     Def     Data definition
+ *    @param[in]     C       Component (0-4)
+ *    @param[in]     X       X coordinate
+ *    @param[in]     Y       Y Coordinate
+ *    @param[in]     Z       Z Coordinate
+ *    @param[in]     Length  Value to Assign (vector length if vector value)
+ *    @param[in]     ThetaXY Rotation angle, if vector value
+ *
+ *    @return        FALSE if out of grid, TRUE otherwise
+*/
 int Def_GetValue(TGeoRef *Ref,TDef *Def,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
 
    double       x,y,d,ddir=0.0;
@@ -694,6 +675,18 @@ int Def_GetValue(TGeoRef *Ref,TDef *Def,int C,double X,double Y,double Z,double 
    return(FALSE);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Set a value within a data definition
+ * @date   June 2004
+ *    @param[in]     Def     Data definition
+ *    @param[in]     X       X coordinate
+ *    @param[in]     Y       Y Coordinate
+ *    @param[in]     Z       Z Coordinate
+ *    @param[in]     Value   Value to Assigne
+ *    @param[in]     Comb    Result combination method (CB_REPLACE,CB_MIN,CB_MAX,CB_SUM,CB_AVERAGE)
+ *
+ *    @return        FALSE on error, TRUE otherwise
+*/
 static void inline Def_SetValue(TDef *Def,int X, int Y,int Z, double Value,TRef_Combine Comb) {
 
    unsigned long idx;
@@ -719,26 +712,19 @@ static void inline Def_SetValue(TDef *Def,int X, int Y,int Z, double Value,TRef_
    }
 }
 
-/*----------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_Rasterize>
- * Creation     : Juin 2004 J.P. Gauthier - CMC/CMOE
+/*----------------------------------------------------------------------------
+ * @brief  Rasterize vectorial data within aband or field
+ * @date   June 2004
+ *    @param[in]     ToRef      Destination GeoRef pointer
+ *    @param[in]     ToDef      Destination data definition
+ *    @param[in]     Geom       Geometry to initialize to rasterize
+ *    @param[in]     Value      Value to assign
+ *    @param[in]     Comb       Result combination method (CB_REPLACE,CB_MIN,CB_MAX,CB_SUM,CB_AVERAGE)
+ *    @param[in]     Seg        Number of segmentation on the cell sides
  *
- * But          : Rasteriser des donnees vectorielles dans une bande ou champs
- *
- * Parametres   :
- *   <Def>      : Definition des donnees raster
- *   <Ref>      : Referentiel des donnnes raster
- *   <Geom>     : Donnees vectorielle a rasteriser
- *   <Value>    : Valuer a assigner
- *   <Comb>    : Mode de combinaison des valeurs multiples (CB_REPLACE,CB_MIN,CB_MAX,CB_SUM,CB_AVERAGE)
- *
- * Retour       :
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
+ *    @return        FALSE on error, TRUE otherwise
 */
-int GeoRef_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
+int GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,OGRGeometryH Geom,double Value) {
 
 #ifdef HAVE_GDAL
    int    i,j,g,ind1,ind2;
@@ -752,7 +738,7 @@ int GeoRef_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 
    OGRGeometryH geom;
 
-   if (!Ref || !Def) {
+   if (!ToRef || !ToDef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid destination\n",__func__);
       return(0);
    }
@@ -777,7 +763,7 @@ int GeoRef_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                dmaxy=dy;
          }
       } else {
-         GeoRef_Rasterize(Def,Ref,geom,Value);
+         GeoRef_Rasterize(ToRef,ToDef,geom,Value);
       }
    }
    if (!(n+=OGR_G_GetPointCount(Geom)))
@@ -790,7 +776,7 @@ int GeoRef_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
             dy1=OGR_G_GetY(Geom,i);
             x=lrint(dx1);
             y=lrint(dy1);
-            Def_SetValue(Def,x,y,0,Value,Ref->Options.Combine);
+            Def_SetValue(ToDef,x,y,0,Value,ToRef->Options.Combine);
          }
          break;
 
@@ -824,8 +810,8 @@ int GeoRef_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
             dny<<=1;
             dnx<<=1;
 
-            if (FIN2D(Def,x0,y0))
-               Def_Set(Def,0,FIDX2D(Def,x0,y0),Value);
+            if (FIN2D(ToDef,x0,y0))
+               Def_Set(ToDef,0,FIDX2D(ToDef,x0,y0),Value);
             if (dnx>dny) {
                fr=dny-(dnx>>1);
                while(x0!=x1) {
@@ -835,7 +821,7 @@ int GeoRef_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                   }
                   x0+=sx;
                   fr+=dny;
-                  Def_SetValue(Def,x0,y0,0,Value,Ref->Options.Combine);
+                  Def_SetValue(ToDef,x0,y0,0,Value,ToRef->Options.Combine);
                }
             } else {
                fr=dnx-(dny>>1);
@@ -846,7 +832,7 @@ int GeoRef_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                   }
                   y0+=sy;
                   fr+=dnx;
-                  Def_SetValue(Def,x0,y0,0,Value,Ref->Options.Combine);
+                  Def_SetValue(ToDef,x0,y0,0,Value,ToRef->Options.Combine);
                }
             }
          }
@@ -854,9 +840,9 @@ int GeoRef_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 
       case 2: // Polygon type
          miny=(int)(dminy<0?0:dminy);
-         maxy=(int)(dmaxy>=Def->NJ?Def->NJ-1:dmaxy);
+         maxy=(int)(dmaxy>=ToDef->NJ?ToDef->NJ-1:dmaxy);
          minx=0;
-         maxx=Def->NI-1;
+         maxx=ToDef->NI-1;
 
          polyInts=(int*)malloc(sizeof(int)*n);
 
@@ -912,7 +898,7 @@ int GeoRef_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 
                         // fill the horizontal segment (separately from the rest)
                         for(x=horizontal_x1;x<horizontal_x2;x++)
-                           Def_SetValue(Def,x,y,0,Value,Ref->Options.Combine);
+                           Def_SetValue(ToDef,x,y,0,Value,ToRef->Options.Combine);
                         continue;
                      } else {
                         // skip top horizontal segments (they are already filled in the regular loop)
@@ -931,7 +917,7 @@ int GeoRef_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
             for (i=0;i<ints;i+=2) {
                if (polyInts[i]<=maxx && polyInts[i+1]>=minx) {
                   for(x=polyInts[i];x<=polyInts[i+1];x++)
-                     Def_SetValue(Def,x,y,0,Value,Ref->Options.Combine);
+                     Def_SetValue(ToDef,x,y,0,Value,ToRef->Options.Combine);
                }
             }
          }
@@ -945,26 +931,17 @@ int GeoRef_Rasterize(TDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 #endif
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_Cell2OGR>
- * Creation     : Mars 2006 J.P. Gauthier - CMC/CMOE
+/*----------------------------------------------------------------------------
+ * @brief  Project a grid cell within  another referencial
+ * @date   March 2006
+ *    @param[in]     Geom       Geometry to initialize with projected coordinates
+ *    @param[in]     ToRef      Destination GeoRef pointer
+ *    @param[in]     FromRef    Source GeoRef pointer
+ *    @param[in]     I          X gridpoint coordinate
+ *    @param[in]     J          Y gridpoint coordinate
+ *    @param[in]     Seg        Number of segmentation on the cell sides
  *
- * But          : Projecter une cellule de grille dans le referentiel d'une autre
- *
- * Parametres   :
- *   <Geom>     : Polygone a initialiser
- *   <ToRef>    : GeoReference destination
- *   <FromRef>  : GeoReference source
- *   <I>        : Coordonnee X
- *   <J>        : Coordonnee Y
- *   <Seg>      : Facteur de sectionnement des segments
- *
- * Retour       :
- *   <Nb>       : Nombre de points (negatif si ca passe le wrap)
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
+ *    @return        Number of points in geometry (negative if wrapped around)
 */
 int GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int I,int J,int Seg) {
 
@@ -1046,33 +1023,26 @@ int GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int I,int 
 #endif
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_InterpQuad>
- * Creation     : Novembre 2004 J.P. Gauthier - CMC/CMOE
+/*----------------------------------------------------------------------------
+ * @brief  Interpolate within a gridpoint defined quad area
+ * @date   November 2004
+ *    @param[in]     Ref        GeoRef pointer
+ *    @param[in]     Def        Data definition
+ *    @param[in]     Geom       Geometry tested
+ *    @param[in]     Area       Geometry area
+ *    @param[in]     Value      Value o be assigned
+ *    @param[in]     Mode       Rasterization mode
+ *    @param[in]     Type       Rasterization type
+ *    @param[in]     X0         Lower left corner X
+ *    @param[in]     Y0         Lower left corner Y
+ *    @param[in]     X1         Higher right corner X
+ *    @param[in]     Y1         Higher right corner X
+ *    @param[in]     Z          Level
+ *    @param[in]     Index      Local index pointer to be filled
  *
- * But          : Importer des donnees dans une bande raster
- *
- * Parametres   :
- *   <Def>      : Definition de la donnee
- *   <Ref>      : Referentiel de la donnee
- *   <Geom>     : Geometrie a tester
- *   <Area>     : Aire de la geometrie
- *   <Value>    : Valeur a assigner
- *   <Mode>     : Mode de rasterization
- *   <Type>     : Type de rasterization
- *   <X0>       : Coin inferieur gauche
- *   <Y0>       : Coin inferieur gauche
- *   <X1>       : Coin superieur droit
- *   <Y1>       : Coin superieur droit
- *   <Z>        : Niveau
- *
- * Retour       : Nombre de point de grille affecté
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
+ *    @return        number of points involved
 */
-static int GeoRef_InterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Poly,OGRGeometryH Geom,char Mode,char Type,double Area,double Value,int X0,int Y0,int X1,int Y1,int Z,float **Index) {
+static int GeoRef_InterpQuad(TGeoRef *Ref,TDef *Def,OGRGeometryH Poly,OGRGeometryH Geom,char Mode,char Type,double Area,double Value,int X0,int Y0,int X1,int Y1,int Z,float **Index) {
 
 #ifdef HAVE_GDAL
    double        dx,dy,dp=1.0,val=0.0;
@@ -1173,14 +1143,14 @@ static int GeoRef_InterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Poly,OGRGeometr
          if (x==0 || y==0) {
             for (x=X0;x<=X1;x++) {
                for (y=Y0;y<=Y1;y++) {
-                  n+=GeoRef_InterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,x,y,x,y,Z,Index);
+                  n+=GeoRef_InterpQuad(Ref,Def,Poly,Geom,Mode,Type,Area,Value,x,y,x,y,Z,Index);
                }
             }
          } else {
-            n+=GeoRef_InterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,X0,Y0,X0+x,Y0+y,Z,Index);
-            n+=GeoRef_InterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,X0+x+1,Y0,X1,Y0+y,Z,Index);
-            n+=GeoRef_InterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,X0,Y0+y+1,X0+x,Y1,Z,Index);
-            n+=GeoRef_InterpQuad(Def,Ref,Poly,Geom,Mode,Type,Area,Value,X0+x+1,Y0+y+1,X1,Y1,Z,Index);
+            n+=GeoRef_InterpQuad(Ref,Def,Poly,Geom,Mode,Type,Area,Value,X0,Y0,X0+x,Y0+y,Z,Index);
+            n+=GeoRef_InterpQuad(Ref,Def,Poly,Geom,Mode,Type,Area,Value,X0+x+1,Y0,X1,Y0+y,Z,Index);
+            n+=GeoRef_InterpQuad(Ref,Def,Poly,Geom,Mode,Type,Area,Value,X0,Y0+y+1,X0+x,Y1,Z,Index);
+            n+=GeoRef_InterpQuad(Ref,Def,Poly,Geom,Mode,Type,Area,Value,X0+x+1,Y0+y+1,X1,Y1,Z,Index);
          }
       }
    }
@@ -1192,30 +1162,23 @@ static int GeoRef_InterpQuad(TDef *Def,TGeoRef *Ref,OGRGeometryH Poly,OGRGeometr
 #endif
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_InterpOGR>
- * Creation     : Novembre 2004 J.P. Gauthier - CMC/CMOE
- *
- * But          : Importer des donnees vectorielles dans une bande raster
- *
- * Parametres   :
- *   <Def>      : Definition de la donnee
- *   <Ref>      : Referentiel de la donnee
- *   <Layer>    : Couche a importer
- *   <Field>    : Champs de la couche a utiliser
- *   <Value>    : Valeur a assigner
- *   <Final>    : Finalisation de l'operation (Averaging en plusieurs passe)
- *
- * Retour       :
- *   <OK>       : ERROR=0
- *
- * Remarques    :
- *   The index format is a stream of float32 containing for each OGR feature, the list of gridcells and interpolation
- *   factor separated by -1,
+/*----------------------------------------------------------------------------
+ * @brief  Interpolate/import vectorial data into a raster field
+ * @remark The index format is a stream of float32 containing for each OGR feature, the list of gridcells and interpolation
+ *      factor separated by -1,
  *      [ogr feature index] [feature value area] [grid cell x] [grid cell y] [factor] [grid cell x] [grid cell y] [factor] ... -1.0 ...
- *---------------------------------------------------------------------------------------------------------------
+ * @date   November 2004
+ *    @param[in]     Ref        Destination GeoRef pointer
+ *    @param[in]     Def        Destination data definition
+ *    @param[in]     LayerRef   Source layer GeoRef pointer
+ *    @param[in]     Layer      Source layer data
+ *    @param[in]     Field      Layer fiel to use
+ *    @param[in]     Value      Value o be assigned
+ *    @param[in]     Final      Is this the final step (for incremental interpolation)
+ *
+ *    @return        FALSE on error, TRUE otherwise
 */
-int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerRef,char *Field,double Value,int Final) {
+int GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer *Layer,char *Field,double Value,int Final) {
 
 #ifdef HAVE_GDAL
    TGridSet *gset;
@@ -1234,15 +1197,15 @@ int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerR
 
    if (!ToRef || !ToDef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid destination\n",__func__);
-      return(0);
+      return(FALSE);
    }
    if (!LayerRef || !Layer) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid source\n",__func__);
-      return(0);
+      return(FALSE);
    }
 
    if (!Layer->NFeature) {
-      return(1);
+      return(TRUE);
    }
 
    // Recuperer la valeur a utiliser dans l'interpolation
@@ -1267,7 +1230,7 @@ int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerR
          fld=OGR_FD_GetFieldIndex(Layer->Def,Field);
          if (fld==-1) {
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid layer field\n",__func__);
-            return(0);
+            return(FALSE);
          }
       }
    }
@@ -1278,7 +1241,7 @@ int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerR
          ToDef->Accum=malloc(FSIZE2D(ToDef)*sizeof(int));
          if (!ToDef->Accum) {
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate accumulation buffer\n",__func__);
-            return(0);
+            return(FALSE);
          }
       }
       memset(ToDef->Accum,0x0,FSIZE2D(ToDef)*sizeof(int));
@@ -1300,7 +1263,7 @@ int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerR
 
          if (f>=Layer->NFeature) {
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Wrong index, feature index too high (%i)\n",__func__,f);
-            return(0);
+            return(FALSE);
          }
 
          // Get value to distribute
@@ -1344,7 +1307,7 @@ int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerR
       if (gset->Index && gset->Index[0]==REF_INDEX_EMPTY) {
          if (!(index=(float**)malloc(Layer->NFeature*sizeof(float*)))) {
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate local index arrays\n",__func__);
-            return(0);
+            return(FALSE);
          }
          ip=gset->Index;
       }
@@ -1361,7 +1324,7 @@ int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerR
 
          if (!srs || !tr) {
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not initiate UTM transormation\n",__func__);
-            return(0);
+            return(FALSE);
          }
       }
 
@@ -1449,7 +1412,7 @@ int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerR
                if (!(env.MaxX<(ToRef->X0-0.5) || env.MinX>(ToRef->X1+0.5) || env.MaxY<(ToRef->Y0-0.5) || env.MinY>(ToRef->Y1+0.5))) {
 
                   if (ToRef->Options.InterpDegree==IV_FAST) {
-                     GeoRef_Rasterize(ToDef,ToRef,geom,value);
+                     GeoRef_Rasterize(ToRef,ToDef,geom,value);
                   } else {
 
                      // Get value to split on
@@ -1493,7 +1456,7 @@ int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerR
                            *(lp++)=(fld<0 && fld>=-9)?value:-999.0;
                         }
 
-                        nt+=n=GeoRef_InterpQuad(ToDef,ToRef,poly,geom,mode,type,area,value,env.MinX,env.MinY,env.MaxX,env.MaxY,0,&lp);
+                        nt+=n=GeoRef_InterpQuad(ToRef,ToDef,poly,geom,mode,type,area,value,env.MinX,env.MinY,env.MaxX,env.MaxY,0,&lp);
 
                         if (lp) {
                            if (n) {
@@ -1554,29 +1517,19 @@ int GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerR
    return((error || nt==0)?1:nt);
 #else
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
-   return(0);
+   return(FALSE);
 #endif
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoRef_InterpSub>
- * Creation     : Aout 2013 J.P. Gauthier - CMC/CMOE
- *
- * But          : Interpolate at sub grid resolution
- *
- * Parametres   :
- *   <ToRef>    : Reference du champs destination
- *   <ToDef>    : Description du champs destination
- *   <FromRef>  : Reference du champs source
- *   <FromDef>  : Description du champs source
- *
- * Retour       :
- *  <OK>       : ERROR=0
- *
- * Remarques    :
- *    Interpolates at sub-grid resolution into a temporary "Sub" buffer for use by other functions
+/*----------------------------------------------------------------------------
+ * @brief  Interpolate at sub grid resolution into a temporary "sub" buffer for use by other functions
  *    like sub grid variance.
- *---------------------------------------------------------------------------------------------------------------
+ * @date   August 2013
+ *    @param[in]     ToRef        Destination GeoRef pointer
+ *    @param[in]     ToDef        Destination data definition
+ *    @param[in]     FromRef      Source GeoRef pointer
+ *
+ *    @return        FALSE on error, TRUE otherwise
 */
 int GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef) {
 
@@ -1642,24 +1595,14 @@ int GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef) 
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <GeoRef_InterpConservative>
- * Creation : Mai 2006 - J.P. Gauthier - CMC/CMOE
+ * @brief  Conservative interpolations
+ * @date   May 2006
+ *    @param[in]     ToRef        Destination GeoRef pointer
+ *    @param[in]     ToDef        Destination data definition
+ *    @param[in]     FromRef      Source GeoRef pointer
+ *    @param[in]     Final        Is this the final step (for incremental interpolation)
  *
- * But      : Effectue l'interpolation conservative
- *
- * Parametres  :
- *  <ToRef>    : Reference du champs destination
- *  <ToDef>    : Description du champs destination
- *  <FromRef>  : Reference du champs source
- *  <FromDef>  : Description du champs source
- *  <Final>    : Finalisation de l'operation (Averaging en plusieurs passe)
- *
- * Retour:
- *  <OK>       : ERROR=0
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
+ *    @return        FALSE on error, TRUE otherwise
 */
 int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int Final) {
 
@@ -1674,11 +1617,11 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
 
    if (!ToRef || !ToDef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid destination\n",__func__);
-      return(0);
+      return(FALSE);
    }
    if (!FromRef || !FromDef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid source\n",__func__);
-      return(0);
+      return(FALSE);
    }
 
    // Allocate area buffer if needed
@@ -1686,7 +1629,7 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
       ToDef->Buffer=(double*)malloc(FSIZE2D(ToDef)*sizeof(double));
       if (!ToDef->Buffer) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate area buffer\n",__func__);
-         return(0);
+         return(FALSE);
       }
    }
    gset=GeoRef_SetGet(ToRef,FromRef);
@@ -1716,7 +1659,7 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
 
             if (!FIN2D(FromDef,i,j)) {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Wrong index, index coordinates (%i,%i)\n",__func__,i,j);
-               return(0);
+               return(FALSE);
             }
 
             // Get this gridpoint value
@@ -1754,7 +1697,7 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
          if (gset->Index && gset->Index[0]==REF_INDEX_EMPTY) {
             if (!(index=(float**)malloc(FSIZE2D(FromDef)*sizeof(float*)))) {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate local index arrays\n",__func__);
-               return(0);
+               return(FALSE);
             }
             ip=gset->Index;
          }
@@ -1843,7 +1786,7 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
                      env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
                      env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
 
-                     nt+=na=GeoRef_InterpQuad(ToDef,ToRef,poly,cell,ToRef->Options.InterpDegree==IR_CONSERVATIVE?'C':'N','A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k,&lp);
+                     nt+=na=GeoRef_InterpQuad(ToRef,ToDef,poly,cell,ToRef->Options.InterpDegree==IR_CONSERVATIVE?'C':'N','A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k,&lp);
 
                      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,na,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
                   }
@@ -1878,7 +1821,7 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
                      env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
                      env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
 
-                     nt+=n=GeoRef_InterpQuad(ToDef,ToRef,poly,cell,ToRef->Options.InterpDegree=IR_CONSERVATIVE?'C':'N','A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k,&lp);
+                     nt+=n=GeoRef_InterpQuad(ToRef,ToDef,poly,cell,ToRef->Options.InterpDegree=IR_CONSERVATIVE?'C':'N','A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k,&lp);
 
                      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
                   }
@@ -1940,32 +1883,24 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
    return(nt==0?1:nt);
 #else
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
-   return(0);
+   return(FALSE);
 #endif
 
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <GeoRef_InterpAverage>
- * Creation : Mai 2006 - J.P. Gauthier - CMC/CMOE
+ * @brief  Interpolations by averaging, minimum or maximum
+ * @date   May 2006
+ *    @param[in]     ToRef        Destination GeoRef pointer
+ *    @param[in]     ToDef        Destination data definition
+ *    @param[in]     FromRef      Source GeoRef pointer
+ *    @param[in]     Table        Data table to check
+ *    @param[in]     lutDef       Lookup table
+ *    @param[in]     lutSize      Lookup tdable size
+ *    @param[in]     TmpDef       Pre calculated field (ex: variance, average,...)
+ *    @param[in]     Final        Is this the final step (for incremental interpolation)
  *
- * But      : Effectue l'interpolation par moyennage minimum ou maximum
- *
- * Parametres  :
- *  <ToRef>    : Reference du champs destination
- *  <ToDef>    : Description du champs destination
- *  <FromRef>  : Reference du champs source
- *  <FromDef>  : Description du champs source
- *  <Table>    : Table de donnees a verifier
- *  <TmpDef>   : Description du champs de precalcul (ex: pour VARIANCE, moyenne)
- *  <Final>    : Finalisation de l'operation (Averaging en plusieurs passe)
- *
- * Retour:
- *  <OK>       : ERROR=0
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
+ *    @return        FALSE on error, TRUE otherwise
 */
 int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,int Final){
 
@@ -1977,11 +1912,11 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
 
    if (!ToRef || !ToDef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid destination\n",__func__);
-      return(0);
+      return(FALSE);
    }
    if ((!FromRef || !FromDef) && (ToRef->Options.InterpDegree!=IR_NOP && ToRef->Options.InterpDegree!=IR_ACCUM && ToRef->Options.InterpDegree!=IR_BUFFER)) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid source\n",__func__);
-      return(0);
+      return(FALSE);
    }
 
    acc=ToDef->Accum;
@@ -1993,7 +1928,7 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
 
    if (ToRef->Options.InterpDegree!=IR_NOP && ToRef->Options.InterpDegree!=IR_ACCUM && ToRef->Options.InterpDegree!=IR_BUFFER) {
       if (!GeoRef_Intersect(ToRef,FromRef,&x0,&y0,&x1,&y1,0)) {
-         return(1);
+         return(TRUE);
       }
 
       // In case of average, we need an accumulator
@@ -2003,7 +1938,7 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
             acc=ToDef->Accum=malloc(nij*sizeof(int));
             if (!ToDef->Accum) {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate accumulation buffer\n",__func__);
-               return(0);
+               return(FALSE);
             }
             for(n=0;n<nij;n++) acc[n]=0;
          }
@@ -2013,7 +1948,7 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
          fld=ToDef->Buffer=malloc(nijk*sizeof(double));
          if (!ToDef->Buffer) {
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate buffer\n",__func__);
-            return(0);
+            return(FALSE);
          }
          for(n=0;n<nijk;n++) fld[n]=ToDef->NoData;
 
@@ -2021,7 +1956,7 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
             aux=ToDef->Aux=malloc(nijk*sizeof(double));
             if (!ToDef->Aux) {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate auxiliary buffer\n",__func__);
-               return(0);
+               return(FALSE);
             }
             for(n=0;n<nijk;n++) aux[n]=0.0;
          }
@@ -2057,7 +1992,7 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
                   case IR_VECTOR_AVERAGE   : vx=DEG2RAD(vx); fld[idxt]+=cos(vx); aux[idxt]+=sin(vx); acc[idxt]++; break;
                   default:
                      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid interpolation type\n",__func__);
-                     return(0);
+                     return(FALSE);
                }
             }
          }
@@ -2072,16 +2007,15 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
             Def_Get(lutDef[0],0,0,val);
             if (val != ToDef->NK) {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid LUT class size (%d) vs Array size (%d)  \n",__func__,(int)val,ToDef->NK);
-               return(0);
+               return(FALSE);
             }
             // first row is the class count and idno 
             nbClass = lutDef[0]->NI - 1;       
             fromClass = (int *)malloc( sizeof(int)*nbClass );
-            for (i = 0; i < nbClass ; i++)
-               {
+            for (i = 0; i < nbClass ; i++) {
                Def_Get(lutDef[0],0,i+1,val);
                fromClass[i] = val;
-               }
+            }
             if (lutSize == 2) { // only FROM and TO
                toClass = (int *)malloc( sizeof(int)*nbClass );
                for (i = 0; i < nbClass ; i++) {
@@ -2100,7 +2034,7 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
                   rpnClass[i] = val;
                   if ((val < 1)||(val > ToDef->NK)) {
                      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid LUT index(%d)=%f vs Array size (%d)  \n",__func__,i,val,ToDef->NK);
-                     return(0);
+                     return(FALSE);
                   }
                }
             }
@@ -2115,7 +2049,7 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
          for(y=y0;y<=y1;y+=(dy+1)) {
             if (!(s=GeoScan_Get(&gscan,ToRef,NULL,FromRef,FromDef,x0,y,x1,y+dy,FromDef->CellDim))) {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate coordinate scanning buffer\n",__func__);
-               return(0);
+               return(FALSE);
             }
 
             // Loop over source data
@@ -2255,7 +2189,7 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
                            case IR_VECTOR_AVERAGE   : vx=DEG2RAD(vx); fld[idxt]+=cos(vx); aux[idxt]+=sin(vx); acc[idxt]++; break;
                            default:
                               Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid interpolation type\n",__func__);
-                              return(0);
+                              return(FALSE);
                         }
                      }
                   }
@@ -2321,21 +2255,21 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
          }
       }
    }
-   return(1);
+   return(TRUE);
 }
 
 /*----------------------------------------------------------------------------
- * @brief  Changes a georeference type to W
- * @date   June 2014
- *    @param[in]     Ref          GeoRef pointer
- *    @param[in]     String       WKT description
- *    @param[in]     Transform    Transformation matrix [2][6]
- *    @param[in]     InvTransform Inverse transformation matrix [2][6]
- *    @param[in]     Spatial      Spatial reference (GDAL object)
-
- *    @return        GeoRef object (NULL=Error)
+ * @brief  Initiates interpolations from TDef types
+ * @date   August 2024
+ *    @param[in]     ToRef        Destination GeoRef pointer
+ *    @param[in]     ToDef        Destination data definition
+ *    @param[in]     FromRef      Source GeoRef pointer
+ *    @param[in]     FromDef      Source data definition
+ *    @param[in]     Final        Is this the final step (for incremental interpolation)
+ *
+ *    @return        FALSE on error, TRUE otherwise
 */
-int GeoRef_InterpDef(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final) {
+int GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int Final) {
 
    void *pf0,*pt0,*pf1,*pt1;
    int   k,code=FALSE;

@@ -265,12 +265,12 @@ int   Def_Paste(TDef *ToDef,TDef *DefPaste,int X0,int Y0);
 
 int   Def_GetValue(TGeoRef *Ref,TDef *Def,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
 
-int   GeoRef_Rasterize(TDef *Def,struct TGeoRef *Ref,OGRGeometryH Geom,double Value);
-int   GeoRef_Cell2OGR(OGRGeometryH Geom,struct TGeoRef *ToRef,struct TGeoRef *FromRef,int I,int J,int Seg);
-int   GeoRef_InterpDef(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final);
+int   GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int I,int J,int Seg);
+int   GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,OGRGeometryH Geom,double Value);
+int   GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int Final);
 int   GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,int Final);
 int   GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int Final);
 int   GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef);
-int   GeoRef_InterpOGR(TDef *ToDef,TGeoRef *ToRef,OGR_Layer *Layer,TGeoRef *LayerRef,char *Field,double Value,int Final);
+int   GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer *Layer,char *Field,double Value,int Final);
 
 #endif
