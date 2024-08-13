@@ -67,8 +67,7 @@ add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ _GNU_SOURCE)
 
 link_libraries("-Wl,--disable-new-dtags")
 add_subdirectory(lib lib)
-add_subdirectory(util util)
-#   add_subdirectory(test test)
+add_subdirectory(test/C test)
 
 configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/${NAME}-config DESTINATION bin)

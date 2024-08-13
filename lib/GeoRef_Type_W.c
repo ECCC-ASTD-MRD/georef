@@ -86,7 +86,6 @@
 
 /*----------------------------------------------------------------------------
  * @brief  Changes a georeference type to W
- * @author Jean-Philippe Gauthier
  * @date   June 2014
  *    @param[in]     Ref          GeoRef pointer
  *    @param[in]     String       WKT description
@@ -192,7 +191,6 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
 
 /*----------------------------------------------------------------------------
  * @brief  Create a W type  georeference
- * @author Jean-Philippe Gauthier
  * @date   June 2014
  *    @param[in]     NI           Number of gridpoints in X
  *    @param[in]     NJ           Number of gridpoints in Y
@@ -236,7 +234,6 @@ TGeoRef *GeoRef_CreateW(int NI,int NJ,char *grtyp,int IG1,int IG2,int IG3,int IG
 #ifdef HAVE_GDAL
 /*----------------------------------------------------------------------------
  * @brief  Apply rotation matrix to a LatLon pair
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]     T       Transform matrix
  *    @param[inout]  Lat     Latitude array
@@ -271,7 +268,6 @@ static inline int GeoRef_WKTRotate(TRotationTransform *T,double *Lat,double *Lon
 #ifdef HAVE_GDAL
 /*----------------------------------------------------------------------------
  * @brief  Apply inverse rotation matrix to a LatLon pair
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]     T       Transform matrix
  *    @param[inout]  Lat     Latitude array
@@ -305,7 +301,6 @@ static inline int GeoRef_WKTUnRotate(TRotationTransform *T,double *Lat,double *L
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon for a W grid
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] Lat     Latitude array
@@ -364,7 +359,6 @@ int GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms LatLon coordinates to XY for a Z grid
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] X       X array

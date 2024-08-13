@@ -3,7 +3,6 @@
 
 /*----------------------------------------------------------------------------
  * @brief  Free gridset zone definitions
- * @author Yves Chartier
  * @date   
  *    @param[in]  GSet    Grid set pointer
 */
@@ -26,7 +25,6 @@ void GeoRef_SetZoneFree(TGridSet *GSet) {
 
 /*----------------------------------------------------------------------------
  * @brief  Finds the points at a pole
- * @author Yves Chartier
  * @date   
  *    @param[in]  GSet    Grid set pointer
  *    @param[in]  Zone    Zone identifier (NORTH_POLE,SOUTH_POLE)
@@ -80,7 +78,6 @@ int GeoRef_SetZoneDefinePole(TGridSet *GSet,int Zone,int NbPts) {
 
 /*----------------------------------------------------------------------------
  * @brief  Finds the points between the pole and a limit
- * @author Yves Chartier
  * @date   
  *    @param[in]  GSet    Grid set pointer
  *    @param[in]  Zone    Zone identifier (NORTH,SOUTH)
@@ -124,7 +121,6 @@ int GeoRef_SetZoneDefineThem(TGridSet *GSet,int Zone,int NbPts) {
 
 /*----------------------------------------------------------------------------
  * @brief  Finds the points outside of the source data
- * @author Yves Chartier
  * @date   
  *    @param[in]  GSet    Grid set pointer
  *    @param[in]  Zone    Zone identifier (OUTSIDE)
@@ -182,7 +178,6 @@ int GeoRef_SetZoneDefineOut(TGridSet *GSet,int Zone,int NbPts) {
 
 /*----------------------------------------------------------------------------
  * @brief  Defines the various zones
- * @author Yves Chartier
  * @date   
  *    @param[in]  GridSet   GridSet
  *
@@ -245,7 +240,6 @@ int GeoRef_SetZoneDefine(TGridSet *GSet) {
 
 /*----------------------------------------------------------------------------
  * @brief  Calculates XY correspondance of destination points within the source grid
- * @author Yves Chartier
  * @date   
  *    @param[in]  GridSet   GridSet
  *
@@ -280,7 +274,6 @@ int GeoRef_SetCalcXY(TGridSet *GSet) {
 
 /*----------------------------------------------------------------------------
  * @brief  Calculates XY correspondance of destination points within the source grid (for YY grids)
- * @author Yves Chartier
  * @date   
  *    @param[in]  GridSet   GridSet
  *
@@ -403,7 +396,6 @@ int GeoRef_SetCalcYYXY(TGridSet *GSet) {
 
 /*----------------------------------------------------------------------------
  * @brief  Free grid set structure
- * @author Yves Chartier
  * @date   
  *    @param[in]  GSet      Gridset pointer
  *

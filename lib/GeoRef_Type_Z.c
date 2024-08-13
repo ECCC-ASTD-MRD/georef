@@ -3,7 +3,6 @@
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon for a Z grid
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] Lat     Latitude array
@@ -77,7 +76,6 @@ int GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms LatLon coordinates to XY for a Z grid
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] X       X array
@@ -225,7 +223,6 @@ void GEM_hgrid4(double *F_xgi_8,double *F_ygi_8,int F_Grd_ni,int F_Grd_nj,float 
 
 /*----------------------------------------------------------------------------
  * @brief  Define a referential of type RPN ZE
- * @author Jean-Philippe Gauthier
  * @date   Avril 2015
  *    @param[in] Ref     Georef definition
  *    @param[in] NI      Dimension en X

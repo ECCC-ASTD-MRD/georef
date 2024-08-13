@@ -3,7 +3,6 @@
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon for an E grid
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] Lat     Latitude array
@@ -33,7 +32,6 @@ int GeoRef_LL2XY_E(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms LatLon coordinates to XY for an E grid
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] X       X array

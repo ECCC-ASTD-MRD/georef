@@ -3,7 +3,6 @@
 
 /**----------------------------------------------------------------------------
  * @brief  Get latitude and longitudes of a 2d point (Copy of fortran function, but using double precision)
- * @author J.D. HENDERSON
  * @date   February 1975
  *    @param[out]  Lat     Latitude in degrees 
  *    @param[out]  Lon     Longitude in degrees
@@ -54,7 +53,6 @@ static inline void llfxy(double *Lat,double *Lon,double X,double Y,double D60,do
 
 /**----------------------------------------------------------------------------
  * @brief  Get latitude and longitudes of each gridpoints of a LatLon grid (Copy of fortran function, but using double precision)
- * @author Michel Valin
  * @date   Janvier 1982
  *    @param[out]  Lat     Latitude stream
  *    @param[out]  Lon     Longitude stream
@@ -83,7 +81,6 @@ static inline void grll(double *Lat,double *Lon,int NI,int NJ,double Lat0,double
 
 /**----------------------------------------------------------------------------
  * @brief  Get latitude and longitudes of each gridpoints of a PS grid (Copy of fortran function, but using double precision)
- * @author Michel Valin
  * @date   Janvier 1982
  *    @param[out]  Lat     Latitude stream
  *    @param[out]  Lon     Longitude stream
@@ -132,7 +129,6 @@ static inline void Permut(double *Z,int NI,int NJ) {
 
 /**----------------------------------------------------------------------------
  * @brief  Calculer la position latlon de tous les points de grille.
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Pointeur sur la reference geographique
  *  
@@ -338,7 +334,6 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
 
 /**----------------------------------------------------------------------------
  * @brief  Récupérer la position latlon de tous les points de grille.
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Pointeur sur la reference geographique
  *    @param[out] Lat     Latitude array
@@ -371,7 +366,6 @@ int GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
 
 /**----------------------------------------------------------------------------
  * @brief  Interpolate values at latlon positions
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Geographic reference pointer
  *    @param[out] zout    Array of interpolated values
@@ -400,7 +394,6 @@ int GeoRef_LLVal(TGeoRef *Ref,float *zout,float *zin,double *Lat,double *Lon,int
 
 /**----------------------------------------------------------------------------
  * @brief  Interpolate vector values at latlon positions
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Geographic reference pointer
  *    @param[out] uuout   Array of interpolated U values
@@ -437,7 +430,6 @@ int GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
 
 /**----------------------------------------------------------------------------
  * @brief  Interpolate vector values as speed and directions at latlon positions
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Geographic reference pointer
  *    @param[out] uuout   Array of interpolated speed values

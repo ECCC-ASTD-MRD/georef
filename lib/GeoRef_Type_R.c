@@ -4,7 +4,6 @@
 //TODO: vgrid of ZRef ?
 /*----------------------------------------------------------------------------
  * @brief  Calculates MAGL height of a grid coordinate
- * @author Jean-Philippe Gauthier
  * @date   June 2014
  *    @param[in]  Ref     Georeference pointer
  *    @param[in]  ZRef    Vertical reference pointer
@@ -25,7 +24,6 @@ double GeoRef_RDRHeight(TGeoRef *Ref,TZRef *ZRef,double Azimuth,double Bin,doubl
 
 /*----------------------------------------------------------------------------
  * @brief  Create an R type  georeference (Radial)
- * @author Jean-Philippe Gauthier
  * @date   June 2014
  *    @param[in]     Lat        Center latitude
  *    @param[in]     Lon        Center longitude
@@ -59,7 +57,6 @@ TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int R,double ResR,do
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon for a R grid (Radial)
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] Lat     Latitude array
@@ -104,7 +101,6 @@ int GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms LatLon coordinates to XY for a R grid (Radial)
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] X       X array

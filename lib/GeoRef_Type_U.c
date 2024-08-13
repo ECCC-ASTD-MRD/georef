@@ -3,7 +3,6 @@
 
 /*----------------------------------------------------------------------------
  * @brief  Define a referential of type RPN U
- * @author Jean-Philippe Gauthier
  * @date   Avril 2015
  *    @param[in] NI      Dimension en X
  *    @param[in] NJ      Dimension en Y

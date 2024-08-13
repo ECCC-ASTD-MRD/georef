@@ -3,7 +3,6 @@
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon for an A grid
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] Lat     Latitude array
@@ -33,7 +32,6 @@ int GeoRef_LL2XY_A(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon for a B grid
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] Lat     Latitude array
@@ -63,7 +61,6 @@ int GeoRef_LL2XY_B(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon for an G grid (Gaussian)
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] Lat     Latitude array

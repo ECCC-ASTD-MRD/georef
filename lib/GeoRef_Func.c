@@ -2,7 +2,6 @@
 
 /**----------------------------------------------------------------------------
  * @brief  Calculate distance between to location in gridpoint coordinates
- * @author Jean-Philippe Gauthier
  * @date   March 2007
  *    @param[in]  Ref   Pointer to geo reference
  *    @param[in]  X0    First  X coordinate 
@@ -61,7 +60,6 @@ double GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1)
 
 /**----------------------------------------------------------------------------
  * @brief  Interpolate the position of a point on a great circle
- * @author Jean-Philippe Gauthier
  * @date   February 2008
  *    @param[in]  C1       First point coordinate
  *    @param[in]  C2       Second point coordinate
@@ -89,7 +87,6 @@ double GeoFunc_RadialPointRatio(TCoord C1,TCoord C2,TCoord C3) {
 
 /**----------------------------------------------------------------------------
  * @brief  Calculate intersection point of a right angle from a point on a great circle
- * @author Jean-Philippe Gauthier
  * @date   February 2008
  *    @param[in]  C1       First point coordinate
  *    @param[in]  C2       Second point coordinate
@@ -112,7 +109,6 @@ int GeoFunc_RadialPointOn(TCoord C1,TCoord C2,TCoord C3,TCoord *CR) {
 
 /**----------------------------------------------------------------------------
  * @brief  Calculate intersection point of 2 great circle
- * @author Jean-Philippe Gauthier
  * @date   February 2008
  *    @param[in]  C1       First point coordinate
  *    @param[in]  C2       Second point coordinate

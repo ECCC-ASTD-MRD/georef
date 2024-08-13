@@ -98,7 +98,6 @@ int GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] Lat     Latitude array
@@ -189,7 +188,6 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms LatLon coordinates XY
- * @author Jean-Philippe Gauthier
  * @date   June 2015
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] X       X array
