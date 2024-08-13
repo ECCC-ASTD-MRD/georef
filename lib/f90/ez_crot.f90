@@ -39,7 +39,6 @@
 !>    corresponding to a point (lat,lon) located on the equator of the
 !>    rotated coordinate system
 !>
-!> @author Michel Roch
 !> @date 1990
       subroutine ez_crot( r, ri, lon1, lat1, lon2, lat2 )
       implicit none

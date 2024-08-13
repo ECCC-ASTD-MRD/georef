@@ -26,7 +26,6 @@
 !> @param[in] lat Latitudes in spherical coordinates
 !> @param[in] nbpts Number of points
 !>
-!> @author Michel Roch
 !> @date 1990
 subroutine ez_lac(xyz, lon, lat, nbpts)
    implicit none

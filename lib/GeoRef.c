@@ -932,7 +932,6 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
  *  
  *         If grtyp == 'Z' or '#', the dimensions of ax=ni and ay=nj.
  *         If grtyp == 'Y', the dimensions of ax=ay=ni*nj. 
- * @author Yves Chartier
  * @date   Avril 2005
  *
  *   @param Ref   Georeference

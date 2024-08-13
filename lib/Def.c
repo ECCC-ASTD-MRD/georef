@@ -2324,6 +2324,17 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
    return(1);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Changes a georeference type to W
+ * @date   June 2014
+ *    @param[in]     Ref          GeoRef pointer
+ *    @param[in]     String       WKT description
+ *    @param[in]     Transform    Transformation matrix [2][6]
+ *    @param[in]     InvTransform Inverse transformation matrix [2][6]
+ *    @param[in]     Spatial      Spatial reference (GDAL object)
+
+ *    @return        GeoRef object (NULL=Error)
+*/
 int GeoRef_InterpDef(TGeoRef *ToRef,TGeoRef *FromRef,TDef *ToDef,TDef *FromDef,int Final) {
 
    void *pf0,*pt0,*pf1,*pt1;
