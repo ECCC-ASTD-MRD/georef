@@ -2443,8 +2443,6 @@ int GeoRef_DefRPNXG(TGeoRef* Ref) {
    return(0);
 }
 
-
-
 int32_t GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,int *IG2,int *IG3,int *IG4,char *grref,int *IG1REF,int *IG2REF,int *IG3REF,int *IG4REF) {
    
    *NI     = Ref->RPNHead.ni;
@@ -2478,10 +2476,14 @@ int32_t GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,i
 int GeoRef_Write(TGeoRef *GRef,fst_file *File){
 
    fst_record record=default_fst_record;
-   int i;
-
+   int i,dbl=TRUE;
+   char *c;
+   
    if (!GRef->Name) GRef->Name=strdup("Undefined");
 
+   if ((c=getenv("GEOREF_DESCRIPTOR_32"))) {
+      dbl=FALSE;
+   }
    record.data = (float*)calloc(GRef->NX*GRef->NY,sizeof(float));
    record.ni   = GRef->NX;
    record.nj   = GRef->NY;
@@ -2507,8 +2509,7 @@ int GeoRef_Write(TGeoRef *GRef,fst_file *File){
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write grid record field (fst24_write failed)\n",__func__);
    }
 
-// TODO: put var for 64 bit
-   if (!32)
+   if (dbl)
       free(record.data);
 
    if (GRef->AX && GRef->AY) {
@@ -2525,14 +2526,14 @@ int GeoRef_Write(TGeoRef *GRef,fst_file *File){
       record.ig2   = GRef->RPNHeadExt.igref2;
       record.ig3   = GRef->RPNHeadExt.igref3;
       record.ig4   = GRef->RPNHeadExt.igref4;
-      if (32) {
-         for(i=0;i<(GRef->Type&GRID_AXY2D?record.ni*record.nj:record.ni);i++) ((float*)record.data)[i]=GRef->AX[i];
-         record.pack_bits = 32;
-         record.data_bits = 32;
-      } else {
+      if (dbl) {
          record.data = GRef->AX;
          record.pack_bits = 64;
          record.data_bits = 64;
+      } else {
+         for(i=0;i<(GRef->Type&GRID_AXY2D?record.ni*record.nj:record.ni);i++) ((float*)record.data)[i]=GRef->AX[i];
+         record.pack_bits = 32;
+         record.data_bits = 32;
       }
       if (fst24_write(File,&record,FST_SKIP)<=0) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
@@ -2542,10 +2543,10 @@ int GeoRef_Write(TGeoRef *GRef,fst_file *File){
       strncpy(record.nomvar,"^^",FST_NOMVAR_LEN);
       record.ni   = GRef->Type&GRID_AXY2D?GRef->NX:1;
       record.nj   = GRef->GRTYP[0]=='M'?GRef->NX:GRef->NY;
-      if (32) {
-         for(i=0;i<(GRef->Type&GRID_AXY2D?record.ni*record.nj:record.nj);i++) ((float*)record.data)[i]=GRef->AY[i];
-      } else {
+      if (dbl) {
          record.data = GRef->AY;
+      } else {
+         for(i=0;i<(GRef->Type&GRID_AXY2D?record.ni*record.nj:record.nj);i++) ((float*)record.data)[i]=GRef->AY[i];
       }
       if (fst24_write(File,&record,FST_SKIP)<=0) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);

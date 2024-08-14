@@ -1,4 +1,10 @@
-Georeference / Grids management library and tools
+Georeference / Grids management and interpolation library
+
+
+## Environment variables
+
+* GEOREF_DESCRIPTOR_32  : Use 32 bit precision when writing of grid descriptors, (default: 64 bit)
+* GEOREF_INDEX_SIZE_HINT: Hint for size of interpolation weight index (defaul: 1024)
 
 ## Build dependencies
 

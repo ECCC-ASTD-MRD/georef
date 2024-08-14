@@ -252,8 +252,9 @@ int GeoRef_SetZoneDefine(TGridSet *GSet) {
 */
 int GeoRef_SetCalcXY(TGridSet *GSet) {
 
-   int size=0,mult=0;
-
+   int size=0,mult=1;
+   char *c;
+   
    if (GSet) {
       size=GSet->RefTo->NX*GSet->RefTo->NY;
 
@@ -266,9 +267,17 @@ int GeoRef_SetCalcXY(TGridSet *GSet) {
       }
 
       if (!GSet->Index || GSet->IndexDegree!=GSet->RefFrom->Options.InterpDegree) {   
-         //TODO: better conservative method
          GSet->IndexDegree=GSet->RefFrom->Options.InterpDegree;
-         mult=((GSet->IndexDegree==IR_CONSERVATIVE || GSet->IndexDegree==IR_NORMALIZED_CONSERVATIVE)?1024:(GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1)));          
+         if (GSet->IndexDegree==IR_CONSERVATIVE || GSet->IndexDegree==IR_NORMALIZED_CONSERVATIVE) {
+            mult=1024;
+            if ((c=getenv("GEOREF_INDEX_SIZE_HINT"))) {
+               mult=atoi(c);
+            }
+         } else {
+            mult=GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1);          
+         }
+         // Set the index size to the number of items without the multiplicator
+         // the index size will be readjusted when in CONSERVATIVE modes otherwise, the multiplicator will be put in nj when writing
          GSet->IndexSize=size;
          GSet->Index = (float*)realloc(GSet->Index,GSet->IndexSize*mult*sizeof(float));
          GSet->Index[0]=REF_INDEX_EMPTY;
