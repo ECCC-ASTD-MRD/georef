@@ -196,9 +196,14 @@ int GeoRef_SetZoneDefine(TGridSet *GSet) {
    switch (GSet->RefFrom->GRTYP[0]) {
       case 'N':
       case 'S':
-      case 'L':
       case '!':
          extrap = TRUE;
+         break;
+
+      case 'L':
+         if (GSet->RefTo->Extension == 0) {
+               extrap = TRUE;
+         }
          break;
       
       case '#':

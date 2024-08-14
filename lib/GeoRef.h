@@ -421,6 +421,7 @@ int      GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *v
 int      GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskIn);
 int      GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float *vvllin,double *Lat,double *Lon,int npts);   // c_gduvfwd
 int      GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int npts);        // c_gdwdfuv
+int      GeoRef_UV2UV(TGeoRef *Ref,float *uullout,float *vvllout,float *uuin,float *vvin,float *latin, float *lonin, int32_t npts); //c_gdlluvfuv_orig
 
 int      GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int *MaskOut,int *MaskIn);
 int      GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,int ni,int nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int *yyincount,double *yanlat,double *yanlon,int *yyancount);
@@ -433,9 +434,6 @@ int      GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY);            
 void     GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY);
 void     GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref);
 void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
-
-int32_t c_gdlluvfuv_orig(int32_t gdid,float *uullout,float *vvllout,float *uuin,float *vvin,float *latin,float *lonin,int32_t npts);
-void  c_ezllwfgff(float *uullout,float *vvllout,float *latin,float *lonin,float *xlatingf,float *xloningf,int32_t *ni,int32_t *nj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4);
 
 // Internal functions
 TGridSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom);

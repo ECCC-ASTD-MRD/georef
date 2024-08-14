@@ -3,101 +3,7 @@
 
 void c_ezgfwfllw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
 void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
-
-/* int32_t c_gdlluvfuv_orig(int32_t gdid, float *uullout, float *vvllout, float *uuin, float *vvin,
-              float *latin, float *lonin, int32_t npts)
-{
-    int32_t gdrow_id, gdcol_id;
-    c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-
-   int32_t ni = npts;
-   int32_t nj = 1;
-
-    memcpy(uullout, uuin, npts*sizeof(float));
-    memcpy(vvllout, vvin, npts*sizeof(float));
-
-    float * lat_rot;
-    float * lon_rot;
-    switch (Grille[gdrow_id][gdcol_id].grtyp[0]) {
-        case 'E':
-            lat_rot = (float *)(malloc(npts*sizeof(float)));
-            lon_rot = (float *)(malloc(npts*sizeof(float)));
-            f77name(ez_gfxyfll)(lonin, latin, lon_rot,lat_rot, &ni,
-                                &Grille[gdrow_id][gdcol_id].fstExt.xg[XLAT1],&Grille[gdrow_id][gdcol_id].fstExt.xg[XLON1],
-                                &Grille[gdrow_id][gdcol_id].fstExt.xg[XLAT2],&Grille[gdrow_id][gdcol_id].fstExt.xg[XLON2]);
-
-            c_ezllwfgff(uullout,vvllout, latin,lonin, lat_rot,lon_rot,
-                        &ni,&nj,Grille[gdrow_id][gdcol_id].grtyp,
-                        &Grille[gdrow_id][gdcol_id].fst.ig[IG1],&Grille[gdrow_id][gdcol_id].fst.ig[IG2],
-                        &Grille[gdrow_id][gdcol_id].fst.ig[IG3],&Grille[gdrow_id][gdcol_id].fst.ig[IG4]);
-            free(lat_rot);
-            free(lon_rot);
-            return 0;
-            break;
-
-        case '#':
-        case 'Y':
-        case 'Z':
-            switch (Grille[gdrow_id][gdcol_id]Ext.grref[0]) {
-                case 'E':
-                    lat_rot = (float *)(malloc(npts*sizeof(float)));
-                    lon_rot = (float *)(malloc(npts*sizeof(float)));
-                    f77name(ez_gfxyfll)(lonin,latin,lon_rot, lat_rot, &ni,
-                        &Grille[gdrow_id][gdcol_id].fstExt.grref[XLAT1],&Grille[gdrow_id][gdcol_id].fstExt.grref[XLON1],
-                        &Grille[gdrow_id][gdcol_id].fstExt.grref[XLAT2],&Grille[gdrow_id][gdcol_id].fstExt.grref[XLON2]);
-
-                    c_ezllwfgff(uullout,vvllout,latin,lonin,lat_rot, lon_rot,
-                    &ni,&nj,Grille[gdrow_id][gdcol_id]Ext.grref,
-                    &Grille[gdrow_id][gdcol_id].fstExt.grref[IG1],&Grille[gdrow_id][gdcol_id].fstExt.grref[IG2],
-                    &Grille[gdrow_id][gdcol_id].fstExt.grref[IG3],&Grille[gdrow_id][gdcol_id].fstExt.grref[IG4]);
-                    free(lat_rot);
-                    free(lon_rot);
-                    return 0;
-                    break;
-
-                default:
-                    f77name(ez_llwfgdw)(uullout,vvllout,lonin,
-                                &ni,&nj,
-                                &Grille[gdrow_id][gdcol_id]Ext.grref,
-                                &Grille[gdrow_id][gdcol_id].fstExt.grref[IG1],&Grille[gdrow_id][gdcol_id].fstExt.grref[IG2],
-                                &Grille[gdrow_id][gdcol_id].fstExt.grref[IG3],&Grille[gdrow_id][gdcol_id].fstExt.grref[IG4]);
-                    break;
-            }
-            break;
-
-            default:
-                f77name(ez_llwfgdw)(uullout,vvllout,lonin,
-                        &ni,&nj,
-                        &Grille[gdrow_id][gdcol_id].grtyp,
-                        &Grille[gdrow_id][gdcol_id].fst.ig[IG1],&Grille[gdrow_id][gdcol_id].fst.ig[IG2],
-                        &Grille[gdrow_id][gdcol_id].fst.ig[IG3],&Grille[gdrow_id][gdcol_id].fst.ig[IG4]);
-                break;
-    }
-
-    return 0;
-}
-
-
-int32_t c_gdlluvfuv(int32_t gdid, float *uullout, float *vvllout, float *uuin, float *vvin,
-              float *latin, float *lonin, int32_t npts)
-{
-    int32_t gdrow_id, gdcol_id;
-    c_gdkey2rowcol(gdid,  &gdrow_id,  &gdcol_id);
-    if (Grille[gdrow_id][gdcol_id].nsubgrids > 0 ) {
-        fprintf(stderr, "<gdlluvfuv>: This operation is not supported for 'U' grids\n");
-        return -1;
-    } else {
-        return c_gdlluvfuv_orig(gdid, uullout, vvllout, uuin, vvin, latin, lonin, npts);
-    }
-}
-
-
-int32_t f77name(gdlluvfuv)(int32_t *gdid, float *uullout, float *vvllout, float *uuin, float *vvin,
-                     float *latin, float *lonin, int32_t *npts)
-{
-    return c_gdlluvfuv(*gdid, uullout, vvllout, uuin, vvin,latin, lonin, *npts);
-} */
-
+void c_ezllwfgff8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
 
 int GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin) {
    
@@ -717,6 +623,59 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
    return(0);
 }
 
+int32_t GeoRefc_UV2UV(TGeoRef *Ref,float *uullout,float *vvllout,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
+
+   int    ni,nj;
+   double *lat_rot,*lon_rot;
+
+   if (Ref->NbSub>0) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
+      return(FALSE);
+   }
+
+   ni = Nb;
+   nj = 1;
+
+   memcpy(uullout, uuin, Nb*sizeof(float));
+   memcpy(vvllout, vvin, Nb*sizeof(float));
+ 
+   switch (Ref->GRTYP[0]) {
+      case 'E':
+         lat_rot = (double*)malloc(2*Nb*sizeof(double));
+         lon_rot = &lat_rot[Nb];
+         GeoRef_RotateXY(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4);
+         c_ezllwfgff8(uullout,vvllout,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4);
+         free(lat_rot);
+         return(TRUE);
+         break;
+
+      case '#':
+      case 'Y':
+      case 'Z':
+         switch (Ref->RPNHeadExt.grref[0]) {
+            case 'E':
+               lat_rot = (double*)malloc(2*Nb*sizeof(float));
+               lon_rot = &lat_rot[Nb];
+	            GeoRef_RotateXY(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHeadExt.xgref1,Ref->RPNHeadExt.xgref2,Ref->RPNHeadExt.xgref3,Ref->RPNHeadExt.xgref4);
+               c_ezllwfgff8(uullout,vvllout,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4);
+               free(lat_rot);
+               return 0;
+               break;
+
+            default:
+               f77name(ez8_llwfgdw)(uullout,vvllout,Lon,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
+               break;
+         }
+         break;
+
+      default:
+         f77name(ez8_llwfgdw)(uullout,vvllout,Lon,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
+         break;
+    }
+
+    return(TRUE);
+}
+
  /*
     gfwfllw -> GeF Winds From LatLon Winds
     Ce sous-programme effectue la rotation des vents d'un systeme de coordonne
@@ -724,7 +683,6 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
     latin, lonin sont les latlons vraies
     xlatingf, xloningf sont les latlons sur la grille tournee
   */
-
 void c_ezgfwfllw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4) {
 
    int zero = 0;
@@ -764,7 +722,6 @@ void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *
    double *uvcart, *xyz;
    char grtypl[2];
 
- 
    uvcart = (double *) malloc(2*3*npts*sizeof(double));
    xyz    = &uvcart[3*npts];  
   
@@ -774,7 +731,33 @@ void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *
    f77name(ez8_mxm)(ri, &trois, xyz, &trois, uvcart, &npts);
    f77name(ez8_cartauv)(uullout, vvllout, uvcart, Lon, Lat, ni, nj); 
    grtypl[0] = 'L';
-   f77name(ez8_llwfgdw)(uullout,vvllout,xloningf,ni,nj,grtypl, &zero, &zero, &zero, &zero, 1);
+   f77name(ez8_llwfgdw)(uullout,vvllout,xloningf,ni,nj,grtypl,&zero,&zero,&zero,&zero,1);
+
+   free(uvcart);
+}
+
+  /*
+    llwfgff -> LatLon Winds From GeF Winds
+    Ce sous-programme effectue la rotation des vents d'un systeme de coordonne
+    tourne a un systeme de coordonnee non tourne.
+    latin, lonin sont les latlons vraies
+    xlatingf, xloningf sont les latlons sur la grille tournee
+  */
+void c_ezllwfgff8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4) {
+ 
+   int npts = *ni * *nj;
+   int trois = 3;
+   float r[9], ri[9], xlon1, xlat1, xlon2, xlat2;
+   double *uvcart, *xyz;
+
+   uvcart = (double *) malloc(2*3*npts*sizeof(double));
+   xyz    = &uvcart[3*npts];  
+  
+   f77name(cigaxg)(grtyp, &xlat1, &xlon1, &xlat2, &xlon2, ig1, ig2, ig3, ig4,1);
+   f77name(ez_crot)(r, ri, &xlon1, &xlat1, &xlon2, &xlat2);
+   f77name(ez8_uvacart)(xyz, uullout, vvllout, xloningf, xlatingf, ni, nj); 
+   f77name(ez8_mxm)(ri, &trois, xyz, &trois, uvcart, &npts);
+   f77name(ez8_cartauv)(uullout, vvllout, uvcart, Lon, Lat, ni, nj); 
 
    free(uvcart);
 }
