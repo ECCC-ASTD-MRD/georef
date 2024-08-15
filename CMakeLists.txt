@@ -40,10 +40,10 @@ add_compile_definitions(HAVE_MPI)
 find_package(rmn ${rmn_REQ_VERSION} REQUIRED)
 #find_package(vgrid ${vgrid_REQ_VERSION} REQUIRED)
 
-#TODO: might have to do this - type gdal-config >/dev/null 2>&1 && CMAKE_COMP_FLAGS="$CMAKE_COMP_FLAGS -DGDAL_ROOT=`gdal-config --prefix`" 2>/dev/null
-#----- Look for non system default gdal
 execute_process(
-   COMMAND gdal-config --prefix
+   # Use this command because the output of gdal-config may be wrong depending
+   # on how it was installed, but it's location can still be relied on.
+   COMMAND bash -c "cd $(dirname $(which gdal-config))/.. && pwd"
    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
    RESULT_VARIABLE GDAL_RESULT
    OUTPUT_VARIABLE GDAL_ROOT
@@ -51,6 +51,7 @@ execute_process(
    OUTPUT_STRIP_TRAILING_WHITESPACE
    ERROR_STRIP_TRAILING_WHITESPACE
 )
+set(ENV{GDAL_ROOT} ${GDAL_ROOT}) # FindGDAL.cmake looks only in environment
 
 find_package(GDAL ${GDAL_REQ_VERSION})
 if(GDAL_FOUND)
