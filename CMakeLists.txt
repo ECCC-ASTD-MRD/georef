@@ -51,7 +51,6 @@ execute_process(
    OUTPUT_STRIP_TRAILING_WHITESPACE
    ERROR_STRIP_TRAILING_WHITESPACE
 )
-set(ENV{GDAL_ROOT} ${GDAL_ROOT}) # FindGDAL.cmake looks only in environment
 
 find_package(GDAL ${GDAL_REQ_VERSION})
 if(GDAL_FOUND)
