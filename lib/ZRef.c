@@ -1,5 +1,4 @@
 #include <App.h>
-#include <vgrid.h>
 #include "GeoRef_Utils.h"
 #include "ZRef.h"
 
@@ -271,7 +270,9 @@ int ZRef_DecodeRPN(TZRef *ZRef,fst_file* File) {
    int        cd,key=0,skip,j,k,kind,ip;
    double    *dbuf=NULL;
    float     *fbuf=NULL;
+#ifdef HAVE_VGRID
    char       rfls_S[VGD_LEN_RFLS];
+#endif
  
    if (!ZRef) {
       return(0);

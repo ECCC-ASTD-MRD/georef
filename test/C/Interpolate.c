@@ -35,7 +35,12 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       App_Log(APP_ERROR,"Problems reading grid field\n");
       return(FALSE);    
    }
+
    refout=GeoRef_Create(grid.ni,grid.nj,grid.grtyp,grid.ig1,grid.ig2,grid.ig3,grid.ig4,(fst_file*)grid.file);
+   if(refout == NULL){
+       App_Log(APP_ERROR, "Problem creating TGeoRef object\n");
+       return(FALSE);
+   }
 
    if (Truth) {
       if ((ftruth=fst24_open(Truth,"R/O"))<0) {
