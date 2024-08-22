@@ -80,7 +80,7 @@ int GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
    double   tmpwgts[GOPT_MAXWEIGHTNUM],total_wgt;
    int      locmax,i,iz,idx,idxz,tmp_idxs[GOPT_MAXWEIGHTNUM][2],previous_val_polar_correction;
    TPoint2D bbox[2];
-   TGridSet *set=Ref->LastSet;
+   TGeoSet *set=Ref->LastSet;
 
    previous_val_polar_correction = Ref->Options.PolarCorrect;
    Ref->Options.PolarCorrect = FALSE;

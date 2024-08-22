@@ -2,8 +2,8 @@
 #define _Def_h
 
 #include <rmn/List.h>
-#include "Array.h"
-#include "OGR.h"
+#include <GeoRef.h>
+#include <OGR.h>
 
 #define DEFSELECTTYPE(A,B)  (A->Type>B->Type?A:B)
 #define DEFSIGNEDTYPE(A)    ((A->Type==TD_UByte || A->Type==TD_UInt16 || A->Type==TD_UInt32 || A->Type==TD_UInt64)?A->Type+1:A->Type)
@@ -225,6 +225,7 @@ typedef enum {
 } TDef_Type;
 
 extern int TDef_Size[];
+extern int TDef_DTYP[];
 
 typedef struct TDef {
    double *Buffer,*Aux;          // Buffer temporaire
@@ -251,8 +252,6 @@ typedef struct TDef {
    char    Alias;                // Alias d'un autre TDef (Pointe sur d'autres donnees)
 } TDef;
 
-struct TGeoRef;
-
 void  Def_Clear(TDef *Def);
 int   Def_Compat(TDef *ToDef,TDef *FromDef);
 TDef *Def_Copy(TDef *Def);
@@ -263,14 +262,18 @@ TDef *Def_Create(int NI,int NJ,int NK,TDef_Type Type,char* Comp0,char* Comp1,cha
 TDef *Def_Resize(TDef *Def,int NI,int NJ,int NK);
 int   Def_Paste(TDef *ToDef,TDef *DefPaste,int X0,int Y0);
 
-int   Def_GetValue(TGeoRef *Ref,TDef *Def,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
+int   Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
 
 int   GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int I,int J,int Seg);
-int   GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,OGRGeometryH Geom,double Value);
-int   GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int Final);
-int   GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,int Final);
-int   GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,int Final);
-int   GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef);
-int   GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer *Layer,char *Field,double Value,int Final);
+int   GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Geom,double Value);
+int   GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int Final);
+int   GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,int Final);
+int   GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int Final);
+int   GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt);
+int   GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer *Layer,TGeoOptions *Opt,char *Field,double Value,int Final);
+
+void GeoScan_Init(TGeoScan *Scan);
+void GeoScan_Clear(TGeoScan *Scan);
+int  GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,struct TDef *ToDef,TGeoRef *FromRef,struct TDef *FromDef,TGeoOptions *Opt,int X0,int Y0,int X1,int Y1,int Dim);
 
 #endif

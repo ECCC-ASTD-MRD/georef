@@ -2,16 +2,16 @@
 #include <App.h>
 #include "GeoRef.h"
 
-void GeoRef_GridGetExpanded(TGeoRef *Ref,float *zout,float *zin) {   
+void GeoRef_GridGetExpanded(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin) {   
 
    switch (Ref->GRTYP[0]) {
       case 'A':
       case 'G':
-         f77name(ez_xpngdag2)(zout,zin,&Ref->NX,&Ref->NY,&Ref->j1,&Ref->j2,&Ref->RPNHead.ig1,&Ref->Options.Symmetric);
+         f77name(ez_xpngdag2)(zout,zin,&Ref->NX,&Ref->NY,&Ref->j1,&Ref->j2,&Ref->RPNHead.ig1,&Opt->Symmetric);
          break;
 
       case 'B':
-         f77name(ez_xpngdb2)(zout,zin,&Ref->NX,&Ref->NY,&Ref->j1,&Ref->j2,&Ref->RPNHead.ig1,&Ref->Options.Symmetric);
+         f77name(ez_xpngdb2)(zout,zin,&Ref->NX,&Ref->NY,&Ref->j1,&Ref->j2,&Ref->RPNHead.ig1,&Opt->Symmetric);
          break;
 
       default:

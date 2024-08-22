@@ -6,7 +6,7 @@
  * @date   
  *    @param[in]  GSet    Grid set pointer
 */
-void GeoRef_SetZoneFree(TGridSet *GSet) {
+void GeoRef_SetZoneFree(TGeoSet *GSet) {
 
   int i;
 
@@ -32,7 +32,7 @@ void GeoRef_SetZoneFree(TGridSet *GSet) {
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetZoneDefinePole(TGridSet *GSet,int Zone,int NbPts) {
+int GeoRef_SetZoneDefinePole(TGeoSet *GSet,int Zone,int NbPts) {
 
    TGeoZone *zone=&GSet->zones[Zone];
    double    latpole,lonpole,xpole,ypole;
@@ -85,7 +85,7 @@ int GeoRef_SetZoneDefinePole(TGridSet *GSet,int Zone,int NbPts) {
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetZoneDefineThem(TGridSet *GSet,int Zone,int NbPts) {
+int GeoRef_SetZoneDefineThem(TGeoSet *GSet,int Zone,int NbPts) {
 
    TGeoZone *zone=&GSet->zones[Zone];
    int      *tmpidx,i,jlim;
@@ -128,7 +128,7 @@ int GeoRef_SetZoneDefineThem(TGridSet *GSet,int Zone,int NbPts) {
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetZoneDefineOut(TGridSet *GSet,int Zone,int NbPts) {
+int GeoRef_SetZoneDefineOut(TGeoSet *GSet,int Zone,int NbPts) {
 
    TGeoZone *zone=&GSet->zones[Zone];
    int      *tmpidx,i,offsetleft,offsetright,ix,iy;
@@ -183,7 +183,7 @@ int GeoRef_SetZoneDefineOut(TGridSet *GSet,int Zone,int NbPts) {
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetZoneDefine(TGridSet *GSet) {
+int GeoRef_SetZoneDefine(TGeoSet *GSet) {
 
    int       i,npts;
    int       extrap;
@@ -250,11 +250,11 @@ int GeoRef_SetZoneDefine(TGridSet *GSet) {
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetCalcXY(TGridSet *GSet) {
+int GeoRef_SetCalcXY(TGeoSet *GSet) {
 
    int size=0,mult=1;
    char *c;
-   
+
    if (GSet) {
       size=GSet->RefTo->NX*GSet->RefTo->NY;
 
@@ -266,8 +266,8 @@ int GeoRef_SetCalcXY(TGridSet *GSet) {
          GeoRef_LL2XY(GSet->RefFrom,GSet->X,GSet->Y,GSet->RefTo->Lat,GSet->RefTo->Lon,size,TRUE);
       }
 
-      if (!GSet->Index || GSet->IndexDegree!=GSet->RefFrom->Options.InterpDegree) {   
-         GSet->IndexDegree=GSet->RefFrom->Options.InterpDegree;
+      if (!GSet->Index || GSet->IndexDegree!=GSet->Opt.Interp) {   
+         GSet->IndexDegree=GSet->Opt.Interp;
          if (GSet->IndexDegree==IR_CONSERVATIVE || GSet->IndexDegree==IR_NORMALIZED_CONSERVATIVE) {
             mult=1024;
             if ((c=getenv("GEOREF_INDEX_SIZE_HINT"))) {
@@ -293,7 +293,7 @@ int GeoRef_SetCalcXY(TGridSet *GSet) {
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetCalcYYXY(TGridSet *GSet) {
+int GeoRef_SetCalcYYXY(TGeoSet *GSet) {
 
    TGeoRef *yin_gdin,*yan_gdin,*yin_gdout,*yan_gdout;
    int icode,k,nij,ni,nj;
@@ -344,7 +344,7 @@ int GeoRef_SetCalcYYXY(TGridSet *GSet) {
    GSet->yinlat = (double*) malloc(nij*sizeof(double));
    GSet->yinlon = (double*) malloc(nij*sizeof(double));
    icode = GeoRef_GetLL(yin_gdout,GSet->yinlat,GSet->yinlon);
-   icode = GeoRef_MaskYYApply(yin_gdout,yin_gdin,ni,nj,GSet->yin_maskout,GSet->yinlat,GSet->yinlon,yin2yin_lat,yin2yin_lon,&yincount_yin,yan2yin_lat,yan2yin_lon,&yancount_yin);
+   icode = GeoRef_MaskYYApply(yin_gdout,yin_gdin,&GSet->Opt,ni,nj,GSet->yin_maskout,GSet->yinlat,GSet->yinlon,yin2yin_lat,yin2yin_lon,&yincount_yin,yan2yin_lat,yan2yin_lon,&yancount_yin);
    /* store the lats and lons */
    GSet->yincount_yin = yincount_yin;
    GSet->yancount_yin = yancount_yin;
@@ -382,7 +382,7 @@ int GeoRef_SetCalcYYXY(TGridSet *GSet) {
       GSet->yanlat = (double*) malloc(nij*sizeof(double));
       GSet->yanlon = (double*) malloc(nij*sizeof(double));
       icode = GeoRef_GetLL(yan_gdout,GSet->yanlat,GSet->yanlon);
-      icode = GeoRef_MaskYYApply(yan_gdout,yin_gdin,ni,nj,GSet->yan_maskout,GSet->yanlat,GSet->yanlon,yin2yan_lat,yin2yan_lon,&yincount_yan,yan2yan_lat,yan2yan_lon,&yancount_yan);
+      icode = GeoRef_MaskYYApply(yan_gdout,yin_gdin,&GSet->Opt,ni,nj,GSet->yan_maskout,GSet->yanlat,GSet->yanlon,yin2yan_lat,yin2yan_lon,&yincount_yan,yan2yan_lat,yan2yan_lon,&yancount_yan);
       GSet->yincount_yan = yincount_yan;
       GSet->yancount_yan = yancount_yan;
       GSet->yin2yan_lat = (double*) malloc(yincount_yan*sizeof(double));
@@ -414,7 +414,7 @@ int GeoRef_SetCalcYYXY(TGridSet *GSet) {
  *    @param[in]  GSet      Gridset pointer
  *
 */
-void GeoRef_SetFree(TGridSet* GSet) {
+void GeoRef_SetFree(TGeoSet* GSet) {
 
    int i;
 
@@ -456,13 +456,13 @@ void GeoRef_SetFree(TGridSet* GSet) {
  *
  *    @return             Error code (0=ok)
 */
-TGridSet* GeoRef_SetAdd(TGeoRef* RefTo,TGeoRef* RefFrom,int InterpType,fst_file *File) {
+TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int InterpType,fst_file *File) {
 
-   TGridSet  *gset=NULL;
+   TGeoSet  *gset=NULL;
    fst_record record,crit=default_fst_record;
    char       typvar[2];
    
-   if (!(gset=GeoRef_SetGet(RefTo,RefFrom))) {
+   if (!(gset=GeoRef_SetGet(RefTo,RefFrom,NULL))) {
       return(NULL);
    }
    
@@ -512,7 +512,7 @@ TGridSet* GeoRef_SetAdd(TGeoRef* RefTo,TGeoRef* RefFrom,int InterpType,fst_file 
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetWrite(TGridSet *GSet,fst_file *File){
+int GeoRef_SetWrite(TGeoSet *GSet,fst_file *File){
 
    int size=0;
    fst_record record=default_fst_record;
@@ -573,25 +573,28 @@ int GeoRef_SetWrite(TGridSet *GSet,fst_file *File){
  * @date   
  *    @param[in]  RefTo     Destination georeference pointer
  *    @param[in]  RefFrom   Source georeference pointer
+ *    @param[in]  Opt       Interpolation parameters
  *    @param[in]  GSet      Existing gridset to initialise from (optional)
  *
  *    @return               Found gridset pointer, NULL on error
  */
-TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom) {
+TGeoSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGeoOptions *Opt) {
 
-   TGridSet* gset=NULL;
+   TGeoSet* gset=NULL;
    int i;
 
    if (!RefTo || !RefFrom) {
       return(NULL);
    }
 
+   pthread_mutex_lock(&RefTo->Mutex);
    if (!RefTo->Sets) {
-      RefTo->Sets=(TGridSet*)calloc(sizeof(TGridSet),SET_MAX);
+      RefTo->Sets=(TGeoSet*)calloc(sizeof(TGeoSet),SET_MAX);
    }
 
    // Check for last set (most cases)
    if (RefTo->LastSet && RefTo->LastSet->RefFrom == RefFrom) {
+      pthread_mutex_unlock(&RefTo->Mutex);
       return(RefTo->LastSet);
    }
 
@@ -609,17 +612,21 @@ TGridSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom) {
    while (i<RefTo->NbSet) {
       if (RefTo->Sets[i].RefFrom==RefFrom) {
          RefTo->LastSet = &RefTo->Sets[i];
+         pthread_mutex_unlock(&RefTo->Mutex);
          return(&RefTo->Sets[i]);
       }
       i++;
    }
 
+   RefTo->NbSet++;
+   pthread_mutex_unlock(&RefTo->Mutex);
+
    // If we get here, we have'nt found any sets, create a new one    
    RefTo->Sets[i].RefFrom = RefFrom;
    RefTo->Sets[i].RefTo = RefTo;
-   RefTo->NbSet++;
    RefTo->Sets[i].G2G[0]=RefFrom->GRTYP[0];
    RefTo->Sets[i].G2G[1]=RefTo->GRTYP[0];
+   if (Opt) memcpy(&RefTo->Sets[i].Opt,Opt,sizeof(TGeoOptions));
    
    Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RefFrom : %p RefTo: %p\n",__func__,RefFrom,RefTo);
 

@@ -1,13 +1,14 @@
 #include "GeoRef.h"
 
-int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,double *X,double *Y,int npts) {
+int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *X,double *Y,int npts) {
 
-   TGridSet *gset;
+   TGeoSet *gset;
    int ier;
    float *lzin, *lxzin;
 
    lzin  = NULL;
    lxzin = NULL;
+   if (!Opt) Opt=&GeoRef_Options;
 
    if (RefFrom->Type&GRID_YINVERT) {
       lzin = (float *) malloc(RefFrom->NX*RefFrom->NY*sizeof(float));
@@ -19,12 +20,12 @@ int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,doubl
 
    if (RefFrom->Type&GRID_EXPAND) {
       lxzin = (float *) malloc(2*RefFrom->NX*RefFrom->NY*sizeof(float));
-      GeoRef_GridGetExpanded(RefFrom,lxzin,lzin);
+      GeoRef_GridGetExpanded(RefFrom,Opt,lxzin,lzin);
    } else  {
       lxzin = lzin;
    }
 
-   ier = GeoRef_InterpFinally(RefTo,RefFrom,zout,lxzin,X,Y,npts,NULL);
+   ier = GeoRef_InterpFinally(RefTo,RefFrom,Opt,zout,lxzin,X,Y,npts,NULL);
 
 /*   gset.gdin = gdin;
    gset.gdout = gdout;
@@ -38,7 +39,7 @@ int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,doubl
 /*   if (Opt->PolarCorrect == TRUE && !Opt->VectorMode)
      {
      ier = ez_defzones(&gset);
-     ier = GeoRef_CorrectValue(RefTo,RefFrom,zout, lxzin, &gset);
+     ier = GeoRef_CorrectValue(set,zout,lxzin,&gset);
      }*/
 
 
@@ -53,12 +54,14 @@ int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,float *zin,doubl
    return(0);
 }
 
-int GeoRef_XYVal(TGeoRef *Ref,float *zout,float *zin,double *X,double *Y,int n) {
+int GeoRef_XYVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *X,double *Y,int n) {
 
    TGeoRef *yin_gd, *yan_gd;
    int j, icode, ni, nj;
    float *zoutyin, *zoutyan;
    double *tmpy;
+
+   if (!Opt) Opt=&GeoRef_Options;
 
    if (Ref->NbSub > 0) {
       yin_gd=Ref->Subs[0];
@@ -75,13 +78,9 @@ int GeoRef_XYVal(TGeoRef *Ref,float *zout,float *zin,double *X,double *Y,int n) 
             tmpy[j]=Y[j];
          }
       }
-
-      // TODO: WTF will I do to avoid this or global options
-      memcpy(&yin_gd->Options,&Ref->Options,sizeof(TGeoOptions));
-      memcpy(&yan_gd->Options,&Ref->Options,sizeof(TGeoOptions));
       
-      icode = GeoRef_XYInterp(NULL,yin_gd,zoutyin,zin,X,tmpy,n);
-      icode = GeoRef_XYInterp(NULL,yan_gd,zoutyan,&zin[ni*nj],X,tmpy,n);
+      icode = GeoRef_XYInterp(NULL,yin_gd,Opt,zoutyin,zin,X,tmpy,n);
+      icode = GeoRef_XYInterp(NULL,yan_gd,Opt,zoutyan,&zin[ni*nj],X,tmpy,n);
       for (j=0; j < n; j++) {
          if (Y[j] > yin_gd->NY) {
            zout[j]=zoutyan[j];
@@ -93,17 +92,19 @@ int GeoRef_XYVal(TGeoRef *Ref,float *zout,float *zin,double *X,double *Y,int n) 
       free(zoutyan);
       return(icode);
    } else {
-      icode = GeoRef_XYInterp(NULL,Ref,zout,zin,X,Y,n);
+      icode = GeoRef_XYInterp(NULL,Ref,Opt,zout,zin,X,Y,n);
       return(icode);
    }
 }
 
-int GeoRef_XYUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *X,double *Y,int n) {
+int GeoRef_XYUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *X,double *Y,int n) {
 
    TGeoRef *yin_gd, *yan_gd;
    int j, icode, ni, nj;
    float *uuyin, *vvyin, *uuyan, *vvyan;
    double *tmpy;
+
+   if (!Opt) Opt=&GeoRef_Options;
 
    if (Ref->NbSub > 0) {
       yin_gd=Ref->Subs[0];
@@ -124,12 +125,8 @@ int GeoRef_XYUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
          }
       }
 
-      // TODO: WTF will I do to avoid this or global options
-      memcpy(&yin_gd->Options,&Ref->Options,sizeof(TGeoOptions));
-      memcpy(&yan_gd->Options,&Ref->Options,sizeof(TGeoOptions));
-
-      icode = GeoRef_XYUVVal(yin_gd,uuyin,vvyin,uuin,vvin,X,tmpy,n);
-      icode = GeoRef_XYUVVal(yan_gd,uuyan,vvyan,&uuin[ni*nj],&vvin[ni*nj],X,tmpy,n);
+      icode = GeoRef_XYUVVal(yin_gd,Opt,uuyin,vvyin,uuin,vvin,X,tmpy,n);
+      icode = GeoRef_XYUVVal(yan_gd,Opt,uuyan,vvyan,&uuin[ni*nj],&vvin[ni*nj],X,tmpy,n);
  
       for (j=0; j < n; j++) {
          if (Y[j] > yin_gd->NY) {
@@ -144,19 +141,20 @@ int GeoRef_XYUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       free(uuyin);
       return(icode);
    } else {
-      Ref->Options.VectorMode = TRUE;
-      Ref->Options.Symmetric = TRUE;
-      GeoRef_XYInterp(NULL,Ref,uuout,uuin,X,Y,n);
-      Ref->Options.Symmetric = FALSE;
-      GeoRef_XYInterp(NULL,Ref,vvout,vvin,X,Y,n);
-      Ref->Options.Symmetric = TRUE;
-      Ref->Options.VectorMode = FALSE;
+      //TODO: we're changing object value without user consent
+      Opt->VectorMode = TRUE;
+      Opt->Symmetric = TRUE;
+      GeoRef_XYInterp(NULL,Ref,Opt,uuout,uuin,X,Y,n);
+      Opt->Symmetric = FALSE;
+      GeoRef_XYInterp(NULL,Ref,Opt,vvout,vvin,X,Y,n);
+      Opt->Symmetric = TRUE;
+      Opt->VectorMode = FALSE;
    }
 
    return(0);
 }
 
-int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *X,double *Y,int n) {
+int GeoRef_XYWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *X,double *Y,int n) {
 
    TGeoRef *yin_gd, *yan_gd;
    int ier, j, icode, lni, lnj;
@@ -164,21 +162,23 @@ int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
    float *uuyin, *vvyin, *uuyan, *vvyan;
    float *tmpuu, *tmpvv;
   
-   tmplat = (double*) malloc(n*sizeof(double));
-   tmplon = (double*) malloc(n*sizeof(double));
-   tmpuu = (float *) malloc(n * sizeof(float));
-   tmpvv = (float *) malloc(n * sizeof(float));
+   tmplat = (double*) malloc(2*n*sizeof(double));
+   tmplon = &tmplat[n];
+   tmpuu = (float *) malloc(2*n*sizeof(float));
+   tmpvv = &tmpuu[n];
   
+   if (!Opt) Opt=&GeoRef_Options;
+
    if (Ref->NbSub > 0) {
       yin_gd=Ref->Subs[0];
       yan_gd=Ref->Subs[1];
       lni = yin_gd->NX;
       lnj = yin_gd->NY;
       tmpy = (double *) malloc(n*sizeof(double));
-      uuyin = (float *) malloc(n*sizeof(float));
-      vvyin = (float *) malloc(n*sizeof(float));
-      uuyan = (float *) malloc(n*sizeof(float));
-      vvyan = (float *) malloc(n*sizeof(float));
+      uuyin = (float *) malloc(4*n*sizeof(float));
+      vvyin = &uuyin[n];
+      uuyan = &uuyin[n*2];
+      vvyan = &uuyin[n*3];
       for (j=0; j< n; j++) {
          if (Y[j] > yin_gd->NY) {
             tmpy[j]=Y[j]-yin_gd->NY;
@@ -187,15 +187,11 @@ int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
          }
       }
       
-      // TODO: WTF will I do to avoid this or global options
-      memcpy(&yin_gd->Options,&Ref->Options,sizeof(TGeoOptions));
-      memcpy(&yan_gd->Options,&Ref->Options,sizeof(TGeoOptions));
-
-      icode = GeoRef_XYUVVal(yin_gd, tmpuu, tmpvv, uuin, vvin, X, tmpy, n);
+      icode = GeoRef_XYUVVal(yin_gd,Opt,tmpuu,tmpvv,uuin,vvin,X,tmpy,n);
       icode = GeoRef_XY2LL(yin_gd,tmplat,tmplon,X,tmpy,n,TRUE);
       icode = GeoRef_UV2WD(yin_gd, uuyin,vvyin,tmpuu,tmpvv,tmplat,tmplon,n);
 
-      icode = GeoRef_XYUVVal(yan_gd, tmpuu, tmpvv, &uuin[(lni*lnj)], &vvin[(lni*lnj)], X, tmpy, n);
+      icode = GeoRef_XYUVVal(yan_gd,Opt,tmpuu,tmpvv,&uuin[(lni*lnj)],&vvin[(lni*lnj)],X,tmpy,n);
       icode = GeoRef_XY2LL(yan_gd,tmplat,tmplon,X,tmpy,n,TRUE);
       icode = GeoRef_UV2WD(yan_gd, uuyan,vvyan,tmpuu,tmpvv,tmplat,tmplon,n);
 
@@ -208,19 +204,15 @@ int GeoRef_XYWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
             vvout[j]=vvyin[j];
          }
       }
-      free(uuyin); free(vvyin);
-      free(uuyan); free(vvyan);
-      free(tmpy);
+      free(uuyin);
    } else {
-      ier = GeoRef_XYUVVal(Ref,tmpuu,tmpvv,uuin,vvin,X,Y,n);
+      ier = GeoRef_XYUVVal(Ref,Opt,tmpuu,tmpvv,uuin,vvin,X,Y,n);
       ier = GeoRef_XY2LL(Ref,tmplat,tmplon,X,Y,n,TRUE);
       ier = GeoRef_UV2WD(Ref,uuout,vvout,tmpuu,tmpvv,tmplat,tmplon,n);
    }
 
    free(tmplat);
-   free(tmplon);
    free(tmpuu);
-   free(tmpvv);
 
    return(0);
 }

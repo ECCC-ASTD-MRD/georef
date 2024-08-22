@@ -66,7 +66,7 @@ int    ZRef_Free(TZRef *ZRef);
 int    ZRef_Equal(TZRef *Zref0,TZRef *ZRef1);
 TZRef* ZRef_Copy(TZRef *ZRef);
 TZRef* ZRef_HardCopy(TZRef *ZRef);
-int    ZRef_DecodeRPN(TZRef *ZRef,fst_file *File);
+int    ZRef_DecodeRPN(TZRef *ZRef,fst_file* File);
 int    ZRef_SetRestrictLevels(float *Levels,int NbLevels);
 int    ZRef_AddRestrictLevel(float Level);
 int    ZRef_GetLevels(TZRef *ZRef,const fst_record* restrict const H,int Invert);

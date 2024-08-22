@@ -376,16 +376,18 @@ int GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
  *  
  *    @return             Number of interpolated values
 */
-int GeoRef_LLVal(TGeoRef *Ref,float *zout,float *zin,double *Lat,double *Lon,int Nb) { 
+int GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *Lat,double *Lon,int Nb) { 
 
    double *x,*y;
    int ier;
 
+   if (!Opt) Opt=&GeoRef_Options;
+
    x = (double*)malloc(2*Nb*sizeof(double));
    y = &x[Nb];
-   
+
    ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb,TRUE);
-   ier = GeoRef_XYVal(Ref,zout,zin,x,y,Nb);
+   ier = GeoRef_XYVal(Ref,Opt,zout,zin,x,y,Nb);
    
    free(x);
 
@@ -406,7 +408,7 @@ int GeoRef_LLVal(TGeoRef *Ref,float *zout,float *zin,double *Lat,double *Lon,int
  *  
  *    @return             Number of interpolated values
 */
-int GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
+int GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
 
    double *x,*y;
    int ier;
@@ -416,11 +418,13 @@ int GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       return(-1);
    } else {
 
+      if (!Opt) Opt=&GeoRef_Options;
+
       x = (double*)malloc(2*Nb*sizeof(double));
       y = &x[Nb];
    
       ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb,TRUE);
-      ier = GeoRef_XYUVVal(Ref,uuout,vvout,uuin,vvin,x,y,Nb);
+      ier = GeoRef_XYUVVal(Ref,Opt,uuout,vvout,uuin,vvin,x,y,Nb);
    
       free(x);
 
@@ -442,12 +446,14 @@ int GeoRef_LLUVVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
  *  
  *    @return             Number of interpolated values
 */
-int GeoRef_LLWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
+int GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
 
    TGeoRef *yin_gd, *yan_gd;
    int ier,j;
    double *x,*y;
    float  *uuyin, *vvyin, *uuyan, *vvyan;
+
+   if (!Opt) Opt=&GeoRef_Options;
 
    if (Ref->NbSub > 0) {
       x = (double*) malloc(2*Nb*sizeof(double));
@@ -457,13 +463,9 @@ int GeoRef_LLWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       uuyan = &uuyin[Nb*2];
       vvyan = &uuyin[Nb*3];
       ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb,TRUE);
-      ier = GeoRef_XYUVVal(Ref,uuout,vvout,uuin,vvin,x,y,Nb);
+      ier = GeoRef_XYUVVal(Ref,Opt,uuout,vvout,uuin,vvin,x,y,Nb);
       yin_gd=Ref->Subs[0];
       yan_gd=Ref->Subs[1];
-
-      // TODO: WTF will I do to avoid this or global options
-      memcpy(&yin_gd->Options,&Ref->Options,sizeof(TGeoOptions));
-      memcpy(&yan_gd->Options,&Ref->Options,sizeof(TGeoOptions));
 
       ier = GeoRef_UV2WD(yin_gd,uuyin,vvyin,uuout,vvout,Lat,Lon,Nb);
       ier = GeoRef_UV2WD(yan_gd,uuyan,vvyan,uuout,vvout,Lat,Lon,Nb);
@@ -479,7 +481,7 @@ int GeoRef_LLWDVal(TGeoRef *Ref,float *uuout,float *vvout,float *uuin,float *vvi
       free(x);
       free(uuyin);
    } else {
-      ier = GeoRef_LLUVVal(Ref,uuout,vvout,uuin,vvin,Lat,Lon,Nb);
+      ier = GeoRef_LLUVVal(Ref,Opt,uuout,vvout,uuin,vvin,Lat,Lon,Nb);
       ier = GeoRef_UV2WD(Ref,uuout,vvout,uuout,vvout,Lat,Lon,Nb);
    }
 

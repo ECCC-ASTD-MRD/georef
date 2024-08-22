@@ -3,12 +3,8 @@
 
 #include "GeoRef.h"
 
-#ifdef HAVE_GDAL
-   #include "gdal_safe.h"
-   #include "ogr_api.h"
-   #include "ogr_srs_api.h"
-#else
-   #include "ogr_stub.h"
+#ifdef _TK_SOURCE
+#include <tclDataSpec.h>
 #endif
 
 #define OGR_G_EnvelopeIntersect(ENV0,ENV1) (!(ENV0.MaxX<ENV1.MinX || ENV0.MinX>ENV1.MaxX || ENV0.MaxY<ENV1.MinY || ENV0.MinY>ENV1.MaxY))
@@ -68,6 +64,7 @@ typedef struct OGR_Layer {
 
 #ifdef HAVE_GPC
    #include "gpc.h"
+   #include "gpc_ext.h"
 #else
    typedef char gpc_polygon;
    typedef char gpc_op;
@@ -108,5 +105,7 @@ int          OGM_Simplify(double Tolerance,OGRGeometryH Geom);
 int          OGM_SimplifyDP(double Tolerance,Vect3d *Pt,int J,int K,int *Markers);
 double       OGM_AngleMin(OGRGeometryH Geom);
 int          OGM_Clean(OGRGeometryH Geom);
+OGRGeometryH OGM_PolySplitTile(OGRGeometryH Poly,const unsigned int MaxPoints,OGRGeometryH Res);
+OGRGeometryH OGM_ClipLonWrap(OGRGeometryH Poly);
 
 #endif

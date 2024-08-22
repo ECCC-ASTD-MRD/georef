@@ -8,7 +8,7 @@
 
 int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket,TRef_InterpR Type) {
 
-   TGridSet   *gset=NULL;
+   TGeoSet    *gset=NULL;
    TGeoRef    *refin=NULL,*refout=NULL;
    fst_record  crit=default_fst_record,truth,grid=default_fst_record,record=default_fst_record;
    fst_file   *fin,*fout,*fgrid,*ftruth;
@@ -50,7 +50,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       }
    }
   
-   GeoRef_Options.InterpDegree=Type;
+   GeoRef_Options.Interp=Type;
    GeoRef_Options.NoData=0.0;
 
 //   GeoRef_CopyDesc(fout,&grid);
@@ -66,7 +66,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       }
 
       // Proceed with interpolation
-      if (!GeoRef_Interp(refout,refin,grid.data,record.data)) {
+      if (!GeoRef_Interp(refout,refin,&GeoRef_Options,grid.data,record.data)) {
          App_Log(APP_ERROR,"Interpolation problem");
          return(FALSE);
       }   
@@ -82,7 +82,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 
    
    // Write index
-   gset=GeoRef_SetGet(refout,refin);
+   gset=GeoRef_SetGet(refout,refin,NULL);
    if (GeoRef_SetHasIndex(gset)) {
       App_Log(APP_DEBUG,"Saving index containing %i items\n",gset->IndexSize);
       

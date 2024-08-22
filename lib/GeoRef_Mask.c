@@ -1,27 +1,28 @@
 #include <App.h>
 #include "GeoRef.h"
 
-int GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,char *MaskOut,char *MaskIn) {
+int GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,char *MaskOut,char *MaskIn) {
  
-   TGridSet *gset=NULL;
+   TGeoSet *gset=NULL;
    if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
       return(FALSE);
    }
 
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   if (!Opt) Opt=&GeoRef_Options;
+   gset=GeoRef_SetGet(RefTo,RefFrom,Opt);
 
    if (RefFrom->GRTYP[0] == 'Y') {
       memcpy(MaskOut,gset->mask,RefTo->NX*RefTo->NY*sizeof(int));
    } else {
-      f77name(qqq_ezsint_mask)(MaskOut,gset->X,gset->Y,&RefTo->NX,&RefTo->NY,MaskIn,&RefFrom->NX,&RefFrom->NY,RefFrom->Options.InterpDegree);
+      f77name(qqq_ezsint_mask)(MaskOut,gset->X,gset->Y,&RefTo->NX,&RefTo->NY,MaskIn,&RefFrom->NX,&RefFrom->NY,Opt->Interp);
    }
    return(TRUE);
 }
 
 int GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int *MaskOut,int *MaskIn) {
 
-   TGridSet *gset=NULL;
+   TGeoSet *gset=NULL;
    int       npts_in, npts_out;
    
    if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
@@ -29,7 +30,7 @@ int GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int *MaskOut,int *MaskIn) {
       return(-1);
    }
 
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
 
    npts_in  = RefFrom->NX*RefFrom->NY;
    npts_out = RefTo->NX*RefTo->NY;
@@ -78,24 +79,22 @@ int GeoRef_MaskYYDefine(TGeoRef *Ref) {
   return(0);
 }
 
-int GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,int ni,int nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int *yyincount,double *yanlat,double *yanlon,int *yyancount) {
+int GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int ni,int nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int *yyincount,double *yanlat,double *yanlon,int *yyancount) {
 
    TGeoOptions opt;
    int i,j,k;
    int yincount,yancount;
    float *yin_fld;
-  
+
    yin_fld = (float*)calloc(RefFrom->mymaskgrid->NX*RefFrom->mymaskgrid->NY,sizeof(float));
  
    // Get original options
-   memcpy(&opt,&RefFrom->Options,sizeof(TGeoOptions));
+   memcpy(&opt,Opt,sizeof(TGeoOptions));
  
-   RefFrom->Options.ExtrapValue=1.0;
-   RefFrom->Options.ExtrapDegree=ER_VALUE;
-   GeoRef_Interp(RefTo,RefFrom->mymaskgrid,maskout,yin_fld);
+   opt.ExtrapValue=1.0;
+   opt.Extrap=ER_VALUE;
+   GeoRef_Interp(RefTo,RefFrom->mymaskgrid,&opt,maskout,yin_fld);
  
-   // Masking is done,reset original interp options
-   memcpy(&RefFrom->Options,&opt,sizeof(TGeoOptions));
    free(yin_fld);
 
    // Now create the destination grids

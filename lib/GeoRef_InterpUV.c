@@ -5,35 +5,39 @@ void c_ezgfwfllw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *
 void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
 void c_ezllwfgff8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
 
-int GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin) {
+int GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
    
    int npts;
    float *uullout = NULL;
    float *vvllout = NULL;
+   TGeoSet   *set;
+   TGeoOptions opt;
 
-   GeoRef_SetGet(RefTo,RefFrom);
+   if (!Opt) Opt=&GeoRef_Options;
+   set=GeoRef_SetGet(RefTo,RefFrom,Opt);
 
    if (RefFrom->NbSub > 0 || RefTo->NbSub > 0) {
-      return(GeoRef_InterpYYUV(RefTo,RefFrom,uuout,vvout,uuin,vvin));
+      return(GeoRef_InterpYYUV(RefTo,RefFrom,Opt,uuout,vvout,uuin,vvin));
    } else {
 
       npts = RefTo->NX*RefTo->NY;
       GeoRef_CalcLL(RefTo);
    
-      RefFrom->Options.VectorMode = TRUE;
-      RefFrom->Options.Symmetric = TRUE;
+      memcpy(&opt,Opt,sizeof(TGeoOptions));
 
-      if (!GeoRef_Interp(RefTo,RefFrom,uuout,uuin)) {
+      opt.VectorMode = TRUE;
+      opt.Symmetric = TRUE;
+      if (!GeoRef_Interp(RefTo,RefFrom,&opt,uuout,uuin)) {
          return(FALSE);
       }
-      RefFrom->Options.Symmetric = FALSE;
-      if (!GeoRef_Interp(RefTo,RefFrom,vvout,vvin)) {
+
+      opt.Symmetric = FALSE;
+      if (!GeoRef_Interp(RefTo,RefFrom,&opt,vvout,vvin)) {
          return(FALSE);
       }
-      RefFrom->Options.Symmetric = TRUE;
 
-      if (RefFrom->Options.PolarCorrect == TRUE) {
-         GeoRef_CorrectVector(RefTo,RefFrom,uuout,vvout,uuin,vvin);
+      if (opt.PolarCorrect == TRUE) {
+         GeoRef_CorrectVector(set,uuout,vvout,uuin,vvin);
       }
    
       uullout = (float *)malloc(2*npts*sizeof(float));
@@ -42,41 +46,44 @@ int GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,fl
       GeoRef_UV2WD(RefFrom,uullout,vvllout,uuout,vvout,RefTo->Lat,RefTo->Lon,npts);
       GeoRef_WD2UV(RefTo,uuout,vvout,uullout,vvllout,RefTo->Lat,RefTo->Lon,npts);
    
-      RefFrom->Options.VectorMode = FALSE;
       free(uullout);   
    }
    
    return(TRUE);
 }
 
-int GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin) {
+int GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
 
    int npts;
    float *uullout = NULL;
    float *vvllout = NULL;
+   TGeoSet   *set;
+   TGeoOptions opt;
 
-   GeoRef_SetGet(RefTo,RefFrom);
+   if (!Opt) Opt=&GeoRef_Options;
+   set=GeoRef_SetGet(RefTo,RefFrom,Opt);
 
    if (RefFrom->NbSub > 0 || RefTo->NbSub > 0) {
-      return(GeoRef_InterpYYWD(RefTo,RefFrom,uuout,vvout,uuin,vvin));
+      return(GeoRef_InterpYYWD(RefTo,RefFrom,Opt,uuout,vvout,uuin,vvin));
    } else {
 
       npts = RefTo->NX*RefTo->NY;
 
-      RefFrom->Options.VectorMode = TRUE;
-      RefFrom->Options.Symmetric = TRUE;
+      memcpy(&opt,Opt,sizeof(TGeoOptions));
 
-      if (!GeoRef_Interp(RefTo,RefFrom,uuout,uuin)) {
+      opt.VectorMode = TRUE;
+      opt.Symmetric = TRUE;
+      if (!GeoRef_Interp(RefTo,RefFrom,&opt,uuout,uuin)) {
          return(FALSE);
       }
-      RefFrom->Options.Symmetric = FALSE;
-      if (!GeoRef_Interp(RefTo,RefFrom,vvout,vvin)) {
+
+      opt.Symmetric = FALSE;
+      if (!GeoRef_Interp(RefTo,RefFrom,&opt,vvout,vvin)) {
          return(FALSE);
       }
-      RefFrom->Options.Symmetric = TRUE;
 
-      if (RefFrom->Options.PolarCorrect == TRUE) {
-         GeoRef_CorrectVector(RefTo,RefFrom,uuout,vvout,uuin,vvin);
+      if (opt.PolarCorrect == TRUE) {
+         GeoRef_CorrectVector(set,uuout,vvout,uuin,vvin);
       }
 
       uullout = (float *)malloc(2*npts*sizeof(float));
@@ -89,15 +96,14 @@ int GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,fl
       memcpy(uuout, uullout, npts*sizeof(float));
       memcpy(vvout, vvllout, npts*sizeof(float));
 
-      RefFrom->Options.VectorMode = FALSE;
       free(uullout);
    }
    return(TRUE);
 }
 
-int GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin) {
+int GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
 
-   TGridSet *gset=NULL;
+   TGeoSet *gset=NULL;
    TGeoRef *yin_gdin, *yan_gdin, *yin_gdout, *yan_gdout;
    int i,j,k;
    int yancount_yin,yincount_yin, yancount_yan,yincount_yan;
@@ -113,7 +119,8 @@ int GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
    
    yyin=0; yyout=0;
 
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   if (!Opt) Opt=&GeoRef_Options;
+   gset=GeoRef_SetGet(RefTo,RefFrom,Opt);
 
    // Setup for input grid 
    if (RefFrom->NbSub > 0) {
@@ -138,7 +145,7 @@ int GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
 
    // Interp input one grid to yygrid - no masking needed
    if (yyin == 0 && yyout == 1) {
-      if (GeoRef_InterpUV(yin_gdout,RefFrom,uuout,vvout,uuin,vvin) && GeoRef_InterpUV(yan_gdout,RefFrom,&uuout[ni*nj],&vvout[ni*nj],uuin,vvin)) {
+      if (GeoRef_InterpUV(yin_gdout,RefFrom,Opt,uuout,vvout,uuin,vvin) && GeoRef_InterpUV(yan_gdout,RefFrom,Opt,&uuout[ni*nj],&vvout[ni*nj],uuin,vvin)) {
          return(TRUE);
       } else {
          return(FALSE);
@@ -147,35 +154,35 @@ int GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
 
    // Check if one sub grid is identical to one of the sub grids
    if (yin_gdin == RefTo) {
-      return(GeoRef_InterpUV(RefTo,yin_gdin,uuout,vvout,uuin,vvin));
+      return(GeoRef_InterpUV(RefTo,yin_gdin,Opt,uuout,vvout,uuin,vvin));
    }
    if (yan_gdin == RefTo) {
-      return(GeoRef_InterpUV(RefTo,yan_gdin,uuout,vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)]));
+      return(GeoRef_InterpUV(RefTo,yan_gdin,Opt,uuout,vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)]));
    }
 
    /* User specifies to use 1 subgrid for interpolation ezsetopt(USE_1SUBGRID) */
    /* User must specify one specific grid ezsetival(SUBGRIDID) */
    /* This is only appropriate if the destination grid is non yin-yang grid */
  
-   if (RefFrom->Options.SubGrid) { // User specifies to use 1 grid only
+   if (RefFrom->Sub) { // User specifies to use 1 grid only
       // Output is a Yin-Yang grid 
       if (yyout == 1) { 
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Cannot use subgrid to interpolate to a Yin-Yang grid\n",__func__);
          return(FALSE);
       }
       // Is specified subgrid within the subgrid list
-      if (RefFrom->Options.SubGrid>RefFrom->NbSub) { 
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Options.SubGrid);
+      if (RefFrom->Sub>RefFrom->NbSub) { 
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Sub);
          return(FALSE);
       }
       // Use yin input grid
-      if (RefFrom->Options.SubGrid==1) { 
-         return(GeoRef_InterpUV(yin_gdout,yin_gdin,uuout,vvout,uuin,vvin));
+      if (RefFrom->Sub==1) { 
+         return(GeoRef_InterpUV(yin_gdout,yin_gdin,Opt,uuout,vvout,uuin,vvin));
       }
 
       // Use yang input grid
-      if (RefFrom->Options.SubGrid==2) { 
-         return(GeoRef_InterpUV(yin_gdout,yan_gdin,uuout,vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)]));
+      if (RefFrom->Sub==2) { 
+         return(GeoRef_InterpUV(yin_gdout,yan_gdin,Opt,uuout,vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)]));
       }
    }
 
@@ -199,9 +206,9 @@ int GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
       yan2yin_spdout = &spdout[idx+=yancount_yin];
       yan2yin_wdout = &spdout[idx+=yancount_yin];
 
-      GeoRef_XYUVVal(yin_gdin,yin2yin_uuout,yin2yin_vvout,uuin,vvin,gset->yin2yin_x,gset->yin2yin_y,gset->yincount_yin);
+      GeoRef_XYUVVal(yin_gdin,Opt,yin2yin_uuout,yin2yin_vvout,uuin,vvin,gset->yin2yin_x,gset->yin2yin_y,gset->yincount_yin);
       GeoRef_UV2WD(yin_gdin,yin2yin_spdout,yin2yin_wdout,yin2yin_uuout,yin2yin_vvout,gset->yin2yin_lat,gset->yin2yin_lon,yincount_yin);
-      GeoRef_XYUVVal(yan_gdin,yan2yin_uuout,yan2yin_vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yin_x,gset->yan2yin_y,yancount_yin);
+      GeoRef_XYUVVal(yan_gdin,Opt,yan2yin_uuout,yan2yin_vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yin_x,gset->yan2yin_y,yancount_yin);
       GeoRef_UV2WD(yan_gdin,yan2yin_spdout,yan2yin_wdout,yan2yin_uuout, yan2yin_vvout,gset->yan2yin_lat,gset->yan2yin_lon,yancount_yin);
 
       yincount_yin=0;
@@ -264,15 +271,15 @@ int GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
       yan2yan_spdout = &spdout[idx+=yancount_yan];
       yan2yan_wdout  = &spdout[idx+=yancount_yan];
 
-      GeoRef_XYUVVal(yin_gdin,yin2yin_uuout,yin2yin_vvout,uuin,vvin,gset->yin2yin_x,gset->yin2yin_y,yincount_yin);
+      GeoRef_XYUVVal(yin_gdin,Opt,yin2yin_uuout,yin2yin_vvout,uuin,vvin,gset->yin2yin_x,gset->yin2yin_y,yincount_yin);
       GeoRef_UV2WD(yin_gdin,yin2yin_spdout,yin2yin_wdout,yin2yin_uuout,yin2yin_vvout,gset->yin2yin_lat,gset->yin2yin_lon,yincount_yin);
-      GeoRef_XYUVVal(yan_gdin,yan2yin_uuout,yan2yin_vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yin_x,gset->yan2yin_y,yancount_yin);
+      GeoRef_XYUVVal(yan_gdin,Opt,yan2yin_uuout,yan2yin_vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yin_x,gset->yan2yin_y,yancount_yin);
       GeoRef_UV2WD(yan_gdin,yan2yin_spdout,yan2yin_wdout,yan2yin_uuout,yan2yin_vvout,gset->yan2yin_lat,gset->yan2yin_lon,yancount_yin);
 
-      GeoRef_XYUVVal(yin_gdin,yin2yan_uuout,yin2yan_vvout,uuin,vvin,gset->yin2yan_x,gset->yin2yan_y,yincount_yan);
+      GeoRef_XYUVVal(yin_gdin,Opt,yin2yan_uuout,yin2yan_vvout,uuin,vvin,gset->yin2yan_x,gset->yin2yan_y,yincount_yan);
       GeoRef_UV2WD(yin_gdin,yin2yan_spdout,yin2yan_wdout,yin2yan_uuout,yin2yan_vvout,gset->yin2yan_lat,gset->yin2yan_lon,yincount_yan);
 
-      GeoRef_XYUVVal(yan_gdin,yan2yan_uuout,yan2yan_vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yan_x,gset->yan2yan_y,yancount_yan);
+      GeoRef_XYUVVal(yan_gdin,Opt,yan2yan_uuout,yan2yan_vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yan_x,gset->yan2yan_y,yancount_yan);
       GeoRef_UV2WD(yan_gdin,yan2yan_spdout,yan2yan_wdout,yan2yan_uuout,yan2yan_vvout,gset->yan2yan_lat,gset->yan2yan_lon,yancount_yan);
 
       // Build output for YIN output grid
@@ -317,9 +324,9 @@ int GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
    return(TRUE);
 }
 
-int GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,float *uuin,float *vvin) {
+int GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
 
-   TGridSet *gset=NULL;
+   TGeoSet *gset=NULL;
    TGeoRef *yin_gdin, *yan_gdin, *yin_gdout, *yan_gdout;
    int icode,i,j,k;
    int yancount_yin,yincount_yin, yancount_yan,yincount_yan;
@@ -335,7 +342,8 @@ int GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
    
    yyin=0; yyout=0;
 
-   gset=GeoRef_SetGet(RefTo,RefFrom);
+   if (!Opt) Opt=&GeoRef_Options;
+   gset=GeoRef_SetGet(RefTo,RefFrom,Opt);
 
    // Setup for input grid 
    if (RefFrom->NbSub > 0) {
@@ -360,7 +368,7 @@ int GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
 
    // Interp input one grid to yygrid - no masking needed
    if (yyin == 0 && yyout == 1) {
-      if (GeoRef_InterpWD(yin_gdout,RefFrom,uuout,vvout,uuin,vvin) && GeoRef_InterpWD(yan_gdout,RefFrom,&uuout[(ni*nj)],&vvout[(ni*nj)],uuin,vvin)) {
+      if (GeoRef_InterpWD(yin_gdout,RefFrom,Opt,uuout,vvout,uuin,vvin) && GeoRef_InterpWD(yan_gdout,RefFrom,Opt,&uuout[(ni*nj)],&vvout[(ni*nj)],uuin,vvin)) {
          return(TRUE);
       } else {
          return(FALSE);
@@ -369,35 +377,35 @@ int GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
 
    // Check if one sub grid is identical to one of the sub grids 
    if (yin_gdin == RefTo) {
-      return(GeoRef_InterpWD(RefTo,yin_gdin,uuout,vvout,uuin,vvin));
+      return(GeoRef_InterpWD(RefTo,yin_gdin,Opt,uuout,vvout,uuin,vvin));
    }
    if (yan_gdin == RefTo) {
-      return(GeoRef_InterpWD(RefTo,yan_gdin,uuout,vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)]));
+      return(GeoRef_InterpWD(RefTo,yan_gdin,Opt,uuout,vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)]));
    }
 
    /* User specifies to use 1 subgrid for interpolation ezsetopt(USE_1SUBGRID) */
    /* User must specify one specific grid ezsetival(SUBGRIDID) */
    /* This is only appropriate if the destination grid is non yin-yang grid */
 
-   if (RefFrom->Options.SubGrid) { // User specifies to use 1 grid only
+   if (RefFrom->Sub) { // User specifies to use 1 grid only
       // Output is a Yin-Yang grid 
       if (yyout == 1) { 
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Cannot use subgrid to interpolate to a Yin-Yang grid\n",__func__);
          return(FALSE);
       }
       // Is specified subgrid within the subgrid list
-      if (RefFrom->Options.SubGrid>RefFrom->NbSub) { 
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Options.SubGrid);
+      if (RefFrom->Sub>RefFrom->NbSub) { 
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Sub);
          return(FALSE);
       }
       // Use yin input grid
-      if (RefFrom->Options.SubGrid==1) { 
-         return(GeoRef_InterpWD(yin_gdout,yin_gdin,uuout,vvout,uuin,vvin));
+      if (RefFrom->Sub==1) { 
+         return(GeoRef_InterpWD(yin_gdout,yin_gdin,Opt,uuout,vvout,uuin,vvin));
       }
 
       // Use yang input grid
-      if (RefFrom->Options.SubGrid==2) { 
-         return(GeoRef_InterpWD(yin_gdout,yan_gdin,uuout,vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)]));
+      if (RefFrom->Sub==2) { 
+         return(GeoRef_InterpWD(yin_gdout,yan_gdin,Opt,uuout,vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)]));
       }
    }
 
@@ -419,10 +427,10 @@ int GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
       yan2yin_spdout = &yin2yin_uuout[idx+=yancount_yin];
       yan2yin_wdout  = &yin2yin_uuout[idx+=yancount_yin];
 
-      GeoRef_XYUVVal(yin_gdin,yin2yin_uuout,yin2yin_vvout,uuin,vvin,gset->yin2yin_x,gset->yin2yin_y,gset->yincount_yin);
+      GeoRef_XYUVVal(yin_gdin,Opt,yin2yin_uuout,yin2yin_vvout,uuin,vvin,gset->yin2yin_x,gset->yin2yin_y,gset->yincount_yin);
       GeoRef_UV2WD(yin_gdin,yin2yin_spdout,yin2yin_wdout,yin2yin_uuout,yin2yin_vvout,gset->yin2yin_lat,gset->yin2yin_lon,yincount_yin);
   
-      GeoRef_XYUVVal(yan_gdin,yan2yin_uuout,yan2yin_vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yin_x,gset->yan2yin_y,yancount_yin);
+      GeoRef_XYUVVal(yan_gdin,Opt,yan2yin_uuout,yan2yin_vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yin_x,gset->yan2yin_y,yancount_yin);
       GeoRef_UV2WD(yan_gdin,yan2yin_spdout,yan2yin_wdout,yan2yin_uuout, yan2yin_vvout,gset->yan2yin_lat,gset->yan2yin_lon,yancount_yin);
       yincount_yin=0;
       yancount_yin=0;
@@ -469,15 +477,15 @@ int GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,float *uuout,float *vvout,
       yan2yan_spdout = &yin2yin_uuout[idx+=yancount_yan];
       yan2yan_wdout  = &yin2yin_uuout[idx+=yancount_yan];
 
-      GeoRef_XYUVVal(yin_gdin,yin2yin_uuout,yin2yin_vvout,uuin,vvin,gset->yin2yin_x,gset->yin2yin_y,gset->yincount_yin);
+      GeoRef_XYUVVal(yin_gdin,Opt,yin2yin_uuout,yin2yin_vvout,uuin,vvin,gset->yin2yin_x,gset->yin2yin_y,gset->yincount_yin);
       GeoRef_UV2WD(yin_gdin,yin2yin_spdout,yin2yin_wdout,yin2yin_uuout,yin2yin_vvout,gset->yin2yin_lat,gset->yin2yin_lon,gset->yincount_yin);
-      GeoRef_XYUVVal(yan_gdin,yan2yin_uuout,yan2yin_vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yin_x,gset->yan2yin_y,gset->yancount_yin);
+      GeoRef_XYUVVal(yan_gdin,Opt,yan2yin_uuout,yan2yin_vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yin_x,gset->yan2yin_y,gset->yancount_yin);
       GeoRef_UV2WD(yan_gdin,yan2yin_spdout,yan2yin_wdout,yan2yin_uuout,yan2yin_vvout,gset->yan2yin_lat,gset->yan2yin_lon,yancount_yin);
 
-      GeoRef_XYUVVal(yin_gdin,yin2yan_uuout,yin2yan_vvout,uuin,vvin,gset->yin2yan_x,gset->yin2yan_y,gset->yincount_yan);
+      GeoRef_XYUVVal(yin_gdin,Opt,yin2yan_uuout,yin2yan_vvout,uuin,vvin,gset->yin2yan_x,gset->yin2yan_y,gset->yincount_yan);
       GeoRef_UV2WD(yin_gdin,yin2yan_spdout,yin2yan_wdout,yin2yan_uuout,yin2yan_vvout,gset->yin2yan_lat,gset->yin2yan_lon,gset->yincount_yan);
 
-      GeoRef_XYUVVal(yan_gdin,yan2yan_uuout,yan2yan_vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yan_x,gset->yan2yan_y,gset->yancount_yan);
+      GeoRef_XYUVVal(yan_gdin,Opt,yan2yan_uuout,yan2yan_vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yan_x,gset->yan2yan_y,gset->yancount_yan);
       GeoRef_UV2WD(yan_gdin,yan2yan_spdout,yan2yan_wdout,yan2yan_uuout,yan2yan_vvout,gset->yan2yan_lat,gset->yan2yan_lon,gset->yancount_yan);
 
       // Build output for YIN output grid 

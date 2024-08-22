@@ -13,9 +13,9 @@ version=@PROJECT_VERSION@
 env=@EC_CI_ENV@
 arch=@EC_ARCH@
 
-has_rmn=@RMN_VERSION@@RMN_STATE@
+has_rmn=@rmn_VERSION@@rmn_STATE@
 has_gdal=@GDAL_VERSION@
-has_vgrid=@VGRID_VERSION@@VGRID_STATE@
+has_vgrid=@vgrid_VERSION@@vgrid_STATE@
 
 usage()
 {
@@ -30,7 +30,6 @@ Available values for OPTION include:
   --cflags       C compiler flags [${cflags}]
   --fflags       Fortran compiler flags [${fflags}]
   --defs         Preprocessor definitions [${defs}]
-  --libs         library linking information [${libs}]
   --version      library version [${version}]
   --env          environment version used [${env}]
   --arch         architecture of build [${arch}]
