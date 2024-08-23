@@ -1,7 +1,7 @@
 #include <App.h>
 #include "GeoRef.h"
 
-int c_gd_isgridrotated(TGeoRef *gr) {
+int32_t c_gd_isgridrotated(TGeoRef *gr) {
 
    if (gr->RPNHeadExt.grref[0] == 'E') {
        if (fabs(gr->RPNHeadExt.xgref1-gr->RPNHeadExt.xgref3) < 0.001)
@@ -14,7 +14,7 @@ int c_gd_isgridrotated(TGeoRef *gr) {
    return(0);
 }
 
-int c_gdcompatible_grids(TGeoRef *RefFrom, TGeoRef* RefTo) {
+int32_t c_gdcompatible_grids(TGeoRef *RefFrom, TGeoRef* RefTo) {
 
    switch(RefTo->GRTYP[0]) {
 	   case 'L':
@@ -41,10 +41,10 @@ int c_gdcompatible_grids(TGeoRef *RefFrom, TGeoRef* RefTo) {
    return 0;
 }
 
-int gd_interpm(TGeoRef *Ref,TGeoOptions *Opt,float *Out,float *In,double *X,double *Y,int Nb) {
+int32_t gd_interpm(TGeoRef *Ref,TGeoOptions *Opt,float *Out,float *In,double *X,double *Y,int32_t Nb) {
 
    Vect3d       b,v;
-   int          d,n,ix;
+   int32_t          d,n,ix;
 
    #pragma omp parallel for default(none) private(d,b,ix,n,v) shared(Nb,Ref,Opt,X,Y,Out,In)
    for(d=0;d<Nb;d++) {
@@ -69,15 +69,15 @@ int gd_interpm(TGeoRef *Ref,TGeoOptions *Opt,float *Out,float *In,double *X,doub
    return(Nb);
 }
 
-int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *X,double *Y,int npts,TGeoSet *GSet) {
+int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *X,double *Y,int32_t npts,TGeoSet *GSet) {
 
-   int ier, un, j;
-   int old_degre_interp;
+   int32_t ier, un, j;
+   int32_t old_degre_interp;
    double *gdst_lats, tmp, real_un=1.0, real_j;
 
    // RefTo needed for type 4,5 and Y grid
    // TODO: Check old type 4 and,
-   // TODO: need to use neew types (do not forget subllinear and subnearest)
+   // TODO: need to use new types (do not forget subllinear and subnearest)
    if ((!RefTo && (Opt->Interp==4 || Opt->Interp==5)) || !RefFrom) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid georeference\n",__func__);
       return(-1);
@@ -161,7 +161,10 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float 
          if (RefFrom->NX > 1 && RefFrom->NY > 1 && Opt->Interp==IR_LINEAR) {
             f77name(ez8_rgdint_1)(zout,X,Y,&npts,zin,&RefFrom->NX,&un,&RefFrom->NY,0,&Opt->NoData);
          } else {
-            //TODO: Make sure gset is defined
+            if (!GSet) {
+               Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: GeoSet not defined\n",__func__);
+               return(-1);
+            }
             f77name(ez_applywgts)(zout,GSet->wts,GSet->idx,zin,GSet->mask,&RefFrom->NX,&RefFrom->NY,&RefTo->NX,&RefTo->NY,&(GSet->n_wts));
          }
          break;
@@ -222,12 +225,12 @@ int GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float 
    return(0);
 }
 
-int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin) {
+int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin) {
 
    TGeoSet   *gset=NULL;
    TApp_Timer *int_timer = App_TimerCreate();
    float      *lzin,*lxzin;
-   int         ok=TRUE;
+   int32_t         ok=TRUE;
 
    lzin  = NULL;
    lxzin = NULL;
@@ -292,13 +295,13 @@ int GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,f
    return(ok);
 }
 
-int GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin) {
+int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin) {
 
    TGeoSet *gset=NULL;
    TGeoRef *yin_gdin, *yan_gdin, *yin_gdout, *yan_gdout;
-   int i,j,k,ni,nj;
-   int yancount_yin,yincount_yin, yancount_yan,yincount_yan;
-   int yyin,yyout;
+   int32_t i,j,k,ni,nj;
+   int32_t yancount_yin,yincount_yin, yancount_yan,yincount_yan;
+   int32_t yyin,yyout;
    float *yin2yin_zvals,*yan2yin_zvals;
    float *yin2yan_zvals,*yan2yan_zvals;
      

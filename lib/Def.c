@@ -9,9 +9,9 @@
 
 // Sizes in bytes of the different data types
 // TODO: revisit for architecture dependencies
-int TDef_Size[] = { 0,1,1,1,2,2,4,4,8,8,4,8 };
-int TDef_Mult[] = { 0,0,0,0,1,1,2,2,3,3,2,3 };
-int TDef_DTYP[] = { 0,2,4,2,4,2,4,2,4,5,5,-1 };
+int32_t TDef_Size[] = { 0,1,1,1,2,2,4,4,8,8,4,8 };
+int32_t TDef_Mult[] = { 0,0,0,0,1,1,2,2,3,3,2,3 };
+int32_t TDef_DTYP[] = { 0,2,4,2,4,2,4,2,4,5,5,-1 };
 
 /*----------------------------------------------------------------------------
  * @brief  Re-initialise a data definition
@@ -21,7 +21,7 @@ int TDef_DTYP[] = { 0,2,4,2,4,2,4,2,4,5,5,-1 };
 */
 void Def_Clear(TDef *Def){
 
-   int n,i;
+   int32_t n,i;
 
    for(n=0;n<Def->NC;n++) {
       for(i=0;i<FSIZE3D(Def);i++) {
@@ -64,9 +64,9 @@ void Def_Clear(TDef *Def){
  * 
  *    @return        Compatible, FALSE or TRUE
  */
-int Def_Compat(TDef *ToDef,TDef *FromDef) {
+int32_t Def_Compat(TDef *ToDef,TDef *FromDef) {
 
-   int ch=TRUE,n,nijk;
+   int32_t ch=TRUE,n,nijk;
 
    if (FromDef->Idx) {
       return(FALSE);
@@ -123,7 +123,7 @@ int Def_Compat(TDef *ToDef,TDef *FromDef) {
  */
 TDef *Def_Copy(TDef *Def){
 
-   int   n,nijk;
+   int32_t   n,nijk;
    TDef *def=NULL;
 
    if (!Def->Idx) {
@@ -196,7 +196,7 @@ TDef *Def_Copy(TDef *Def){
  */
 TDef *Def_CopyPromote(TDef *Def,TDef_Type Type){
 
-   int   n,nijk;
+   int32_t   n,nijk;
    TDef *def=NULL;
 
       if (Def && !Def->Idx && (def=(TDef*)malloc(sizeof(TDef)))) {
@@ -265,7 +265,7 @@ TDef *Def_CopyPromote(TDef *Def,TDef_Type Type){
 TDef *Def_CopyData(TDef *ToDef,TDef *FromDef){
 
    TDef *def=ToDef;
-   int   n,alias=FALSE;
+   int32_t   n,alias=FALSE;
 //TODO: define Alias
    if (!def) {
       def=Def_Copy(FromDef);
@@ -340,9 +340,9 @@ void Def_Free(TDef *Def){
  * 
  *    @return     new data definition, NULL on error
  */
-TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type,int Alias) {
+TDef *Def_New(int32_t NI,int32_t NJ,int32_t NK,int32_t Dim,TDef_Type Type,int32_t Alias) {
 
-   int   n,nijk;
+   int32_t   n,nijk;
    TDef *def;
 
    if (!(def=(TDef*)malloc(sizeof(TDef))))
@@ -417,10 +417,10 @@ TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type,int Alias) {
  * 
  *    @return     new data definition, NULL on error
  */
-TDef *Def_Create(int NI,int NJ,int NK,TDef_Type Type,char* Comp0,char* Comp1,char* Mask) {
+TDef *Def_Create(int32_t NI,int32_t NJ,int32_t NK,TDef_Type Type,char* Comp0,char* Comp1,char* Mask) {
    
    TDef *def=NULL;
-   int dim;
+   int32_t dim;
 
    if (def=(TDef*)malloc(sizeof(TDef))) {
       dim=(Comp0!=NULL)+(Comp1!=NULL);
@@ -436,7 +436,7 @@ TDef *Def_Create(int NI,int NJ,int NK,TDef_Type Type,char* Comp0,char* Comp1,cha
 /*
 static inline float* Def_ToFloat(TDef *Def,char* Buffer) {
 
-   int n,sz;
+   int32_t n,sz;
    float *buf=NULL;
 
    sz=FSIZE3D(Def);
@@ -461,7 +461,7 @@ static inline float* Def_ToFloat(TDef *Def,char* Buffer) {
 }
 static inline float* Def_FromFloat(TDef *Def) {
 
-   int n;
+   int32_t n;
 
    sz=FSIZE3D(Def);
    switch(Def->Type) {
@@ -493,9 +493,9 @@ static inline float* Def_FromFloat(TDef *Def) {
  *
  *    @return        New data definition
 */
-TDef *Def_Resize(TDef *Def,int NI,int NJ,int NK){
+TDef *Def_Resize(TDef *Def,int32_t NI,int32_t NJ,int32_t NK){
 
-   int n,nijk;
+   int32_t n,nijk;
 
    if (!Def)
      return(NULL);
@@ -560,9 +560,9 @@ TDef *Def_Resize(TDef *Def,int NI,int NJ,int NK){
  *
  *    @return        FALSE if out of grid, TRUE otherwise
 */
-int Def_Paste(TDef *ToDef,TDef *DefPaste,int X0, int Y0) {
+int32_t Def_Paste(TDef *ToDef,TDef *DefPaste,int32_t X0, int32_t Y0) {
 
-   int           x,y,dx,dy,x0,y0,x1,y1,c,nc;
+   int32_t           x,y,dx,dy,x0,y0,x1,y1,c,nc;
    unsigned long idxs,idxd;
    double        a=1.0,src,dst;
 
@@ -623,13 +623,13 @@ int Def_Paste(TDef *ToDef,TDef *DefPaste,int X0, int Y0) {
  *
  *    @return        FALSE if out of grid, TRUE otherwise
 */
-int Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
+int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY){
 
    double       x,y,d,ddir=0.0;
-   int          mem,ix,iy;
+   int32_t          mem,ix,iy;
    float        valf,valdf;
    void        *p0,*p1;
-   unsigned int idx;
+   uint32_t idx;
 
   *Length=Def->NoData;
    d=Ref->GRTYP[0]=='W'?1.0:0.5;
@@ -687,7 +687,7 @@ int Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int C,double X,double Y
  *
  *    @return        FALSE on error, TRUE otherwise
 */
-static void inline Def_SetValue(TDef *Def,TGeoOptions *Opt,int X, int Y,int Z, double Value) {
+static void inline Def_SetValue(TDef *Def,TGeoOptions *Opt,int32_t X, int32_t Y,int32_t Z, double Value) {
 
    unsigned long idx;
    double        val;
@@ -724,17 +724,17 @@ static void inline Def_SetValue(TDef *Def,TGeoOptions *Opt,int X, int Y,int Z, d
  *
  *    @return        FALSE on error, TRUE otherwise
 */
-int GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Geom,double Value) {
+int32_t GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Geom,double Value) {
 
 #ifdef HAVE_GDAL
-   int    i,j,g,ind1,ind2;
-   int    x,y,miny,maxy,minx,maxx;
-   int    ints,n,ns,np;
-   int   *polyInts;
+   int32_t    i,j,g,ind1,ind2;
+   int32_t    x,y,miny,maxy,minx,maxx;
+   int32_t    ints,n,ns,np;
+   int32_t   *polyInts;
    double dminy,dmaxy,dx1,dy1,dx2,dy2,dy;
    double intersect,tmpd;
-   int    horizontal_x1,horizontal_x2;
-   int    dnx,dny,x0,x1,y0,y1,fr,sx,sy;
+   int32_t    horizontal_x1,horizontal_x2;
+   int32_t    dnx,dny,x0,x1,y0,y1,fr,sx,sy;
 
    OGRGeometryH geom;
 
@@ -770,7 +770,7 @@ int GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Ge
       return(1);
 
    switch (OGR_G_GetDimension(Geom)) {
-      case 0: // Point type
+      case 0: // Point32_t type
          for (i=0;i<n;i++) {
             dx1=OGR_G_GetX(Geom,i);
             dy1=OGR_G_GetY(Geom,i);
@@ -937,18 +937,18 @@ int GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Ge
  *    @param[in]     Geom       Geometry to initialize with projected coordinates
  *    @param[in]     ToRef      Destination GeoRef pointer
  *    @param[in]     FromRef    Source GeoRef pointer
- *    @param[in]     I          X gridpoint coordinate
- *    @param[in]     J          Y gridpoint coordinate
+ *    @param[in]     I          X gridpoint32_t coordinate
+ *    @param[in]     J          Y gridpoint32_t coordinate
  *    @param[in]     Seg        Number of segmentation on the cell sides
  *
  *    @return        Number of points in geometry (negative if wrapped around)
 */
-int GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int I,int J,int Seg) {
+int32_t GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int32_t I,int32_t J,int32_t Seg) {
 
 #ifdef HAVE_GDAL
    double n,dn,df;
    double x0,x1,x,y,la,lo;
-   int    pt=0;
+   int32_t    pt=0;
 
    if (!Geom || !ToRef || !FromRef) {
       return(0);
@@ -1024,7 +1024,7 @@ int GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int I,int 
 }
 
 /*----------------------------------------------------------------------------
- * @brief  Interpolate within a gridpoint defined quad area
+ * @brief  Interpolate within a gridpoint32_t defined quad area
  * @date   November 2004
  *    @param[in]     Ref        GeoRef pointer
  *    @param[in]     Def        Data definition
@@ -1042,11 +1042,11 @@ int GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int I,int 
  *
  *    @return        number of points involved
 */
-static int GeoRef_InterpQuad(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,OGRGeometryH Poly,OGRGeometryH Geom,char Mode,char Type,double Area,double Value,int X0,int Y0,int X1,int Y1,int Z,float **Index) {
+static int32_t GeoRef_InterpQuad(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,OGRGeometryH Poly,OGRGeometryH Geom,char Mode,char Type,double Area,double Value,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_t Z,float **Index) {
 
 #ifdef HAVE_GDAL
    double        dx,dy,dp=1.0,val=0.0;
-   int           x,y,n=0,idx2,na;
+   int32_t           x,y,n=0,idx2,na;
    OGRGeometryH  inter=NULL,pick;
    OGREnvelope   envg,envp;
 
@@ -1106,7 +1106,7 @@ static int GeoRef_InterpQuad(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,OGRGeometry
                   }
                   break;
 
-               case 'P':  // Point mode
+               case 'P':  // Point32_t mode
                   dp=1.0;
                   break;
             }
@@ -1178,13 +1178,13 @@ static int GeoRef_InterpQuad(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,OGRGeometry
  *
  *    @return        FALSE on error, TRUE otherwise
 */
-int GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer *Layer,TGeoOptions *Opt,char *Field,double Value,int Final) {
+int32_t GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer *Layer,TGeoOptions *Opt,char *Field,double Value,int32_t Final) {
 
 #ifdef HAVE_GDAL
    TGeoSet *gset;
    long     f,n=0,nt=0,idx2;
    double   value,val,area,dp,x0,y0;
-   int      fld=-1,pi,pj,error=0,isize=0;
+   int32_t      fld=-1,pi,pj,error=0,isize=0;
    char     mode,type,*c;
    float   *ip=NULL,*lp=NULL,**index=NULL;
    TCoord   co;
@@ -1531,9 +1531,9 @@ int GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer *Lay
  *
  *    @return        FALSE on error, TRUE otherwise
 */
-int GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt) {
+int32_t GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt) {
 
-   int  idx,i,j,x,y,x0,x1,y0,y1,s;
+   int32_t  idx,i,j,x,y,x0,x1,y0,y1,s;
    double val,val1,di,dj,d,la,lo;
 
    if (!ToRef || !ToDef) {
@@ -1604,11 +1604,11 @@ int GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,T
  *
  *    @return        FALSE on error, TRUE otherwise
 */
-int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int Final) {
+int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int32_t Final) {
 
 #ifdef HAVE_GDAL
    TGeoSet    *gset=NULL;
-   int          i,j,n,na,nt=0,p=0,pi,pj,idx2,idx3,wrap,k=0,isize,nidx,error=0;
+   int32_t          i,j,n,na,nt=0,p=0,pi,pj,idx2,idx3,wrap,k=0,isize,nidx,error=0;
    char        *c;
    double       val0,val1,area,x,y,z,dp;
    float       *ip=NULL,*lp=NULL,**index=NULL;
@@ -1662,7 +1662,7 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
                return(FALSE);
             }
 
-            // Get this gridpoint value
+            // Get this gridpoint32_t value
             Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
             if (!DEFVALID(FromDef,val1)) {
                continue;
@@ -1692,7 +1692,7 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
             ip++;
          }
       } else {
-         int cnt, intersect;
+         int32_t cnt, intersect;
 
          if (gset->Index && gset->Index[0]==REF_INDEX_EMPTY) {
             if (!(index=(float**)malloc(FSIZE2D(FromDef)*sizeof(float*)))) {
@@ -1788,7 +1788,7 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
 
                      nt+=na=GeoRef_InterpQuad(ToRef,ToDef,Opt,poly,cell,Opt->Interp==IR_CONSERVATIVE?'C':'N','A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k,&lp);
 
-                     Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,na,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
+                     Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i hits on grid point32_t %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,na,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
                   }
 
                   // We have to process the part that was out of the grid limits so translate everything NI points
@@ -1823,7 +1823,7 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
 
                      nt+=n=GeoRef_InterpQuad(ToRef,ToDef,Opt,poly,cell,Opt->Interp=IR_CONSERVATIVE?'C':'N','A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k,&lp);
 
-                     Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
+                     Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i hits on grid point32_t %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
                   }
                }
                if (lp && (n || na)) {
@@ -1840,11 +1840,11 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
                   nidx=j*FromDef->NI+i;
 
                   if ((lp=index[nidx]) && *lp!=REF_INDEX_EMPTY) {
-                     // Append gridpoint to the index
+                     // Append gridpoint32_t to the index
                      *(ip++)=i;
                      *(ip++)=j;
 
-                     // This gridpoint wraps around
+                     // This gridpoint32_t wraps around
                      while(*lp!=REF_INDEX_SEPARATOR) {
                         *(ip++)=*(lp++);
                      }
@@ -1902,12 +1902,12 @@ int GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *
  *
  *    @return        FALSE on error, TRUE otherwise
 */
-int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,int Final){
+int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,double *Table,TDef **lutDef, int32_t lutSize, TDef *TmpDef,int32_t Final){
 
    double        val,vx,di[4],dj[4],*fld,*aux,di0,di1,dj0,dj1,ax,ay;
-   int          *acc=NULL,x0,x1,y,y0,y1;
+   int32_t          *acc=NULL,x0,x1,y,y0,y1;
    unsigned long idxt,idxk,idxj,n,nijk,nij;
-   unsigned int  n2,ndi,ndj,k,t,s,x,dx,dy;
+   uint32_t  n2,ndi,ndj,k,t,s,x,dx,dy;
    TGeoScan      gscan;
 
    if (!ToRef || !ToDef) {
@@ -1963,7 +1963,7 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
       }
 
       if (ToRef->GRTYP[0]=='Y') {
-         // Point cloud interpolations
+         // Point32_t cloud interpolations
          for(idxt=0;idxt<nij;idxt++) {
             ax=ToRef->AX[idxt];ay=ToRef->AY[idxt];
             if (GeoRef_LL2XY(FromRef,&di0,&dj0,&ax,&ay,1,FALSE)) {
@@ -1997,11 +1997,11 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
             }
          }
       } else {
-         int   *fromClass = NULL;
-         int   *toClass = NULL;
-         int    nbClass = 0;
-         int   *rpnClass = NULL;
-         int    i;
+         int32_t   *fromClass = NULL;
+         int32_t   *toClass = NULL;
+         int32_t    nbClass = 0;
+         int32_t   *rpnClass = NULL;
+         int32_t    i;
 
          if (lutDef && ToDef->NK > 0) {
             Def_Get(lutDef[0],0,0,val);
@@ -2011,13 +2011,13 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
             }
             // first row is the class count and idno 
             nbClass = lutDef[0]->NI - 1;       
-            fromClass = (int *)malloc( sizeof(int)*nbClass );
+            fromClass = (int32_t *)malloc( sizeof(int)*nbClass );
             for (i = 0; i < nbClass ; i++) {
                Def_Get(lutDef[0],0,i+1,val);
                fromClass[i] = val;
             }
             if (lutSize == 2) { // only FROM and TO
-               toClass = (int *)malloc( sizeof(int)*nbClass );
+               toClass = (int32_t *)malloc( sizeof(int)*nbClass );
                for (i = 0; i < nbClass ; i++) {
                   Def_Get(lutDef[1],0,i+1,val);
                   // make sure to value is within range
@@ -2028,7 +2028,7 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
                }
             } else {
                double val;
-               rpnClass = (int *)malloc( sizeof(int)*lutSize );
+               rpnClass = (int32_t *)malloc( sizeof(int)*lutSize );
                for (i = 1; i < lutSize ; i++) { // skip 1st column : the class id 
                   Def_Get(lutDef[i],0,0,val);
                   rpnClass[i] = val;
@@ -2153,7 +2153,7 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
                                                             t++;
                                                          }
                                                       } else if (lutDef) {
-                                                         int hasvalue=0;
+                                                         int32_t hasvalue=0;
                                                          t=0;
                                                          while(t<nbClass) {
                                                             if (vx==fromClass[t]) {
@@ -2269,10 +2269,10 @@ int GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
  *
  *    @return        FALSE on error, TRUE otherwise
 */
-int GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int Final) {
+int32_t GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int32_t Final) {
 
    void *pf0,*pt0,*pf1,*pt1;
-   int   k,code=FALSE;
+   int32_t   k,code=FALSE;
 
    if (!ToRef || !ToDef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid destination\n",__func__);
@@ -2343,7 +2343,7 @@ int GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,T
       case IR_NOP: 
       case IR_ACCUM:
       case IR_BUFFER:
-         //ToDo: add double *Table,TDef **lutDef, int lutSize, TDef *TmpDef
+         //ToDo: add double *Table,TDef **lutDef, int32_t lutSize, TDef *TmpDef
          code=GeoRef_InterpAverage(ToRef,ToDef,FromRef,FromDef,Opt,NULL,NULL,0,NULL,Final);
      break;
 
@@ -2418,10 +2418,10 @@ void GeoScan_Clear(TGeoScan *Scan) {
  *
  *    @return              Size of results
 */
-int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int X0,int Y0,int X1,int Y1,int Dim) {
+int32_t _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_t Dim) {
 
-   register int idx,x,y,n=0;
-   int          d=0,sz,dd;
+   register int32_t idx,x,y,n=0;
+   int32_t          d=0,sz,dd;
    double       x0,y0,v;
    
    if (!Scan || !ToRef || !FromRef) {
@@ -2555,12 +2555,12 @@ int _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef
    return(d);
 }
 
-int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int X0,int Y0,int X1,int Y1,int Dim) {
+int32_t GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_t Dim) {
 
-   register int idx,x,y,n=0;
-   int          d=0,sz,dd;
+   register int32_t idx,x,y,n=0;
+   int32_t          d=0,sz,dd;
    double       x0,y0,v;
-   int          ix, iy;
+   int32_t          ix, iy;
    
    if (!Scan || !ToRef || !FromRef) {
       return(0);

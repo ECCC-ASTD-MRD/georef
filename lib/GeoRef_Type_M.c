@@ -14,11 +14,11 @@
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
  
    TQTree *node;
    Vect3d  b;
-   int     n,d,idx;
+   int32_t     n,d,idx;
 
    #pragma omp parallel for default(none) private(d,node,b,n,d,idx) shared(Nb,Ref,X,Y,Lat,Lon)
    for(d=0;d<Nb;d++) {
@@ -72,9 +72,9 @@ int GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_XY2LL_M(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
+int32_t GeoRef_XY2LL_M(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb) {
 
-   int i;
+   int32_t i;
 
    #pragma omp parallel for default(none) private(i) shared(Nb,Ref,X,Y,Lat,Lon)
    for (i=0; i < Nb; i++) {

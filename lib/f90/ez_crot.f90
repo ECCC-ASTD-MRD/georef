@@ -27,16 +27,16 @@
 !> @param[out] ri Rotation matrix from rotated to true coordinate
 !>    system
 !> @param[in] lon1 Longitude on the unrotated coordinate system
-!>    corresponding to the point (lat,lon)=(0,180) of the rotated
+!>    corresponding to the point32_t (lat,lon)=(0,180) of the rotated
 !>    coordinate system
 !> @param[in] lat1 latitude on the unrotated coordinate system
-!>    corresponding to the point (lat,lon)=(0,180) of the rotated
+!>    corresponding to the point32_t (lat,lon)=(0,180) of the rotated
 !>    coordinate system
 !> @param[in] lon2 longitude on the unrotated coordinate system
-!>    corresponding to a point (lat,lon) located on the equator of the
+!>    corresponding to a point32_t (lat,lon) located on the equator of the
 !>    rotated coordinate system
 !> @param[in] lat2 latitude on the unrotated coordinate system
-!>    corresponding to a point (lat,lon) located on the equator of the
+!>    corresponding to a point32_t (lat,lon) located on the equator of the
 !>    rotated coordinate system
 !>
 !> @date 1990

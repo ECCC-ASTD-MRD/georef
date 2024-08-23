@@ -13,9 +13,9 @@
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
+int32_t GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb) {
 
-   int     i,s,sx,sy,indx;
+   int32_t     i,s,sx,sy,indx;
    double *tmpx,*tmpy,dx,dy;
 
    switch (Ref->RPNHeadExt.grref[0]) {
@@ -75,10 +75,10 @@ int GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
    double   tmpwgts[GOPT_MAXWEIGHTNUM],total_wgt;
-   int      locmax,i,iz,idx,idxz,tmp_idxs[GOPT_MAXWEIGHTNUM][2],previous_val_polar_correction;
+   int32_t      locmax,i,iz,idx,idxz,tmp_idxs[GOPT_MAXWEIGHTNUM][2],previous_val_polar_correction;
    TPoint2D bbox[2];
    TGeoSet *set=Ref->LastSet;
 
@@ -87,8 +87,8 @@ int GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
 //TODO: finish this func
    set->n_wts = FMIN(Ref->Options.WeightNum,GOPT_MAXWEIGHTNUM);
    set->wts =  (double *) malloc(Nb*set->n_wts*sizeof(float));
-   set->idx =  (int *) calloc(Nb,set->n_wts*sizeof(int));
-   set->mask = (int *) malloc(Nb*sizeof(int));
+   set->idx =  (int32_t *) calloc(Nb,set->n_wts*sizeof(int));
+   set->mask = (int32_t *) malloc(Nb*sizeof(int));
    GeoRef_CalcLL(Ref);
 
    // Find bbox

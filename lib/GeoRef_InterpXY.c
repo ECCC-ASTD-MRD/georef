@@ -1,9 +1,9 @@
 #include "GeoRef.h"
 
-int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *X,double *Y,int npts) {
+int32_t GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *X,double *Y,int32_t npts) {
 
    TGeoSet *gset;
-   int ier;
+   int32_t ier;
    float *lzin, *lxzin;
 
    lzin  = NULL;
@@ -54,10 +54,10 @@ int GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout
    return(0);
 }
 
-int GeoRef_XYVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *X,double *Y,int n) {
+int32_t GeoRef_XYVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *X,double *Y,int32_t n) {
 
    TGeoRef *yin_gd, *yan_gd;
-   int j, icode, ni, nj;
+   int32_t j, icode, ni, nj;
    float *zoutyin, *zoutyan;
    double *tmpy;
 
@@ -97,10 +97,11 @@ int GeoRef_XYVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *X,
    }
 }
 
-int GeoRef_XYUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *X,double *Y,int n) {
+int32_t GeoRef_XYUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *X,double *Y,int32_t n) {
 
    TGeoRef *yin_gd, *yan_gd;
-   int j, icode, ni, nj;
+   TGeoOptions opt=GeoRef_Options;
+   int32_t j, icode, ni, nj;
    float *uuyin, *vvyin, *uuyan, *vvyan;
    double *tmpy;
 
@@ -141,23 +142,20 @@ int GeoRef_XYUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float
       free(uuyin);
       return(icode);
    } else {
-      //TODO: we're changing object value without user consent
-      Opt->VectorMode = TRUE;
-      Opt->Symmetric = TRUE;
-      GeoRef_XYInterp(NULL,Ref,Opt,uuout,uuin,X,Y,n);
-      Opt->Symmetric = FALSE;
-      GeoRef_XYInterp(NULL,Ref,Opt,vvout,vvin,X,Y,n);
-      Opt->Symmetric = TRUE;
-      Opt->VectorMode = FALSE;
+      opt.VectorMode = TRUE;
+      opt.Symmetric = TRUE;
+      GeoRef_XYInterp(NULL,Ref,&opt,uuout,uuin,X,Y,n);
+      opt.Symmetric = FALSE;
+      GeoRef_XYInterp(NULL,Ref,&opt,vvout,vvin,X,Y,n);
    }
 
    return(0);
 }
 
-int GeoRef_XYWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *X,double *Y,int n) {
+int32_t GeoRef_XYWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *X,double *Y,int32_t n) {
 
    TGeoRef *yin_gd, *yan_gd;
-   int ier, j, icode, lni, lnj;
+   int32_t ier, j, icode, lni, lnj;
    double *tmplat, *tmplon, *tmpy;
    float *uuyin, *vvyin, *uuyan, *vvyan;
    float *tmpuu, *tmpvv;

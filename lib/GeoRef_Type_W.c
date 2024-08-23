@@ -27,11 +27,11 @@
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-// int GeoRef_WKTValue(TGeoRef *Ref,TDef *Def,TRef_InterpR Interp,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
+// int32_t GeoRef_WKTValue(TGeoRef *Ref,TDef *Def,TRef_InterpR Interp,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY){
 
 //    double       x,y,d,ddir=0.0;
-//    int          valid=0,mem,ix,iy;
-//    unsigned int idx;
+//    int32_t          valid=0,mem,ix,iy;
+//    uint32_t idx;
 
 //   *Length=Def->NoData;
 //    d=Ref->Type[[0]=='W'?1.0:0.5;
@@ -206,7 +206,7 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
 
  *    @return        GeoRef object (NULL=Error)
 */
-TGeoRef *GeoRef_CreateW(int NI,int NJ,char *grtyp,int IG1,int IG2,int IG3,int IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
+TGeoRef *GeoRef_CreateW(int32_t NI,int32_t NJ,char *grtyp,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
 
    TGeoRef *ref;
 
@@ -241,7 +241,7 @@ TGeoRef *GeoRef_CreateW(int NI,int NJ,char *grtyp,int IG1,int IG2,int IG3,int IG
 
  *    @return             Error code (TRUE=ok)
 */
-static inline int GeoRef_WKTRotate(TRotationTransform *T,double *Lat,double *Lon) {
+static inline int32_t GeoRef_WKTRotate(TRotationTransform *T,double *Lat,double *Lon) {
 
    double lat,lon,x,y,z,xr,yr,zr;
    
@@ -275,7 +275,7 @@ static inline int GeoRef_WKTRotate(TRotationTransform *T,double *Lat,double *Lon
 
  *    @return             Error code (TRUE=ok)
 */
-static inline int GeoRef_WKTUnRotate(TRotationTransform *T,double *Lat,double *Lon) {
+static inline int32_t GeoRef_WKTUnRotate(TRotationTransform *T,double *Lat,double *Lon) {
 
    double lat,lon,x,y,z,xr,yr,zr;
    
@@ -311,15 +311,15 @@ static inline int GeoRef_WKTUnRotate(TRotationTransform *T,double *Lat,double *L
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
+int32_t GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb) {
 
 #ifdef HAVE_GDAL
    double x,y,z=0.0,d;
-   int    n,ok;
+   int32_t    n,ok;
 
    for(n=0;n<Nb;n++) {
 
-      // Transform the point into georeferenced coordinates 
+      // Transform the point32_t into georeferenced coordinates 
       x=X[n];
       y=Y[n];
       if (Ref->Options.Transform) {
@@ -369,11 +369,11 @@ int GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_LL2XY_W(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LL2XY_W(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
 #ifdef HAVE_GDAL
    double x,y,z=0.0;
-   int    n,ok;
+   int32_t    n,ok;
 
    for(n=0;n<Nb;n++) {
       if (Ref->RotTransform) 

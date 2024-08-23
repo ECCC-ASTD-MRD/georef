@@ -13,7 +13,7 @@
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_LL2XY_E(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LL2XY_E(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
  
    float  dellat,dellon,xlat0,xlon0,xlat1,xlon1,xlat2,xlon2;   
 
@@ -41,9 +41,9 @@ int GeoRef_LL2XY_E(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
  *    @param[in]  Nb      Number of coordinates
 
  *    @return             Error code (0=ok)
-*/int GeoRef_XY2LL_E(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
+*/int32_t GeoRef_XY2LL_E(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb) {
 
-   int    i;
+   int32_t    i;
    double dlat,dlon,swlat,swlon;
 
    for (i=0; i < Nb; i++) {

@@ -25,9 +25,9 @@
 !arguments                                                              
 !   out   - dlat - latitude in degrees (-90 to +90, positive n).        
 !         - dlon - longitude in degrees (-180 to +180, positive e).     
-!   in    - x    - x-co-ordinate of the point as measured with pole     
+!   in    - x    - x-co-ordinate of the point32_t as measured with pole     
 !                  as origin                                            
-!         - y    - y-co-ordinate of the point as measured with pole     
+!         - y    - y-co-ordinate of the point32_t as measured with pole     
 !                  as origin                                            
 !         - d60  - grid length (in metres) of the polar stereographic   
 !                  grid at 60 degrees                                   

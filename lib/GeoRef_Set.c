@@ -8,7 +8,7 @@
 */
 void GeoRef_SetZoneFree(TGeoSet *GSet) {
 
-  int i;
+  int32_t i;
 
   for (i=0; i < SET_NZONES; i++) {
      if (GSet->zones[i].npts > 0) {
@@ -32,11 +32,11 @@ void GeoRef_SetZoneFree(TGeoSet *GSet) {
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetZoneDefinePole(TGeoSet *GSet,int Zone,int NbPts) {
+int32_t GeoRef_SetZoneDefinePole(TGeoSet *GSet,int32_t Zone,int32_t NbPts) {
 
    TGeoZone *zone=&GSet->zones[Zone];
    double    latpole,lonpole,xpole,ypole;
-   int      *tmpidx,i;
+   int32_t      *tmpidx,i;
   
    // On commence par trouver les points au pole
    tmpidx = (int*)malloc(NbPts*sizeof(int));
@@ -61,7 +61,7 @@ int GeoRef_SetZoneDefinePole(TGeoSet *GSet,int Zone,int NbPts) {
    if (zone->npts>0) {
       zone->x = (double*)malloc(zone->npts*sizeof(double));
       zone->y = (double*)malloc(zone->npts*sizeof(double));
-      zone->idx = (int *)malloc(zone->npts*sizeof(int));
+      zone->idx = (int32_t *)malloc(zone->npts*sizeof(int));
       Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Number of points at pole: %d\n",__func__,zone->npts);
       
       for (i=0; i<zone->npts; i++) {
@@ -85,10 +85,10 @@ int GeoRef_SetZoneDefinePole(TGeoSet *GSet,int Zone,int NbPts) {
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetZoneDefineThem(TGeoSet *GSet,int Zone,int NbPts) {
+int32_t GeoRef_SetZoneDefineThem(TGeoSet *GSet,int32_t Zone,int32_t NbPts) {
 
    TGeoZone *zone=&GSet->zones[Zone];
-   int      *tmpidx,i,jlim;
+   int32_t      *tmpidx,i,jlim;
   
    tmpidx = (int*) malloc(NbPts*sizeof(int));
   
@@ -104,7 +104,7 @@ int GeoRef_SetZoneDefineThem(TGeoSet *GSet,int Zone,int NbPts) {
    if (zone->npts>0) {
       zone->x = (double*)malloc(zone->npts*sizeof(double));
       zone->y = (double*)malloc(zone->npts*sizeof(double));
-      zone->idx = (int *) malloc(zone->npts*sizeof(int));
+      zone->idx = (int32_t *) malloc(zone->npts*sizeof(int));
       Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Number of points between pole and limit: %d\n",__func__,zone->npts);
     
       for (i=0; i<zone->npts; i++) {
@@ -128,10 +128,10 @@ int GeoRef_SetZoneDefineThem(TGeoSet *GSet,int Zone,int NbPts) {
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetZoneDefineOut(TGeoSet *GSet,int Zone,int NbPts) {
+int32_t GeoRef_SetZoneDefineOut(TGeoSet *GSet,int32_t Zone,int32_t NbPts) {
 
    TGeoZone *zone=&GSet->zones[Zone];
-   int      *tmpidx,i,offsetleft,offsetright,ix,iy;
+   int32_t      *tmpidx,i,offsetleft,offsetright,ix,iy;
     
    tmpidx=(int*)malloc(NbPts*sizeof(int));
   
@@ -161,7 +161,7 @@ int GeoRef_SetZoneDefineOut(TGeoSet *GSet,int Zone,int NbPts) {
    if (zone->npts>0) {
       zone->x = (double*)malloc(zone->npts*sizeof(double));
       zone->y = (double*)malloc(zone->npts*sizeof(double));
-      zone->idx = (int *) malloc(zone->npts*sizeof(int));
+      zone->idx = (int32_t *) malloc(zone->npts*sizeof(int));
       Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Number of outside pointst: \n",__func__,offsetleft,zone->npts);
     
       for (i=0; i < zone->npts; i++) {
@@ -183,10 +183,10 @@ int GeoRef_SetZoneDefineOut(TGeoSet *GSet,int Zone,int NbPts) {
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetZoneDefine(TGeoSet *GSet) {
+int32_t GeoRef_SetZoneDefine(TGeoSet *GSet) {
 
-   int       i,npts;
-   int       extrap;
+   int32_t       i,npts;
+   int32_t       extrap;
   
    if (!GSet || (GSet->flags & SET_ZONES)) {
       return(0);
@@ -250,9 +250,9 @@ int GeoRef_SetZoneDefine(TGeoSet *GSet) {
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetCalcXY(TGeoSet *GSet) {
+int32_t GeoRef_SetCalcXY(TGeoSet *GSet) {
 
-   int size=0,mult=1;
+   int32_t size=0,mult=1;
    char *c;
 
    if (GSet) {
@@ -293,11 +293,11 @@ int GeoRef_SetCalcXY(TGeoSet *GSet) {
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetCalcYYXY(TGeoSet *GSet) {
+int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
 
    TGeoRef *yin_gdin,*yan_gdin,*yin_gdout,*yan_gdout;
-   int icode,k,nij,ni,nj;
-   int yancount_yin,yincount_yin, yancount_yan,yincount_yan;
+   int32_t icode,k,nij,ni,nj;
+   int32_t yancount_yin,yincount_yin, yancount_yan,yincount_yan;
    double *yin2yin_lat,*yin2yin_lon,*yan2yin_lat,*yan2yin_lon;
    double *yin2yan_lat,*yin2yan_lon,*yan2yan_lat,*yan2yan_lon;
     
@@ -416,7 +416,7 @@ int GeoRef_SetCalcYYXY(TGeoSet *GSet) {
 */
 void GeoRef_SetFree(TGeoSet* GSet) {
 
-   int i;
+   int32_t i;
 
 //TODO: Check to free
    if (GSet->RefFrom) {
@@ -437,7 +437,7 @@ void GeoRef_SetFree(TGeoSet* GSet) {
    GeoRef_SetZoneFree(GSet);
 
  //TODO: to free:
- //   int *mask_in, *mask_out;
+ //   int32_t *mask_in, *mask_out;
  // float *yin_maskout,*yan_maskout;
  // float *yinlat,*yinlon,*yanlat,*yanlon;
  // float *yin2yin_lat,*yin2yin_lon,*yan2yin_lat,*yan2yin_lon;
@@ -456,7 +456,7 @@ void GeoRef_SetFree(TGeoSet* GSet) {
  *
  *    @return             Error code (0=ok)
 */
-TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int InterpType,fst_file *File) {
+TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_file *File) {
 
    TGeoSet  *gset=NULL;
    fst_record record,crit=default_fst_record;
@@ -480,7 +480,6 @@ TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int InterpType,fst_file 
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset index field (fst24_read failed)\n",__func__);
          return(NULL);
       }
-      //TODO: Level should have been saved in the record
       gset->IndexDegree=(TRef_InterpR)InterpType;
       gset->Index=(float*)record.data;
       record.data=NULL;
@@ -512,9 +511,9 @@ TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int InterpType,fst_file 
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_SetWrite(TGeoSet *GSet,fst_file *File){
+int32_t GeoRef_SetWrite(TGeoSet *GSet,fst_file *File){
 
-   int size=0;
+   int32_t size=0;
    fst_record record=default_fst_record;
 
    if (GeoRef_SetHasIndex(GSet)) {
@@ -581,7 +580,7 @@ int GeoRef_SetWrite(TGeoSet *GSet,fst_file *File){
 TGeoSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGeoOptions *Opt) {
 
    TGeoSet* gset=NULL;
-   int i;
+   int32_t i;
 
    if (!RefTo || !RefFrom) {
       return(NULL);

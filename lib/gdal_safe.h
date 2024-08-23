@@ -1,7 +1,7 @@
 
 #ifdef __GNUC__
 
-//----- Push conflicting macros found in <gdal/cpl_config.h (included at some point by gdal.h)
+//----- Push conflicting macros found in <gdal/cpl_config.h (included at some point32_t by gdal.h)
 #pragma push_macro("PACKAGE_NAME")
 #pragma push_macro("PACKAGE_TARNAME")
 #pragma push_macro("PACKAGE_VERSION")

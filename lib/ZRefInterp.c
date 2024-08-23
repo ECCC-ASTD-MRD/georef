@@ -61,7 +61,7 @@ int32_t f77name (visint)(float *stateOut,float *stateIn,float *derivOut,float *d
  *
  *----------------------------------------------------------------------------
 */
-int ZRefInterp_Free(TZRefInterp *Interp) {
+int32_t ZRefInterp_Free(TZRefInterp *Interp) {
 
    if (Interp) {
       if (Interp->Indexes) free(Interp->Indexes); Interp->Indexes=NULL;
@@ -97,10 +97,10 @@ int ZRefInterp_Free(TZRefInterp *Interp) {
  *
  *----------------------------------------------------------------------------
 */
-TZRefInterp *ZRefInterp_Define(TZRef *ZRefDest,TZRef *ZRefSrc,const int NI,const int NJ) {
+TZRefInterp *ZRefInterp_Define(TZRef *ZRefDest,TZRef *ZRefSrc,const int32_t NI,const int32_t NJ) {
 
    TZRefInterp *interp;
-   int          magl=0;
+   int32_t          magl=0;
 #if defined(_AIX)
    fpflag_t flag;
 #endif
@@ -270,7 +270,7 @@ TZRefInterp *ZRefInterp_Define(TZRef *ZRefDest,TZRef *ZRefSrc,const int NI,const
  * Remarques :
  *----------------------------------------------------------------------------
 */
-int ZRefInterp_SetOption (const char *Option, const char *Value) {
+int32_t ZRefInterp_SetOption (const char *Option, const char *Value) {
 
    if (strncmp (Option, "INTERP_DEGREE", 13) == 0) {
       if (strncmp (Value, "NEAREST", 7) == 0) {
@@ -316,7 +316,7 @@ int ZRefInterp_SetOption (const char *Option, const char *Value) {
  * Remarques :
  *----------------------------------------------------------------------------
 */
-int ZRefInterp_SetOptioni (const unsigned char Option) {
+int32_t ZRefInterp_SetOptioni (const unsigned char Option) {
    return(ZRefInterp_Options|=Option);
 }
 
@@ -345,10 +345,10 @@ int ZRefInterp_SetOptioni (const unsigned char Option) {
  * Remarques :
  *----------------------------------------------------------------------------
 */
-int ZRefInterp(TZRefInterp *Interp,float *stateOut,float *stateIn,float *derivOut,float *derivIn,float extrapGuideDown,float extrapGuideUp) {
+int32_t ZRefInterp(TZRefInterp *Interp,float *stateOut,float *stateIn,float *derivOut,float *derivIn,float extrapGuideDown,float extrapGuideUp) {
 
-   int surf = Interp->NIJ;
-   int extrapEnable = 0;
+   int32_t surf = Interp->NIJ;
+   int32_t extrapEnable = 0;
 
    if (Interp->Same) {
       memcpy(stateOut,stateIn,Interp->NIJ*Interp->ZRefDest->LevelNb*sizeof(float));

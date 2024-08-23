@@ -14,9 +14,9 @@
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_XY2LL_O(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
+int32_t GeoRef_XY2LL_O(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb) {
 
-   int i;
+   int32_t i;
 
    #pragma omp parallel for default(none) private(i) shared(Nb,Ref,X,Y,Lat,Lon)
    for (i=0; i < Nb; i++) {
@@ -38,10 +38,10 @@ int GeoRef_XY2LL_O(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
-   int     out=0;
-   int     x,y,n,nd,d,dx,dy,idx,idxs[8];
+   int32_t     out=0;
+   int32_t     x,y,n,nd,d,dx,dy,idx,idxs[8];
    double  dists[8],xx,yy;
    Vect2d  pts[4],pt;
 
@@ -102,7 +102,7 @@ int GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
                out++;
             }
          } else {
-            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Point not found: %f %f %i\n",__func__,Lat[d],Lon[d],idx);
+            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Point32_t not found: %f %f %i\n",__func__,Lat[d],Lon[d],idx);
             out++;
          }
       } 

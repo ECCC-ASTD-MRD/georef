@@ -158,8 +158,8 @@ typedef struct v_shape              /* Internal vertex list datatype     */
 
 typedef struct p_shape              /* Internal contour / tristrip type  */
 {
-  int                 active;       /* Active flag / vertex count        */
-  int                 hole;         /* Hole / external contour flag      */
+  int32_t                 active;       /* Active flag / vertex count        */
+  int32_t                 hole;         /* Hole / external contour flag      */
   vertex_node        *v[2];         /* Left and right vertex list ptrs   */
   struct p_shape     *next;         /* Pointer to next polygon contour   */
   struct p_shape     *proxy;        /* Pointer to actual structure used  */
@@ -173,9 +173,9 @@ typedef struct edge_shape
   double              xb;           /* Scanbeam bottom x coordinate      */
   double              xt;           /* Scanbeam top x coordinate         */
   double              dx;           /* Change in x for a unit y increase */
-  int                 type;         /* Clip / subject edge flag          */
-  int                 bundle[2][2]; /* Bundle edge flags                 */
-  int                 bside[2];     /* Bundle left / right indicators    */
+  int32_t                 type;         /* Clip / subject edge flag          */
+  int32_t                 bundle[2][2]; /* Bundle edge flags                 */
+  int32_t                 bside[2];     /* Bundle left / right indicators    */
   bundle_state        bstate[2];    /* Edge bundle state                 */
   polygon_node       *outp[2];      /* Output polygon / tristrip pointer */
   struct edge_shape  *prev;         /* Previous edge in the AET          */
@@ -202,7 +202,7 @@ typedef struct sbt_t_shape          /* Scanbeam tree                     */
 typedef struct it_shape             /* Intersection table                */
 {
   edge_node          *ie[2];        /* Intersecting edge (bundle) pair   */
-  gpc_vertex          point;        /* Point of intersection             */
+  gpc_vertex          point;        /* Point32_t of intersection             */
   struct it_shape    *next;         /* The next intersection table node  */
 } it_node;
 
@@ -354,7 +354,7 @@ static edge_node **bound_list(lmt_node **lmt, double y)
 }
 
 
-static void add_to_sbtree(int *entries, sb_tree **sbtree, double y)
+static void add_to_sbtree(int32_t *entries, sb_tree **sbtree, double y)
 {
   if (!*sbtree)
   {
@@ -384,7 +384,7 @@ static void add_to_sbtree(int *entries, sb_tree **sbtree, double y)
 }
 
 
-static void build_sbt(int *entries, double *sbt, sb_tree *sbtree)
+static void build_sbt(int32_t *entries, double *sbt, sb_tree *sbtree)
 {
   if (sbtree->less)
     build_sbt(entries, sbt, sbtree->less);
@@ -406,9 +406,9 @@ static void free_sbtree(sb_tree **sbtree)
 }
 
 
-static int count_optimal_vertices(gpc_vertex_list c)
+static int32_t count_optimal_vertices(gpc_vertex_list c)
 {
-  int result= 0, i;
+  int32_t result= 0, i;
 
   /* Ignore non-contributing contours */
   if (c.num_vertices > 0)
@@ -423,11 +423,11 @@ static int count_optimal_vertices(gpc_vertex_list c)
 
 
 static edge_node *build_lmt(lmt_node **lmt, sb_tree **sbtree,
-                            int *sbt_entries, gpc_polygon *p, int type,
+                            int32_t *sbt_entries, gpc_polygon *p, int32_t type,
                             gpc_op op)
 {
-  int          c, i, min, max, num_edges, v, num_vertices;
-  int          total_vertices= 0, e_index=0;
+  int32_t          c, i, min, max, num_edges, v, num_vertices;
+  int32_t          total_vertices= 0, e_index=0;
   edge_node   *e, *edge_table;
 
   for (c= 0; c < p->num_contours; c++)
@@ -690,7 +690,7 @@ static void add_st_edge(st_node **st, it_node **it, edge_node *edge,
       x= (*st)->xb + r * ((*st)->xt - (*st)->xb);
       y= r * dy;
 
-      /* Insert the edge pointers and the intersection point in the IT */
+      /* Insert the edge pointers and the intersection point32_t in the IT */
       add_intersection(it, (*st)->edge, edge, x, y);
 
       /* Head further into the ST */
@@ -726,9 +726,9 @@ static void build_intersection_table(it_node **it, edge_node *aet, double dy)
   }
 }
 
-static int count_contours(polygon_node *polygon)
+static int32_t count_contours(polygon_node *polygon)
 {
-  int          nc, nv;
+  int32_t          nc, nv;
   vertex_node *v, *nextv;
 
   for (nc= 0; polygon; polygon= polygon->next)
@@ -772,7 +772,7 @@ static void add_left(polygon_node *p, double x, double y)
   /* Add vertex nv to the left end of the polygon's vertex list */
   nv->next= p->proxy->v[LEFT];
 
-  /* Update proxy->[LEFT] to point to nv */
+  /* Update proxy->[LEFT] to point32_t to nv */
   p->proxy->v[LEFT]= nv;
 }
 
@@ -817,7 +817,7 @@ static void add_right(polygon_node *p, double x, double y)
   /* Add vertex nv to the right end of the polygon's vertex list */
   p->proxy->v[RIGHT]->next= nv;
 
-  /* Update proxy->v[RIGHT] to point to nv */
+  /* Update proxy->v[RIGHT] to point32_t to nv */
   p->proxy->v[RIGHT]= nv;
 }
 
@@ -864,12 +864,12 @@ static void add_local_min(polygon_node **p, edge_node *edge,
   nv->y= y;
   nv->next= NULL;
 
-  /* Initialise proxy to point to p itself */
+  /* Initialise proxy to point32_t to p itself */
   (*p)->proxy= (*p);
   (*p)->active= TRUE;
   (*p)->next= existing_min;
 
-  /* Make v[LEFT] and v[RIGHT] point to new vertex nv */
+  /* Make v[LEFT] and v[RIGHT] point32_t to new vertex nv */
   (*p)->v[LEFT]= nv;
   (*p)->v[RIGHT]= nv;
 
@@ -878,9 +878,9 @@ static void add_local_min(polygon_node **p, edge_node *edge,
 }
 
 
-static int count_tristrips(polygon_node *tn)
+static int32_t count_tristrips(polygon_node *tn)
 {
-  int total;
+  int32_t total;
 
   for (total= 0; tn; tn= tn->next)
     if (tn->active > 2)
@@ -926,7 +926,7 @@ static void new_tristrip(polygon_node **tn, edge_node *edge,
 static bbox *create_contour_bboxes(gpc_polygon *p)
 {
   bbox *box;
-  int   c, v;
+  int32_t   c, v;
 
   MALLOC(box, p->num_contours * sizeof(bbox), "Bounding box creation", bbox);
 
@@ -959,7 +959,7 @@ static bbox *create_contour_bboxes(gpc_polygon *p)
 static void minimax_test(gpc_polygon *subj, gpc_polygon *clip, gpc_op op)
 {
   bbox *s_bbox, *c_bbox;
-  int   s, c, *o_table, overlap;
+  int32_t   s, c, *o_table, overlap;
 
   s_bbox= create_contour_bboxes(subj);
   c_bbox= create_contour_bboxes(clip);
@@ -1017,7 +1017,7 @@ static void minimax_test(gpc_polygon *subj, gpc_polygon *clip, gpc_op op)
 
 void gpc_free_polygon(gpc_polygon *p)
 {
-  int c;
+  int32_t c;
 
   for (c= 0; c < p->num_contours; c++)
     FREE(p->contour[c].vertex);
@@ -1027,9 +1027,9 @@ void gpc_free_polygon(gpc_polygon *p)
 }
 
 
-void gpc_read_polygon(FILE *fp, int read_hole_flags, gpc_polygon *p)
+void gpc_read_polygon(FILE *fp, int32_t read_hole_flags, gpc_polygon *p)
 {
-  int c, v;
+  int32_t c, v;
 
   fscanf(fp, "%d", &(p->num_contours));
   MALLOC(p->hole, p->num_contours * sizeof(int),
@@ -1054,9 +1054,9 @@ void gpc_read_polygon(FILE *fp, int read_hole_flags, gpc_polygon *p)
 }
 
 
-void gpc_write_polygon(FILE *fp, int write_hole_flags, gpc_polygon *p)
+void gpc_write_polygon(FILE *fp, int32_t write_hole_flags, gpc_polygon *p)
 {
-  int c, v;
+  int32_t c, v;
 
   fprintf(fp, "%d\n", p->num_contours);
   for (c= 0; c < p->num_contours; c++)
@@ -1074,9 +1074,9 @@ void gpc_write_polygon(FILE *fp, int write_hole_flags, gpc_polygon *p)
 }
 
 
-void gpc_add_contour(gpc_polygon *p, gpc_vertex_list *new_contour, int hole)
+void gpc_add_contour(gpc_polygon *p, gpc_vertex_list *new_contour, int32_t hole)
 {
-  int             *extended_hole, c, v;
+  int32_t             *extended_hole, c, v;
   gpc_vertex_list *extended_contour;
 
   /* Create an extended hole array */
@@ -1125,9 +1125,9 @@ void gpc_polygon_clip(gpc_op op, gpc_polygon *subj, gpc_polygon *clip,
   polygon_node  *out_poly= NULL, *p, *q, *poly, *npoly, *cf= NULL;
   vertex_node   *vtx, *nv;
   h_state        horiz[2];
-  int            in[2], exists[2], parity[2]= {LEFT, LEFT};
-  int            c, v, contributing, search, scanbeam= 0, sbt_entries= 0;
-  int            vclass, bl, br, tl, tr;
+  int32_t            in[2], exists[2], parity[2]= {LEFT, LEFT};
+  int32_t            c, v, contributing, search, scanbeam= 0, sbt_entries= 0;
+  int32_t            vclass, bl, br, tl, tr;
   double        *sbt= NULL, xb, px, yb, yt, dy, ix, iy;
 
   /* Test for trivial NULL result cases */
@@ -1754,7 +1754,7 @@ void gpc_polygon_clip(gpc_op op, gpc_polygon *subj, gpc_polygon *clip,
 
 void gpc_free_tristrip(gpc_tristrip *t)
 {
-  int s;
+  int32_t s;
 
   for (s= 0; s < t->num_strips; s++)
     FREE(t->strip[s].vertex);
@@ -1786,9 +1786,9 @@ void gpc_tristrip_clip(gpc_op op, gpc_polygon *subj, gpc_polygon *clip,
   vertex_node   *lt, *ltn, *rt, *rtn;
   h_state        horiz[2];
   vertex_type    cft;
-  int            in[2], exists[2], parity[2]= {LEFT, LEFT};
-  int            s, v, contributing, search, scanbeam= 0, sbt_entries= 0;
-  int            vclass, bl, br, tl, tr;
+  int32_t            in[2], exists[2], parity[2]= {LEFT, LEFT};
+  int32_t            s, v, contributing, search, scanbeam= 0, sbt_entries= 0;
+  int32_t            vclass, bl, br, tl, tr;
   double        *sbt= NULL, xb, px, nx, yb, yt, dy, ix, iy;
 
   /* Test for trivial NULL result cases */

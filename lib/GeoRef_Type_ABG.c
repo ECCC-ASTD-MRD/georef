@@ -13,7 +13,7 @@
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_LL2XY_A(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LL2XY_A(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
    float  dellat,dellon,xlat0,xlon0;   
 
@@ -42,7 +42,7 @@ int GeoRef_LL2XY_A(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_LL2XY_B(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LL2XY_B(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
    float  dellat,dellon,xlat0,xlon0;   
 
@@ -71,10 +71,10 @@ int GeoRef_LL2XY_B(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_LL2XY_G(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LL2XY_G(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
    float  dellat,dellon,xlat0,xlon0;   
-   int    i,indy;
+   int32_t    i,indy;
 
    dellon = 360.0 / Ref->NX;
    xlon0 = 0.0;

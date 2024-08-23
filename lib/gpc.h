@@ -34,6 +34,7 @@ Copyright: (C) 1997-2004, Advanced Interfaces Group,
 #define __gpc_h
 
 #include <stdio.h>
+#include <stdint.h>
 
 /*
 ===========================================================================
@@ -71,20 +72,20 @@ typedef struct                      /* Polygon vertex structure          */
 typedef struct                      /* Vertex list structure             */
 {
   gpc_vertex         *vertex;       /* Vertex array pointer              */
-  int                 num_vertices; /* Number of vertices in list        */
+  int32_t                 num_vertices; /* Number of vertices in list        */
 } gpc_vertex_list;
 
 typedef struct                      /* Polygon set structure             */
 {
   gpc_vertex_list    *contour;      /* Contour array pointer             */
-  int                *hole;         /* Hole / external contour flags     */
-  int                 num_contours; /* Number of contours in polygon     */
+  int32_t                *hole;         /* Hole / external contour flags     */
+  int32_t                 num_contours; /* Number of contours in polygon     */
 } gpc_polygon;
 
 typedef struct                      /* Tristrip set structure            */
 {
   gpc_vertex_list    *strip;        /* Tristrip array pointer            */
-  int                 num_strips;   /* Number of tristrips               */
+  int32_t                 num_strips;   /* Number of tristrips               */
 } gpc_tristrip;
 
 
@@ -95,16 +96,16 @@ typedef struct                      /* Tristrip set structure            */
 */
 
 void gpc_read_polygon        (FILE            *infile_ptr,
-                              int              read_hole_flags,
+                              int32_t              read_hole_flags,
                               gpc_polygon     *polygon);
 
 void gpc_write_polygon       (FILE            *outfile_ptr,
-                              int              write_hole_flags,
+                              int32_t              write_hole_flags,
                               gpc_polygon     *polygon);
 
 void gpc_add_contour         (gpc_polygon     *polygon,
                               gpc_vertex_list *contour,
-                              int              hole);
+                              int32_t              hole);
 
 void gpc_polygon_clip        (gpc_op           set_operation,
                               gpc_polygon     *subject_polygon,

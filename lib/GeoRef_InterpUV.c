@@ -1,13 +1,13 @@
 #include <App.h>
 #include "GeoRef.h"
 
-void c_ezgfwfllw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
-void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
-void c_ezllwfgff8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4);
+void c_ezgfwfllw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int32_t *ni,int32_t *nj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4);
+void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int32_t *ni,int32_t *nj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4);
+void c_ezllwfgff8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int32_t *ni,int32_t *nj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4);
 
-int GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
+int32_t GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
    
-   int npts;
+   int32_t npts;
    float *uullout = NULL;
    float *vvllout = NULL;
    TGeoSet   *set;
@@ -52,9 +52,9 @@ int GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuou
    return(TRUE);
 }
 
-int GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
+int32_t GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
 
-   int npts;
+   int32_t npts;
    float *uullout = NULL;
    float *vvllout = NULL;
    TGeoSet   *set;
@@ -89,7 +89,7 @@ int GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuou
       uullout = (float *)malloc(2*npts*sizeof(float));
       vvllout = &uullout[npts];
 
-      // ezsint does not allocate lat,lon if RefFrom=RefTo
+      // ezsint32_t does not allocate lat,lon if RefFrom=RefTo
       GeoRef_CalcLL(RefTo);
       GeoRef_UV2WD(RefFrom,uullout,vvllout,uuout,vvout,RefTo->Lat,RefTo->Lon,npts);
 
@@ -101,14 +101,14 @@ int GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuou
    return(TRUE);
 }
 
-int GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
+int32_t GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
 
    TGeoSet *gset=NULL;
    TGeoRef *yin_gdin, *yan_gdin, *yin_gdout, *yan_gdout;
-   int i,j,k;
-   int yancount_yin,yincount_yin, yancount_yan,yincount_yan;
-   int yyin,yyout;
-   int ni, nj,idx;
+   int32_t i,j,k;
+   int32_t yancount_yin,yincount_yin, yancount_yan,yincount_yan;
+   int32_t yyin,yyout;
+   int32_t ni, nj,idx;
    float *yin2yin_uuout,*yan2yin_uuout, *yin2yin_vvout,*yan2yin_vvout;
    float *yin2yan_uuout,*yan2yan_uuout, *yin2yan_vvout,*yan2yan_vvout;
    float *yin2yin_spdout,*yan2yin_spdout, *yin2yin_wdout,*yan2yin_wdout;
@@ -324,14 +324,14 @@ int GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uu
    return(TRUE);
 }
 
-int GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
+int32_t GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
 
    TGeoSet *gset=NULL;
    TGeoRef *yin_gdin, *yan_gdin, *yin_gdout, *yan_gdout;
-   int icode,i,j,k;
-   int yancount_yin,yincount_yin, yancount_yan,yincount_yan;
-   int yyin,yyout;
-   int ni, nj,idx;
+   int32_t icode,i,j,k;
+   int32_t yancount_yin,yincount_yin, yancount_yan,yincount_yan;
+   int32_t yyin,yyout;
+   int32_t ni, nj,idx;
    float *yin2yin_uuout,*yan2yin_uuout, *yin2yin_vvout,*yan2yin_vvout;
    float *yin2yan_uuout,*yan2yan_uuout, *yin2yan_vvout,*yan2yan_vvout;
    float *yin2yin_spdout,*yan2yin_spdout, *yin2yin_wdout,*yan2yin_wdout;
@@ -527,9 +527,9 @@ int GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uu
    return(TRUE);
 }
 
-int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float *vvllin,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float *vvllin,double *Lat,double *Lon,int32_t Nb) {
 
-   int   ni,nj;
+   int32_t   ni,nj;
    double *lat_true,*lon_true;
   
    if (Ref->NbSub > 0 ) {
@@ -578,9 +578,9 @@ int GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float 
    return(0);
 }
 
-int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb) {
 
-   int    ni,nj;
+   int32_t    ni,nj;
    double *lat_rot,*lon_rot;
    
    if (Ref->NbSub > 0 ) {
@@ -631,9 +631,9 @@ int GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vv
    return(0);
 }
 
-int32_t GeoRefc_UV2UV(TGeoRef *Ref,float *uullout,float *vvllout,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_UV2UV(TGeoRef *Ref,float *uullout,float *vvllout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb) {
 
-   int    ni,nj;
+   int32_t    ni,nj;
    double *lat_rot,*lon_rot;
 
    if (Ref->NbSub>0) {
@@ -691,11 +691,11 @@ int32_t GeoRefc_UV2UV(TGeoRef *Ref,float *uullout,float *vvllout,float *uuin,flo
     latin, lonin sont les latlons vraies
     xlatingf, xloningf sont les latlons sur la grille tournee
   */
-void c_ezgfwfllw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4) {
+void c_ezgfwfllw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int32_t *ni,int32_t *nj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4) {
 
-   int zero = 0;
-   int npts = *ni * *nj;
-   int trois = 3;
+   int32_t zero = 0;
+   int32_t npts = *ni * *nj;
+   int32_t trois = 3;
    float r[9], ri[9], xlon1, xlat1, xlon2, xlat2;
    double *uvcart, *xyz;
    char grtypl[2];
@@ -721,11 +721,11 @@ void c_ezgfwfllw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *
     latin, lonin sont les latlons vraies
     xlatingf, xloningf sont les latlons sur la grille tournee
   */
-void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4) {
+void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int32_t *ni,int32_t *nj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4) {
 
-   int zero = 0;
-   int npts = *ni * *nj;
-   int trois = 3;
+   int32_t zero = 0;
+   int32_t npts = *ni * *nj;
+   int32_t trois = 3;
    float r[9], ri[9], xlon1, xlat1, xlon2, xlat2;
    double *uvcart, *xyz;
    char grtypl[2];
@@ -751,10 +751,10 @@ void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *
     latin, lonin sont les latlons vraies
     xlatingf, xloningf sont les latlons sur la grille tournee
   */
-void c_ezllwfgff8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int *ni,int *nj,char *grtyp,int *ig1,int *ig2,int *ig3,int *ig4) {
+void c_ezllwfgff8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int32_t *ni,int32_t *nj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4) {
  
-   int npts = *ni * *nj;
-   int trois = 3;
+   int32_t npts = *ni * *nj;
+   int32_t trois = 3;
    float r[9], ri[9], xlon1, xlat1, xlon2, xlat2;
    double *uvcart, *xyz;
 

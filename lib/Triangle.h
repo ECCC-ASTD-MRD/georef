@@ -20,12 +20,12 @@
  *   <W>         : Barycentric weight
  *   <X>         : X coordinate to interpolate
  *   <Y>         : Y coordinate to interpolate
- *   <X0>        : Triangle 1st point X
- *   <Y0>        : Triangle 1st point Y
- *   <X1>        : Triangle 2nd point X
- *   <Y1>        : Triangle 2nd point Y
- *   <X2>        : Triangle 3rd point X
- *   <Y2>        : Triangle 3rd point Y
+ *   <X0>        : Triangle 1st point32_t X
+ *   <Y0>        : Triangle 1st point32_t Y
+ *   <X1>        : Triangle 2nd point32_t X
+ *   <Y1>        : Triangle 2nd point32_t Y
+ *   <X2>        : Triangle 3rd point32_t X
+ *   <Y2>        : Triangle 3rd point32_t Y
  *
  * Retour       : Inside (1 if within triangle).
  *
@@ -33,7 +33,7 @@
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-static inline int Bary_Get(Vect3d B,double W,double X,double Y,double X0,double Y0,double X1,double Y1,double X2,double Y2) {
+static inline int32_t Bary_Get(Vect3d B,double W,double X,double Y,double X0,double Y0,double X1,double Y1,double X2,double Y2) {
 
    double x0,x1,x2,y0,y1,y2;
 
@@ -60,9 +60,9 @@ static inline int Bary_Get(Vect3d B,double W,double X,double Y,double X0,double 
  * Parametres    :
  *   <B>         : Barycentric coordinare
  *   <P>         : X coordinate to interpolate
- *   <P0>        : Triangle 1st point coordinates
- *   <P1>        : Triangle 2nd point coordinates
- *   <P2>        : Triangle 3rd point coordinates
+ *   <P0>        : Triangle 1st point32_t coordinates
+ *   <P1>        : Triangle 2nd point32_t coordinates
+ *   <P2>        : Triangle 3rd point32_t coordinates
  *
  * Retour       : Inside (1 if within triangle).
  *
@@ -70,7 +70,7 @@ static inline int Bary_Get(Vect3d B,double W,double X,double Y,double X0,double 
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-static inline int Bary_InterpPos(Vect3d B,Vect3d P,Vect3d P0,Vect3d P1,Vect3d P2) {
+static inline int32_t Bary_InterpPos(Vect3d B,Vect3d P,Vect3d P0,Vect3d P1,Vect3d P2) {
 
    P[0]=Bary_Interp(B,P0[0],P1[0],P2[0]);
    P[1]=Bary_Interp(B,P0[1],P1[1],P2[1]);

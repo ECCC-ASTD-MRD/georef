@@ -1,7 +1,6 @@
 #include <App.h>
 #include "GeoRef.h"
 
-//TODO: vgrid of ZRef ?
 /*----------------------------------------------------------------------------
  * @brief  Calculates MAGL height of a grid coordinate
  * @date   June 2014
@@ -34,7 +33,7 @@ double GeoRef_RDRHeight(TGeoRef *Ref,TZRef *ZRef,double Azimuth,double Bin,doubl
  * 
  *    @return        GeoRef object (NULL=Error)
 */
-TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int R,double ResR,double ResA) {
+TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int32_t R,double ResR,double ResA) {
 
    TGeoRef *ref;
 
@@ -67,11 +66,11 @@ TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int R,double ResR,do
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
+int32_t GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb) {
 
    TCoord loc0;
    double x,y,d;
-   int    n;
+   int32_t    n;
 
    #pragma omp parallel for default(none) private(n,loc0,x,y,d) shared(Nb,Ref,X,Y,Lat,Lon)
    for(n=0;n<Nb;n++) {
@@ -111,11 +110,11 @@ int GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_LL2XY_R(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LL2XY_R(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
    TCoord  loc0;
    double  x,d,lat,lon;
-   int     n;
+   int32_t     n;
 
    #pragma omp parallel for default(none) private(n,loc0,x,d,lat,lon) shared(Nb,Ref,X,Y,Lat,Lon)
    for(n=0;n<Nb;n++) {

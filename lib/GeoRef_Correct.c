@@ -1,18 +1,18 @@
 #include <App.h>
 #include "GeoRef.h"
 
-int GeoRef_CorrValNorth(TGeoSet *Set,float *zout,float *zin) {
+int32_t GeoRef_CorrValNorth(TGeoSet *Set,float *zout,float *zin) {
 
    TGeoRef *reffrom;
-   int i;
-   int npts;
+   int32_t i;
+   int32_t npts;
    float *temp, *vals;
    double *temp_y;
    double ay[4];
    float poleval;
-   int ni, nj, i1, i2, j1, j2;
-   int un = 1;
-   int quatre = 4;
+   int32_t ni, nj, i1, i2, j1, j2;
+   int32_t un = 1;
+   int32_t quatre = 4;
 
    if (!Set)
       return(0);
@@ -91,17 +91,17 @@ int GeoRef_CorrValNorth(TGeoSet *Set,float *zout,float *zin) {
    return(0);
 }
 
-int GeoRef_CorrValSouth(TGeoSet *Set,float *zout,float *zin) {
+int32_t GeoRef_CorrValSouth(TGeoSet *Set,float *zout,float *zin) {
 
    TGeoRef *reffrom=NULL;
-   int i;
-   int npts;
+   int32_t i;
+   int32_t npts;
    float vpolesud;
    float *temp, *temp_y, *vals;
    double ay[4];
-   int ni, nj, i1, i2, j1, j2;
-   int un = 1;
-   int quatre = 4;
+   int32_t ni, nj, i1, i2, j1, j2;
+   int32_t un = 1;
+   int32_t quatre = 4;
   
    if (!Set)
       return(0);
@@ -181,14 +181,14 @@ int GeoRef_CorrValSouth(TGeoSet *Set,float *zout,float *zin) {
    return(0);
 }
 
-int GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
+int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
 
    TGeoRef *reffrom,*refto;
-   int i,ierc;
+   int32_t i,ierc;
    float valmax, valmin,fudgeval;
-   int fudgeval_set;
-   int degIntCourant;
-   int npts,nj;
+   int32_t fudgeval_set;
+   int32_t degIntCourant;
+   int32_t npts,nj;
    float vpolnor, vpolsud;
    float *temp;
 
@@ -291,16 +291,16 @@ int GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
    return(ierc);
 }
 
-int GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in,float *uuin,float *vvin,int ni,int nj) {
+int32_t GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in,float *uuin,float *vvin,int32_t ni,int32_t nj) {
   
-   int k1, k2;
+   int32_t k1, k2;
    float *polar_wd, *polar_spd, *polar_uu, *polar_vv;
    double *polar_lat,*polar_lon,*polar_lat_gem, *polar_lon_gem, *polar_x, *polar_y;
    char grtypn[2],grtypa[2];
    float xlat1, xlat2, xlon1, xlon2;
-   int ig1n, ig2n, ig3n, ig4n;
+   int32_t ig1n, ig2n, ig3n, ig4n;
    float pi, pj, d60, dgrw;
-   int i,j,ier;
+   int32_t i,j,ier;
    TGeoRef *gda, *gdps;
    float uupole, vvpole;
    double quatrevingtdix, zero;
@@ -391,16 +391,16 @@ int GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
    return(0);
 }
 
-int GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in,float *uuin,float *vvin,int ni,int nj) {
+int32_t GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in,float *uuin,float *vvin,int32_t ni,int32_t nj) {
 
-   int k1, k2;
+   int32_t k1, k2;
    float *polar_wd, *polar_spd,*polar_uu,*polar_vv;
    double *polar_lat,*polar_lon,*polar_lat_gem, *polar_lon_gem, *polar_x, *polar_y;
    char grtyps[2],grtypa[2];
    float xlat1, xlat2, xlon1, xlon2;
-   int ig1n, ig2n, ig3n, ig4n;
+   int32_t ig1n, ig2n, ig3n, ig4n;
    float pi, pj, d60, dgrw;
-   int i,j,ier;
+   int32_t i,j,ier;
    TGeoRef *gda, *gdps;
    float uupole, vvpole;
    double quatrevingtdix, zero;
@@ -489,16 +489,16 @@ int GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in
    return(0);
 }
 
-int GeoRef_CorrVecNorth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,float *vvin) {
+int32_t GeoRef_CorrVecNorth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,float *vvin) {
 
    TGeoRef  *reffrom=NULL;
    float     uupole, vvpole;
    float    *polar_uu_in, *polar_vv_in, *polar_uu_out, *polar_vv_out, *corr_uus, *corr_vvs;
    double    ay[4];
    double   *temp_y;
-   int       ni, nj, i1, i2, j1, j2, degree,npts,i;
-   int       quatre = 4;
-   int       un = 1;
+   int32_t       ni, nj, i1, i2, j1, j2, degree,npts,i;
+   int32_t       quatre = 4;
+   int32_t       un = 1;
 
    if (!Set)
       return(0);
@@ -579,13 +579,13 @@ int GeoRef_CorrVecNorth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,float
    return(0);
 }
 
-int GeoRef_CorrVecSouth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,float *vvin) {
+int32_t GeoRef_CorrVecSouth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,float *vvin) {
   
    TGeoRef  *reffrom=NULL;
    float *polar_uu_in, *polar_vv_in, *corr_uus, *corr_vvs, *temp_y;
    double ay[4];
-   int ni, nj, i1, i2, j1, j2, degree,npts,i;
-   int idx_gdin;
+   int32_t ni, nj, i1, i2, j1, j2, degree,npts,i;
+   int32_t idx_gdin;
 
    if (!Set)
       return(0);
@@ -655,9 +655,9 @@ int GeoRef_CorrVecSouth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,float
    return(0);
 }
 
-int GeoRef_CorrectVector(TGeoSet *Set,float *uuout,float *vvout,float *uuin,float *vvin) {
+int32_t GeoRef_CorrectVector(TGeoSet *Set,float *uuout,float *vvout,float *uuin,float *vvin) {
  
-   int ier;
+   int32_t ier;
   
   
    if (Set->zones[NORTH].npts > 0) {

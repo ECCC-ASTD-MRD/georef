@@ -32,10 +32,10 @@ switch(DEF->Type) {\
    }\
 }
 
-//unsigned char* Def_GetUByte(char* Data,unsigned int Index) {
+//unsigned char* Def_GetUByte(char* Data,uint32_t Index) {
 //   return ((unsigned char*)Data)[Index];
 //}
-//void Def_SetUByte(char* Data,unsigned int Index,unsigned char Value) {
+//void Def_SetUByte(char* Data,uint32_t Index,unsigned char Value) {
 //   ((unsigned char*)Data)[Index]=Value;
 //}
 
@@ -224,12 +224,12 @@ typedef enum {
     TD_Float64 = 11,
 } TDef_Type;
 
-extern int TDef_Size[];
-extern int TDef_DTYP[];
+extern int32_t TDef_Size[];
+extern int32_t TDef_DTYP[];
 
 typedef struct TDef {
    double *Buffer,*Aux;          // Buffer temporaire
-   int    *Accum;                // Accumulation Buffer temporaire
+   int32_t    *Accum;                // Accumulation Buffer temporaire
    char   *Mask;                 // Masque a appliquer au traitement sur le champs
    char   *Data[4];              // Composantes du champs (Pointeurs sur les donnees)
    char   *Mode;                 // Module des champs Data is vectoriel
@@ -241,39 +241,39 @@ typedef struct TDef {
 
    double  NoData;               // Valeur de novalue
    TDef_Type Type;               // Type de donnees du champs
-   int NI,NJ,NK,NC,NIJ;          // Dimensions du champs
-   int Idx;                      // Index displacement into supergrid
+   int32_t NI,NJ,NK,NC,NIJ;          // Dimensions du champs
+   int32_t Idx;                      // Index displacement into supergrid
 
-   int     CellDim;              // Defined grid point coverage, point=1 or area=2
+   int32_t     CellDim;              // Defined grid point32_t coverage, point=1 or area=2
    double  CoordLimits[2][2];    // Limits of processing in latlon
-   int     Limits[3][2];         // Limits of processing in grid points
-   int     Level;                // Niveau courant
-   int     Sample,SubSample;     // Sample interval in grid points
+   int32_t     Limits[3][2];         // Limits of processing in grid points
+   int32_t     Level;                // Niveau courant
+   int32_t     Sample,SubSample;     // Sample interval in grid points
    char    Alias;                // Alias d'un autre TDef (Pointe sur d'autres donnees)
 } TDef;
 
 void  Def_Clear(TDef *Def);
-int   Def_Compat(TDef *ToDef,TDef *FromDef);
+int32_t   Def_Compat(TDef *ToDef,TDef *FromDef);
 TDef *Def_Copy(TDef *Def);
 TDef *Def_CopyPromote(TDef *Def,TDef_Type Type);
 void  Def_Free(TDef *Def);
-TDef *Def_New(int NI,int NJ,int NK,int Dim,TDef_Type Type,int Alias);
-TDef *Def_Create(int NI,int NJ,int NK,TDef_Type Type,char* Comp0,char* Comp1,char* Mask);
-TDef *Def_Resize(TDef *Def,int NI,int NJ,int NK);
-int   Def_Paste(TDef *ToDef,TDef *DefPaste,int X0,int Y0);
+TDef *Def_New(int32_t NI,int32_t NJ,int32_t NK,int32_t Dim,TDef_Type Type,int32_t Alias);
+TDef *Def_Create(int32_t NI,int32_t NJ,int32_t NK,TDef_Type Type,char* Comp0,char* Comp1,char* Mask);
+TDef *Def_Resize(TDef *Def,int32_t NI,int32_t NJ,int32_t NK);
+int32_t   Def_Paste(TDef *ToDef,TDef *DefPaste,int32_t X0,int32_t Y0);
 
-int   Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
+int32_t   Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY);
 
-int   GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int I,int J,int Seg);
-int   GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Geom,double Value);
-int   GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int Final);
-int   GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,double *Table,TDef **lutDef, int lutSize, TDef *TmpDef,int Final);
-int   GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int Final);
-int   GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt);
-int   GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer *Layer,TGeoOptions *Opt,char *Field,double Value,int Final);
+int32_t   GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int32_t I,int32_t J,int32_t Seg);
+int32_t   GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Geom,double Value);
+int32_t   GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int32_t Final);
+int32_t   GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,double *Table,TDef **lutDef, int32_t lutSize, TDef *TmpDef,int32_t Final);
+int32_t   GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int32_t Final);
+int32_t   GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt);
+int32_t   GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer *Layer,TGeoOptions *Opt,char *Field,double Value,int32_t Final);
 
 void GeoScan_Init(TGeoScan *Scan);
 void GeoScan_Clear(TGeoScan *Scan);
-int  GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,struct TDef *ToDef,TGeoRef *FromRef,struct TDef *FromDef,TGeoOptions *Opt,int X0,int Y0,int X1,int Y1,int Dim);
+int32_t  GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,struct TDef *ToDef,TGeoRef *FromRef,struct TDef *FromDef,TGeoOptions *Opt,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_t Dim);
 
 #endif

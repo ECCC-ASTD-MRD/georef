@@ -21,7 +21,7 @@ void GeoRef_GridGetExpanded(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin
 
 void GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref) {
 
-   int nni,nnj;
+   int32_t nni,nnj;
  
    if (Ref->GRTYP[0]!='Y' && !Ref->NCX) {
 
@@ -124,9 +124,9 @@ void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
    }
 }
 
-int GeoRef_AxisGet(TGeoRef *Ref,double *AX,double *AY) {
+int32_t GeoRef_AxisGet(TGeoRef *Ref,double *AX,double *AY) {
 
-   int nix,njy;
+   int32_t nix,njy;
    
    switch(Ref->GRTYP[0]) {
       case 'Y':
@@ -152,9 +152,9 @@ int GeoRef_AxisGet(TGeoRef *Ref,double *AX,double *AY) {
 
 void GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY) {
   
-  int     i,j;
+  int32_t     i,j;
   double *temp, dlon;
-  int     zero,deuxnj;
+  int32_t     zero,deuxnj;
 
   switch (Ref->GRTYP[0]) {
     case '#':
@@ -226,10 +226,10 @@ void GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY) {
     }
 }
 
-int GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY) {
+int32_t GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY) {
   
-   int nix, njy;
-   int istart, jstart;
+   int32_t nix, njy;
+   int32_t istart, jstart;
 
    if (Ref->NbSub > 0) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);

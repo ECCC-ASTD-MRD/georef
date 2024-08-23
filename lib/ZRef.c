@@ -7,17 +7,17 @@
 #endif
 
 static float       *ZRef_Levels   = NULL;
-static unsigned int ZRef_LevelsNb = 0;
+static uint32_t ZRef_LevelsNb = 0;
 static const char  *ZRef_Names[]  = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","MBSL","GALCHEN","COUNT","HOUR","ANGLE","NIL","NIL","NIL","INT","NIL","IDX","NIL","NIL","NIL","MPRES","NIL","NIL","NIL","NIL","NIL","NIL","NIL","NIL","NIL","NIL","ETA",NULL };
 static const char  *ZRef_Units[]  = { "m","sg","mb","-","m","hy","th","m-","m","nb","hr","dg","--","--","--","i","--","x","--","--","--","mp","--","--","--","--","--","--","--","--","--","--","sg",NULL };
 
-int ZREF_IP1MODE=3;
+int32_t ZREF_IP1MODE=3;
 
 const char **ZRef_LevelNames() {
    return(ZRef_Names);
 }
 
-const char *ZRef_LevelName(int Type) {
+const char *ZRef_LevelName(int32_t Type) {
    return(ZRef_Names[Type<0||Type>21?22:Type]);
 }
 
@@ -25,7 +25,7 @@ const char **ZRef_LevelUnits() {
    return(ZRef_Units);
 }
 
-const char *ZRef_LevelUnit(int Type) {
+const char *ZRef_LevelUnit(int32_t Type) {
    return(ZRef_Units[Type<0||Type>21?22:Type]);
 }
 
@@ -85,7 +85,7 @@ TZRef* ZRef_New(void) {
  *
  *----------------------------------------------------------------------------
  */
-TZRef* ZRef_Define(int Type,int NbLevels,float *Levels) {
+TZRef* ZRef_Define(int32_t Type,int32_t NbLevels,float *Levels) {
 
    TZRef *zref=NULL;
    
@@ -126,7 +126,7 @@ TZRef* ZRef_Define(int Type,int NbLevels,float *Levels) {
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_Free(TZRef *ZRef) {
+int32_t ZRef_Free(TZRef *ZRef) {
 
    if (ZRef && !ZRef_Decr(ZRef)) {
 
@@ -166,7 +166,7 @@ int ZRef_Free(TZRef *ZRef) {
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_Equal(TZRef *ZRef0,TZRef *ZRef1) {
+int32_t ZRef_Equal(TZRef *ZRef0,TZRef *ZRef1) {
 
    if (!ZRef0 || !ZRef1)
       return(0);
@@ -262,12 +262,12 @@ TZRef *ZRef_HardCopy(TZRef *ZRef) {
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_DecodeRPN(TZRef *ZRef,fst_file* File) {
+int32_t ZRef_DecodeRPN(TZRef *ZRef,fst_file* File) {
 
    fst_record h;
    fst_query *queryt,*queryh,*queryp;
    fst_record record = default_fst_record;
-   int        cd,key=0,skip,j,k,kind,ip;
+   int32_t        cd,key=0,skip,j,k,kind,ip;
    double    *dbuf=NULL;
    float     *fbuf=NULL;
 #ifdef HAVE_VGRID
@@ -412,7 +412,7 @@ int ZRef_DecodeRPN(TZRef *ZRef,fst_file* File) {
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_SetRestrictLevels(float *Levels,int NbLevels) {
+int32_t ZRef_SetRestrictLevels(float *Levels,int32_t NbLevels) {
 
    ZRef_LevelsNb=NbLevels;
    ZRef_Levels=(float*)realloc(ZRef_Levels,ZRef_LevelsNb*sizeof(float));
@@ -439,7 +439,7 @@ int ZRef_SetRestrictLevels(float *Levels,int NbLevels) {
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_AddRestrictLevel(float Level) {
+int32_t ZRef_AddRestrictLevel(float Level) {
 
    ZRef_LevelsNb++;
    ZRef_Levels=(float*)realloc(ZRef_Levels,ZRef_LevelsNb*sizeof(float));
@@ -468,12 +468,12 @@ int ZRef_AddRestrictLevel(float Level) {
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_GetLevels(TZRef *ZRef,const fst_record* restrict const H,int Order) {
+int32_t ZRef_GetLevels(TZRef *ZRef,const fst_record* restrict const H,int32_t Order) {
 
    fst_record h,record;
    fst_query  *query;
-   int        l,ip1=0;
-   int        k;
+   int32_t        l,ip1=0;
+   int32_t        k;
 
    if (Order) {
       /*Get the number of levels*/
@@ -545,7 +545,7 @@ int ZRef_GetLevels(TZRef *ZRef,const fst_record* restrict const H,int Order) {
  *
  *----------------------------------------------------------------------------
  */
-double ZRef_K2Pressure(TZRef* restrict const ZRef,double P0,double P0LS, int K) {
+double ZRef_K2Pressure(TZRef* restrict const ZRef,double P0,double P0LS, int32_t K) {
 
   return(ZRef_Level2Pressure(ZRef,P0,P0LS,ZRef->Levels[K]));
 }
@@ -570,10 +570,10 @@ double ZRef_K2Pressure(TZRef* restrict const ZRef,double P0,double P0LS, int K) 
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,float *P0LS,int NIJ,int Log,float *Pres) {
+int32_t ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,float *P0LS,int32_t NIJ,int32_t Log,float *Pres) {
 
-   int   k,idxk=0,ij;
-   int   *ips;
+   int32_t   k,idxk=0,ij;
+   int32_t   *ips;
    float pref,ptop,*p0,*p0ls;
 
    if (!P0 && ZRef->Type!=LVL_PRES) {
@@ -687,9 +687,9 @@ int ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,float *P0LS,int NIJ
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_KCube2Meter(TZRef* restrict const ZRef,float *GZ,const int NIJ,float *Height) {
+int32_t ZRef_KCube2Meter(TZRef* restrict const ZRef,float *GZ,const int32_t NIJ,float *Height) {
 
-   unsigned int k,idxk=0,ij;
+   uint32_t k,idxk=0,ij;
    float        topo;
 
    switch (ZRef->Type) {
@@ -773,7 +773,7 @@ int ZRef_KCube2Meter(TZRef* restrict const ZRef,float *GZ,const int NIJ,float *H
 double ZRef_Level2Pressure(TZRef* restrict const ZRef,double P0,double P0LS,double Level) {
 
    double pres=-1.0,pref,ptop,rtop;
-   int    ip;
+   int32_t    ip;
 
    pref=ZRef->PRef;
    ptop=ZRef->PTop;
@@ -849,7 +849,7 @@ double ZRef_Pressure2Level(TZRef* restrict const ZRef,double P0,double Pressure)
    double level=-1.0;
    double a,b,c,d,r,l,err;
    float  pres,pres0=0,pres1;
-   int    z;
+   int32_t    z;
 
    switch(ZRef->Type) {
       case LVL_PRES:
@@ -926,7 +926,7 @@ double ZRef_Pressure2Level(TZRef* restrict const ZRef,double P0,double Pressure)
  *
  *----------------------------------------------------------------------------
  */
-double ZRef_Level2Meter(double Level,int Type) {
+double ZRef_Level2Meter(double Level,int32_t Type) {
 
    double m=0.0;
    
@@ -988,9 +988,9 @@ double ZRef_Level2Meter(double Level,int Type) {
  *
  *----------------------------------------------------------------------------
  */
-double ZRef_IP2Meter(int IP) {
+double ZRef_IP2Meter(int32_t IP) {
 
-   int   mode=-1,flag=0,kind=LVL_MASL;
+   int32_t   mode=-1,flag=0,kind=LVL_MASL;
    float level=0.0;
    char  format;
 
@@ -1021,9 +1021,9 @@ double ZRef_IP2Meter(int IP) {
  *
  *----------------------------------------------------------------------------
  */
-double ZRef_IP2Level(int IP,int *Type) {
+double ZRef_IP2Level(int32_t IP,int32_t *Type) {
 
-   int    mode=-1,flag=0;
+   int32_t    mode=-1,flag=0;
    float  level=0.0;
    char   format;
 
@@ -1052,9 +1052,9 @@ double ZRef_IP2Level(int IP,int *Type) {
  *----------------------------------------------------------------------------
  */
 
-int ZRef_Level2IP(float Level,int Type,TZRef_IP1Mode Mode) {
+int32_t ZRef_Level2IP(float Level,int32_t Type,TZRef_IP1Mode Mode) {
 
-   int    flag=0,ip=0,mode;
+   int32_t    flag=0,ip=0,mode;
    char   format;
 
    if (Type<0) {
@@ -1101,9 +1101,9 @@ int ZRef_Level2IP(float Level,int Type,TZRef_IP1Mode Mode) {
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_IPFormat(char *Buf,int IP,int Interval) {
+int32_t ZRef_IPFormat(char *Buf,int32_t IP,int32_t Interval) {
 
-   int   type=-1;
+   int32_t   type=-1;
    float lvl;
    
    if (Interval && IP<=32000) {

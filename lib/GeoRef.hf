@@ -73,7 +73,7 @@ module libgeoref
 !      integer(C_INT) :: NI,NJ,NK,NC,NIJ   !< Dimensions du champs
 !      integer(C_INT) :: Idx               !< Index displacement into supergrid
 
-!      integer(C_INT) :: CellDim           !< Defined grid point coverage, point=1 or area=2
+!      integer(C_INT) :: CellDim           !< Defined grid point32_t coverage, point=1 or area=2
 !      real(C_DOUBLE) :: CoordLimits(2,2)  !< Limits of processing in latlon
 !      integer(C_INT) :: Limits(2,3)       !< Limits of processing in grid points
 !      integer(C_INT) :: Level             !< Niveau courant
@@ -91,7 +91,7 @@ module libgeoref
       integer(C_INT) :: WeightNum;      !<
       integer(C_CHAR) :: PolarCorrect;  !< Apply polar corrections
       integer(C_CHAR) :: VectorMode;    !< Process data as vector
-      real(C_FLOAT) ::  DistTreshold;   !< Distance treshold for point clouds
+      real(C_FLOAT) ::  DistTreshold;   !< Distance treshold for point32_t clouds
       real(C_FLOAT) :: LonRef;          !<Longitude referential (-180.0,0.0)
    end type c_tgeooptions
 
@@ -129,45 +129,45 @@ module libgeoref
 !         integer(C_INT)                :: status
 !      end function c_def_gridinterp
       
-!      int      GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
-!      int      GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,int In);
-!      int      GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int Idx0,int Idx1,int Idx2,int Idx3);
-!      int      GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1,int *X0,int *Y0,int *X1,int *Y1,int BD);
-!      int      GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
-!      int      GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA);
+!      int32_t      GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
+!      int32_t      GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,int32_t In);
+!      int32_t      GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int32_t Idx0,int32_t Idx1,int32_t Idx2,int32_t Idx3);
+!      int32_t      GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1,int32_t *X0,int32_t *Y0,int32_t *X1,int32_t *Y1,int32_t BD);
+!      int32_t      GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
+!      int32_t      GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* DA);
 !      TGeoRef* GeoRef_New();
 !      TGeoRef* GeoRef_Add(TGeoRef *Ref);
 !      TGeoRef* GeoRef_Find(TGeoRef *Ref);
 !      TGeoRef* GeoRef_Copy(TGeoRef* __restrict const Ref);
 !      TGeoRef* GeoRef_HardCopy(TGeoRef* __restrict const Ref);
 !      TGeoRef* GeoRef_Reference(TGeoRef* __restrict const Ref);
-!      void     GeoRef_Size(TGeoRef *Ref,int X0,int Y0,int X1,int Y1,int BD);
-!      TGeoRef* GeoRef_Resize(TGeoRef* __restrict const Ref,int NI,int NJ);
-!      int      GeoRef_Free(TGeoRef *Ref);
-!      void     GeoRef_Clear(TGeoRef *Ref,int New);
+!      void     GeoRef_Size(TGeoRef *Ref,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_t BD);
+!      TGeoRef* GeoRef_Resize(TGeoRef* __restrict const Ref,int32_t NI,int32_t NJ);
+!      int32_t      GeoRef_Free(TGeoRef *Ref);
+!      void     GeoRef_Clear(TGeoRef *Ref,int32_t New);
 !      void     GeoRef_Qualify(TGeoRef* __restrict const Ref);
-!      int      GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1);
-!      int      GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,double *I0,double *J0,double *I1,double *J1);
-!      int      GeoRef_Valid(TGeoRef* __restrict const Ref);
+!      int32_t      GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1);
+!      int32_t      GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,double *I0,double *J0,double *I1,double *J1);
+!      int32_t      GeoRef_Valid(TGeoRef* __restrict const Ref);
 !      double   GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1);
    
-!      TGeoRef* GeoRef_CreateU(int NI,int NJ,char *grtyp,char *grref,int VerCode,int NbSub,TGeoRef **Subs);
-!      TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int R,double ResR,double ResA);
-!      TGeoRef* GeoRef_CreateW(int ni,int nj,char *grtyp,int ig1,int ig2,int ig3,int ig4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
-!      TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2);
+!      TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *grtyp,char *grref,int32_t VerCode,int32_t NbSub,TGeoRef **Subs);
+!      TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int32_t R,double ResR,double ResA);
+!      TGeoRef* GeoRef_CreateW(int32_t ni,int32_t nj,char *grtyp,int32_t ig1,int32_t ig2,int32_t ig3,int32_t ig4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
+!      TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int32_t NI,int32_t NJ,float DX,float DY,float LatR,float LonR,int32_t MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2);
 !      TGeoRef* GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
-!      int      GeoRef_Positional(TGeoRef *Ref,struct TDef *XDef,struct TDef *YDef);
+!      int32_t      GeoRef_Positional(TGeoRef *Ref,struct TDef *XDef,struct TDef *YDef);
 !      TQTree*  GeoRef_BuildIndex(TGeoRef* __restrict const Ref);
-!      int      GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,double *Dists,int NbNear,double MaxDist);
+!      int32_t      GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *Idxs,double *Dists,int32_t NbNear,double MaxDist);
 !      void     GeoRef_GridGetExpanded(TGeoRef *Ref,GeoRef_GridGetExpandedfloat *zout, float *zin);                                                           // gdxpngd
-!      int      GeoRef_AxisGetExpanded(TGeoRef* Ref, float *AX, float *AY);                                                              // gdgxpndaxes
+!      int32_t      GeoRef_AxisGetExpanded(TGeoRef* Ref, float *AX, float *AY);                                                              // gdgxpndaxes
 !      void     GeoRef_AxisDefine(TGeoRef* Ref,float *AX,float *AY);
 !      void     GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref);
 !      void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
-!      int      GeoRef_MaskInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,int *mask_out,float *zin,int *mask_in);                    // ezsint_mdm
-!      int      GeoRef_MaskInterpUV(TGeoRef *RefTo, TGeoRef *RefFrom,float *uuout,float *vvout,int *mask_out,float *uuin,float *vvin,int *mask_in);
+!      int32_t      GeoRef_MaskInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,int32_t *mask_out,float *zin,int32_t *mask_in);                    // ezsint_mdm
+!      int32_t      GeoRef_MaskInterpUV(TGeoRef *RefTo, TGeoRef *RefFrom,float *uuout,float *vvout,int32_t *mask_out,float *uuin,float *vvin,int32_t *mask_in);
          
-!      TGeoRef* GeoRef_Create(int NI,int NJ,char *grtyp,int IG1,int IG2,int IG3,int IG4,int FID);
+!      TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *grtyp,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,int32_t FID);
       function c_georef_rpncreate(ni,nj,grtyp,ig1,ig2,ig3,ig4,iunit) result(gref) bind(C,name='GeoRef_Create')
          import :: C_PTR, C_CHAR, C_INT
          integer(C_INT), intent(IN), value :: ni
@@ -181,7 +181,7 @@ module libgeoref
          type(C_PTR) :: gref
       end function c_georef_rpncreate
 
-!      int      GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout, float *zin);                                                  // c_ezsint
+!      int32_t      GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout, float *zin);                                                  // c_ezsint
       function c_georef_interp(grefout,grefin,zout,zin) result(status) bind(C,name='GeoRef_Interp') 
          import :: C_PTR, C_INT, C_FLOAT
          type(C_PTR), intent(IN), value :: grefout
@@ -191,7 +191,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_interp
 
-!      int      GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                      // c_ezuvint
+!      int32_t      GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                      // c_ezuvint
       function c_georef_interpuv(grefout,grefin,uuout,vvout,uuin,vvin) result(status) bind(C,name='GeoRef_InterpUV') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: grefout
@@ -203,7 +203,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_interpuv
 
-!      int      GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Op,float *uuout,float *vvout,float *uuin,float *vvin);                      // c_ezwdint
+!      int32_t      GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Op,float *uuout,float *vvout,float *uuin,float *vvin);                      // c_ezwdint
       function c_georef_interpwd(grefout,grefin,uuout,vvout,uuin,vvin) result(status) bind(C,name='GeoRef_InterpWD') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: grefout
@@ -215,7 +215,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_interpwd
 
-!      int      GeoRef_XYVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int n);                                             // c_gdxysval
+!      int32_t      GeoRef_XYVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t n);                                             // c_gdxysval
       function c_georef_xyval(gref,out,in,x,y,n) result(status) bind(C,name='GeoRef_XYVal') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref
@@ -227,7 +227,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_xyval
 
-!      int      GeoRef_XYUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *x,double *y,int n);                // c_gdxyvval
+!      int32_t      GeoRef_XYUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *x,double *y,int32_t n);                // c_gdxyvval
       function c_georef_xyuvval(gref,uuout,vvout,uuin,vvin,x,y,n) result(status) bind(C,name='GeoRef_XYUVVal') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref
@@ -241,7 +241,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_xyuvval
 
-!      int      GeoRef_XYWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *x,double *y,int n);                // c_gdxywdval
+!      int32_t      GeoRef_XYWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *x,double *y,int32_t n);                // c_gdxywdval
       function c_georef_xywdval(gref,uuout,vvout,uuin,vvin,x,y,n) result(status) bind(C,name='GeoRef_XYWDVal') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref
@@ -255,7 +255,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_xywdval
 
-!      int      GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *lat,double *lon,int n);                                         // c_gdllsval
+!      int32_t      GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *lat,double *lon,int32_t n);                                         // c_gdllsval
       function c_georef_llval(gref,out,in,lat,lon,n) result(status) bind(C,name='GeoRef_LLVal') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref
@@ -267,7 +267,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_llval
 
-!      int      GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int n);            // c_gdllvval
+!      int32_t      GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t n);            // c_gdllvval
       function c_georef_lluvval(gref,uuout,vvout,uuin,vvin,lat,lon,n) result(status) bind(C,name='GeoRef_LLUVVal') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref
@@ -281,7 +281,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_lluvval
 
-!      int      GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int n);            // c_gdllwdval
+!      int32_t      GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t n);            // c_gdllwdval
       function c_georef_llwdval(gref,uuout,vvout,uuin,vvin,lat,lon,n) result(status) bind(C,name='GeoRef_LLWDVal') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref
@@ -295,7 +295,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_llwdval
 
-!      int      GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int npts);        // c_gdwdfuv
+!      int32_t      GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int32_t npts);        // c_gdwdfuv
       function c_georef_uv2wd(gref,spdout,wdout,uuin,vvin,lat,lon,npts) result(status) bind(C,name='GeoRef_UV2WD') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref
@@ -309,7 +309,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_uv2wd
 
-!      int      GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int n);                                            // c_gdxyfll
+!      int32_t      GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t n);                                            // c_gdxyfll
       function c_georef_ll2xy(gref,x,y,lat,lon,npts) result(status) bind(C,name='GeoRef_LL2XY') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref
@@ -321,14 +321,14 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_ll2xy
 
-!      int      GeoRef_CalcLL(TGeoRef* Ref);                                                                                             // ez_calclatlon
+!      int32_t      GeoRef_CalcLL(TGeoRef* Ref);                                                                                             // ez_calclatlon
       function c_georef_calcll(gref) result(status) bind(C,name='GeoRef_CalcLL') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref
          integer(C_INT)                :: status
       end function c_georef_calcll
 
-!      int      GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon);                                                                      // gdll
+!      int32_t      GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon);                                                                      // gdll
       function c_georef_getll(gref,lat,lon) result(status) bind(C,name='GeoRef_GetLL') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref
@@ -337,7 +337,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_getll
 
-!      int      GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
+!      int32_t      GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
       function c_georef_equal(gref0,gref1) result(status) bind(C,name="GeoRef_Equal")
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref0
@@ -345,7 +345,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_equal
 
-!      int      GeoRef_MaskInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,int *mask_out,float *zin,int *mask_in);                    // ezsint_mdm
+!      int32_t      GeoRef_MaskInterp(TGeoRef *RefTo,TGeoRef *RefFrom,float *zout,int32_t *mask_out,float *zin,int32_t *mask_in);                    // ezsint_mdm
       function c_georef_maskinterp(grefout,grefin,zout,maskout,zin,maskin) result(status) bind(C,name='GeoRef_MaskInterp') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: grefout
@@ -357,7 +357,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_maskinterp
 
-!      int      GeoRef_MaskInterpUV(TGeoRef *RefTo, TGeoRef *RefFrom,float *uuout,float *vvout,int *mask_out,float *uuin,float *vvin,int *mask_in);
+!      int32_t      GeoRef_MaskInterpUV(TGeoRef *RefTo, TGeoRef *RefFrom,float *uuout,float *vvout,int32_t *mask_out,float *uuin,float *vvin,int32_t *mask_in);
       function c_georef_maskinterpuv(grefout,grefin,uuout,vvout,maskout,uuin,vvin,maskin) result(status) bind(C,name='GeoRef_MaskInterpUV') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: grefout
@@ -371,7 +371,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_maskinterpuv
 
-!      int      GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *grtyp,int *IG1,int *IG2,int *IG3,int *IG4,char *grref,int *IG1REF,int *IG2REF,int *IG3REF,int *IG4REF)  //c_ezgxprm
+!      int32_t      GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *grtyp,int32_t *IG1,int32_t *IG2,int32_t *IG3,int32_t *IG4,char *grref,int32_t *IG1REF,int32_t *IG2REF,int32_t *IG3REF,int32_t *IG4REF)  //c_ezgxprm
       function c_georef_gridgetparams(gref,ni,nj,grtyp,ig1,ig2,ig3,ig4,grref,ig1ref,ig2ref,ig3ref,ig4ref) result(status) bind(C,name='GeoRef_GridGetParams') 
          import :: C_PTR, C_INT, C_CHAR
          type(C_PTR), intent(IN), value :: gref
@@ -390,7 +390,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_gridgetparams
 
-!      int      GeoRef_AxisGet(TGeoRef *Ref,float *AX,float *AY);                                                                        // gdaxes
+!      int32_t      GeoRef_AxisGet(TGeoRef *Ref,float *AX,float *AY);                                                                        // gdaxes
       function c_georef_axisget(gref,ax,ay) result(status) bind(C,name="GeoRef_AxisGet")
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref
@@ -399,7 +399,7 @@ module libgeoref
          integer(C_INT)                :: status
       end function c_georef_axisget
 
-!      int      GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float *vvllin,double *Lat,double *Lon,int npts);   // c_gduvfwd
+!      int32_t      GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float *vvllin,double *Lat,double *Lon,int32_t npts);   // c_gduvfwd
       function c_georef_wd2uv(gref,uuout,vvout,uuin,vvin,lat,lon,n) result(status) bind(C,name='GeoRef_WD2UV') 
          import :: C_PTR, C_INT
          type(C_PTR), intent(IN), value :: gref

@@ -1,7 +1,7 @@
 #include <App.h>
 #include "GeoRef.h"
 
-int GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,char *MaskOut,char *MaskIn) {
+int32_t GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,char *MaskOut,char *MaskIn) {
  
    TGeoSet *gset=NULL;
    if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
@@ -20,10 +20,10 @@ int GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,char *Ma
    return(TRUE);
 }
 
-int GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int *MaskOut,int *MaskIn) {
+int32_t GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int32_t *MaskOut,int32_t *MaskIn) {
 
    TGeoSet *gset=NULL;
-   int       npts_in, npts_out;
+   int32_t       npts_in, npts_out;
    
    if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
@@ -39,11 +39,11 @@ int GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int *MaskOut,int *MaskIn) {
    return(0);
 }
 
-int GeoRef_MaskYYDefine(TGeoRef *Ref) {
+int32_t GeoRef_MaskYYDefine(TGeoRef *Ref) {
 
-   int ni,nj,yni,ynj,i,j,k,ii;
-   int i0,i1,j0,j1;
-   int ig1ref,ig2ref,ig3ref,ig4ref;
+   int32_t ni,nj,yni,ynj,i,j,k,ii;
+   int32_t i0,i1,j0,j1;
+   int32_t ig1ref,ig2ref,ig3ref,ig4ref;
   
    k=0;
    for (i=0; i < Ref->NX; i++) {
@@ -79,11 +79,11 @@ int GeoRef_MaskYYDefine(TGeoRef *Ref) {
   return(0);
 }
 
-int GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int ni,int nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int *yyincount,double *yanlat,double *yanlon,int *yyancount) {
+int32_t GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int32_t ni,int32_t nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int32_t *yyincount,double *yanlat,double *yanlon,int32_t *yyancount) {
 
    TGeoOptions opt;
-   int i,j,k;
-   int yincount,yancount;
+   int32_t i,j,k;
+   int32_t yincount,yancount;
    float *yin_fld;
 
    yin_fld = (float*)calloc(RefFrom->mymaskgrid->NX*RefFrom->mymaskgrid->NY,sizeof(float));

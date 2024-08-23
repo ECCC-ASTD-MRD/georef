@@ -1,7 +1,7 @@
 #include "GeoRef.h"
 
 /**----------------------------------------------------------------------------
- * @brief  Calculate distance between to location in gridpoint coordinates
+ * @brief  Calculate distance between to location in gridpoint32_t coordinates
  * @date   March 2007
  *    @param[in]  Ref   Pointer to geo reference
  *    @param[in]  X0    First  X coordinate 
@@ -59,11 +59,11 @@ double GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1)
 }
 
 /**----------------------------------------------------------------------------
- * @brief  Interpolate the position of a point on a great circle
+ * @brief  Interpolate the position of a point32_t on a great circle
  * @date   February 2008
- *    @param[in]  C1       First point coordinate
- *    @param[in]  C2       Second point coordinate
- *    @param[in]  C3       Point on great circle to locate on great circle
+ *    @param[in]  C1       First point32_t coordinate
+ *    @param[in]  C2       Second point32_t coordinate
+ *    @param[in]  C3       Point32_t on great circle to locate on great circle
  *
  *    @return              Ratio of distances
 */
@@ -86,16 +86,16 @@ double GeoFunc_RadialPointRatio(TCoord C1,TCoord C2,TCoord C3) {
 }
 
 /**----------------------------------------------------------------------------
- * @brief  Calculate intersection point of a right angle from a point on a great circle
+ * @brief  Calculate intersection point32_t of a right angle from a point32_t on a great circle
  * @date   February 2008
- *    @param[in]  C1       First point coordinate
- *    @param[in]  C2       Second point coordinate
- *    @param[in]  C3       Point on great circle to locate on great circle
- *    @param[out] CR       Located point coordinate
+ *    @param[in]  C1       First point32_t coordinate
+ *    @param[in]  C2       Second point32_t coordinate
+ *    @param[in]  C3       Point32_t on great circle to locate on great circle
+ *    @param[out] CR       Located point32_t coordinate
  *
  *    @return              Intersection exists (1=Yes, 0=No)
 */
-int GeoFunc_RadialPointOn(TCoord C1,TCoord C2,TCoord C3,TCoord *CR) {
+int32_t GeoFunc_RadialPointOn(TCoord C1,TCoord C2,TCoord C3,TCoord *CR) {
 
    double crs12,crs13,crs3x;
 
@@ -108,17 +108,17 @@ int GeoFunc_RadialPointOn(TCoord C1,TCoord C2,TCoord C3,TCoord *CR) {
 }
 
 /**----------------------------------------------------------------------------
- * @brief  Calculate intersection point of 2 great circle
+ * @brief  Calculate intersection point32_t of 2 great circle
  * @date   February 2008
- *    @param[in]  C1       First point coordinate
- *    @param[in]  C2       Second point coordinate
+ *    @param[in]  C1       First point32_t coordinate
+ *    @param[in]  C2       Second point32_t coordinate
  *    @param[in]  CRS13    Direction between first and third point
  *    @param[in]  CRS23    Direction between second and third point
  *    @param[out] C3       Intersection poiny
  *
  *    @return              Intersection exists (1=Yes, 0=No)
 */
-int GeoFunc_RadialIntersect(TCoord C1,TCoord C2,double CRS13,double CRS23,TCoord *C3) {
+int32_t GeoFunc_RadialIntersect(TCoord C1,TCoord C2,double CRS13,double CRS23,TCoord *C3) {
 
    double dst13,dst12,crs12,crs21,ang1,ang2,ang3;
    TCoord sinc2,cosc2,sinc1,cosc1;
@@ -160,7 +160,7 @@ int GeoFunc_RadialIntersect(TCoord C1,TCoord C2,double CRS13,double CRS23,TCoord
    return(1);
 }
 
-//TODO: include following ezscint funcs into GeoFunc logic 
+//TODO: include following ezscint32_t funcs into GeoFunc logic 
 /*
 c_ez_calcdist :
    This function computes the distance between 2 latlon points on the sphere.
@@ -311,7 +311,7 @@ void c_ez_calcarea(float *area, float lats[], float lons[])
    double a,b,c,d,e;
    double seg_a, seg_b, seg_c, seg_d, seg_e;
    double area1, area2;
-   int i;
+   int32_t i;
 
    degre_a_radian = M_PI / 180.0;
 
@@ -369,7 +369,7 @@ void c_ez_calcarea2(double *area, float lats[], float lons[])
    double seg_a, seg_b, seg_c, seg_d, seg_e;
    double area1, area2;
    double s, excess;
-   int i;
+   int32_t i;
 
    degre_a_radian = M_PI / 180.0;
 

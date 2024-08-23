@@ -4,7 +4,7 @@
 
 static  __thread Vect3d*  OGM_Geom[2];
 static  __thread Vect3d** OGM_Ptr;
-static  __thread unsigned int OGM_GeomNb=0;
+static  __thread uint32_t OGM_GeomNb=0;
 
 #ifdef HAVE_GDAL
 
@@ -17,7 +17,7 @@ void OGM_ClearVect3d(void) {
    }
 }
 
-Vect3d* OGM_GetVect3d(unsigned int Size,unsigned int No) {
+Vect3d* OGM_GetVect3d(uint32_t Size,uint32_t No) {
 
    if (Size>OGM_GeomNb) {
       OGM_GeomNb=Size<OGR_BUFFER?OGR_BUFFER:Size;
@@ -34,9 +34,9 @@ Vect3d* OGM_GetVect3d(unsigned int Size,unsigned int No) {
    return(No==2?(Vect3d*)OGM_Ptr:OGM_Geom[No]);
 }
 
-static inline int OGM_ToVect3d(OGRGeometryH Geom,unsigned int No) {
+static inline int32_t OGM_ToVect3d(OGRGeometryH Geom,uint32_t No) {
 
-   unsigned int n;
+   uint32_t n;
 
    n=OGR_G_GetPointCount(Geom);
    if (OGM_GetVect3d(n,No))  {
@@ -46,7 +46,7 @@ static inline int OGM_ToVect3d(OGRGeometryH Geom,unsigned int No) {
    return(0);
 }
 
-int OGM_QSortInter(const void *A,const void *B){
+int32_t OGM_QSortInter(const void *A,const void *B){
 
    if ((*(const Vect3d*)A)[2]<(*(const Vect3d*)B)[2]) {
       return(-1);
@@ -79,7 +79,7 @@ void OGM_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
    OGRGeometryH geom;
    Vect3d       vr;
    TCoord       co;
-   int          n;
+   int32_t          n;
 
    if (FromRef!=ToRef) {
       for(n=0;n<OGR_G_GetGeometryCount(Geom);n++) {
@@ -110,11 +110,11 @@ OGRGeometryH OGM_Clip(OGRGeometryH Line,OGRGeometryH Poly) {
    return(clip);
 }
 
-int OGM_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip) {
+int32_t OGM_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip) {
 
    OGRGeometryH line,point,ring;
    Vect3d       pt0,pt1,ppt0,ppt1,inter[16];
-   int          n,np,nr,nb,nbinter,in=0;
+   int32_t          n,np,nr,nb,nbinter,in=0;
 
    for (n=0;n<OGR_G_GetGeometryCount(Line);n++) {
       line=OGR_G_GetGeometryRef(Line,n);
@@ -130,7 +130,7 @@ int OGM_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip) {
       OGR_G_GetPoint(Line,0,&pt0[0],&pt0[1],&pt0[2]);
       OGR_G_SetPoint_2D(point,0,pt0[0],pt0[1]);
       in=OGM_PointPolyIntersect(point,ring,0);
-      /*Add the current point if inside*/
+      /*Add the current point32_t if inside*/
       if (in) {
          if (!line) line=OGR_G_CreateGeometry(wkbLineString);
          OGR_G_AddPoint_2D(line,pt0[0],pt0[1]);
@@ -202,7 +202,7 @@ void OGM_GPCFromOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
    OGRGeometryH       geom;
    OGRwkbGeometryType type;
    gpc_vertex_list   *gpc;
-   unsigned int       nb,g,nc;
+   uint32_t       nb,g,nc;
 
    type=wkbFlatten(OGR_G_GetGeometryType(Geom));
 
@@ -241,7 +241,7 @@ void OGM_GPCToOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
 #ifdef HAVE_GPC
    OGRGeometryH     geom,ring,poly=NULL,multi=NULL;
    gpc_vertex_list *gpc;
-   unsigned int     n,g,nb=0,in;
+   uint32_t     n,g,nb=0,in;
 
    /*Check for multiple polygon (more thant 1 non-hole contour)*/
    for(n=0;n<Poly->num_contours;n++) {
@@ -361,7 +361,7 @@ OGRGeometryH OGM_GPCOnOGRLayer(gpc_op Op,OGR_Layer *Layer) {
 #ifdef HAVE_GPC
    gpc_polygon  poly0,poly1,result,*r,*p,*t;
    OGRGeometryH geom=NULL;
-   unsigned int f;
+   uint32_t f;
 
    OGM_GPCNew(&poly0);
    OGM_GPCNew(&poly1);
@@ -404,7 +404,7 @@ OGRGeometryH OGM_GPCOnOGRGeometry(gpc_op Op,OGRGeometryH *Geom) {
 #ifdef HAVE_GPC
    gpc_polygon  poly0,poly1,result,*r,*p,*t;
    OGRGeometryH geom=NULL;
-   unsigned int g;
+   uint32_t g;
 
    OGM_GPCNew(&poly0);
    OGM_GPCNew(&poly1);
@@ -439,9 +439,9 @@ OGRGeometryH OGM_GPCOnOGRGeometry(gpc_op Op,OGRGeometryH *Geom) {
 #endif
 }
 
-int OGM_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1) {
+int32_t OGM_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1) {
 
-   int          n0,n1,npt=0;
+   int32_t          n0,n1,npt=0;
    OGRGeometryH pt,geom;
    OGREnvelope  env;
 
@@ -523,10 +523,10 @@ int OGM_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelo
  *
  * Parametres   :
  *   <Geom>     : Géométrie OGR
- *   <X0>       : Coordonnée en X du premier point du segment
- *   <Y0>       : Coordonnée en Y du premier point du segment
- *   <X1>       : Coordonnée en X du second point du segment
- *   <Y1>       : Coordonnée en Y du second point du segment
+ *   <X0>       : Coordonnée en X du premier point32_t du segment
+ *   <Y0>       : Coordonnée en Y du premier point32_t du segment
+ *   <X1>       : Coordonnée en X du second point32_t du segment
+ *   <Y1>       : Coordonnée en Y du second point32_t du segment
  *
  * Retour       : Une géométrie OGR de type MultiPoint
  *
@@ -534,7 +534,7 @@ int OGM_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelo
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-static int OGM_QSortSegIntersectionPts(const void *A,const void *B){
+static int32_t OGM_QSortSegIntersectionPts(const void *A,const void *B){
    const double *a=A,*b=B,a2=a[0]*a[0]+a[1]*a[1],b2=b[0]*b[0]+b[1]*b[1];
 
    if( a2 < b2 )
@@ -545,8 +545,8 @@ static int OGM_QSortSegIntersectionPts(const void *A,const void *B){
       return 0;
 }
 /*
-static int OGM_SegIntersectionPts_(OGRGeometryH Geom,double X0,double Y0,double X1,double Y1,DynArray *restrict Pts) {
-   int n,i,npt=0;
+static int32_t OGM_SegIntersectionPts_(OGRGeometryH Geom,double X0,double Y0,double X1,double Y1,DynArray *restrict Pts) {
+   int32_t n,i,npt=0;
 
    // Loop on the points in the current geometry
    if( (n=OGR_G_GetPointCount(Geom)) > 1 ) {
@@ -561,7 +561,7 @@ static int OGM_SegIntersectionPts_(OGRGeometryH Geom,double X0,double Y0,double 
       OGM_ToVect3d(Geom,0);
       v = OGM_Geom[0];
       for(i=1; i<n; ++i) {
-         // Calculate the intersection point of the two segments
+         // Calculate the intersection point32_t of the two segments
          s34x = v[i][0]-v[i-1][0];
          s34y = v[i][1]-v[i-1][1];
          c = s34x*s12y - s34y*s12x;
@@ -603,7 +603,7 @@ OGRGeometryH OGM_SegIntersectionPts(OGRGeometryH Geom,double X0,double Y0,double
    OGRGeometryH   pts,pt;
    DynArray       da;
    double         *arr;
-   int            n,i;
+   int32_t            n,i;
 
    DynArray_Init(&da,0);
 
@@ -612,12 +612,12 @@ OGRGeometryH OGM_SegIntersectionPts(OGRGeometryH Geom,double X0,double Y0,double
 
    // Sort the points if we have more than one
    if( n > 1 ) {
-      // Make the position relative to the first point of the segment
+      // Make the position relative to the first point32_t of the segment
       for(i=n,arr=da.Arr; i; --i) {
          *arr++ -= X0;
          *arr++ -= Y0;
       }
-      // Sort the points in terms of distance from the first point of the segment
+      // Sort the points in terms of distance from the first point32_t of the segment
       qsort(da.Arr,n,2*sizeof(double),OGM_QSortSegIntersectionPts);
       // Make the position absolute again
       for(i=n,arr=da.Arr; i; --i) {
@@ -639,9 +639,9 @@ OGRGeometryH OGM_SegIntersectionPts(OGRGeometryH Geom,double X0,double Y0,double
 }
 */
 
-int OGM_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1) {
+int32_t OGM_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1) {
 
-   int          n0,n1,t0,t1,npt;
+   int32_t          n0,n1,t0,t1,npt;
    Vect3d       v0,v1;
    OGRGeometryH pt,geom;
    OGREnvelope  env;
@@ -755,9 +755,9 @@ int OGM_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnv
    return(0);
 }
 
-int OGM_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
+int32_t OGM_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int32_t All) {
 
-   unsigned int n0,n1,g0,g1,t=0;
+   uint32_t n0,n1,g0,g1,t=0;
 
    g0=OGM_ToVect3d(Geom0,OGM_ARRAY0);
    g1=OGM_ToVect3d(Geom1,OGM_ARRAY1);
@@ -774,9 +774,9 @@ int OGM_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
    return(All?t==g0:t);
 }
 
-int OGM_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
+int32_t OGM_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int32_t All) {
 
-   unsigned int n0,n1,g0,g1,t=0,i;
+   uint32_t n0,n1,g0,g1,t=0,i;
    Vect3d       v0,v1[2];
 
    g0=OGM_ToVect3d(Geom0,OGM_ARRAY0);
@@ -800,10 +800,10 @@ int OGM_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
    return(All?t==g0:t);
 }
 
-int OGM_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
+int32_t OGM_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int32_t All) {
 
-   unsigned int n0,n1,g0,g1,n11,t=0;
-   int          c=0;
+   uint32_t n0,n1,g0,g1,n11,t=0;
+   int32_t          c=0;
    Vect3d       v0,v1[2];
 
    g0=OGM_ToVect3d(Geom0,OGM_ARRAY0);
@@ -821,7 +821,7 @@ int OGM_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
          Vect_Assign(v1[0],OGM_Geom[1][n1]);
          Vect_Assign(v1[1],OGM_Geom[1][n11]);
 
-         /*Check for point insidness*/
+         /*Check for point32_t insidness*/
          if (OGR_PointInside(v0,v1[0],v1[1])) {
             c=!c;
          }
@@ -836,10 +836,10 @@ int OGM_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
    return(All?t==g0:t);
 }
 
-int OGM_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
+int32_t OGM_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
-   unsigned int n0,n1,g0,g1,n11;
-   int          c;
+   uint32_t n0,n1,g0,g1,n11;
+   int32_t          c;
    Vect3d       v0[2],v1[2];
 
    g0=OGM_ToVect3d(Geom0,OGM_ARRAY0);
@@ -864,7 +864,7 @@ int OGM_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
             return(1);
          }
 
-         /*Check for point insidness*/
+         /*Check for point32_t insidness*/
          if (OGR_PointInside(v0[0],v1[0],v1[1])) {
             c=!c;
          }
@@ -876,9 +876,9 @@ int OGM_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
    return(0);
 }
 
-int OGM_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
+int32_t OGM_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
-   unsigned int n0,n1,g0,g1;
+   uint32_t n0,n1,g0,g1;
    Vect3d       v0[2],v1[2];
 
    g0=OGM_ToVect3d(Geom0,OGM_ARRAY0);
@@ -904,10 +904,10 @@ int OGM_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
    return(0);
 }
 
-double OGM_CoordLimit(OGRGeometryH Geom,int Coord,int Mode) {
+double OGM_CoordLimit(OGRGeometryH Geom,int32_t Coord,int32_t Mode) {
 
-   register unsigned int n=0;
-   int                   g=0;
+   register uint32_t n=0;
+   int32_t                   g=0;
    double                val=0,valg;
 
    if (Coord>=0 && Coord<=2) {
@@ -948,7 +948,7 @@ double OGM_CoordLimit(OGRGeometryH Geom,int Coord,int Mode) {
 double OGM_Length(OGRGeometryH Geom) {
 
    double length=0;
-   int    g;
+   int32_t    g;
 
    /*Boucle recursive sur les sous geometrie*/
    for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
@@ -960,7 +960,7 @@ double OGM_Length(OGRGeometryH Geom) {
 
 double OGM_SegmentLength(OGRGeometryH Geom) {
 
-   register int n;
+   register int32_t n;
    double       length=0;
 
    for(n=0;n<OGM_ToVect3d(Geom,OGM_ARRAY0)-1;n++) {
@@ -974,7 +974,7 @@ double OGM_PointClosest(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr) {
 
    Vect3d vr;
    double d,dist=1e32;
-   int    n,g;
+   int32_t    n,g;
 
    /*Boucle recursive sur les sous geometrie*/
    for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
@@ -998,11 +998,11 @@ double OGM_PointClosest(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr) {
    return(dist);
 }
 
-int OGM_PointInside(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr) {
+int32_t OGM_PointInside(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr) {
 
    OGRGeometryH pt;
    Vect3d       vr;
-   int          n,g;
+   int32_t          n,g;
 
    pt=OGR_G_CreateGeometry(wkbPoint);
    for(n=0;n<OGR_G_GetPointCount(Geom);n++) {
@@ -1031,7 +1031,7 @@ int OGM_PointInside(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr) {
 /* 4----two line segments are collinear, and share one same end point.       */
 /* 5----two line segments are collinear, and overlap.                        */
 
-int OGM_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD,Vect3d Inter) {
+int32_t OGM_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD,Vect3d Inter) {
 
    double u,v,delta;
    double t1,t2;
@@ -1116,11 +1116,11 @@ double OGM_SegmentDist(Vect3d SegA,Vect3d SegB,Vect3d Point) {
    double t = ((Point[0]-SegA[0])*dx+(Point[1]-SegA[1])*dy)/(dx*dx+dy*dy);
 
    if (t<0) {
-      // Point is nearest to the first point
+      // Point32_t is nearest to the first point
       dx = Point[0] - SegA[0];
       dy = Point[1] - SegA[1];
    } else if (t>1) {
-      // Point is nearest to the end point
+      // Point32_t is nearest to the end point
       dx = Point[0] - SegB[0];
       dy = Point[1] - SegB[1];
    } else {
@@ -1135,14 +1135,14 @@ double OGM_SegmentDist(Vect3d SegA,Vect3d SegB,Vect3d Point) {
 
 double OGM_Centroid2DProcess(OGRGeometryH Geom,double *X,double *Y) {
 
-   int    i,g,n,i1;
+   int32_t    i,g,n,i1;
    double area=0,mid;
 
    /* Process current geometry */
    n=OGM_ToVect3d(Geom,OGM_ARRAY0);
 
    if (n==1) {
-      /* Proccess point */
+      /* Proccess point32_t */
       *X=OGM_Geom[0][0][0];
       *Y=OGM_Geom[0][0][1];
       return(0.0);
@@ -1214,14 +1214,14 @@ double OGM_Centroid2D(OGRGeometryH Geom,double *X,double *Y) {
 //            v[] = polyline array of vertex points
 //            j,k = indices for the subchain v[j] to v[k]
 //    Output: mk[] = array of markers matching vertex array v[]
-int OGM_SimplifyDP(double Tolerance,Vect3d *Pt,int J,int K,int *Markers) {
+int32_t OGM_SimplifyDP(double Tolerance,Vect3d *Pt,int32_t J,int32_t K,int32_t *Markers) {
 
    /*There is nothing to simplify*/
    if (K<=J+1)
       return(0);
 
-   int      i,n=0;
-   int      maxi=J;                    // index of vertex farthest from S
+   int32_t      i,n=0;
+   int32_t      maxi=J;                    // index of vertex farthest from S
    double   maxd2=0.0;                 // distance squared of farthest vertex
    double   tol2=Tolerance*Tolerance;  // tolerance squared
    double  cu;                         // segment length squared
@@ -1278,11 +1278,11 @@ int OGM_SimplifyDP(double Tolerance,Vect3d *Pt,int J,int K,int *Markers) {
 //            n   = the number of points in V[]
 //    Output: sV[]= simplified polyline vertices (max is n)
 //    Return: m   = the number of points in sV[]
-int OGM_Simplify(double Tolerance,OGRGeometryH Geom) {
+int32_t OGM_Simplify(double Tolerance,OGRGeometryH Geom) {
 
-   int    i,k,pv,n=-1,m=0;         // Misc counters
+   int32_t    i,k,pv,n=-1,m=0;         // Misc counters
    double tol2=Tolerance*Tolerance;  // Tolerance squared
-   int    *mk;                       // Marker buffer
+   int32_t    *mk;                       // Marker buffer
 
    /*Simplify sub-geometry*/
    for(i=0;i<OGR_G_GetGeometryCount(Geom);i++) {
@@ -1337,7 +1337,7 @@ int OGM_Simplify(double Tolerance,OGRGeometryH Geom) {
 
 double OGM_AngleMin(OGRGeometryH Geom) {
 
-   int    i,vi,n;
+   int32_t    i,vi,n;
    double a,ma=M_2PI;
    Vect3d pt[3],v[2];
    
@@ -1347,7 +1347,7 @@ double OGM_AngleMin(OGRGeometryH Geom) {
       ma=fmin(DEG2RAD(a),ma);
    }
    
-   // On polygons, don't use the last point as it's a repeat of the first. on other, don't use the last 2
+   // On polygons, don't use the last point32_t as it's a repeat of the first. on other, don't use the last 2
    n=OGR_G_GetPointCount(Geom);
    for(i=0;i<n-(OGR_G_GetGeometryType(Geom)!=wkbLinearRing?2:1);i++) {
       vi=i;   OGR_G_GetPoint(Geom,vi<n?vi:vi-n,&pt[0][0],&pt[0][1],&pt[0][2]);
@@ -1365,10 +1365,10 @@ double OGM_AngleMin(OGRGeometryH Geom) {
    return(RAD2DEG(ma));
 }
 
-int OGM_Clean(OGRGeometryH Geom) {
+int32_t OGM_Clean(OGRGeometryH Geom) {
 
-   unsigned int g;
-   int    i,v,r=0;
+   uint32_t g;
+   int32_t    i,v,r=0;
    
    // Get vertices into a temporary vector array
    g=OGM_ToVect3d(Geom,OGM_ARRAY0);
@@ -1426,8 +1426,8 @@ static OGRGeometryH OGM_MkClipPoly(double X0,double Y0,double X1,double Y1) {
    return clip;
 }
 
-OGRGeometryH OGM_PolySplitTile(OGRGeometryH Poly,const unsigned int MaxPoints,OGRGeometryH Res) {
-   unsigned int i,n,np,toplvl=0;
+OGRGeometryH OGM_PolySplitTile(OGRGeometryH Poly,const uint32_t MaxPoints,OGRGeometryH Res) {
+   uint32_t i,n,np,toplvl=0;
 
    // A NULL result indicates that we are the top level fct
    if( !Res ) {

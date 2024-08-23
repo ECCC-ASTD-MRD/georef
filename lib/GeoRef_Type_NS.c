@@ -13,9 +13,9 @@
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_XY2LL_NS(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
+int32_t GeoRef_XY2LL_NS(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb) {
    
-   int un=1;
+   int32_t un=1;
    f77name(ez8_vllfxy)(Lat,Lon,X,Y,&Nb,&un,&Ref->RPNHeadExt.xg3,&Ref->RPNHeadExt.xg4,&Ref->RPNHeadExt.xg1,&Ref->RPNHeadExt.xg2,&Ref->Hemi);
 
    return(0);
@@ -33,7 +33,7 @@ int GeoRef_XY2LL_NS(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_LL2XY_NS(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LL2XY_NS(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
    float  pi,pj,dgrw,d60;   
 

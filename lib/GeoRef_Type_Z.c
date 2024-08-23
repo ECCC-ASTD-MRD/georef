@@ -13,9 +13,9 @@
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb) {
+int32_t GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb) {
 
-   int     i,indx,indy,un=1;
+   int32_t     i,indx,indy,un=1;
    double  delxx,delyy,*tmpx,*tmpy,*ytmp;
    float   xlat1, xlon1, xlat2, xlon2;
 
@@ -86,9 +86,9 @@ int GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int 
 
  *    @return             Error code (0=ok)
 */
-int GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
-   int   i,j,indx,indy,d;
+   int32_t   i,j,indx,indy,d;
     
    GeoRef_LL2GREF(Ref,X,Y,Lat,Lon,Nb);
 
@@ -115,16 +115,16 @@ int GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
       if (Ref->RPNHead.ig2 == 1)  {
          for (j=0; j < Nb; j++) Y[j] = Ref->j2 +1.0 - Y[j];
       }
-      // TODO: From GeoRef_RPN Fix for G grid 0-360 1/5 gridpoint problem
+      // TODO: From GeoRef_RPN Fix for G grid 0-360 1/5 gridpoint32_t problem
       for (j=0; j < Nb; j++) if (X[j]>Ref->X1+0.5) X[j]-=(Ref->X1+1);
    }
       
    return(0);
 }
-int GEM_grid_param(int *F_bsc_base,int *F_bsc_ext1,int *F_extension ,int F_maxcfl,float *F_lonr,float *F_latr,int *F_ni,int *F_nj,float *F_dx,float *F_dy,double *F_x0_8,double *F_y0_8,double *F_xl_8,double *F_yl_8,int F_overlap,int F_yinyang_L) {
+int32_t GEM_grid_param(int32_t *F_bsc_base,int32_t *F_bsc_ext1,int32_t *F_extension ,int32_t F_maxcfl,float *F_lonr,float *F_latr,int32_t *F_ni,int32_t *F_nj,float *F_dx,float *F_dy,double *F_x0_8,double *F_y0_8,double *F_xl_8,double *F_yl_8,int32_t F_overlap,int32_t F_yinyang_L) {
 
    double delta_8;
-   int iref,jref;
+   int32_t iref,jref;
   
    // basic global lateral boundary conditions width
    *F_bsc_base = 5;
@@ -200,9 +200,9 @@ int GEM_grid_param(int *F_bsc_base,int *F_bsc_ext1,int *F_extension ,int F_maxcf
    return(1);
 }
 
-void GEM_hgrid4(double *F_xgi_8,double *F_ygi_8,int F_Grd_ni,int F_Grd_nj,float *F_Grd_dx,float *F_Grd_dy,double F_Grd_x0_8,double F_Grd_xl_8,double F_Grd_y0_8,double F_Grd_yl_8, int F_Grd_yinyang_L){
+void GEM_hgrid4(double *F_xgi_8,double *F_ygi_8,int32_t F_Grd_ni,int32_t F_Grd_nj,float *F_Grd_dx,float *F_Grd_dy,double F_Grd_x0_8,double F_Grd_xl_8,double F_Grd_y0_8,double F_Grd_yl_8, int32_t F_Grd_yinyang_L){
 
-   int i;
+   int32_t i;
    double delta_8;
 
    delta_8 = (F_Grd_xl_8-F_Grd_x0_8)/(F_Grd_ni-1);
@@ -239,9 +239,9 @@ void GEM_hgrid4(double *F_xgi_8,double *F_ygi_8,int F_Grd_ni,int F_Grd_nj,float 
  
  *    @return            Georef (NULL=error)
 */
-TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int NI,int NJ,float DX,float DY,float LatR,float LonR,int MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2) {
+TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int32_t NI,int32_t NJ,float DX,float DY,float LatR,float LonR,int32_t MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2) {
 
-   int    bsc_base,bsc_ext1,extension;
+   int32_t    bsc_base,bsc_ext1,extension;
    double x0,x1,y0,y1;
 
    if (!Ref) {

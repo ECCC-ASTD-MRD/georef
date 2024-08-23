@@ -2,6 +2,7 @@
 #define _GeoRef_Utils_h
 
 #include <math.h>
+#include <stdint.h>
 
 // Mathematical related constants and functions
 #ifndef M_PI
@@ -62,20 +63,20 @@
 #define RAD2DEG(R)                        ((double)(R)*57.295779513082322864647721871734)                                             ///< Convert radians to degrees
 #define DEG2RAD(D)                        ((double)(D)*0.017453292519943295474371680598)                                              ///< Convert degrees to radians
 
-typedef int (*QSort_Fn)(const void*,const void*);
-int QSort_Double(const void *A,const void *B);
-int QSort_Float(const void *A,const void *B);
-int QSort_Int(const void *A,const void *B);
-int QSort_DecDouble(const void *A,const void *B);
-int QSort_DecFloat(const void *A,const void *B);
-int QSort_DecInt(const void *A,const void *B);
-int QSort_StrPtr(const void *A,const void *B);
+typedef int32_t (*QSort_Fn)(const void*,const void*);
+int32_t QSort_Double(const void *A,const void *B);
+int32_t QSort_Float(const void *A,const void *B);
+int32_t QSort_Int(const void *A,const void *B);
+int32_t QSort_DecDouble(const void *A,const void *B);
+int32_t QSort_DecFloat(const void *A,const void *B);
+int32_t QSort_DecInt(const void *A,const void *B);
+int32_t QSort_StrPtr(const void *A,const void *B);
 
 void Unique(void *Arr,int* restrict Size,size_t NBytes);
 
 double InterpCubic(double X0,double X1,double X2, double X3,double F);
 double InterpHermite(double X0,double X1,double X2, double X3,double F,double T,double B);
 
-double HCentile(double *M,int N,int K);
+double HCentile(double *M,int32_t N,int32_t K);
 
 #endif

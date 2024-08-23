@@ -15,7 +15,7 @@ __thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_MAXIMUM, IV_FAST, CB_REPLA
 const char *TRef_InterpVString[] = { "UNDEF","FAST","WITHIN","INTERSECT","CENTROID","ALIASED","CONSERVATIVE","NORMALIZED_CONSERVATIVE","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
 const char *TRef_InterpRString[] = { "UNDEF","NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
 
-__attribute__ ((constructor)) int GeoRef_Init() {
+__attribute__ ((constructor)) int32_t GeoRef_Init() {
    App_LibRegister(APP_LIBGEOREF,VERSION);
    return(TRUE);
 }
@@ -36,9 +36,9 @@ void GeoRef_Unlock() {
    pthread_mutex_unlock(&GeoRef_Mutex);
 }
 
-int GeoRef_Project(struct TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
+int32_t GeoRef_Project(struct TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int32_t Extrap,int32_t Transform) {
 
-   int tr,status;
+   int32_t tr,status;
 
    if (X<(Ref->X0-0.5) || Y<(Ref->Y0-0.5) || X>(Ref->X1+0.5) || Y>(Ref->Y1+0.5)) {
       if (!Extrap) {
@@ -57,9 +57,9 @@ int GeoRef_Project(struct TGeoRef *Ref,double X,double Y,double *Lat,double *Lon
 }
 
 
-int GeoRef_UnProject(struct TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
+int32_t GeoRef_UnProject(struct TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int32_t Extrap,int32_t Transform) {
 
-   int tr,status;
+   int32_t tr,status;
 
    if (Lat>90.0 || Lat<-90.0 || Lon==-999.0) 
      return(FALSE);
@@ -90,7 +90,7 @@ int GeoRef_UnProject(struct TGeoRef *Ref,double *X,double *Y,double Lat,double L
  *    @param[in]  Y0    Y higher limit
  *    @param[in]  BD    Border width
  */
-void GeoRef_Size(TGeoRef *Ref,int X0,int Y0,int X1,int Y1,int BD) {
+void GeoRef_Size(TGeoRef *Ref,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_t BD) {
 
    Ref->X0=X0;
    Ref->X1=X1;
@@ -109,7 +109,7 @@ void GeoRef_Size(TGeoRef *Ref,int X0,int Y0,int X1,int Y1,int BD) {
  *    @return           Freed code (0=not freed, 1=freed)
  * 
  */
-int GeoRef_Free(TGeoRef *Ref) {
+int32_t GeoRef_Free(TGeoRef *Ref) {
 
   if (!Ref)
       return(0);
@@ -141,7 +141,7 @@ int GeoRef_Free(TGeoRef *Ref) {
  *
  *    @return           New reference count
 */
-int GeoRef_Incr(TGeoRef *Ref) {
+int32_t GeoRef_Incr(TGeoRef *Ref) {
 
    if (Ref) {
       return(__sync_add_and_fetch(&Ref->NRef,1));
@@ -156,9 +156,9 @@ int GeoRef_Incr(TGeoRef *Ref) {
  *    @param[in]  Ref   Pointer to geo reference
  *    @param[in]  New   Clear the name associated
 */
-void GeoRef_Clear(TGeoRef *Ref,int New) {
+void GeoRef_Clear(TGeoRef *Ref,int32_t New) {
 
-   int n;
+   int32_t n;
    
    if (Ref) {
       if (Ref->String)       free(Ref->String);       Ref->String=NULL;
@@ -250,7 +250,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
 
    TCoord co[2];
    double d[2],lat[2],lon[2],n[2],x[2],y[2];
-   int    nx;
+   int32_t    nx;
 
    if (Ref) {
       switch(Ref->GRTYP[0]) {
@@ -365,7 +365,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
  *
  *    @return             Equality (1=True 0=False)
 */
-int GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) {
+int32_t GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) {
 
    if (!Ref0 || !Ref1) {
       return(0);
@@ -378,7 +378,7 @@ int GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) 
      return(0);
    //TODO: Check AX,AY
 
-   // Cloud point should never be tested as equal
+   // Cloud point32_t should never be tested as equal
    if (Ref0->GRTYP[0]=='Y' || Ref0->GRTYP[1]=='Y')
       return(0);
 
@@ -470,7 +470,7 @@ TGeoRef *GeoRef_Reference(TGeoRef* __restrict const Ref) {
 TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
 
    TGeoRef *ref;
-   int      i;
+   int32_t      i;
 
    ref=GeoRef_New();
    GeoRef_Size(ref,Ref->X0,Ref->Y0,Ref->X1,Ref->Y1,Ref->BD);
@@ -522,7 +522,7 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
  *
  *    @return             Pointer to the new geo reference
 */
-TGeoRef *GeoRef_Resize(TGeoRef* __restrict const Ref,int NI,int NJ) {
+TGeoRef *GeoRef_Resize(TGeoRef* __restrict const Ref,int32_t NI,int32_t NJ) {
 
    TGeoRef *ref;
 
@@ -603,7 +603,7 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
  *  
  *    @return              New geo reference pointer
 */
-TGeoRef* GeoRef_Define(TGeoRef *Ref,int NI,int NJ,char* GRTYP,char* grref,int IG1,int IG2,int IG3,int IG4,double* AX,double* AY) {
+TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grref,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,double* AX,double* AY) {
    
    TGeoRef* ref,*fref;
 
@@ -640,7 +640,6 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int NI,int NJ,char* GRTYP,char* grref,int IG
    GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
 
    if (!Ref) {
-      // TODO: Would be more efficient to find without creating one
       if (fref = GeoRef_Find(ref)) {
          // This georef already exists
          free(ref);
@@ -659,11 +658,11 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int NI,int NJ,char* GRTYP,char* grref,int IG
    return(ref);
 }
 
-int GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int Grid,TApp_Type Type) {
+int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TApp_Type Type) {
 
    fst_record *h=&GRef->RPNHead;
    fst_record record=default_fst_record,crit=default_fst_record;
-   int ok=0,sz=0,i;
+   int32_t ok=0,sz=0,i;
 
    if (Var && !*Ptr) {
       crit.datev= h->datev;
@@ -760,13 +759,17 @@ int GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int Grid,TApp_Type 
 }
 
 
-int GeoRef_Read(struct TGeoRef *GRef) {
+int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
-   int         key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz;
+   int32_t         key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz;
    float      *ax=NULL,*ay=NULL;
    char        grref[2];
 
-//TODO: From    if (!Field->GRef || !(Field->GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)) || (Field->GRef->NY==1 && Field->GRef->GRTYP[0]!='Y' && Field->GRef->GRTYP[1]!='Y' && Field->GRef->GRTYP[0]!='M'))
+   if (!GRef) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid GeoRef object\n",__func__);
+      return(FALSE);
+   }
+
    if (GRef->GRTYP[0]=='L' || GRef->GRTYP[0]=='A' || GRef->GRTYP[0]=='B' || GRef->GRTYP[0]=='N' || GRef->GRTYP[0]=='S' || GRef->GRTYP[0]=='G') {
       return(TRUE);
    }
@@ -847,7 +850,7 @@ int GeoRef_Read(struct TGeoRef *GRef) {
                   f77name(cxgaig)(grref,&ig1,&ig2,&ig3,&ig4,&ax[idx],&ax[idx+1],&ax[idx+2],&ax[idx+3],1);
                   //TODO: chekc AX,AY indexes
                   GRef->Subs[s] = GeoRef_Define(NULL,ni,nj,"Z",grref,ig1,ig2,ig3,ig4,GRef->AX,GRef->AY);
-                //TODO: Do we need to do this here ?
+                  //TODO: Do we need to do this here ?
                   GeoRef_MaskYYDefine(GRef->Subs[s]);
                   idx+=ni+nj+10;
                }
@@ -910,10 +913,10 @@ int GeoRef_Read(struct TGeoRef *GRef) {
  * 
  *   @return              New geo reference pointer
 */
-TGeoRef* GeoRef_Create(int NI,int NJ,char *GRTYP,int IG1,int IG2,int IG3,int IG4,fst_file *File) {
+TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,fst_file *File) {
 
    TGeoRef *ref,*fref;
-   int      id;
+   int32_t      id;
 
    ref=GeoRef_New();
 
@@ -1018,7 +1021,7 @@ TGeoRef* GeoRef_New() {
    ref->NbSet=0;
 
    // Assign default options
-   GeoRef_Options.NoData=nan("NaN"); // TODO: Move this init for only once
+   GeoRef_Options.NoData=nan("");
    memcpy(&ref->Options,&GeoRef_Options,sizeof(TGeoOptions));
 
    // RPN Specific
@@ -1068,7 +1071,7 @@ TGeoRef* GeoRef_New() {
 */
 TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
 
-   unsigned int  n,x,y,t;
+   uint32_t  n,x,y,t;
    double        dx,dy,lat0,lon0,lat1,lon1;
    Vect2d        tr[3],pt;
    
@@ -1172,12 +1175,12 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
  *
  *    @return             Nombre de points trouvé trié du plus près vers le plus loin
 */
-int GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,double *Dists,int NbNear,double MaxDist) {
+int32_t GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *Idxs,double *Dists,int32_t NbNear,double MaxDist) {
 
    double       dx,dy,l;
-   unsigned int n,nn,nr,nnear;
+   uint32_t n,nn,nr,nnear;
    TQTree      *node;
-   int          dxy,x,y,xd,yd,rx;
+   int32_t          dxy,x,y,xd,yd,rx;
   
    if (!NbNear || !Idxs || !Dists) return(0);
 
@@ -1314,11 +1317,11 @@ int GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int *Idxs,dou
  *
  *    @return              Intersection (True or False)
 */
-int GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1,int *X0,int *Y0,int *X1,int *Y1,int BD) {
+int32_t GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1,int32_t *X0,int32_t *Y0,int32_t *X1,int32_t *Y1,int32_t BD) {
 
    double la,lo,di,dj,in=0;
    double x0,y0,x1,y1,dx,dy;
-   int    x,y;
+   int32_t    x,y;
 
    if (!Ref0 || !Ref1) return(0);
 
@@ -1447,9 +1450,9 @@ int GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Re
  *
  *    @return              Error code
 */
-int GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1) {
+int32_t GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1) {
 
-   int x,y;
+   int32_t x,y;
    double di,dj,lat,lon;
 
    *Lat0=*Lon0=1e32;
@@ -1522,10 +1525,10 @@ int GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double
   *
  *    @return              True or False
 */
-int GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) {
+int32_t GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) {
 
    double la,lo,x0,y0,x1,y1;
-   int    x,y;
+   int32_t    x,y;
 
    if (!Ref0 || !Ref1) return(0);
    
@@ -1572,10 +1575,10 @@ int GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1)
  * 
  *    @return              True or False
 */
-int GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,int In) {
+int32_t GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,int32_t In) {
 
    double lat[4],lon[4],x[4],y[4],dl;
-   int    d0,d1,d2,d3;
+   int32_t    d0,d1,d2,d3;
 
    if (!Ref) return(0);
    
@@ -1639,10 +1642,10 @@ int GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,dou
    return(0);
 }
 
-int GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int Idx0,int Idx1,int Idx2,int Idx3) {
+int32_t GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int32_t Idx0,int32_t Idx1,int32_t Idx2,int32_t Idx3) {
  
    Vect3d b;
-   int    t0,t1,sz=Ref->NX*Ref->NY;
+   int32_t    t0,t1,sz=Ref->NX*Ref->NY;
    
    if (Idx0<sz && Idx1<sz && Idx2<sz && Idx3<sz && Idx0>=0 && Idx1>=0 && Idx2>=0 && Idx3>=0) {
       
@@ -1686,7 +1689,7 @@ int GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int Idx0,int Idx1,int
  *
  *    @return              Error code
 */
-int GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,double *I0,double *J0,double *I1,double *J1) {
+int32_t GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,double *I0,double *J0,double *I1,double *J1) {
 
    double di,dj;
 
@@ -1744,7 +1747,7 @@ int GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,dou
  *
  *    @return              Booleen indiquant la validite
 */
-int GeoRef_Valid(TGeoRef* __restrict const Ref) {
+int32_t GeoRef_Valid(TGeoRef* __restrict const Ref) {
 
    double x[2],y[2],lat[2],lon[2];
 
@@ -1769,9 +1772,9 @@ int GeoRef_Valid(TGeoRef* __restrict const Ref) {
  *
  *    @return              Dimension des resultats
 */
-int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
+int32_t GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
 
-   int d,dx,dy,nx,ny;
+   int32_t d,dx,dy,nx,ny;
    
    if (!Ref) return(0);
 
@@ -1864,10 +1867,10 @@ int GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
  *
  *    @return              Code d'erreur (0=erreur, 1=ok)
 */
-int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
+int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* DA) {
 
-   unsigned int i,gi,j,gj,nid,pnid,pidx,idx,*tidx;
-   int          ig, nx, ny;
+   uint32_t i,gi,j,gj,nid,pnid,pidx,idx,*tidx;
+   int32_t          ig, nx, ny;
    double       di[4],dj[4],dlat[4],dlon[4];
    double       fx,fy,fz,dx[4],dy[4],s,a,b,c;
    char         grtyp[2];
@@ -1940,7 +1943,7 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
                di[2]=gi;     dj[2]=gj-0.5;
                di[3]=gi;     dj[3]=gj+0.5;
 
-               // Reproject gridpoint length coordinates of segments crossing center of cell
+               // Reproject gridpoint32_t length coordinates of segments crossing center of cell
 /*                c_gdllfxy(Ref->Subs[nid],dlat,dlon,di,dj,4); */
                GeoRef_XY2LL(gr,dlat,dlon,di,dj,4,TRUE);
                dx[0]=DEG2RAD(dlon[0]); dy[0]=DEG2RAD(dlat[0]);
@@ -1975,7 +1978,7 @@ int GeoRef_CellDims(TGeoRef *Ref,int Invert,float* DX,float* DY,float* DA) {
    return(TRUE);
 }
 
-int GeoRef_DefRPNXG(TGeoRef* Ref) {
+int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
 
    switch (Ref->GRTYP[0]) {
       case 'A':
@@ -2102,7 +2105,7 @@ int GeoRef_DefRPNXG(TGeoRef* Ref) {
    return(0);
 }
 
-int32_t GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,int *IG2,int *IG3,int *IG4,char *grref,int *IG1REF,int *IG2REF,int *IG3REF,int *IG4REF) {
+int32_t GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,int32_t *IG1,int32_t *IG2,int32_t *IG3,int32_t *IG4,char *grref,int32_t *IG1REF,int32_t *IG2REF,int32_t *IG3REF,int32_t *IG4REF) {
    
    *NI     = Ref->RPNHead.ni;
    *NJ     = Ref->RPNHead.nj;
@@ -2132,10 +2135,10 @@ int32_t GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,i
  *
  *    @return             Error code (0=ok)
 */
-int GeoRef_Write(TGeoRef *GRef,fst_file *File){
+int32_t GeoRef_Write(TGeoRef *GRef,fst_file *File){
 
    fst_record record=default_fst_record;
-   int i,dbl=TRUE;
+   int32_t i,dbl=TRUE;
    char *c;
 
    if (!GRef->Name) GRef->Name=strdup("Undefined");
@@ -2285,15 +2288,15 @@ int GeoRef_Write(TGeoRef *GRef,fst_file *File){
    return(TRUE);
 }
 
-int GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec) {
+int32_t GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec) {
 
    fst_record  srec = default_fst_record;
    fst_record  rec;
    fst_query  *query;
    char       *data=NULL;
    const char *desc,**descs;
-   int         d=0,ni,nj,nk,sz=0,ip1,ip2;
-   int         key;
+   int32_t         d=0,ni,nj,nk,sz=0,ip1,ip2;
+   int32_t         key;
 
    if (Rec->file) {
 

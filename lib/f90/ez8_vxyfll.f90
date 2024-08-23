@@ -40,9 +40,9 @@
 !usage    - call vxyfll(x,y,dlat,dlon,npts,d60,dgrw,pi,pj,nhem)
 !
 !arguments
-!   out   - x    - x-co-ordinate of the point as measured with pole
+!   out   - x    - x-co-ordinate of the point32_t as measured with pole
 !                  as origin
-!         - y    - y-co-ordinate of the point as measured with pole
+!         - y    - y-co-ordinate of the point32_t as measured with pole
 !                  as origin
 !   in    - dlat - latitude in degrees (-90 to +90, positive n)
 !         - dlon - longitude in degrees (-180 to +180, positive e)

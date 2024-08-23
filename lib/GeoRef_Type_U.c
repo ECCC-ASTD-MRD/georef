@@ -14,9 +14,9 @@
  *
  *    @return            Georef (NULL=error)
 */
-TGeoRef* GeoRef_CreateU(int NI,int NJ,char *GRTYP,char *grref,int VerCode,int NbSub,TGeoRef **Subs) {
+TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *GRTYP,char *grref,int32_t VerCode,int32_t NbSub,TGeoRef **Subs) {
 
-   int  i;
+   int32_t  i;
    TGeoRef *ref,*fref,*sub_gd;
     
    if (NbSub <= 1) {

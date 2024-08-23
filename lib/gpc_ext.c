@@ -9,11 +9,11 @@
  * But      : Retourne la projection du vecteur B0->B1 sur le vecteur A0->A1
  *
  * Parametres :
- *  <A0>    : Premier point du vecteur A
- *  <A1>    : Deuxième point du vecteur A
- *  <B0>    : Premier point du vecteur B
- *  <B1>    : Deuxième point du vecteur B
- *  <Pt>    : [OUT|Opt] Le point sur le vecteur A correspondant à la projection
+ *  <A0>    : Premier point32_t du vecteur A
+ *  <A1>    : Deuxième point32_t du vecteur A
+ *  <B0>    : Premier point32_t du vecteur B
+ *  <B1>    : Deuxième point32_t du vecteur B
+ *  <Pt>    : [OUT|Opt] Le point32_t sur le vecteur A correspondant à la projection
  *            du vecteur B
  *
  * Retour: La projection du vecteur B sur le vecteur A (scalaire)
@@ -45,31 +45,31 @@ double gpce_vect_proj_vect(gpc_vertex A0,gpc_vertex A1,gpc_vertex B0,gpc_vertex 
  *            facteurs le cas échéant
  *
  * Parametres :
- *  <A0>    : Premier point de la ligne A
- *  <A1>    : Deuxième point de la ligne A
- *  <B0>    : Premier point de la ligne B
- *  <B1>    : Deuxième point de la ligne B
- *  <FA>    : [OUT|Opt] Facteur de l'intersection à partir du point A0 sur la ligne A0-A1
- *  <FB>    : [OUT|Opt] Facteur de l'intersection à partir du point B0 sur la ligne B0-B1
+ *  <A0>    : Premier point32_t de la ligne A
+ *  <A1>    : Deuxième point32_t de la ligne A
+ *  <B0>    : Premier point32_t de la ligne B
+ *  <B1>    : Deuxième point32_t de la ligne B
+ *  <FA>    : [OUT|Opt] Facteur de l'intersection à partir du point32_t A0 sur la ligne A0-A1
+ *  <FB>    : [OUT|Opt] Facteur de l'intersection à partir du point32_t B0 sur la ligne B0-B1
  *
  * Retour:
  *  - 0 : aucune intersection (FA et FB inchangés)
- *  - 1 : intersection simple (FA et FB représente les facteurs du point d'intersection
+ *  - 1 : intersection simple (FA et FB représente les facteurs du point32_t d'intersection
  *        tel que A0+FA(A1-A0) = B0+FB(B1-B0)
  *  - 2 : Les lignes sont colinéaires (facteur A tel que A0+FA(A1-A0)=closest(B0,B1) et
  *        facteur B tel que B0+B(B1-B0)=closest(A0,A1)
- *  - 3 : B est un point situé sur la ligne A (FA tel que A0+FA(A1-A0)=B0=B1, FB=0)
- *  - 4 : A est un point situé sur la ligne B (FB tel que B0+FB(B1-B0)=A0=A1, FA=0)
+ *  - 3 : B est un point32_t situé sur la ligne A (FA tel que A0+FA(A1-A0)=B0=B1, FB=0)
+ *  - 4 : A est un point32_t situé sur la ligne B (FB tel que B0+FB(B1-B0)=A0=A1, FA=0)
  *  - 5 : A et B sont des points identiques (FA=0, FB=0)
  *
  * Remarques :
- *  - Les facteurs sont toujours calculés selon le premier point de la ligne.
+ *  - Les facteurs sont toujours calculés selon le premier point32_t de la ligne.
  *    Ainsi, intersection = A0+FA(A1-A0) = B0+FB(B1-B0)
  *  - Si le facteur A ou B est entre 0 et 1, alors l'intersection a lieu entre les
  *    points A0,A1 et B0,B1, respectivement (à l'intérieur des segments).
  *----------------------------------------------------------------------------
  */
-int gpce_line_intersects_line(gpc_vertex A0,gpc_vertex A1,gpc_vertex B0,gpc_vertex B1,double *restrict FA,double *restrict FB) {
+int32_t gpce_line_intersects_line(gpc_vertex A0,gpc_vertex A1,gpc_vertex B0,gpc_vertex B1,double *restrict FA,double *restrict FB) {
     double c,adx,ady,bdx,bdy,dx,dy;
 
     adx = A1.x - A0.x;
@@ -137,20 +137,20 @@ int gpce_line_intersects_line(gpc_vertex A0,gpc_vertex A1,gpc_vertex B0,gpc_vert
  * But      : Trouver s'il y a intersection entre deux segment
  *
  * Parametres :
- *  <A0>    : Premier point du segment A
- *  <A1>    : Deuxième point du segment A
- *  <B0>    : Premier point du segment B
- *  <B1>    : Deuxième point du segment B
- *  <FA>    : [OUT|Opt] Facteur de l'intersection à partir du point A0 sur la ligne A0-A1
- *  <FB>    : [OUT|Opt] Facteur de l'intersection à partir du point B0 sur la ligne B0-B1
+ *  <A0>    : Premier point32_t du segment A
+ *  <A1>    : Deuxième point32_t du segment A
+ *  <B0>    : Premier point32_t du segment B
+ *  <B1>    : Deuxième point32_t du segment B
+ *  <FA>    : [OUT|Opt] Facteur de l'intersection à partir du point32_t A0 sur la ligne A0-A1
+ *  <FB>    : [OUT|Opt] Facteur de l'intersection à partir du point32_t B0 sur la ligne B0-B1
  *
  * Retour: 0 si aucune intersection, la même valeur que gpce_line_intersects_line sinon
  *
  * Remarques :
  *----------------------------------------------------------------------------
  */
-int gpce_segment_intersects_segment(gpc_vertex A0,gpc_vertex A1,gpc_vertex B0,gpc_vertex B1,double *restrict FA,double *restrict FB) {
-   int code;
+int32_t gpce_segment_intersects_segment(gpc_vertex A0,gpc_vertex A1,gpc_vertex B0,gpc_vertex B1,double *restrict FA,double *restrict FB) {
+   int32_t code;
    double fa,fb;
 
    if( !GPCE_SEG_DISJOINT(A0,A1,B0,B1) && (code=gpce_line_intersects_line(A0,A1,B0,B1,&fa,&fb)) && 0.0<=fa && fa<=1.0 && 0.0<=fb && fb<=1.0 ) {
@@ -166,18 +166,18 @@ int gpce_segment_intersects_segment(gpc_vertex A0,gpc_vertex A1,gpc_vertex B0,gp
  * Nom      : <gpce_get_num_polygon>
  * Creation : Août 2022 - E. Legault-Ouellet
  *
- * But      : Retourne le nombre de point total d'un polygone
+ * But      : Retourne le nombre de point32_t total d'un polygone
  *
  * Parametres :
  *  <Poly>  : Le polygone
  *
- * Retour: Le nombre de point total du polygone
+ * Retour: Le nombre de point32_t total du polygone
  *
  * Remarques :
  *----------------------------------------------------------------------------
  */
-int gpce_get_num_vertices(const gpc_polygon *restrict Poly) {
-    int r,n;
+int32_t gpce_get_num_vertices(const gpc_polygon *restrict Poly) {
+    int32_t r,n;
 
     for(r=0,n=0; r<Poly->num_contours; ++r) {
        n += Poly->contour[r].num_vertices;
@@ -200,8 +200,8 @@ int gpce_get_num_vertices(const gpc_polygon *restrict Poly) {
  * Remarques :
  *----------------------------------------------------------------------------
  */
-int gpce_get_num_polygon(const gpc_polygon *restrict Poly) {
-    int r,n;
+int32_t gpce_get_num_polygon(const gpc_polygon *restrict Poly) {
+    int32_t r,n;
 
     for(r=0,n=0; r<Poly->num_contours; ++r) {
         if( !Poly->hole[r] ) {
@@ -227,7 +227,7 @@ int gpce_get_num_polygon(const gpc_polygon *restrict Poly) {
  *----------------------------------------------------------------------------
  */
 double gpce_get_ring_area(const gpc_vertex_list *restrict Ring) {
-    int i,j;
+    int32_t i,j;
     double area;
 
     for(i=Ring->num_vertices-1,j=0,area=0.0; j<Ring->num_vertices; i=j++) {
@@ -253,7 +253,7 @@ double gpce_get_ring_area(const gpc_vertex_list *restrict Ring) {
  */
 double gpce_get_area(const gpc_polygon *restrict Poly) {
     double area;
-    int r;
+    int32_t r;
 
     // Loop on the rings
     for(r=0,area=0.0; r<Poly->num_contours; ++r) {
@@ -290,7 +290,7 @@ static void gpce_copy_ring(gpc_vertex_list *restrict Dest,const gpc_vertex_list 
     Dest->num_vertices = Src->num_vertices;
 }
 void gpce_copy_polygon(gpc_polygon *restrict Dest,const gpc_polygon *restrict Src) {
-    int r;
+    int32_t r;
 
     // Copy contours
     Dest->contour = malloc(Src->num_contours*sizeof(*Dest->contour));
@@ -325,8 +325,8 @@ void gpce_copy_polygon(gpc_polygon *restrict Dest,const gpc_polygon *restrict Sr
  *             comme croisant ce contour si aucun de leurs segments ne se croisent
  *----------------------------------------------------------------------------
  */
-int gpce_ring_crosses_ring(const gpc_vertex_list *restrict RingA,const gpce_envelope *restrict EnvA,const gpc_vertex_list *restrict RingB,const gpce_envelope *restrict EnvB) {
-    int a0,a1,b0,b1;
+int32_t gpce_ring_crosses_ring(const gpc_vertex_list *restrict RingA,const gpce_envelope *restrict EnvA,const gpc_vertex_list *restrict RingB,const gpce_envelope *restrict EnvB) {
+    int32_t a0,a1,b0,b1;
 
     // Make sure we have points
     if( RingA->num_vertices<=0 || RingB->num_vertices<=0 ) {
@@ -369,8 +369,8 @@ int gpce_ring_crosses_ring(const gpc_vertex_list *restrict RingA,const gpce_enve
  *             ceux du polygone
  *----------------------------------------------------------------------------
  */
-int gpce_polygon_crosses_ring(const gpc_polygon *restrict Poly,const gpce_envelope *restrict PEnv,const gpc_vertex_list *restrict Ring,const gpce_envelope *restrict REnv) {
-    int r;
+int32_t gpce_polygon_crosses_ring(const gpc_polygon *restrict Poly,const gpce_envelope *restrict PEnv,const gpc_vertex_list *restrict Ring,const gpce_envelope *restrict REnv) {
+    int32_t r;
 
     // Check if one of the rings of the polygon crosses the ring
     for(r=0; r<Poly->num_contours; ++r) {
@@ -402,8 +402,8 @@ int gpce_polygon_crosses_ring(const gpc_polygon *restrict Poly,const gpce_envelo
  *             se croisent
  *----------------------------------------------------------------------------
  */
-int gpce_polygon_crosses_polygon(const gpc_polygon *restrict PolyA,const gpce_envelope *restrict EnvA,const gpc_polygon *restrict PolyB,const gpce_envelope *restrict EnvB) {
-    int r;
+int32_t gpce_polygon_crosses_polygon(const gpc_polygon *restrict PolyA,const gpce_envelope *restrict EnvA,const gpc_polygon *restrict PolyB,const gpce_envelope *restrict EnvB) {
+    int32_t r;
 
     // Check if one of the rings of the polygon crosses one of the rings of the other polygon
     for(r=0; r<PolyB->num_contours; ++r) {
@@ -420,7 +420,7 @@ int gpce_polygon_crosses_polygon(const gpc_polygon *restrict PolyA,const gpce_en
  * Nom      : <gpce_ring_contains_point>
  * Creation : Juillet 2018 - E. Legault-Ouellet
  *
- * But      : Vérifie si le point est contenu dans le contour
+ * But      : Vérifie si le point32_t est contenu dans le contour
  *
  * Parametres :
  *  <Ring>  : Le contour
@@ -432,8 +432,8 @@ int gpce_polygon_crosses_polygon(const gpc_polygon *restrict PolyA,const gpce_en
  * Remarques :
  *----------------------------------------------------------------------------
  */
-int gpce_ring_contains_point(const gpc_vertex_list *restrict Ring,const gpce_envelope *restrict REnv,gpc_vertex P) {
-    int i,j,in;
+int32_t gpce_ring_contains_point(const gpc_vertex_list *restrict Ring,const gpce_envelope *restrict REnv,gpc_vertex P) {
+    int32_t i,j,in;
 
     // Check if we are in the envelope
     if( REnv && !GPCE_PT_IN_ENV(*REnv,P) )
@@ -469,8 +469,8 @@ int gpce_ring_contains_point(const gpc_vertex_list *restrict Ring,const gpce_env
  * Remarques :
  *----------------------------------------------------------------------------
  */
-int gpce_ring_contains_ring(const gpc_vertex_list *restrict OutRing,const gpce_envelope *restrict OEnv,const gpc_vertex_list *restrict InRing,const gpce_envelope *restrict IEnv) {
-   int i;
+int32_t gpce_ring_contains_ring(const gpc_vertex_list *restrict OutRing,const gpce_envelope *restrict OEnv,const gpc_vertex_list *restrict InRing,const gpce_envelope *restrict IEnv) {
+   int32_t i;
 
     // Make sure we have points
     if( OutRing->num_vertices<=0 || InRing->num_vertices<=0 ) {
@@ -482,7 +482,7 @@ int gpce_ring_contains_ring(const gpc_vertex_list *restrict OutRing,const gpce_e
         return 0;
     }
 
-    // Make sure no point is outside the ring
+    // Make sure no point32_t is outside the ring
     for(i=0; i<InRing->num_vertices; ++i) {
        if( !gpce_ring_contains_point(OutRing,OEnv,InRing->vertex[i]) ) {
           return 0;
@@ -496,7 +496,7 @@ int gpce_ring_contains_ring(const gpc_vertex_list *restrict OutRing,const gpce_e
  * Nom      : <gpce_polygon_contains_point>
  * Creation : Juillet 2018 - E. Legault-Ouellet
  *
- * But      : Vérifie si le point est contenu dans le polygone
+ * But      : Vérifie si le point32_t est contenu dans le polygone
  *
  * Parametres :
  *  <Poly>  : Le polygone
@@ -508,8 +508,8 @@ int gpce_ring_contains_ring(const gpc_vertex_list *restrict OutRing,const gpce_e
  * Remarques :
  *----------------------------------------------------------------------------
  */
-int gpce_polygon_contains_point(const gpc_polygon *restrict Poly,const gpce_envelope *restrict PEnv,gpc_vertex P) {
-    int r,in=0,np;
+int32_t gpce_polygon_contains_point(const gpc_polygon *restrict Poly,const gpce_envelope *restrict PEnv,gpc_vertex P) {
+    int32_t r,in=0,np;
 
     // Check whether or not we have a multi-polygon
     np = gpce_get_num_polygon(Poly);
@@ -553,8 +553,8 @@ int gpce_polygon_contains_point(const gpc_polygon *restrict Poly,const gpce_enve
  * Remarques :
  *----------------------------------------------------------------------------
  */
-int gpce_polygon_contains_ring(const gpc_polygon *restrict Poly,const gpce_envelope *restrict PEnv,const gpc_vertex_list *restrict Ring,const gpce_envelope *restrict REnv) {
-    int r,in=0,np,partial=0;
+int32_t gpce_polygon_contains_ring(const gpc_polygon *restrict Poly,const gpce_envelope *restrict PEnv,const gpc_vertex_list *restrict Ring,const gpce_envelope *restrict REnv) {
+    int32_t r,in=0,np,partial=0;
 
     if( Ring->num_vertices <= 0 )
         return 0;
@@ -566,7 +566,7 @@ int gpce_polygon_contains_ring(const gpc_polygon *restrict Poly,const gpce_envel
     for(r=0; r<Poly->num_contours; ++r) {
         // If we have an interior ring (hole)
         if( Poly->hole[r] ) {
-            // If the first point is inside the hole or we intersect the hole in any way, then the ring is not fully contained in the polygon
+            // If the first point32_t is inside the hole or we intersect the hole in any way, then the ring is not fully contained in the polygon
             if( gpce_ring_contains_point(Poly->contour+r,PEnv?PEnv+r:NULL,Ring->vertex[0])
                     || gpce_ring_crosses_ring(Poly->contour+r,PEnv?PEnv+r:NULL,Ring,REnv) ) {
                 return 0;
@@ -588,7 +588,7 @@ int gpce_polygon_contains_ring(const gpc_polygon *restrict Poly,const gpce_envel
     // Extra step : maybe our multi-polygon is joined around that ring?
     if( !in && partial>=2 ) {
         gpc_polygon poly,join,tmp;
-        int i,hole=0;
+        int32_t i,hole=0;
 
         // Create the polygon that we want to join
         poly.hole = &hole;
@@ -646,8 +646,8 @@ int gpce_polygon_contains_ring(const gpc_polygon *restrict Poly,const gpce_envel
  * Remarques :
  *----------------------------------------------------------------------------
  */
-int gpce_polygon_contains_polygon(const gpc_polygon *restrict OPoly,const gpce_envelope *restrict OEnv,const gpc_polygon *restrict IPoly,const gpce_envelope *restrict IEnv) {
-    int r,in=0;
+int32_t gpce_polygon_contains_polygon(const gpc_polygon *restrict OPoly,const gpce_envelope *restrict OEnv,const gpc_polygon *restrict IPoly,const gpce_envelope *restrict IEnv) {
+    int32_t r,in=0;
 
     // IPoly is contained in OPoly if all exterior rings of IPoly are contained in OPoly
     for(r=0; r<IPoly->num_contours; ++r) {
@@ -680,11 +680,11 @@ int gpce_polygon_contains_polygon(const gpc_polygon *restrict OPoly,const gpce_e
  *----------------------------------------------------------------------------
  */
 struct IdxE {
-   int idx;
+   int32_t idx;
    gpc_vertex_list *ring;
    gpce_envelope *env;
 };
-int QSort_IdxE(const void *A,const void *B) {
+int32_t QSort_IdxE(const void *A,const void *B) {
    const struct IdxE *a=A,*b=B;
    double asqA=(a->env->max.x-a->env->min.x)*(a->env->max.y-a->env->min.y);
    double asqB=(b->env->max.x-b->env->min.x)*(b->env->max.y-b->env->min.y);
@@ -693,11 +693,11 @@ int QSort_IdxE(const void *A,const void *B) {
    else                    return 0;
    //return (asqA>asqB)-(asqA<asqB);
 }
-int gpce_explode_multi_polygon(const gpc_polygon *restrict Poly,const gpce_envelope *restrict PEnv,gpc_polygon **PList,gpce_envelope ***EList) {
+int32_t gpce_explode_multi_polygon(const gpc_polygon *restrict Poly,const gpce_envelope *restrict PEnv,gpc_polygon **PList,gpce_envelope ***EList) {
     const gpce_envelope *restrict penv;
     gpc_polygon         *plist=NULL;
     gpce_envelope       **elist=NULL;
-    int                 r,n,e,c;
+    int32_t                 r,n,e,c;
 
     if( (n=gpce_get_num_polygon(Poly)) && (plist=calloc(n,sizeof(*plist))) && (!EList||(elist=malloc(n*sizeof(*elist)))) ) {
         if( n == 1 ) {
@@ -749,7 +749,7 @@ int gpce_explode_multi_polygon(const gpc_polygon *restrict Poly,const gpce_envel
             for(r=0; r<Poly->num_contours; ++r) {
                 if( Poly->hole[r] && Poly->contour[r].num_vertices ) {
                    for(e=0; e<n; ++e) {
-                      // Since we expect our polygons to already be well behaved, a hole having a point inside an exterior ring
+                      // Since we expect our polygons to already be well behaved, a hole having a point32_t inside an exterior ring
                       // means it belongs to that ring (which is the right ring because the polygons are sorted on envelope size)
                       if( gpce_ring_contains_point(idxe[e].ring,idxe[e].env,Poly->contour[r].vertex[0]) ) {
                          if( elist ) {
@@ -829,8 +829,8 @@ int gpce_explode_multi_polygon(const gpc_polygon *restrict Poly,const gpce_envel
       goto err; \
    } \
 }
-int gpce_poly_split_tile(const gpc_polygon *restrict Poly,const int MaxPoints,gpc_polygon **restrict Split,unsigned int *restrict NbSplit,unsigned int **restrict PolyIdx,unsigned int *restrict Size) {
-   unsigned int   size=0,toplvl=0,pidx=0;
+int32_t gpce_poly_split_tile(const gpc_polygon *restrict Poly,const int32_t MaxPoints,gpc_polygon **restrict Split,uint32_t *restrict NbSplit,uint32_t **restrict PolyIdx,uint32_t *restrict Size) {
+   uint32_t   size=0,toplvl=0,pidx=0;
 
    // A NULL size indicates that we are the top level fct
    if( !Size ) {
@@ -843,7 +843,7 @@ int gpce_poly_split_tile(const gpc_polygon *restrict Poly,const int MaxPoints,gp
    // Check if we have a multi polygon
    if( gpce_get_num_polygon(Poly) > 1 ) {
       gpc_polygon    *polys;
-      unsigned int   i,n;
+      uint32_t   i,n;
 
       // Split the multi-polygon into single polygons
       n = gpce_explode_multi_polygon(Poly,NULL,&polys,NULL);
@@ -916,11 +916,11 @@ int gpce_poly_split_tile(const gpc_polygon *restrict Poly,const int MaxPoints,gp
       // Add the polygon to the list
       gpce_copy_polygon(*Split+*NbSplit,Poly);
 
-      // Make sure the outer ring is the first ring int the list
+      // Make sure the outer ring is the first ring int32_t the list
       // Note: we are sure to have a polygon and not a multi-polygon, so there can only be one exterior ring
       if( Poly->hole[0] ) {
          gpc_vertex_list swp;
-         int r;
+         int32_t r;
 
          for(r=1; r<Poly->num_contours; ++r) {
             if( !Poly->hole[r] ) {
@@ -973,8 +973,8 @@ err:
  *   <Poly>    : The (multi)polygon to split at the wrapping line
  *   <Env>     : [Optional] Envolope of the given polygon (will be calculated otherwise)
  *   <Dim>     : Dimension of the wrap. 0=X, 1=Y
- *   <R0>      : Inferior point for the wrapping in the given dimension (ex: -180)
- *   <R1>      : Superior point for the wrapping in the given dimension (ex: +180)
+ *   <R0>      : Inferior point32_t for the wrapping in the given dimension (ex: -180)
+ *   <R1>      : Superior point32_t for the wrapping in the given dimension (ex: +180)
  *   <Wrapped> : [OUT] Resulting (multi)polygon IF any changes were done
  *
  * Return: The number of adjustements made (number of crossing treated).
@@ -983,10 +983,10 @@ err:
  * Remarks :
  *----------------------------------------------------------------------------
  */
-int gpce_poly_wrap_split(const gpc_polygon *restrict Poly,const gpce_envelope *restrict Env,int Dim,double R0,double R1,gpc_polygon *restrict Wrapped) {
+int32_t gpce_poly_wrap_split(const gpc_polygon *restrict Poly,const gpce_envelope *restrict Env,int32_t Dim,double R0,double R1,gpc_polygon *restrict Wrapped) {
    gpc_polygon poly = GPC_NULL_POLY;
    gpc_vertex  *v;
-   int         c,i,n,adjed=0;
+   int32_t         c,i,n,adjed=0;
    double      adjust,xy,lxy,dr,mid,amin=0.0,amax=0.0;
 
    *Wrapped = GPC_NULL_POLY;
@@ -1008,14 +1008,14 @@ int gpce_poly_wrap_split(const gpc_polygon *restrict Poly,const gpce_envelope *r
       adjust = 0.0;
 
       if( (n=Poly->contour[c].num_vertices) > 0 ) {
-         // Note: we loop on n-1 values because the first point can't have crossed the wrapping line by itself
+         // Note: we loop on n-1 values because the first point32_t can't have crossed the wrapping line by itself
          for(i=1,v=Poly->contour[c].vertex+i,lxy=(Dim?(v-1)->y:(v-1)->x); i<n; ++i,++v) {
             xy = Dim ? v->y : v->x;
 
             // If we travel more than half the total range between two points, then we are probably crossing the wrapping line
             if( fabs(xy-lxy) >= 0.5*dr ) {
-               // Update the adjustment by one range extent depending on were the previous point was compared to the adjusted midpoint
-               // (by adjusting the midpoint too, we ensure that the crossing back will be handled)
+               // Update the adjustment by one range extent depending on were the previous point32_t was compared to the adjusted midpoint
+               // (by adjusting the midpoint32_t too, we ensure that the crossing back will be handled)
                if( lxy >= mid+adjust ) {
                   adjust += dr;
                } else {
@@ -1054,10 +1054,10 @@ int gpce_poly_wrap_split(const gpc_polygon *restrict Poly,const gpce_envelope *r
    if( adjed ) {
       gpc_polygon    res,clip,resn;
       gpce_envelope  env;
-      int            i0,i1;
+      int32_t            i0,i1;
 
       // Clipping rectangle
-      int               hole  = 0;
+      int32_t               hole  = 0;
       gpc_vertex        rv[]  = {{0.0,0.0},{0.0,0.0},{0.0,0.0},{0.0,0.0}};
       gpc_vertex_list   rvlst = (gpc_vertex_list){rv,4};
       gpc_polygon       rect  = (gpc_polygon){&rvlst,&hole,1};
@@ -1142,18 +1142,18 @@ int gpce_poly_wrap_split(const gpc_polygon *restrict Poly,const gpce_envelope *r
  * Args :
  *   <Poly>    : [IN/OUT] The (multi)polygon to clamp at the wrapping line (modified in place)
  *   <Dim>     : Dimension of the wrap. 0=X, 1=Y
- *   <R0>      : Inferior point for the wrapping in the given dimension (ex: -180)
- *   <R1>      : Superior point for the wrapping in the given dimension (ex: +180)
+ *   <R0>      : Inferior point32_t for the wrapping in the given dimension (ex: -180)
+ *   <R1>      : Superior point32_t for the wrapping in the given dimension (ex: +180)
  *
  * Return:
  *
  * Remarks :
  *----------------------------------------------------------------------------
  */
-void gpce_poly_wrap_clamp(gpc_polygon *restrict Poly,int Dim,double R0,double R1) {
+void gpce_poly_wrap_clamp(gpc_polygon *restrict Poly,int32_t Dim,double R0,double R1) {
    gpc_vertex  *v;
    double      dr;
-   int         n,c;
+   int32_t         n,c;
 
    // Make sure we have the L0 and L1 in the right order
    if( R0 > R1 ) {
@@ -1194,7 +1194,7 @@ void gpce_poly_wrap_clamp(gpc_polygon *restrict Poly,int Dim,double R0,double R1
  *----------------------------------------------------------------------------
  */
 void gpce_get_ring_envelope(const gpc_vertex_list *restrict Ring,gpce_envelope *restrict PEnv) {
-    int i;
+    int32_t i;
 
     *PEnv = GPCE_MK_ENVELOPE(DBL_MAX,DBL_MAX,-DBL_MAX,-DBL_MAX);
 
@@ -1221,7 +1221,7 @@ void gpce_get_ring_envelope(const gpc_vertex_list *restrict Ring,gpce_envelope *
  *----------------------------------------------------------------------------
  */
 void gpce_get_envelope(const gpc_polygon *restrict Poly,gpce_envelope *restrict PEnv) {
-   int r,i;
+   int32_t r,i;
 
     *PEnv = GPCE_MK_ENVELOPE(DBL_MAX,DBL_MAX,-DBL_MAX,-DBL_MAX);
 
@@ -1252,7 +1252,7 @@ void gpce_get_envelope(const gpc_polygon *restrict Poly,gpce_envelope *restrict 
  *----------------------------------------------------------------------------
  */
 gpce_envelope* gpce_get_envelopes(const gpc_polygon *restrict Poly) {
-    int r;
+    int32_t r;
     gpce_envelope *penv = NULL;
 
     if( (penv=malloc(Poly->num_contours*sizeof(*penv))) ) {
@@ -1272,8 +1272,8 @@ gpce_envelope* gpce_get_envelopes(const gpc_polygon *restrict Poly) {
  *
  * Parametres :
  *  <PEnv>  : Enveloppe
- *  <L0>    : Premier point de la ligne L
- *  <L1>    : Deuxième point de la ligne L
+ *  <L0>    : Premier point32_t de la ligne L
+ *  <L1>    : Deuxième point32_t de la ligne L
  *  <Dir>   : Si la direction est prise en compte pour l'intersection.
  *            0 : la direction n'est pas importante
  *            1 : Seule les enveloppes dans la direction du vecteur L0->L1 seront
@@ -1284,7 +1284,7 @@ gpce_envelope* gpce_get_envelopes(const gpc_polygon *restrict Poly) {
  * Remarques :
  *----------------------------------------------------------------------------
  */
-int gpce_envelope_intersects_line(const gpce_envelope *restrict PEnv,gpc_vertex L0,gpc_vertex L1,const int Dir) {
+int32_t gpce_envelope_intersects_line(const gpce_envelope *restrict PEnv,gpc_vertex L0,gpc_vertex L1,const int32_t Dir) {
     double f,s;
     gpc_vertex tl=GPC_MK_VERTEX(PEnv->min.x,PEnv->max.y),br=GPC_MK_VERTEX(PEnv->max.x,PEnv->min.y);
 

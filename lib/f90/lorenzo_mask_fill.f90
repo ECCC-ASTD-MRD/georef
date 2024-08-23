@@ -52,7 +52,7 @@
       do j=1,nj
          i = 1
          last_i = 1
-         if (masque(i,j) == 0) then  ! On recherche le 1e point non nul
+         if (masque(i,j) == 0) then  ! On recherche le 1e point32_t non nul
             do
                i = i+1
                if (masque(i,j) /= 0) stop

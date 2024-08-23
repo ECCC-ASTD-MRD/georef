@@ -14,8 +14,8 @@
 #define OGR_BUFFER    4096
 
 typedef struct OGR_Sort {
-   int           Field,Type,Order;       // Sorting parameters
-   unsigned int  Nb,*Table;              // Sorted table of featurre index
+   int32_t           Field,Type,Order;       // Sorting parameters
+   uint32_t  Nb,*Table;              // Sorted table of featurre index
 } OGR_Sort;
 
 typedef struct OGR_File {
@@ -46,15 +46,15 @@ typedef struct OGR_Layer {
    TCoord          *Loc;                 // List of feature's centroid
    Vect3d           Vr[2];               // Layer extent in projected coordinates
    double           Min,Max;             // Layer's min-max of the currently mapped field
-   int              Update;              // Do we need to update the internale OGR
-   int              Mask,FMask;          // Is this layer used as a mask
-   unsigned int     NFeature;            // Number of features in the layer
-   unsigned int     LFeature;            // List of feature's rendered display list
-   unsigned int     GFeature;            // Number of feature processes as display list
-   unsigned int    *SFeature;            // List of of highlighted features
-   unsigned int     NSFeature;           // Number of highligted features
-   int              CFeature;            // Cleared feature (to be re-rendered)
-   int              Topo,Extrude,Space;  // Positional parameters
+   int32_t              Update;              // Do we need to update the internale OGR
+   int32_t              Mask,FMask;          // Is this layer used as a mask
+   uint32_t     NFeature;            // Number of features in the layer
+   uint32_t     LFeature;            // List of feature's rendered display list
+   uint32_t     GFeature;            // Number of feature processes as display list
+   uint32_t    *SFeature;            // List of of highlighted features
+   uint32_t     NSFeature;           // Number of highligted features
+   int32_t              CFeature;            // Cleared feature (to be re-rendered)
+   int32_t              Topo,Extrude,Space;  // Positional parameters
    char             Changed;             // Is the layer changed
 } OGR_Layer;
 
@@ -78,34 +78,34 @@ OGRGeometryH OGM_GPCOnOGRGeometry(gpc_op Op,OGRGeometryH *Geom);
 void         OGM_GPCNew(gpc_polygon *Poly);
 
 
-Vect3d*      OGM_GetVect3d(unsigned int Size,unsigned int No);
+Vect3d*      OGM_GetVect3d(uint32_t Size,uint32_t No);
 void         OGM_ClearVect3d(void);
 void         OGM_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef);
-int          OGM_QSortInter(const void *A,const void *B);
-int          OGM_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1);
+int32_t          OGM_QSortInter(const void *A,const void *B);
+int32_t          OGM_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1);
 OGRGeometryH OGM_SegIntersectionPts(OGRGeometryH Geom,double X0,double Y0,double X1,double Y1);
-int          OGM_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1);
-int          OGM_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);
-int          OGM_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);
-int          OGM_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);
-int          OGM_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
-int          OGM_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
-int          OGM_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD,Vect3d Inter);
+int32_t          OGM_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1);
+int32_t          OGM_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int32_t All);
+int32_t          OGM_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int32_t All);
+int32_t          OGM_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int32_t All);
+int32_t          OGM_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
+int32_t          OGM_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
+int32_t          OGM_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD,Vect3d Inter);
 double       OGM_Length(OGRGeometryH Geom);
 double       OGM_SegmentLength(OGRGeometryH Geom);
 double       OGM_SegmentDist(Vect3d SegA,Vect3d SegB,Vect3d Point);
 double       OGM_PointClosest(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr);
-int          OGM_PointInside(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr);
-double       OGM_CoordLimit(OGRGeometryH Geom,int Coord,int Mode);
+int32_t          OGM_PointInside(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr);
+double       OGM_CoordLimit(OGRGeometryH Geom,int32_t Coord,int32_t Mode);
 OGRGeometryH OGM_Clip(OGRGeometryH Line,OGRGeometryH Poly);
-int          OGM_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip);
+int32_t          OGM_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip);
 double       OGM_Centroid2D(OGRGeometryH Geom,double *X,double *Y);
 double       OGM_Centroid2DProcess(OGRGeometryH Geom,double *X,double *Y);
-int          OGM_Simplify(double Tolerance,OGRGeometryH Geom);
-int          OGM_SimplifyDP(double Tolerance,Vect3d *Pt,int J,int K,int *Markers);
+int32_t          OGM_Simplify(double Tolerance,OGRGeometryH Geom);
+int32_t          OGM_SimplifyDP(double Tolerance,Vect3d *Pt,int32_t J,int32_t K,int32_t *Markers);
 double       OGM_AngleMin(OGRGeometryH Geom);
-int          OGM_Clean(OGRGeometryH Geom);
-OGRGeometryH OGM_PolySplitTile(OGRGeometryH Poly,const unsigned int MaxPoints,OGRGeometryH Res);
+int32_t          OGM_Clean(OGRGeometryH Geom);
+OGRGeometryH OGM_PolySplitTile(OGRGeometryH Poly,const uint32_t MaxPoints,OGRGeometryH Res);
 OGRGeometryH OGM_ClipLonWrap(OGRGeometryH Poly);
 
 #endif

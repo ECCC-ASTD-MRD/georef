@@ -1,10 +1,10 @@
 #include <App.h>
 #include "GeoRef.h"
 
-void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int npts,float xlat1,float xlon1,float xlat2,float xlon2) {
+void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2) {
 
    double cart[3],carot[3],latr,lonr,cosdar;
-   int    n;
+   int32_t    n;
    float  r[3][3],ri[3][3];
 
    f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
@@ -30,10 +30,10 @@ void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int npts,float
    }
 }
  
-void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int npts,float xlat1,float xlon1,float xlat2,float xlon2) {
+void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2) {
 
    double cart[3],carot[3],latr,lonr,cosdar;
-   int i,k,n,c;
+   int32_t i,k,n,c;
    float r[3][3],ri[3][3];
 
    f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
@@ -57,9 +57,9 @@ void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int npts
    }
 }
 
-int GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
-   int   i,hemi;
+   int32_t   i,hemi;
    float pi,pj,dgrw,d60,dlat,dlon,xlat0,xlon0,xlat1,xlon1,xlat2,xlon2;
     
    switch(Ref->RPNHeadExt.grref[0]) {
@@ -109,10 +109,10 @@ int GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int 
  
  *    @return             Error code (0=ok)
 */
-int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb,int Extrap) {
+int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb,int32_t Extrap) {
 
    TGeoRef *yin_gd,*yan_gd;
-   int      i,j,icode;
+   int32_t      i,j,icode;
    double   *latyin,*lonyin,*latyan,*lonyan;
    double   *tmpy;
    
@@ -156,7 +156,6 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
          }
       }
    
-//TODO: Confirm CIndex
       if (Ref->Options.CIndex) {
          for(i=0;i<Nb;i++) {
             X[i]+=1.0;
@@ -199,10 +198,10 @@ int GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int Nb
   
  *    @return             Error code (0=ok)
 */
-int GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb,int Extrap) {
+int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb,int32_t Extrap) {
 
    TGeoRef *yin_gd,*yan_gd;
-   int     j,icode,maxni,maxnj;
+   int32_t     j,icode,maxni,maxnj;
    double  *xyin,*xyan,*yyin,*yyan;
 
    if (!Ref->LL2XY) {
@@ -222,7 +221,7 @@ int GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int Nb
       icode = GeoRef_LL2XY(yan_gd,xyan,yyan,Lat,Lon,Nb,Extrap);
       for (j=0; j < Nb; j++) {
          if (xyin[j] > maxni || xyin[j] < 1 || yyin[j] > maxnj || yyin[j] < 1) {
-            // point is no good, take from YAN eventhough it may not be good
+            // point32_t is no good, take from YAN eventhough it may not be good
             X[j]=xyan[j];
             Y[j]=yyan[j]+maxnj;
          } else {

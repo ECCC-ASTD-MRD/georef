@@ -68,12 +68,12 @@ void Vertex_Map(Vect2d P[4],double *LX,double *LY,double WX,double WY) {
  * Nom      : <VertexGradient>
  * Creation : Septembre 2001 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Obtenir le gradient d'un point tridimentionne
+ * But      : Obtenir le gradient d'un point32_t tridimentionne
  *            a l'interieur d'un voxel
  *
  * Parametres :
  *   <Def>    : Definitions des donnees
- *   <Nr>     : Point a l'interieur du voxel
+ *   <Nr>     : Point32_t a l'interieur du voxel
  *
  * Retour:
  *   <Nr>     : Gradient normalise
@@ -102,11 +102,11 @@ void VertexGradient(TDef *Def,Vect3d Nr) {
  *            sur un cote entre deux vertex
  *
  * Parametres :
- *   <Pi>     : Point resultant
- *   <P0>     : Point 1
- *   <P1>     : Point 2
- *   <V0>     : Valeur au point P0
- *   <V1>     : Valeur au point P1
+ *   <Pi>     : Point32_t resultant
+ *   <P0>     : Point32_t 1
+ *   <P1>     : Point32_t 2
+ *   <V0>     : Valeur au point32_t P0
+ *   <V1>     : Valeur au point32_t P1
  *   <Level>  : Niveau
  *
  * Retour:
@@ -144,7 +144,7 @@ void VertexInterp(Vect3d Pi,Vect3d P0,Vect3d P1,double V0,double V1,double Level
  * Nom      : <VertexLoc>
  * Creation : Mars 2002 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Interpoler la position d'un point de grille en X,Y,Z.
+ * But      : Interpoler la position d'un point32_t de grille en X,Y,Z.
  *
  * Parametres :
  *  <Ref>     : Georeference
@@ -161,7 +161,7 @@ void VertexInterp(Vect3d Pi,Vect3d P0,Vect3d P1,double V0,double V1,double Level
  *
  *----------------------------------------------------------------------------
 */
-int VertexLoc(Vect3d **Pos,TDef *Def,Vect3d Vr,double X,double Y,double Z,int Wrap) {
+int32_t VertexLoc(Vect3d **Pos,TDef *Def,Vect3d Vr,double X,double Y,double Z,int32_t Wrap) {
 
    Vect3d        v00,v01,v10,v11,v0,v1;
    unsigned long i,j,k,k1;
@@ -175,7 +175,7 @@ int VertexLoc(Vect3d **Pos,TDef *Def,Vect3d Vr,double X,double Y,double Z,int Wr
    j=Y;Y-=j;
    k=Z;Z-=k;
 
-   // Get gridpoint indexes
+   // Get gridpoint32_t indexes
    idx0=Def->Idx+j*Def->NI+i%Def->NI;
    idx1=idx0+1;
    idx3=(j==Def->NJ-1)?idx0:idx0+Def->NI;
@@ -225,7 +225,7 @@ int VertexLoc(Vect3d **Pos,TDef *Def,Vect3d Vr,double X,double Y,double Z,int Wr
  * Nom      : <VertexAvg>
  * Creation : Avril 2016 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Moyenne la valeur d'un point de grille masque avec ses voisins
+ * But      : Moyenne la valeur d'un point32_t de grille masque avec ses voisins
  *
  * Parametres :
  *   <Def>    : Definition des donnees
@@ -240,7 +240,7 @@ int VertexLoc(Vect3d **Pos,TDef *Def,Vect3d Vr,double X,double Y,double Z,int Wr
  *
  *----------------------------------------------------------------------------
 */
-static inline double VertexAvg(TDef *Def,int Idx,int X,int Y,int Z) {
+static inline double VertexAvg(TDef *Def,int32_t Idx,int32_t X,int32_t Y,int32_t Z) {
    
    unsigned long n,i,j,idx,k;
    double        v,val;
@@ -289,7 +289,7 @@ static inline double VertexAvg(TDef *Def,int Idx,int X,int Y,int Z) {
  *
  *----------------------------------------------------------------------------
 */
-float VertexVal(TDef *Def,int Idx,double X,double Y,double Z) {
+float VertexVal(TDef *Def,int32_t Idx,double X,double Y,double Z) {
 
    double        cube[2][4];
    unsigned long i,j,k,idx[4],idxk;
@@ -302,7 +302,7 @@ float VertexVal(TDef *Def,int Idx,double X,double Y,double Z) {
    j=Y;Y-=j;
    k=Z;Z-=k;
 
-   // Get gridpoint indexes
+   // Get gridpoint32_t indexes
    idxk=Def->NIJ;
 
    idx[0]=(k?idxk*k:0)+j*Def->NI+i;
@@ -389,7 +389,7 @@ double VertexValV(TDef *Def,double X,double Y,double Z,Vect3d V) {
    j=Y;Y-=j;
    k=Z;Z-=k;
 
-   // Get gridpoint indexes
+   // Get gridpoint32_t indexes
    idxk=Def->NIJ;
 
    idx[0]=(k?idxk*k:0)+j*Def->NI+i;
@@ -466,7 +466,7 @@ double VertexValV(TDef *Def,double X,double Y,double Z,Vect3d V) {
    return(0);
 }
 
-static inline float VertexAvgS(double *Data,char *Mask,int NI,int NJ,int X,int Y) {
+static inline float VertexAvgS(double *Data,char *Mask,int32_t NI,int32_t NJ,int32_t X,int32_t Y) {
    
    unsigned long n=0,i,j,idx;
    float         val=0.0;
@@ -484,7 +484,7 @@ static inline float VertexAvgS(double *Data,char *Mask,int NI,int NJ,int X,int Y
    return(n?val/n:0.0);
 }
 
-float VertexValS(double *Data,char *Mask,int NI,int NJ,double X,double Y,char Geo) {
+float VertexValS(double *Data,char *Mask,int32_t NI,int32_t NJ,double X,double Y,char Geo) {
    
    double        cell[4],d;
    unsigned long i,j,idx[4];
@@ -501,7 +501,7 @@ float VertexValS(double *Data,char *Mask,int NI,int NJ,double X,double Y,char Ge
    i=X;X-=i;
    j=Y;Y-=j;
 
-   // Get gridpoint indexes
+   // Get gridpoint32_t indexes
    idx[0]=j*NI+i;
    idx[1]=idx[0]+1;
    idx[3]=(j==NJ-1)?idx[0]:idx[0]+NI;

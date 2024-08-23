@@ -21,16 +21,16 @@
 
 typedef struct TZRefInterp {
    TZRef         *ZRefSrc,*ZRefDest;       // Source and destination vertical references
-   int           *Indexes;                 // Interpolation array indices
-   int           NIJ;                      // 2D dimensions
-   int           Same;                     // Flag indicating source and destination are the same
+   int32_t           *Indexes;                 // Interpolation array indices
+   int32_t           NIJ;                      // 2D dimensions
+   int32_t           Same;                     // Flag indicating source and destination are the same
 } TZRefInterp;
 
-int          ZRefInterp_Free(TZRefInterp *Interp);
+int32_t          ZRefInterp_Free(TZRefInterp *Interp);
 void         ZRefInterp_Clear(TZRefInterp *Interp);
-TZRefInterp *ZRefInterp_Define(TZRef *ZRefDest,TZRef *ZRefSrc,const int NI,const int NJ);
-int          ZRefInterp(TZRefInterp *Interp,float *stateOut,float *stateIn,float *derivOut,float *derivIn,float extrapGuideDown,float extrapGuideUp);
-int          ZRefInterp_SetOption(const char *Option,const char *Value);
-int          ZRefInterp_SetOptioni(const unsigned char option);
+TZRefInterp *ZRefInterp_Define(TZRef *ZRefDest,TZRef *ZRefSrc,const int32_t NI,const int32_t NJ);
+int32_t          ZRefInterp(TZRefInterp *Interp,float *stateOut,float *stateIn,float *derivOut,float *derivIn,float extrapGuideDown,float extrapGuideUp);
+int32_t          ZRefInterp_SetOption(const char *Option,const char *Value);
+int32_t          ZRefInterp_SetOptioni(const unsigned char option);
 
 #endif

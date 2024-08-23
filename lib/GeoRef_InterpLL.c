@@ -2,7 +2,7 @@
 #include "GeoRef.h"
 
 /**----------------------------------------------------------------------------
- * @brief  Get latitude and longitudes of a 2d point (Copy of fortran function, but using double precision)
+ * @brief  Get latitude and longitudes of a 2d point32_t (Copy of fortran function, but using double precision)
  * @date   February 1975
  *    @param[out]  Lat     Latitude in degrees 
  *    @param[out]  Lon     Longitude in degrees
@@ -13,14 +13,14 @@
  *    @param[in]   HEM     Side of the hemisphere (1=North, 2=South)
  * 
  */
-static inline void llfxy(double *Lat,double *Lon,double X,double Y,double D60,double DGRW,int HEM) {
+static inline void llfxy(double *Lat,double *Lon,double X,double Y,double D60,double DGRW,int32_t HEM) {
 
    double re,re2,r2;
 
    re=1.866025*EARTHRADIUS/D60;
    re2=re*re;
 
-   // Initialize point at pole (0.0,90.0)
+   // Initialize point32_t at pole (0.0,90.0)
    *Lat=90.0;
    *Lon=0.0;
 
@@ -64,9 +64,9 @@ static inline void llfxy(double *Lat,double *Lon,double X,double Y,double D60,do
  *    @param[in]   Dlon    Longitudr spacing in degrees
  * 
  */
-static inline void grll(double *Lat,double *Lon,int NI,int NJ,double Lat0,double Lon0,double DLat,double DLon) {
+static inline void grll(double *Lat,double *Lon,int32_t NI,int32_t NJ,double Lat0,double Lon0,double DLat,double DLon) {
 
-   int    i,j,idx=0;
+   int32_t    i,j,idx=0;
    double lat;
 
    for(j=0;j<NJ;j++){
@@ -93,9 +93,9 @@ static inline void grll(double *Lat,double *Lon,int NI,int NJ,double Lat0,double
  *    @param[in]   HEM     Side of the hemisphere (1=North, 2=South)
  * 
  */
-static inline void grps(double *Lat,double *Lon,int NI,int NJ,double PI,double PJ,double D60,double DGRW,int HEM) {
+static inline void grps(double *Lat,double *Lon,int32_t NI,int32_t NJ,double PI,double PJ,double D60,double DGRW,int32_t HEM) {
 
-   int    i,j,idx=0;
+   int32_t    i,j,idx=0;
    double lat,lon,x,y;
 
    for(j=0;j<NJ;j++){
@@ -108,9 +108,9 @@ static inline void grps(double *Lat,double *Lon,int NI,int NJ,double PI,double P
    }
 }
 
-static inline void Permut(double *Z,int NI,int NJ) {
+static inline void Permut(double *Z,int32_t NI,int32_t NJ) {
 
-   int    i,j,ncc,idx,idxn;
+   int32_t    i,j,ncc,idx,idxn;
    double t;
 
    ncc = NJ>>1;
@@ -134,10 +134,10 @@ static inline void Permut(double *Z,int NI,int NJ) {
  *  
  *    @return             Number of coordinates
 */
-int GeoRef_CalcLL(TGeoRef* Ref) {
+int32_t GeoRef_CalcLL(TGeoRef* Ref) {
 
    float  xlat00, xlon00, dlat, dlon;
-   int    i,j,k,ni, nj, npts, hemisphere;
+   int32_t    i,j,k,ni, nj, npts, hemisphere;
    double *lonp,*latp,*xp,*yp;
 
    ni = Ref->NX;
@@ -341,9 +341,9 @@ int GeoRef_CalcLL(TGeoRef* Ref) {
  
  *    @return             Number of coordinates
 */
-int GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
+int32_t GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
 
-   int n=0,i;
+   int32_t n=0,i;
 
    if (Ref->NbSub > 0) {
       i = Ref->Subs[0]->NX*Ref->Subs[1]->NY;
@@ -376,10 +376,10 @@ int GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
  *  
  *    @return             Number of interpolated values
 */
-int GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *Lat,double *Lon,int Nb) { 
+int32_t GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *Lat,double *Lon,int32_t Nb) { 
 
    double *x,*y;
-   int ier;
+   int32_t ier;
 
    if (!Opt) Opt=&GeoRef_Options;
 
@@ -408,10 +408,10 @@ int GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *La
  *  
  *    @return             Number of interpolated values
 */
-int GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb) {
 
    double *x,*y;
-   int ier;
+   int32_t ier;
    
    if (Ref->NbSub > 0) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
@@ -446,10 +446,10 @@ int GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float
  *  
  *    @return             Number of interpolated values
 */
-int GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int Nb) {
+int32_t GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb) {
 
    TGeoRef *yin_gd, *yan_gd;
-   int ier,j;
+   int32_t ier,j;
    double *x,*y;
    float  *uuyin, *vvyin, *uuyan, *vvyan;
 

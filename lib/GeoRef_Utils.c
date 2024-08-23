@@ -90,7 +90,7 @@ double InterpHermite(double X0,double X1,double X2, double X3,double F,double T,
  *
  *----------------------------------------------------------------------------
 */
-int QSort_Double(const void *A,const void *B){
+int32_t QSort_Double(const void *A,const void *B){
 
    if (*(const double*)A<*(const double*)B) {
       return(-1);
@@ -101,7 +101,7 @@ int QSort_Double(const void *A,const void *B){
    }
 }
 
-int QSort_Float(const void *A,const void *B){
+int32_t QSort_Float(const void *A,const void *B){
 
    if (*(const float*)A<*(const float*)B) {
       return(-1);
@@ -112,7 +112,7 @@ int QSort_Float(const void *A,const void *B){
    }
 }
 
-int QSort_Int(const void *A, const void *B) {
+int32_t QSort_Int(const void *A, const void *B) {
    return(*(const int*)A)-(*(const int*)B);
 }
 
@@ -135,7 +135,7 @@ int QSort_Int(const void *A, const void *B) {
  *
  *----------------------------------------------------------------------------
 */
-int QSort_DecDouble(const void *A,const void *B){
+int32_t QSort_DecDouble(const void *A,const void *B){
    if (*(const double*)B<*(const double*)A) {
       return(-1);
    } else if (*(const double*)B>*(const double*)A) {
@@ -145,7 +145,7 @@ int QSort_DecDouble(const void *A,const void *B){
    }
 }
 
-int QSort_DecFloat(const void *A,const void *B){
+int32_t QSort_DecFloat(const void *A,const void *B){
    if (*(const float*)B<*(const float*)A) {
       return(-1);
    } else if (*(const float*)B>*(const float*)A) {
@@ -155,11 +155,11 @@ int QSort_DecFloat(const void *A,const void *B){
    }
 }
 
-int QSort_DecInt(const void *A, const void *B) {
+int32_t QSort_DecInt(const void *A, const void *B) {
    return(*(const int*)B)-(*(const int*)A);
 }
 
-int QSort_StrPtr(const void *A, const void *B) {
+int32_t QSort_StrPtr(const void *A, const void *B) {
    return strcmp(*(const char * const *)A,*(const char * const *)B);
 }
 
@@ -182,7 +182,7 @@ int QSort_StrPtr(const void *A, const void *B) {
  *----------------------------------------------------------------------------
  */
 void Unique(void *Arr,int* restrict Size,size_t NBytes) {
-   int i;
+   int32_t i;
    char *a,*b;
 
    if( *Size > 0 ) {
@@ -200,9 +200,9 @@ void Unique(void *Arr,int* restrict Size,size_t NBytes) {
 }
 
 
-double HCentile(double *M,int N,int K) {
+double HCentile(double *M,int32_t N,int32_t K) {
 
-   register int    i,j,l,m;
+   register int32_t    i,j,l,m;
    register double x,d;
 
    l=0;m=N-1;
