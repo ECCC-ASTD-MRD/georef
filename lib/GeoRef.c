@@ -2138,13 +2138,13 @@ int32_t GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,in
 int32_t GeoRef_Write(TGeoRef *GRef,fst_file *File){
 
    fst_record record=default_fst_record;
-   int32_t i,dbl=TRUE;
+   int32_t i,dbl=FALSE;
    char *c;
 
    if (!GRef->Name) GRef->Name=strdup("Undefined");
 
-   if ((c=getenv("GEOREF_DESCRIPTOR_32"))) {
-      dbl=FALSE;
+   if ((c=getenv("GEOREF_DESCRIPTOR_64"))) {
+      dbl=TRUE;
    }
    record.data = (float*)calloc(GRef->NX*GRef->NY,sizeof(float));
    record.ni   = GRef->NX;

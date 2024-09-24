@@ -5,6 +5,7 @@
 #include <string.h>
 #include <pthread.h>
 
+#include <App.h>
 #include <rmn.h>
 #include <rmn/rpnmacros.h>
 #include <rmn/Vector.h>
@@ -218,11 +219,11 @@ struct TGeoRef;
 int32_t GeoRef_Project(struct TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int32_t Extrap,int32_t Transform);
 int32_t GeoRef_UnProject(struct TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int32_t Extrap,int32_t Transform);
 
-typedef int32_t    (TGeoRef_LL2XY)     (struct TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb);
-typedef int32_t    (TGeoRef_XY2LL)     (struct TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+typedef int32_t (TGeoRef_LL2XY)  (struct TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb);
+typedef int32_t (TGeoRef_XY2LL)  (struct TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+typedef double  (TGeoRef_Height) (struct TGeoRef *Ref,TZRef *ZRef,double X,double Y,double Z);
 //typedef int32_t    (TGeoRef_Value)     (struct TGeoRef *Ref,struct TDef *Def,TRef_InterpR Interp,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY);
 //typedef double (TGeoRef_Distance)  (struct TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
-typedef double (TGeoRef_Height)    (struct TGeoRef *Ref,TZRef *ZRef,double X,double Y,double Z);
 
 #define GOPT_MAXWEIGHTNUM 256
 
@@ -233,12 +234,12 @@ typedef struct TGeoOptions {
    TRef_InterpV InterpVector;   ///< Vector interpolation method
    TRef_Combine Combine;        ///< Aggregation type
    double       ExtrapValue;    ///< Value to use for extrapolation in ER_VALUE mode
-   int32_t          Transform;      ///< Apply transformation or stay within master referential
-   int32_t          CIndex;         ///< C Indexing (starts st 0)
-   int32_t          Symmetric;      ///< 
-   int32_t          WeightNum;      ///<
-   int32_t          Segment;        ///< How much segmentation (Conservatives/Geometric modes)
-   int32_t          Sampling;       ///< Sampling interval
+   int32_t      Transform;      ///< Apply transformation or stay within master referential
+   int32_t      CIndex;         ///< C Indexing (starts st 0)
+   int32_t      Symmetric;      ///< 
+   int32_t      WeightNum;      ///<
+   int32_t      Segment;        ///< How much segmentation (Conservatives/Geometric modes)
+   int32_t      Sampling;       ///< Sampling interval
    char         PolarCorrect;   ///< Apply polar corrections
    char         VectorMode;     ///< Process data as vector
    float        DistTreshold;   ///< Distance treshold for point32_t clouds
@@ -255,9 +256,9 @@ typedef struct TRotationTransform {
 } TRotationTransform;
 
 typedef struct {
-   int32_t npts;                 ///< Nombre de points
+   int32_t npts;             ///< Nombre de points
    double *x,*y;             ///< Vecteur de coordonnees 
-   int32_t *idx;                 ///< Indice du point32_t dans le champ de destination
+   int32_t *idx;             ///< Indice du point32_t dans le champ de destination
 } TGeoZone;
 
 typedef struct {
@@ -265,9 +266,9 @@ typedef struct {
    struct TGeoRef *RefFrom,*RefTo;
    TGeoZone        zones[SET_NZONES];
    char            G2G[2];                          ///<GRTYP of source and destination for index identification
-   int32_t             flags;
+   int32_t         flags;
    TRef_InterpR    IndexDegree;
-   int32_t             IndexSize;
+   int32_t         IndexSize;
    float          *Index;
    double         *X,*Y;
 
@@ -280,7 +281,7 @@ typedef struct {
    int32_t yincount_yin,yancount_yin,yincount_yan,yancount_yan;
 
    int32_t n_wts;                ///< Nombre de poids
-   double *wts;              ///< Tableau de poids
+   double *wts;                  ///< Tableau de poids
    int32_t *mask, *idx;          ///< Indice du point32_t dans le champ de destination
 } TGeoSet;
 
@@ -288,21 +289,21 @@ typedef struct {
 #define GeoRef_SetEmptyIndex(G) (G && G->Index && G->Index[0]==REF_INDEX_EMPTY)
 
 typedef struct TGeoRef {
-   char*   Name;                                          ///< Reference name
-   int32_t     NRef;                                          ///< Nombre de reference a la georeference
-   struct  TGeoRef  *RefFrom;                             ///< Georeference de reference (coupe verticale,...)
-   struct  TGeoRef **Subs;                                ///< Liste des sous grilles (GRTYP=U)
-   int32_t     Sub,NbSub;                                     ///< Nombre de sous-grilles
-   int32_t     Type;                                          ///< Parametre/Flags de grille
-   int32_t     BD;                                            ///< Bordure
-   int32_t     NX,NY,X0,Y0,X1,Y1;                             ///< Grid size and limits
-   int32_t     Extension;                                     ///< related to the newtonian coefficient
-   char    GRTYP[3];                                      ///< Type de grille
-   int32_t     Hemi;                                          ///< Hemisphere side (0=GLOBAL,1=NORTH,2=SOUTH)
-   int32_t     NbSet;                                         ///< Nombre de set d'interpolation
-   TGeoSet *Sets,*LastSet;                                ///< Tableau de set d'interpolation et du dernier utilise
+   char*        Name;                                     ///< Reference name
+   int32_t      NRef;                                     ///< Nombre de reference a la georeference
+   struct TGeoRef  *RefFrom;                              ///< Georeference de reference (coupe verticale,...)
+   struct TGeoRef **Subs;                                 ///< Liste des sous grilles (GRTYP=U)
+   int32_t      Sub,NbSub;                                ///< Nombre de sous-grilles
+   int32_t      Type;                                     ///< Parametre/Flags de grille
+   int32_t      BD;                                       ///< Bordure
+   int32_t      NX,NY,X0,Y0,X1,Y1;                        ///< Grid size and limits
+   int32_t      Extension;                                ///< related to the newtonian coefficient
+   char         GRTYP[3];                                 ///< Type de grille
+   int32_t      Hemi;                                     ///< Hemisphere side (0=GLOBAL,1=NORTH,2=SOUTH)
+   int32_t      NbSet;                                    ///< Nombre de set d'interpolation
+   TGeoSet      *Sets,*LastSet;                           ///< Tableau de set d'interpolation et du dernier utilise
 
-   uint32_t NIdx,*Idx;                                ///< Index dans les positions
+   uint32_t     NIdx,*Idx;                                ///< Index dans les positions
    double       *Lat,*Lon;                                ///< Coordonnees des points de grilles (Spherical)
    double       *AX,*AY;                                  ///< Axes de positionnement / deformation
    float        *NCX,*NCY,*Hgt;                   
@@ -320,9 +321,9 @@ typedef struct TGeoRef {
    OGRSpatialReferenceH          Spatial;                 ///< Spatial reference
 
    TCoord  Loc;                                           ///< (Radar) Localisation du centre de reference
-   double CTH,STH;                                        ///< (Radar) sin and cos of sweep angle
-   double ResR,ResA;                                      ///< (Radar) Resolutions en distance et azimuth
-   int32_t    R;                                              ///< (Radar) Rayon autour du centre de reference en bin
+   double  CTH,STH;                                       ///< (Radar) sin and cos of sweep angle
+   double  ResR,ResA;                                     ///< (Radar) Resolutions en distance et azimuth
+   int32_t R;                                             ///< (Radar) Rayon autour du centre de reference en bin
 
    TGeoOptions Options;                                   ///< Options for manipulations
    TGeoRef_XY2LL     *XY2LL;                              ///< Transformation xy to latlon
@@ -364,14 +365,14 @@ void GeoRef_Lock(void);
 void GeoRef_Unlock(void);
 
 TGeoRef* GeoRef_Get(char *Name);
-int32_t      GeoRef_Incr(TGeoRef *Ref);
+int32_t  GeoRef_Incr(TGeoRef *Ref);
 void     GeoRef_Decr(TGeoRef *Ref);
-int32_t      GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
-int32_t      GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,int32_t In);
-int32_t      GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int32_t Idx0,int32_t Idx1,int32_t Idx2,int32_t Idx3);
-int32_t      GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1,int32_t *X0,int32_t *Y0,int32_t *X1,int32_t *Y1,int32_t BD);
-int32_t      GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
-int32_t      GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* DA);
+int32_t  GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
+int32_t  GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,int32_t In);
+int32_t  GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int32_t Idx0,int32_t Idx1,int32_t Idx2,int32_t Idx3);
+int32_t  GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1,int32_t *X0,int32_t *Y0,int32_t *X1,int32_t *Y1,int32_t BD);
+int32_t  GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1);
+int32_t  GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* DA);
 TGeoRef* GeoRef_New();
 TGeoRef* GeoRef_Add(TGeoRef *Ref);
 TGeoRef* GeoRef_Find(TGeoRef *Ref);
@@ -380,16 +381,16 @@ TGeoRef* GeoRef_HardCopy(TGeoRef* __restrict const Ref);
 TGeoRef* GeoRef_Reference(TGeoRef* __restrict const Ref);
 void     GeoRef_Size(TGeoRef *Ref,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_t BD);
 TGeoRef* GeoRef_Resize(TGeoRef* __restrict const Ref,int32_t NI,int32_t NJ);
-int32_t      GeoRef_Free(TGeoRef *Ref);
+int32_t  GeoRef_Free(TGeoRef *Ref);
 void     GeoRef_Clear(TGeoRef *Ref,int32_t New);
 void     GeoRef_Qualify(TGeoRef* __restrict const Ref);
-int32_t      GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1);
-int32_t      GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,double *I0,double *J0,double *I1,double *J1);
-int32_t      GeoRef_Valid(TGeoRef* __restrict const Ref);
+int32_t  GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1);
+int32_t  GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,double *I0,double *J0,double *I1,double *J1);
+int32_t  GeoRef_Valid(TGeoRef* __restrict const Ref);
 double   GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1);
-int32_t      GeoRef_Write(TGeoRef *GRef,fst_file *File);
-int32_t      GeoRef_Read(struct TGeoRef *GRef);
-int32_t      GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec);
+int32_t  GeoRef_Write(TGeoRef *GRef,fst_file *File);
+int32_t  GeoRef_Read(struct TGeoRef *GRef);
+int32_t  GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec);
   
 TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,fst_file *File);
 TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *GRTYP,char *grref,int32_t VerCode,int32_t NbSub,TGeoRef **Subs);
@@ -398,9 +399,9 @@ TGeoRef* GeoRef_CreateW(int32_t ni,int32_t nj,char *grtyp,int32_t ig1,int32_t ig
 TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grref,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,double* AX,double* AY);
 TGeoRef* GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
 TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int32_t NI,int32_t NJ,float DX,float DY,float LatR,float LonR,int32_t MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2);
-int32_t      GeoRef_Positional(TGeoRef *Ref,struct TDef *XDef,struct TDef *YDef);
+int32_t  GeoRef_Positional(TGeoRef *Ref,struct TDef *XDef,struct TDef *YDef);
 TQTree*  GeoRef_BuildIndex(TGeoRef* __restrict const Ref);
-int32_t      GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *Idxs,double *Dists,int32_t NbNear,double MaxDist);
+int32_t  GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *Idxs,double *Dists,int32_t NbNear,double MaxDist);
 
 // EZSCINT merged fonctionnalities
 int32_t      GeoRef_DefRPNXG(TGeoRef* Ref);                                                                                           // c_ezdefxg
@@ -418,77 +419,77 @@ int32_t      GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vv
 
 // TODO: does not exists int32_t      GeoRef_XY2XY(TGeoRef *RefTo,TGeoRef *RefFrom,double *X1,double *Y1,double *X0,double *Y0,int32_t Nb,int32_t Extrap);
 
-int32_t      GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t npts);                    // c_gdxysint
-int32_t      GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout, float *zin);                                                  // c_ezsint
-int32_t      GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                      // c_ezuvint
-int32_t      GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                      // c_ezwdint
-int32_t      GeoRef_InterpYY(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout, float *zin);                                                // c_ezyysint
-int32_t      GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                    // c_ezyyuvint
-int32_t      GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                    // c_ezyywdint
-int32_t      GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,char *MaskOut,char *MaskIn);
-int32_t      GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float *vvllin,double *Lat,double *Lon,int32_t npts);   // c_gduvfwd
-int32_t      GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int32_t npts);        // c_gdwdfuv
+int32_t  GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t npts);                    // c_gdxysint
+int32_t  GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout, float *zin);                                                  // c_ezsint
+int32_t  GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                      // c_ezuvint
+int32_t  GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                      // c_ezwdint
+int32_t  GeoRef_InterpYY(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout, float *zin);                                                // c_ezyysint
+int32_t  GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                    // c_ezyyuvint
+int32_t  GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                    // c_ezyywdint
+int32_t  GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,char *MaskOut,char *MaskIn);
+int32_t  GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float *vvllin,double *Lat,double *Lon,int32_t npts);   // c_gduvfwd
+int32_t  GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int32_t npts);        // c_gdwdfuv
 int32_t  GeoRef_UV2UV(TGeoRef *Ref,float *uullout,float *vvllout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb);    //c_gdlluvfuv_orig
 
-int32_t      GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int32_t *MaskOut,int32_t *MaskIn);
-int32_t      GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int32_t ni,int32_t nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int32_t *yyincount,double *yanlat,double *yanlon,int32_t *yyancount);
-int32_t      GeoRef_MaskYYDefine(TGeoRef *Ref);
+int32_t  GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int32_t *MaskOut,int32_t *MaskIn);
+int32_t  GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int32_t ni,int32_t nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int32_t *yyincount,double *yanlat,double *yanlon,int32_t *yyancount);
+int32_t  GeoRef_MaskYYDefine(TGeoRef *Ref);
 
 void     GeoRef_GridGetExpanded(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin);                                                           // gdxpngd
-int32_t      GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,int32_t *IG1,int32_t *IG2,int32_t *IG3,int32_t *IG4,char *grref,int32_t *IG1REF,int32_t *IG2REF,int32_t *IG3REF,int32_t *IG4REF);  //c_ezgxprm
-int32_t      GeoRef_AxisGet(TGeoRef *Ref,double *AX,double *AY);                                                                        // gdaxes
-int32_t      GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY);                                                              // gdgxpndaxes
+int32_t  GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,int32_t *IG1,int32_t *IG2,int32_t *IG3,int32_t *IG4,char *grref,int32_t *IG1REF,int32_t *IG2REF,int32_t *IG3REF,int32_t *IG4REF);  //c_ezgxprm
+int32_t  GeoRef_AxisGet(TGeoRef *Ref,double *AX,double *AY);                                                                        // gdaxes
+int32_t  GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY);                                                              // gdgxpndaxes
 void     GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY);
 void     GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref);
 void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
 
 // Internal functions
 TGeoSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom,TGeoOptions *Opt);
-void      GeoRef_SetFree(TGeoSet *GSet);
+void     GeoRef_SetFree(TGeoSet *GSet);
 TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_file *File);
-int32_t       GeoRef_SetWrite(TGeoSet *GSet,fst_file *File);
-int32_t       GeoRef_SetZoneDefine(TGeoSet *GSet);
-int32_t       GeoRef_SetCalcXY(TGeoSet *GSet);
-int32_t       GeoRef_SetCalcYYXY(TGeoSet *GSet);
+int32_t  GeoRef_SetWrite(TGeoSet *GSet,fst_file *File);
+int32_t  GeoRef_SetZoneDefine(TGeoSet *GSet);
+int32_t  GeoRef_SetCalcXY(TGeoSet *GSet);
+int32_t  GeoRef_SetCalcYYXY(TGeoSet *GSet);
 
-int32_t       GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t npts,TGeoSet *GSet);
-int32_t       GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin);
-int32_t       GeoRef_CorrectVector(TGeoSet *Set,float *uuout, float *vvout, float *uuin, float *vvin);
-void      GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2);
-void      GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2);
+int32_t  GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t npts,TGeoSet *GSet);
+int32_t  GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin);
+int32_t  GeoRef_CorrectVector(TGeoSet *Set,float *uuout, float *vvout, float *uuin, float *vvin);
+void     GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2);
+void     GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2);
 
 // Per grid type transformations
-int32_t       GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb);
-int32_t       GeoRef_LL2XY_A(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
-int32_t       GeoRef_XY2LL_L(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
-int32_t       GeoRef_LL2XY_B(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb);
-int32_t       GeoRef_LL2XY_E(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
-int32_t       GeoRef_XY2LL_E(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
-int32_t       GeoRef_LL2XY_L(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb);
-int32_t       GeoRef_LL2XY_NS(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
-int32_t       GeoRef_XY2LL_NS(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
-int32_t       GeoRef_LL2XY_T(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
-int32_t       GeoRef_XY2LL_T(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
-int32_t       GeoRef_LL2XY_LAMBERT(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
-int32_t       GeoRef_XY2LL_LAMBERT(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
-int32_t       GeoRef_LL2XY_G(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
-int32_t       GeoRef_XY2LL_G(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
-int32_t       GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
-int32_t       GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
-int32_t       GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
-int32_t       GeoRef_XY2LL_O(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
-int32_t       GeoRef_LL2XY_R(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
-int32_t       GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
-int32_t       GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
-int32_t       GeoRef_XY2LL_M(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
-int32_t       GeoRef_LL2XY_W(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb);
-int32_t       GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
-int32_t       GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
-int32_t       GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+int32_t  GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb);
+int32_t  GeoRef_LL2XY_A(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
+int32_t  GeoRef_XY2LL_L(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+int32_t  GeoRef_LL2XY_B(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb);
+int32_t  GeoRef_LL2XY_E(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
+int32_t  GeoRef_XY2LL_E(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+int32_t  GeoRef_LL2XY_L(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb);
+int32_t  GeoRef_LL2XY_NS(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
+int32_t  GeoRef_XY2LL_NS(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+int32_t  GeoRef_LL2XY_T(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
+int32_t  GeoRef_XY2LL_T(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+int32_t  GeoRef_LL2XY_LAMBERT(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
+int32_t  GeoRef_XY2LL_LAMBERT(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+int32_t  GeoRef_LL2XY_G(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
+int32_t  GeoRef_XY2LL_G(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+int32_t  GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
+int32_t  GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+int32_t  GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
+int32_t  GeoRef_XY2LL_O(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+int32_t  GeoRef_LL2XY_R(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
+int32_t  GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+int32_t  GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
+int32_t  GeoRef_XY2LL_M(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+int32_t  GeoRef_LL2XY_W(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb);
+int32_t  GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
+int32_t  GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb); 
+int32_t  GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
 
-double GeoFunc_RadialPointRatio(TCoord C1,TCoord C2,TCoord C3);
-int32_t    GeoFunc_RadialPointOn(TCoord C1,TCoord C2,TCoord C3,TCoord *CR);
-int32_t    GeoFunc_RadialIntersect(TCoord C1,TCoord C2,double CRS13,double CRS23,TCoord *C3);
+double   GeoFunc_RadialPointRatio(TCoord C1,TCoord C2,TCoord C3);
+int32_t  GeoFunc_RadialPointOn(TCoord C1,TCoord C2,TCoord C3,TCoord *CR);
+int32_t  GeoFunc_RadialIntersect(TCoord C1,TCoord C2,double CRS13,double CRS23,TCoord *C3);
 
 // Reproject vector directions geographically
 static inline double GeoRef_GeoDir(TGeoRef* __restrict const Ref,double X, double Y) {
@@ -539,6 +540,7 @@ static inline void GeoRef_LL2GD(double *X,double *Y,double *Lat,double *Lon,int3
       Y[i] = (Lat[i]-Lat0)/DLat + 1.0;
    }
 }
+
 void f77name(ez8_rgd_index_0)(float *index,double *px,double *py,int32_t *npts,int32_t *ni,int32_t *j1,int32_t *j2);
 void f77name(ez8_rgd_index_1)(float *index,double *px,double *py,int32_t *npts,int32_t *ni,int32_t *j1,int32_t *j2,int32_t *wrap);
 void f77name(ez8_rgd_index_3)(float *index,double *px,double *py,int32_t *npts,int32_t *ni,int32_t *j1,int32_t *j2,int32_t *wrap);

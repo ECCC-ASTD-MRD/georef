@@ -322,13 +322,6 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
       }
    }
 
-   if (Lib_LogLevel(APP_LIBGEOREF,NULL)==APP_EXTRA) {
-      Lib_Log(APP_LIBGEOREF,APP_EXTRA,"Grid Lat Lon coordinates %p\n",Ref);
-
-      for (i=0; i < Ref->NX*Ref->NY; i++) { 
-         Lib_Log(APP_LIBGEOREF,APP_VERBATIM,"%f %f\n",Ref->Lat[i],Ref->Lon[i]);
-      }
-   }
    return(npts);
 }
 
