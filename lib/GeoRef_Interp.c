@@ -137,7 +137,6 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
                break;
 
             case IR_CUBIC:
-              //TODO: NCX,NCY
                f77name(ez8_irgdint_3)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->i1,&RefFrom->i2,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,RefFrom->NCX,RefFrom->NCY,&RefFrom->Extension,&Opt->NoData);
                break;
 

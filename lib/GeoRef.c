@@ -946,7 +946,8 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
       ref->RPNHead.ig1 = IG1;
       ref->RPNHead.ig2 = IG2;
       ref->RPNHead.ig3 = IG3;
-      ref->RPNHead.ig4 = (GRTYP[0]=='#' || GRTYP[0]=='U')?IG4:0;
+//      ref->RPNHead.ig4 = (GRTYP[0]=='#' || GRTYP[0]=='U')?IG4:0;
+      ref->RPNHead.ig4 = IG4;
  
       // This georef already exists
       if (fref=GeoRef_Find(ref)) {
@@ -1571,7 +1572,7 @@ int32_t GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const R
  *    @param[in]  Lon0     Longitude of first corner
  *    @param[in]  Lat1     Latitude of second corner
  *    @param[in]  Lon1     Longitude of second corner
- *    @param[in]  In       Check ofr inside or outside
+ *    @param[in]  In       Check for all inside or outside
  * 
  *    @return              True or False
 */
