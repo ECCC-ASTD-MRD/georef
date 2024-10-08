@@ -1306,7 +1306,7 @@ int32_t GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *
 }
 
 /**----------------------------------------------------------------------------
- * @brief  Check for intersection of 2 gep reference
+ * @brief  Check for intersection of 2 geo reference
  * @date   Aout 2006 
  *    @param[in]  Ref0     Pointeur sur la reference 0
  *    @param[in]  Ref1     Pointeur sur la reference 1
