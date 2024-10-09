@@ -167,7 +167,7 @@ typedef enum {
   ER_MAXIMUM = 1,
   ER_MINIMUM = 2,
   ER_VALUE   = 3,
-  ER_ABORT   = 4,
+  ER_ABORT   = 4
 } TRef_ExtrapR;
 
 // Vector interpolation modes

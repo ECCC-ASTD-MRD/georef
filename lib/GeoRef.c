@@ -432,7 +432,7 @@ TGeoRef *GeoRef_Copy(TGeoRef* __restrict const Ref) {
 }
 
 /**----------------------------------------------------------------------------
- * @brief  Create e new GeoRef but link it to an already existing GeoRef
+ * @brief  Create a new GeoRef but link it to an already existing GeoRef
  * @date   Janvier 2015
  *    @param[in]  Ref     Pointeur sur la reference
  *

@@ -69,7 +69,11 @@ install(TARGETS ${static_targets}
    INCLUDES DESTINATION include
    PUBLIC_HEADER DESTINATION include)  
 
-# Symbolic link for archive numbered version
+install(FILES 
+   ${CMAKE_CURRENT_BINARY_DIR}/include/georef_mod.mod
+   TYPE INCLUDE)
+
+      # Symbolic link for archive numbered version
 add_custom_command(TARGET ${PROJECT_NAME}-static POST_BUILD
    COMMAND ln -sfv lib${PROJECT_NAME}.a lib${PROJECT_NAME}_${PROJECT_VERSION}.a
    BYPRODUCTS lib${PROJECT_NAME}_${PROJECT_VERSION}.a)
