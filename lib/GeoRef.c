@@ -7,6 +7,7 @@
 #include "georef_build_info.h"
 #include "GeoRef.h"
 #include "Def.h"
+#include "Triangle.h"
  
 static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
@@ -948,7 +949,7 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
       ref->RPNHead.ig3 = IG3;
 //      ref->RPNHead.ig4 = (GRTYP[0]=='#' || GRTYP[0]=='U')?IG4:0;
       ref->RPNHead.ig4 = IG4;
- 
+
       // This georef already exists
       if (fref=GeoRef_Find(ref)) {
          free(ref);
@@ -972,12 +973,11 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
          if (GRTYP[0]!='Y' && GRTYP[0]!='M' && GRTYP[0]!='O') {
             GeoRef_DefRPNXG(ref);           
             GeoRef_AxisCalcNewtonCoeff(ref);
-         } else {
-            GeoRef_CalcLL(ref);
          }
       }
    }
 
+   GeoRef_CalcLL(ref);
    GeoRef_Qualify(ref);
 
    return(ref);

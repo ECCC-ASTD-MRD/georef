@@ -1,5 +1,6 @@
 #include <App.h>
 #include "GeoRef.h"
+#include "Triangle.h"
 
 int32_t c_gd_isgridrotated(TGeoRef *gr) {
 

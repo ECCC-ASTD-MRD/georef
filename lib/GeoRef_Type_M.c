@@ -1,6 +1,7 @@
 #include <App.h>
 #include "GeoRef.h"
 #include "Vertex.h"
+#include "Triangle.h"
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon for an M grid (Mesh or TIN)
@@ -20,7 +21,7 @@ int32_t GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
    Vect3d  b;
    int32_t     n,d,idx;
 
-   #pragma omp parallel for default(none) private(d,node,b,n,d,idx) shared(Nb,Ref,X,Y,Lat,Lon)
+   #pragma omp parallel for default(none) private(d,node,b,n,idx) shared(Nb,Ref,X,Y,Lat,Lon)
    for(d=0;d<Nb;d++) {
       X[d]=-1.0;
       Y[d]=-1.0;

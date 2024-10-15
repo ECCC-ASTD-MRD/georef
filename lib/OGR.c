@@ -1116,11 +1116,11 @@ double OGM_SegmentDist(Vect3d SegA,Vect3d SegB,Vect3d Point) {
    double t = ((Point[0]-SegA[0])*dx+(Point[1]-SegA[1])*dy)/(dx*dx+dy*dy);
 
    if (t<0) {
-      // Point32_t is nearest to the first point
+      // Point is nearest to the first point
       dx = Point[0] - SegA[0];
       dy = Point[1] - SegA[1];
    } else if (t>1) {
-      // Point32_t is nearest to the end point
+      // Point is nearest to the end point
       dx = Point[0] - SegB[0];
       dy = Point[1] - SegB[1];
    } else {

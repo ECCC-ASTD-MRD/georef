@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include <App.h>
+#include "GeoRef.h"
 #include "Def.h"
 #include "Array.h"
 
@@ -625,7 +626,7 @@ int32_t Def_Paste(TDef *ToDef,TDef *DefPaste,int32_t X0, int32_t Y0) {
 */
 int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY){
 
-   double       x,y,d,ddir=0.0;
+   double       x,y,d;
    int32_t          mem,ix,iy;
    float        valf,valdf;
    void        *p0,*p1;
@@ -662,9 +663,10 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
          *Length=valf;
 
          // If it's 3D, use the mode for speed since GeoRef_XYWDVal only uses 2D
-         if (Def->Data[2])
+         if (Def->Data[2]) {
             GeoRef_XYVal(Ref,Opt,&valf,(float*)&Def->Mode[mem],&x,&y,1);
             *Length=valf;
+         }
          if (ThetaXY)
             *ThetaXY=valdf;
       } else {            
@@ -690,7 +692,7 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
  *
  *    @return        FALSE on error, TRUE otherwise
 */
-static void inline Def_SetValue(TDef *Def,TGeoOptions *Opt,int32_t X, int32_t Y,int32_t Z, double Value) {
+static inline void Def_SetValue(TDef *Def,TGeoOptions *Opt,int32_t X, int32_t Y,int32_t Z, double Value) {
 
    unsigned long idx;
    double        val;
@@ -776,7 +778,7 @@ int32_t GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometry
       return(1);
 
    switch (OGR_G_GetDimension(Geom)) {
-      case 0: // Point32_t type
+      case 0: // Point type
          for (i=0;i<n;i++) {
             dx1=OGR_G_GetX(Geom,i);
             dy1=OGR_G_GetY(Geom,i);
@@ -1112,7 +1114,7 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,OGRGeom
                   }
                   break;
 
-               case 'P':  // Point32_t mode
+               case 'P':  // Point mode
                   dp=1.0;
                   break;
             }
@@ -1981,7 +1983,7 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
       }
 
       if (ToRef->GRTYP[0]=='Y') {
-         // Point32_t cloud interpolations
+         // Point cloud interpolations
          for(idxt=0;idxt<nij;idxt++) {
             ax=ToRef->AX[idxt];ay=ToRef->AY[idxt];
             if (GeoRef_LL2XY(FromRef,&di0,&dj0,&ax,&ay,1,FALSE)) {

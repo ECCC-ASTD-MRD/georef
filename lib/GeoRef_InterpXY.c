@@ -1,3 +1,4 @@
+#include <App.h>
 #include "GeoRef.h"
 
 int32_t GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *X,double *Y,int32_t npts) {

@@ -97,12 +97,12 @@ int32_t GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
                X[d]+=x+dx+1; 
             } else {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid coordinate (NAN): ll(%f,%f) xy(%f,%f) %i\n",__func__,Lat[d],Lon[d],X[d],Y[d],idx);
-               X[d]=-1,0;
+               X[d]=-1.0;
                Y[d]=-1.0;
                out++;
             }
          } else {
-            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Point32_t not found: %f %f %i\n",__func__,Lat[d],Lon[d],idx);
+            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Point not found: %f %f %i\n",__func__,Lat[d],Lon[d],idx);
             out++;
          }
       } 

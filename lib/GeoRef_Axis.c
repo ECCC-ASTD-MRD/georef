@@ -152,7 +152,7 @@ int32_t GeoRef_AxisGet(TGeoRef *Ref,double *AX,double *AY) {
 
 void GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY) {
   
-  int32_t     i,j;
+  int32_t     i;
   double *temp, dlon;
   int32_t     zero,deuxnj;
 

@@ -1,3 +1,4 @@
+#include <App.h>
 #include "GeoRef.h"
 
 /**----------------------------------------------------------------------------
@@ -63,7 +64,7 @@ double GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1)
  * @date   February 2008
  *    @param[in]  C1       First point32_t coordinate
  *    @param[in]  C2       Second point32_t coordinate
- *    @param[in]  C3       Point32_t on great circle to locate on great circle
+ *    @param[in]  C3       Point on great circle to locate on great circle
  *
  *    @return              Ratio of distances
 */
@@ -90,7 +91,7 @@ double GeoFunc_RadialPointRatio(TCoord C1,TCoord C2,TCoord C3) {
  * @date   February 2008
  *    @param[in]  C1       First point32_t coordinate
  *    @param[in]  C2       Second point32_t coordinate
- *    @param[in]  C3       Point32_t on great circle to locate on great circle
+ *    @param[in]  C3       Point on great circle to locate on great circle
  *    @param[out] CR       Located point32_t coordinate
  *
  *    @return              Intersection exists (1=Yes, 0=No)

@@ -73,7 +73,7 @@ void Vertex_Map(Vect2d P[4],double *LX,double *LY,double WX,double WY) {
  *
  * Parametres :
  *   <Def>    : Definitions des donnees
- *   <Nr>     : Point32_t a l'interieur du voxel
+ *   <Nr>     : Point a l'interieur du voxel
  *
  * Retour:
  *   <Nr>     : Gradient normalise
@@ -102,9 +102,9 @@ void VertexGradient(TDef *Def,Vect3d Nr) {
  *            sur un cote entre deux vertex
  *
  * Parametres :
- *   <Pi>     : Point32_t resultant
- *   <P0>     : Point32_t 1
- *   <P1>     : Point32_t 2
+ *   <Pi>     : Point resultant
+ *   <P0>     : Point 1
+ *   <P1>     : Point 2
  *   <V0>     : Valeur au point32_t P0
  *   <V1>     : Valeur au point32_t P1
  *   <Level>  : Niveau

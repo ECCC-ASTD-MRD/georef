@@ -202,7 +202,7 @@ typedef struct sbt_t_shape          /* Scanbeam tree                     */
 typedef struct it_shape             /* Intersection table                */
 {
   edge_node          *ie[2];        /* Intersecting edge (bundle) pair   */
-  gpc_vertex          point;        /* Point32_t of intersection             */
+  gpc_vertex          point;        /* Point of intersection             */
   struct it_shape    *next;         /* The next intersection table node  */
 } it_node;
 
