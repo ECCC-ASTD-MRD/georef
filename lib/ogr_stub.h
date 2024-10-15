@@ -1,15 +1,15 @@
 #ifndef _ogr_stub_h
 #define _ogr_stub_h
 
-#define OGRGeometryH                 char
-#define OGRCoordinateTransformationH char*
-#define OGRSpatialReferenceH         char*
-#define OGRLayerH                    char*
-#define OGRFeatureH                  char*
-#define OGRFeatureDefnH              char*
-#define OGRDataSourceH               char*
-#define OGRSFDriverH                 char*
-#define GDALDatasetH                 char*
+typdef char  OGRGeometryH;
+typdef char* OGRCoordinateTransformationH;
+typdef char* OGRSpatialReferenceH;
+typdef char* OGRLayerH;
+typdef char* OGRFeatureH;
+typdef char* OGRFeatureDefnH;
+typdef char* OGRDataSourceH;
+typdef char* OGRSFDriverH;
+typdef char* GDALDatasetH;
 
 typedef struct OGREnvelope {
     double      MinX;
