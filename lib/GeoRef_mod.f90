@@ -309,7 +309,7 @@ contains
 !   c_gdxysval
     function georef_xyval_f(this,opt,zout,zin,x,y,n) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        type(geooptions), intent(in) :: opt  !< georef instance
+        type(geooptions), intent(in), target :: opt  !< georef instance
         real(C_FLOAT), intent(in), dimension(*) :: zin
         real(C_FLOAT), intent(out), dimension(*) :: zout
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
