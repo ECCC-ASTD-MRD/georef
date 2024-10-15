@@ -323,7 +323,7 @@ contains
 !   c_gdxyvval
     function georef_xyuvval_f(this,opt,uuout,vvout,uuin,vvin,x,y,n) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        type(geooptions),  intent(in) :: opt  !< georef instance
+        type(geooptions),  intent(in), target :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
@@ -337,7 +337,7 @@ contains
 !   c_gdxywdval
     function georef_xywdval_f(this,opt,uuout,vvout,uuin,vvin,x,y,n) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        type(geooptions),  intent(in) :: opt  !< georef instance
+        type(geooptions),  intent(in), target :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
@@ -351,7 +351,7 @@ contains
 !   c_gdllsval
     function georef_llval_f(this,opt,zout,zin,lat,lon,n) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        type(geooptions),  intent(in) :: opt  !< georef instance
+        type(geooptions),  intent(in), target :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: zout
         real(C_FLOAT), intent(in), dimension(*) :: zin
         real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
@@ -365,7 +365,7 @@ contains
 !   c_gdllvval
     function georef_lluvval_f(this,opt,uuout,vvout,uuin,vvin,lat,lon,n) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        type(geooptions),  intent(in) :: opt  !< georef instance
+        type(geooptions),  intent(in), target :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
@@ -379,7 +379,7 @@ contains
 !   c_gdllwdval
     function georef_llwdval_f(this,opt,uuout,vvout,uuin,vvin,lat,lon,n) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        type(geooptions),  intent(in) :: opt  !< georef instance
+        type(geooptions),  intent(in), target :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
@@ -393,7 +393,7 @@ contains
 !   c_gdxysint
     function georef_xyinterp_f(this,reffrom,opt,zout,zin,x,y,n) result(out)
         class(georef),  intent(inout) :: this, reffrom  !< georef instance
-        type(geooptions),  intent(in) :: opt  !< georef instance
+        type(geooptions),  intent(in), target :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: zout
         real(C_FLOAT), intent(in), dimension(*) :: zin
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
@@ -407,7 +407,7 @@ contains
 !   c_ezsint
     function georef_interp_f(this,reffrom,opt,zout,zin) result(out)
         class(georef),  intent(inout) :: this,reffrom  !< georef instance
-        type(geooptions),  intent(in) :: opt  !< georef instance
+        type(geooptions),  intent(in), target :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: zout
         real(C_FLOAT), intent(in), dimension(*) :: zin
 
@@ -419,7 +419,7 @@ contains
 !   c_ezuvint
     function georef_interpuv_f(this,reffrom,opt,uuout,vvout,uuin,vvin) result(out)
         class(georef),  intent(inout) :: this,reffrom  !< georef instance
-        type(geooptions),  intent(in) :: opt  !< georef instance
+        type(geooptions),  intent(in), target :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
 
@@ -431,7 +431,7 @@ contains
 !   c_ezwdint
     function georef_interpwd_f(this,reffrom,opt,uuout,vvout,uuin,vvin) result(out)
         class(georef),  intent(inout) :: this,reffrom  !< georef instance
-        type(geooptions),  intent(in) :: opt  !< georef instance
+        type(geooptions),  intent(in), target :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
 
