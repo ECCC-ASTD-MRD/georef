@@ -86,7 +86,7 @@ module georef_mod
         procedure, pass   :: ll2xy => georef_ll2xy_f
         procedure, pass   :: xy2ll => georef_xy2ll_f
         procedure, pass   :: getll => georef_getll_f
-        final :: georef_free_f
+        final :: georef_finalize
     end type georef
 
     type, bind(C) :: geooptions
@@ -150,7 +150,7 @@ contains
         endif
     end function georef_copy_f
 
-    subroutine georef_free_f(ref)
+    subroutine georef_finalize(ref)
         implicit none
         type(georef), intent(inout) :: ref  !< georef instance
 
@@ -158,7 +158,7 @@ contains
 
         val = georef_free(ref%ptr)
         ref%ptr=C_NULL_PTR
-    end subroutine georef_free_f
+    end subroutine georef_finalize
 
    !> \copybrief georef_within
     function georef_within_f(this,ref) result(res)
