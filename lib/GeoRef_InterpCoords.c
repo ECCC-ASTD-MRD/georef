@@ -65,13 +65,13 @@ int32_t GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
    switch(Ref->RPNHeadExt.grref[0]) {
       case 'N':
          f77name(cigaxg)(Ref->RPNHeadExt.grref,&pi,&pj,&d60,&dgrw,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
-         hemi=NORTH;
+         hemi=GRID_NORTH;
          f77name(ez8_vxyfll)(X,Y,Lat,Lon,&Nb,&d60,&dgrw,&pi,&pj,&hemi);
          break;
 
       case 'S':
          f77name(cigaxg)(Ref->RPNHeadExt.grref,&pi,&pj,&d60,&dgrw,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
-         hemi=SOUTH;
+         hemi=GRID_SOUTH;
          f77name(ez8_vxyfll)(X,Y,Lat,Lon,&Nb,&d60,&dgrw,&pi,&pj,&hemi);
          break;
 

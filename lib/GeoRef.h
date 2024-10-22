@@ -65,12 +65,12 @@ typedef struct {
 #define SET_NZONES  5            ///< Number of zone per set
 #define SET_MAX     256          ///< Maximum number of sets
 
-#define GLOBAL     0
-#define OUTSIDE    0
-#define NORTH      1
-#define SOUTH      2
-#define NORTH_POLE 3
-#define SOUTH_POLE 4
+#define GRID_GLOBAL     0
+#define GRID_OUTSIDE    0
+#define GRID_NORTH      1
+#define GRID_SOUTH      2
+#define GRID_NORTH_POLE 3
+#define GRID_SOUTH_POLE 4
 
 #define GRID_NONE     0x0        ///< No flags defined
 #define GRID_REGULAR  0x1        ///< Regular grid
@@ -91,6 +91,7 @@ typedef struct {
 
 #define GRID_YQTREESIZE   1000   ///< Default Y grid quad tree 2D size
 #define GRID_MQTREEDEPTH  8      ///< Default M grid quad tree depth
+#define GRID_MAXWEIGHTNUM 256
 
 //#define REF_DEFAULT "GEOGCS[\"GCS_North_American_1983\",DATUM[\"D_North_American_1983\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]]"
 //#define REF_DEFAULT "GEOGCS[\"NAD83",DATUM[\"North_American_Datum_1983\",SPHEROID[\"GRS 1980\",6378137,298.257222101]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]"
@@ -221,8 +222,6 @@ typedef double  (TGeoRef_Height) (struct TGeoRef *Ref,TZRef *ZRef,double X,doubl
 //typedef int32_t    (TGeoRef_Value)     (struct TGeoRef *Ref,struct TDef *Def,TRef_InterpR Interp,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY);
 //typedef double (TGeoRef_Distance)  (struct TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
 
-#define GOPT_MAXWEIGHTNUM 256
-
 // Geospatial manipulation options
 typedef struct TGeoOptions {
    TRef_InterpR Interp;         ///< Interpolation degree
@@ -295,7 +294,7 @@ typedef struct TGeoRef {
    int32_t      NX,NY,X0,Y0,X1,Y1;                        ///< Grid size and limits
    int32_t      Extension;                                ///< related to the newtonian coefficient
    char         GRTYP[3];                                 ///< Type de grille
-   int32_t      Hemi;                                     ///< Hemisphere side (0=GLOBAL,1=NORTH,2=SOUTH)
+   int32_t      Hemi;                                     ///< Hemisphere side (0=GRID_GLOBAL,1=NORTH,2=SOUTH)
    int32_t      NbSet;                                    ///< Nombre de set d'interpolation
    TGeoSet      *Sets,*LastSet;                           ///< Tableau de set d'interpolation et du dernier utilise
 
@@ -338,23 +337,23 @@ typedef struct TGeoRef {
    pthread_mutex_t Mutex;
 
 #ifdef HAVE_RPNC   
-   int32_t NC_Id,NC_NXDimId,NC_NYDimId;                       ///< netCDF identifiers
+   int32_t NC_Id,NC_NXDimId,NC_NYDimId;                   ///< netCDF identifiers
 #endif
 } TGeoRef;
 
 typedef struct TGeoPos {
-   TGeoRef *GRef;                                          ///< Reference horizontale
+   TGeoRef *GRef;                                         ///< Reference horizontale
    TZRef   *ZRef;                                         ///< Reference verticale
    Vect3d **Pos;                                          ///< Coordonnees des points de grilles (World)
-   int32_t      NRef;                                         ///< Nombre de reference a la georeference
+   int32_t      NRef;                                     ///< Nombre de reference a la georeference
 } TGeoPos;
 
 typedef struct TGeoScan {
    double *X,*Y;
    float  *D;
-   uint32_t *V;                                       ///< Coordonnees et valeurs
-   uint32_t N,S;                                      ///< Nombre de coordonnees et dimension
-   int32_t DX,DY;                                             ///< Longueur em X et Y
+   uint32_t *V;                                           ///< Coordonnees et valeurs
+   uint32_t N,S;                                          ///< Nombre de coordonnees et dimension
+   int32_t DX,DY;                                         ///< Longueur en X et Y
 } TGeoScan;
 
 void GeoRef_Lock(void);

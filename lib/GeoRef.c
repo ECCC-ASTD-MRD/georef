@@ -2072,8 +2072,8 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
 
       case '#':
       case 'Z':
-         if (Ref->RPNHeadExt.grref[0] == 'N') Ref->Hemi = NORTH;
-         if (Ref->RPNHeadExt.grref[0] == 'S') Ref->Hemi = SOUTH;
+         if (Ref->RPNHeadExt.grref[0] == 'N') Ref->Hemi = GRID_NORTH;
+         if (Ref->RPNHeadExt.grref[0] == 'S') Ref->Hemi = GRID_SOUTH;
          if (Ref->RPNHeadExt.grref[0] == 'E' || Ref->RPNHeadExt.grref[0]== 'L') {
             f77name(cigaxg)(Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,&Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,1);
          }
@@ -2085,12 +2085,12 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
 
       case 'N':
          f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
-         Ref->Hemi = NORTH;
+         Ref->Hemi = GRID_NORTH;
          break;
 
       case 'S':
          f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
-         Ref->Hemi = SOUTH;
+         Ref->Hemi = GRID_SOUTH;
          break;
 
       case 'T':

@@ -19,7 +19,7 @@ int32_t GeoRef_CorrValNorth(TGeoSet *Set,float *zout,float *zin) {
    
    reffrom=Set->RefFrom;
 
-   npts = Set->zones[NORTH].npts;
+   npts = Set->zones[GRID_NORTH].npts;
 
    if (npts > 0) {
       ni = reffrom->NX;
@@ -47,17 +47,17 @@ int32_t GeoRef_CorrValNorth(TGeoSet *Set,float *zout,float *zin) {
                      ay[1] = reffrom->AY[reffrom->j2-3];
                      ay[2] = reffrom->AY[reffrom->j2-2];
                      ay[3] = reffrom->AY[reffrom->j2-1];
-                     f77name(ez8_irgdint_3_wnnc)(vals,Set->zones[NORTH].x, Set->zones[NORTH].y,&npts,temp,&ni, &j1, &j2,reffrom->AX, ay, &(reffrom->Extension));
+                     f77name(ez8_irgdint_3_wnnc)(vals,Set->zones[GRID_NORTH].x, Set->zones[GRID_NORTH].y,&npts,temp,&ni, &j1, &j2,reffrom->AX, ay, &(reffrom->Extension));
                   } else {
                      ay[0] = reffrom->AY[reffrom->j2-3];
                      ay[1] = reffrom->AY[reffrom->j2-2];
                      ay[2] = reffrom->AY[reffrom->j2-1];
                      ay[3] = 90.0;
-                     f77name(ez8_irgdint_3_wnnc)(vals,Set->zones[NORTH].x,Set->zones[NORTH].y,&npts,temp,&ni, &j1, &j2,reffrom->AX, ay, &(reffrom->Extension));
+                     f77name(ez8_irgdint_3_wnnc)(vals,Set->zones[GRID_NORTH].x,Set->zones[GRID_NORTH].y,&npts,temp,&ni, &j1, &j2,reffrom->AX, ay, &(reffrom->Extension));
                   }
 	                break;
 	             default:
-	                f77name(ez8_rgdint_3)(vals,Set->zones[NORTH].x,Set->zones[NORTH].y,&npts,temp,&ni, &j1, &j2, &(reffrom->Extension),&Set->Opt.NoData);
+	                f77name(ez8_rgdint_3)(vals,Set->zones[GRID_NORTH].x,Set->zones[GRID_NORTH].y,&npts,temp,&ni, &j1, &j2, &(reffrom->Extension),&Set->Opt.NoData);
 	                break;
 	          }
    	        break;
@@ -65,24 +65,24 @@ int32_t GeoRef_CorrValNorth(TGeoSet *Set,float *zout,float *zin) {
          case IR_LINEAR:
 	          temp_y = (double*) malloc(npts*sizeof(double));
 	          for (i=0; i < npts; i++) {
-               temp_y[i] = Set->zones[NORTH].y[i] - (1.0 * (reffrom->j2-3));
+               temp_y[i] = Set->zones[GRID_NORTH].y[i] - (1.0 * (reffrom->j2-3));
 	          }
-	          f77name(ez8_rgdint_1)(vals,Set->zones[NORTH].x,temp_y,&npts,temp,&ni, &un, &quatre, &(reffrom->Extension),&Set->Opt.NoData);
+	          f77name(ez8_rgdint_1)(vals,Set->zones[GRID_NORTH].x,temp_y,&npts,temp,&ni, &un, &quatre, &(reffrom->Extension),&Set->Opt.NoData);
 	          free(temp_y);
 	          break;
 
          case IR_NEAREST:
 	          temp_y = (double*) malloc(npts*sizeof(double));
 	          for (i=0; i < npts; i++) {
-	             temp_y[i] = Set->zones[NORTH].y[i] - (1.0 * (reffrom->j2-3));
+	             temp_y[i] = Set->zones[GRID_NORTH].y[i] - (1.0 * (reffrom->j2-3));
 	          }
-	          f77name(ez8_rgdint_0)(vals,Set->zones[NORTH].x,temp_y,&npts,temp,&ni, &un, &quatre,&Set->Opt.NoData);
+	          f77name(ez8_rgdint_0)(vals,Set->zones[GRID_NORTH].x,temp_y,&npts,temp,&ni, &un, &quatre,&Set->Opt.NoData);
 	          free(temp_y);
 	          break;
       }
 
-      for (i=0; i < Set->zones[NORTH].npts; i++) {
-         zout[Set->zones[NORTH].idx[i]] = vals[i];
+      for (i=0; i < Set->zones[GRID_NORTH].npts; i++) {
+         zout[Set->zones[GRID_NORTH].idx[i]] = vals[i];
       }
 
       free(vals);
@@ -108,7 +108,7 @@ int32_t GeoRef_CorrValSouth(TGeoSet *Set,float *zout,float *zin) {
    
    reffrom=Set->RefFrom;
 
-   npts = Set->zones[SOUTH].npts;
+   npts = Set->zones[GRID_SOUTH].npts;
    if (npts > 0) {
       ni = reffrom->NX;
 
@@ -133,18 +133,18 @@ int32_t GeoRef_CorrValSouth(TGeoSet *Set,float *zout,float *zin) {
                      ay[1] = reffrom->AY[1];
                      ay[2] = reffrom->AY[2];
                      ay[3] = reffrom->AY[3];
-                     f77name(ez8_irgdint_3_wnnc)(vals,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,temp,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
+                     f77name(ez8_irgdint_3_wnnc)(vals,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,temp,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
                   } else {
                      ay[0] = -90.0;
                      ay[1] = reffrom->AY[0];
                      ay[2] = reffrom->AY[1];
                      ay[3] = reffrom->AY[2];
-                     f77name(ez8_irgdint_3_wnnc)(vals,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,temp,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
+                     f77name(ez8_irgdint_3_wnnc)(vals,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,temp,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
                   }
 	                break;
 
 	             default:
-	                f77name(ez8_rgdint_3)(vals,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,temp,&ni, &j1, &j2, &reffrom->Extension,&Set->Opt.NoData);
+	                f77name(ez8_rgdint_3)(vals,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,temp,&ni, &j1, &j2, &reffrom->Extension,&Set->Opt.NoData);
 	                break;
 	          }
 	          break;
@@ -153,10 +153,10 @@ int32_t GeoRef_CorrValSouth(TGeoSet *Set,float *zout,float *zin) {
 	          temp_y = (float *) malloc(npts*sizeof(float));
 /*	   for (i=0; i < npts; i++)
 	     {
-	     temp_y[i] = Set->zones[SOUTH].y[i] - (1.0*j1);
+	     temp_y[i] = Set->zones[GRID_SOUTH].y[i] - (1.0*j1);
 	     }
-	   f77name(ez_rgdint_1_nw)(vals,Set->zones[SOUTH].x,temp_y,&npts,temp,&ni, &un, &quatre);*/
-   	        f77name(ez8_rgdint_1)(vals,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,temp,&ni, &j1, &j2,&reffrom->Extension,&Set->Opt.NoData);
+	   f77name(ez_rgdint_1_nw)(vals,Set->zones[GRID_SOUTH].x,temp_y,&npts,temp,&ni, &un, &quatre);*/
+   	        f77name(ez8_rgdint_1)(vals,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,temp,&ni, &j1, &j2,&reffrom->Extension,&Set->Opt.NoData);
 	          free(temp_y);
 	          break;
 
@@ -164,15 +164,15 @@ int32_t GeoRef_CorrValSouth(TGeoSet *Set,float *zout,float *zin) {
   	        temp_y = (float *) malloc(npts*sizeof(float));
 /*	   for (i=0; i < npts; i++)
 	     {
-	     temp_y[i] = Set->zones[SOUTH].y[i] - (1.0*j1);
+	     temp_y[i] = Set->zones[GRID_SOUTH].y[i] - (1.0*j1);
 	     }*/
-	        f77name(ez8_rgdint_0)(vals,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,temp,&ni, &j1, &j2,&Set->Opt.NoData);
+	        f77name(ez8_rgdint_0)(vals,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,temp,&ni, &j1, &j2,&Set->Opt.NoData);
 	        free(temp_y);
 	        break;
       }
 
-      for (i=0; i < Set->zones[SOUTH].npts; i++) {
-         zout[Set->zones[SOUTH].idx[i]] = vals[i];
+      for (i=0; i < Set->zones[GRID_SOUTH].npts; i++) {
+         zout[Set->zones[GRID_SOUTH].idx[i]] = vals[i];
       }
 
       free(vals);
@@ -203,7 +203,7 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
    nj = reffrom->j2 - reffrom->j1 +1;
    ierc = 0; /* no extrapolation */
 
-   if (Set->zones[OUTSIDE].npts > 0) {
+   if (Set->zones[GRID_OUTSIDE].npts > 0) {
       ierc = 2; /* code to indicate extrapolation */
       if (Set->Opt.Extrap == ER_ABORT) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Points on destination lie outside source. Aborting as requested\n",__func__);
@@ -240,18 +240,18 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
          if (fudgeval_set == 0) {
             Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Fudgeval not set\n",__func__);
          }
-         for (i=0; i < Set->zones[OUTSIDE].npts; i++) {
-	          zout[Set->zones[OUTSIDE].idx[i]] = fudgeval;
+         for (i=0; i < Set->zones[GRID_OUTSIDE].npts; i++) {
+	          zout[Set->zones[GRID_OUTSIDE].idx[i]] = fudgeval;
 	       }
       } else {
          degIntCourant = Set->Opt.Interp;
          Set->Opt.Interp = Set->Opt.Extrap;
-         temp = (float *) malloc(Set->zones[OUTSIDE].npts*sizeof(float));
+         temp = (float *) malloc(Set->zones[GRID_OUTSIDE].npts*sizeof(float));
 
-         GeoRef_InterpFinally(refto,reffrom,&Set->Opt,temp,zin,Set->zones[OUTSIDE].x,Set->zones[OUTSIDE].y,Set->zones[OUTSIDE].npts,NULL);
+         GeoRef_InterpFinally(refto,reffrom,&Set->Opt,temp,zin,Set->zones[GRID_OUTSIDE].x,Set->zones[GRID_OUTSIDE].y,Set->zones[GRID_OUTSIDE].npts,NULL);
 
-         for (i=0; i < Set->zones[OUTSIDE].npts; i++) {
-            zout[Set->zones[OUTSIDE].idx[i]] = temp[i];
+         for (i=0; i < Set->zones[GRID_OUTSIDE].npts; i++) {
+            zout[Set->zones[GRID_OUTSIDE].idx[i]] = temp[i];
          }
          free(temp);
          Set->Opt.Interp = degIntCourant;
@@ -262,25 +262,25 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
       return(ierc);
    }
 
-   if (Set->zones[NORTH].npts > 0) {
+   if (Set->zones[GRID_NORTH].npts > 0) {
       GeoRef_CorrValNorth(Set,zout,zin);
    }
 
-   if (Set->zones[SOUTH].npts > 0) {
+   if (Set->zones[GRID_SOUTH].npts > 0) {
       GeoRef_CorrValSouth(Set,zout,zin);
    }
 
-   if (Set->zones[NORTH_POLE].npts > 0 || Set->zones[SOUTH_POLE].npts > 0) {
+   if (Set->zones[GRID_NORTH_POLE].npts > 0 || Set->zones[GRID_SOUTH_POLE].npts > 0) {
       if (reffrom->GRTYP[0] != 'w') {
          npts = reffrom->NX * reffrom->j2;
          f77name(ez_calcpoleval)(&vpolnor,&(zin[(nj-1)*reffrom->NX]),&(reffrom->NX),reffrom->AX,reffrom->GRTYP,reffrom->RPNHeadExt.grref,1,1);
-         for (i=0; i < Set->zones[NORTH_POLE].npts; i++) {
-	          zout[Set->zones[NORTH_POLE].idx[i]] = vpolnor;
+         for (i=0; i < Set->zones[GRID_NORTH_POLE].npts; i++) {
+	          zout[Set->zones[GRID_NORTH_POLE].idx[i]] = vpolnor;
 	       }
 
          f77name(ez_calcpoleval)(&vpolsud,zin,&(reffrom->NX),reffrom->AX,reffrom->GRTYP,reffrom->RPNHeadExt.grref,1,1);
-         for (i=0; i < Set->zones[SOUTH_POLE].npts; i++) {
-	          zout[Set->zones[SOUTH_POLE].idx[i]] = vpolsud;
+         for (i=0; i < Set->zones[GRID_SOUTH_POLE].npts; i++) {
+	          zout[Set->zones[GRID_SOUTH_POLE].idx[i]] = vpolsud;
 	       }
       }
    }
@@ -514,7 +514,7 @@ int32_t GeoRef_CorrVecNorth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,f
    j2 = j1 + 3;
    degree = 3;
 
-   npts = Set->zones[NORTH].npts;
+   npts = Set->zones[GRID_NORTH].npts;
 
    polar_uu_in = (float *) malloc(4 * ni * sizeof(float));
    polar_vv_in = (float *) malloc(4 * ni * sizeof(float));
@@ -533,23 +533,23 @@ int32_t GeoRef_CorrVecNorth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,f
                ay[1] = reffrom->AY[reffrom->j2-2];
                ay[2] = reffrom->AY[reffrom->j2-1];
                ay[3] = 90.0;
-	             f77name(ez8_irgdint_3_wnnc)(corr_uus,Set->zones[NORTH].x,Set->zones[NORTH].y,&npts,polar_uu_in,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
-	             f77name(ez8_irgdint_3_wnnc)(corr_vvs,Set->zones[NORTH].x,Set->zones[NORTH].y,&npts,polar_vv_in,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
+	             f77name(ez8_irgdint_3_wnnc)(corr_uus,Set->zones[GRID_NORTH].x,Set->zones[GRID_NORTH].y,&npts,polar_uu_in,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
+	             f77name(ez8_irgdint_3_wnnc)(corr_vvs,Set->zones[GRID_NORTH].x,Set->zones[GRID_NORTH].y,&npts,polar_vv_in,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
 	             break;
 
 	          default:
-	             f77name(ez8_rgdint_3)(corr_uus,Set->zones[NORTH].x,Set->zones[NORTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&reffrom->Extension,&Set->Opt.NoData);
-	             f77name(ez8_rgdint_3)(corr_vvs,Set->zones[NORTH].x,Set->zones[NORTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&reffrom->Extension,&Set->Opt.NoData);
+	             f77name(ez8_rgdint_3)(corr_uus,Set->zones[GRID_NORTH].x,Set->zones[GRID_NORTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&reffrom->Extension,&Set->Opt.NoData);
+	             f77name(ez8_rgdint_3)(corr_vvs,Set->zones[GRID_NORTH].x,Set->zones[GRID_NORTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&reffrom->Extension,&Set->Opt.NoData);
 	             break;
 	      }
 
       case IR_LINEAR:
          temp_y = (double*) malloc(npts*sizeof(double));
          for (i=0; i < npts; i++) {
-            temp_y[i] = Set->zones[NORTH].y[i] - (1.0 * (reffrom->j2-3));
+            temp_y[i] = Set->zones[GRID_NORTH].y[i] - (1.0 * (reffrom->j2-3));
 	       }
-         f77name(ez8_rgdint_1)(corr_uus,Set->zones[NORTH].x,temp_y,&npts,polar_uu_in,&ni, &un, &quatre, &reffrom->Extension,&Set->Opt.NoData);
-         f77name(ez8_rgdint_1)(corr_vvs,Set->zones[NORTH].x,temp_y,&npts,polar_vv_in,&ni, &un, &quatre, &reffrom->Extension,&Set->Opt.NoData);
+         f77name(ez8_rgdint_1)(corr_uus,Set->zones[GRID_NORTH].x,temp_y,&npts,polar_uu_in,&ni, &un, &quatre, &reffrom->Extension,&Set->Opt.NoData);
+         f77name(ez8_rgdint_1)(corr_vvs,Set->zones[GRID_NORTH].x,temp_y,&npts,polar_vv_in,&ni, &un, &quatre, &reffrom->Extension,&Set->Opt.NoData);
          free(temp_y);
          
          break;
@@ -557,18 +557,18 @@ int32_t GeoRef_CorrVecNorth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,f
       case IR_NEAREST:
          temp_y = (double*) malloc(npts*sizeof(double));
          for (i=0; i < npts; i++) {
-            temp_y[i] = Set->zones[NORTH].y[i] - (1.0 * (reffrom->j2-3));
+            temp_y[i] = Set->zones[GRID_NORTH].y[i] - (1.0 * (reffrom->j2-3));
 	      }
-         f77name(ez8_rgdint_0)(corr_uus,Set->zones[NORTH].x,temp_y,&npts,polar_uu_in,&ni, &un, &quatre,&Set->Opt.NoData);
-         f77name(ez8_rgdint_0)(corr_vvs,Set->zones[NORTH].x,temp_y,&npts,polar_vv_in,&ni, &un, &quatre,&Set->Opt.NoData);
+         f77name(ez8_rgdint_0)(corr_uus,Set->zones[GRID_NORTH].x,temp_y,&npts,polar_uu_in,&ni, &un, &quatre,&Set->Opt.NoData);
+         f77name(ez8_rgdint_0)(corr_vvs,Set->zones[GRID_NORTH].x,temp_y,&npts,polar_vv_in,&ni, &un, &quatre,&Set->Opt.NoData);
          free(temp_y);
          break;
    }
 
 
-   for (i=0; i < Set->zones[NORTH].npts; i++) {
-      uuout[Set->zones[NORTH].idx[i]] = corr_uus[i];
-      vvout[Set->zones[NORTH].idx[i]] = corr_vvs[i];
+   for (i=0; i < Set->zones[GRID_NORTH].npts; i++) {
+      uuout[Set->zones[GRID_NORTH].idx[i]] = corr_uus[i];
+      vvout[Set->zones[GRID_NORTH].idx[i]] = corr_vvs[i];
    }
 
    free(polar_uu_in);
@@ -592,7 +592,7 @@ int32_t GeoRef_CorrVecSouth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,f
    
    reffrom=Set->RefFrom;
 
-   npts = Set->zones[SOUTH].npts;
+   npts = Set->zones[GRID_SOUTH].npts;
    ni = reffrom->NX;
    nj = reffrom->j2 - reffrom->j1 + 1;
 
@@ -619,32 +619,32 @@ int32_t GeoRef_CorrVecSouth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,f
                ay[1] = reffrom->AY[0];
                ay[2] = reffrom->AY[1];
                ay[3] = reffrom->AY[2];
-               f77name(ez8_irgdint_3_wnnc)(corr_uus,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
-               f77name(ez8_irgdint_3_wnnc)(corr_vvs,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
+               f77name(ez8_irgdint_3_wnnc)(corr_uus,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
+               f77name(ez8_irgdint_3_wnnc)(corr_vvs,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
                break;
 
             default:
-               f77name(ez8_rgdint_3)(corr_uus,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&reffrom->Extension,&Set->Opt.NoData);
-               f77name(ez8_rgdint_3)(corr_vvs,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&reffrom->Extension,&Set->Opt.NoData);
+               f77name(ez8_rgdint_3)(corr_uus,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&reffrom->Extension,&Set->Opt.NoData);
+               f77name(ez8_rgdint_3)(corr_vvs,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&reffrom->Extension,&Set->Opt.NoData);
                break;
             }
       break;
 
       case IR_LINEAR:
-         f77name(ez8_rgdint_1)(corr_uus,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&reffrom->Extension,&Set->Opt.NoData);
-         f77name(ez8_rgdint_1)(corr_vvs,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&reffrom->Extension,&Set->Opt.NoData);
+         f77name(ez8_rgdint_1)(corr_uus,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&reffrom->Extension,&Set->Opt.NoData);
+         f77name(ez8_rgdint_1)(corr_vvs,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&reffrom->Extension,&Set->Opt.NoData);
          break;
 
       case IR_NEAREST:
-         f77name(ez8_rgdint_0)(corr_uus,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&Set->Opt.NoData);
-         f77name(ez8_rgdint_0)(corr_vvs,Set->zones[SOUTH].x,Set->zones[SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&Set->Opt.NoData);
+         f77name(ez8_rgdint_0)(corr_uus,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,polar_uu_in,&ni,&j1,&j2,&Set->Opt.NoData);
+         f77name(ez8_rgdint_0)(corr_vvs,Set->zones[GRID_SOUTH].x,Set->zones[GRID_SOUTH].y,&npts,polar_vv_in,&ni,&j1,&j2,&Set->Opt.NoData);
          break;
    }
 
 
-   for (i=0; i < Set->zones[SOUTH].npts; i++) {
-      uuout[Set->zones[SOUTH].idx[i]] = corr_uus[i];
-      vvout[Set->zones[SOUTH].idx[i]] = corr_vvs[i];
+   for (i=0; i < Set->zones[GRID_SOUTH].npts; i++) {
+      uuout[Set->zones[GRID_SOUTH].idx[i]] = corr_uus[i];
+      vvout[Set->zones[GRID_SOUTH].idx[i]] = corr_vvs[i];
    }
 
    free(polar_uu_in);
@@ -660,19 +660,19 @@ int32_t GeoRef_CorrectVector(TGeoSet *Set,float *uuout,float *vvout,float *uuin,
    int32_t ier;
   
   
-   if (Set->zones[NORTH].npts > 0) {
+   if (Set->zones[GRID_NORTH].npts > 0) {
       ier = GeoRef_CorrVecNorth(Set,uuout,vvout,uuin,vvin);
    }
   
-   if (Set->zones[SOUTH].npts > 0) {
+   if (Set->zones[GRID_SOUTH].npts > 0) {
      ier = GeoRef_CorrVecSouth(Set,uuout,vvout,uuin,vvin);
    }
   
-   if (Set->zones[NORTH_POLE].npts > 0) {
+   if (Set->zones[GRID_NORTH_POLE].npts > 0) {
      ier = GeoRef_CorrVecNorth(Set,uuout,vvout,uuin,vvin);
    }
   
-   if (Set->zones[SOUTH_POLE].npts > 0) {
+   if (Set->zones[GRID_SOUTH_POLE].npts > 0) {
      ier = GeoRef_CorrVecSouth(Set,uuout,vvout,uuin,vvin);
    }
       

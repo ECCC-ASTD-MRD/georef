@@ -53,17 +53,17 @@ void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
       case 'G':
 	      Ref->Extension = 2;
          switch (Ref->RPNHead.ig1) {
-	         case GLOBAL:
+	         case GRID_GLOBAL:
 	            Ref->j1 = 1;
 	            Ref->j2 = Ref->NY;
 	            break;
 
-	         case NORTH:
+	         case GRID_NORTH:
 	            Ref->j1 = -Ref->NY+1;
 	            Ref->j2 =  Ref->NY;
 	            break;
 
-	         case SOUTH:
+	         case GRID_SOUTH:
 	            Ref->j1 = 1;
 	            Ref->j2 =  2 * Ref->NY;
 	            break;
@@ -73,17 +73,17 @@ void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
       case 'B':
 	      Ref->Extension = 1;
          switch (Ref->RPNHead.ig1) {
-	         case GLOBAL:
+	         case GRID_GLOBAL:
 	            Ref->j1 = 1;
 	            Ref->j2 = Ref->NY;
 	            break;
 
-	         case NORTH:
+	         case GRID_NORTH:
 	            Ref->j1 = -Ref->NY+2;
 	            Ref->j2 = Ref->NY;
 	            break;
 
-	         case SOUTH:
+	         case GRID_SOUTH:
 	            Ref->j1 = 1;
 	            Ref->j2 = 2 * Ref->NY - 1;
 	            break;
@@ -199,15 +199,15 @@ void GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY) {
       GeoRef_AxisCalcExpandCoeff(Ref);
 
       switch (Ref->RPNHead.ig1) {
-	      case GLOBAL:
+	      case GRID_GLOBAL:
 	        Ref->AY = (double*) malloc(Ref->NY*sizeof(double));
 	        temp    = (double*) malloc(Ref->NY*sizeof(double));
 	        f77name(ez_glat)(Ref->AY,temp,&Ref->NY,&zero);
 	        free(temp);
 	        break;
 
-	      case NORTH:
-	      case SOUTH:
+	      case GRID_NORTH:
+	      case GRID_SOUTH:
 	        deuxnj = 2 * Ref->NY;
 	        Ref->AY = (double*) malloc(deuxnj*sizeof(double));
 	        temp    = (double*) malloc(deuxnj*sizeof(double));

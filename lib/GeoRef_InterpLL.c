@@ -257,7 +257,7 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
                }
             }
 
-	         if (Ref->GRTYP[0] == 'G' && Ref->RPNHead.ig1 == NORTH) {
+	         if (Ref->GRTYP[0] == 'G' && Ref->RPNHead.ig1 == GRID_NORTH) {
                k=0;
 	            for (j=0; j<nj; j++) {
 	               for (i=0; i<ni; i++) {
