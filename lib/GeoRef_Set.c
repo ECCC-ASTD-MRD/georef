@@ -201,7 +201,7 @@ int32_t GeoRef_SetZoneDefine(TGeoSet *GSet) {
          break;
 
       case 'L':
-         if (GSet->RefTo->Extension == 0) {
+         if (GSet->RefFrom->Extension == 0) {
                extrap = TRUE;
          }
          break;

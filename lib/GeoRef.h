@@ -211,8 +211,6 @@ int32_t GeoRef_UnProject(struct TGeoRef *Ref,double *X,double *Y,double Lat,doub
 typedef int32_t (TGeoRef_LL2XY)  (struct TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb);
 typedef int32_t (TGeoRef_XY2LL)  (struct TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb);
 typedef double  (TGeoRef_Height) (struct TGeoRef *Ref,TZRef *ZRef,double X,double Y,double Z);
-//typedef int32_t    (TGeoRef_Value)     (struct TGeoRef *Ref,struct TDef *Def,TRef_InterpR Interp,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY);
-//typedef double (TGeoRef_Distance)  (struct TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
 
 // Geospatial manipulation options
 typedef struct TGeoOptions {
@@ -315,11 +313,10 @@ typedef struct TGeoRef {
    TGeoOptions Options;                                   ///< Options for manipulations
    TGeoRef_XY2LL     *XY2LL;                              ///< Transformation xy to latlon
    TGeoRef_LL2XY     *LL2XY;                              ///< Transformation latlon to xy
-   TGeoRef_Height    *Height;
+   TGeoRef_Height    *Height;                             ///< Transformation k to level
 
-   // _Grille struct from ezscint.h
-   fst_record     RPNHead;
-   fst_record_ext RPNHeadExt;
+   fst_record     RPNHead;                                ///< RPN grid descriptor metadata
+   fst_record_ext RPNHeadExt;                             ///< RPN grid descriptor extended metadata
 
    int32_t i1, i2, j1, j2;
    struct TGeoRef *mymaskgrid;
@@ -337,15 +334,15 @@ typedef struct TGeoPos {
    TGeoRef *GRef;                                         ///< Reference horizontale
    TZRef   *ZRef;                                         ///< Reference verticale
    Vect3d **Pos;                                          ///< Coordonnees des points de grilles (World)
-   int32_t      NRef;                                     ///< Nombre de reference a la georeference
+   int32_t  NRef;                                         ///< Nombre de reference a la georeference
 } TGeoPos;
 
 typedef struct TGeoScan {
-   double *X,*Y;
-   float  *D;
+   double   *X,*Y;
+   float    *D;
    uint32_t *V;                                           ///< Coordonnees et valeurs
-   uint32_t N,S;                                          ///< Nombre de coordonnees et dimension
-   int32_t DX,DY;                                         ///< Longueur en X et Y
+   uint32_t  N,S;                                         ///< Nombre de coordonnees et dimension
+   int32_t   DX,DY;                                       ///< Longueur en X et Y
 } TGeoScan;
 
 void GeoRef_Lock(void);
@@ -525,6 +522,7 @@ static inline void GeoRef_LL2GD(double *X,double *Y,double *Lat,double *Lon,int3
    }
 }
 
+// Fortran wrapped declaration
 void f77name(ez8_rgd_index_0)(float *index,double *px,double *py,int32_t *npts,int32_t *ni,int32_t *j1,int32_t *j2);
 void f77name(ez8_rgd_index_1)(float *index,double *px,double *py,int32_t *npts,int32_t *ni,int32_t *j1,int32_t *j2,int32_t *wrap);
 void f77name(ez8_rgd_index_3)(float *index,double *px,double *py,int32_t *npts,int32_t *ni,int32_t *j1,int32_t *j2,int32_t *wrap);
