@@ -197,14 +197,6 @@ typedef struct TCoord {
    double Lon,Lat,Elev;
 } TCoord;
 
-typedef struct TGridCoord {
-   float Lat,Lon,I,J;
-} TGridCoord;
-
-typedef struct TGridPoint {
-   float I,J;
-} TGridPoint;
-
 typedef union {
    Vect3d V;
    TCoord C;
