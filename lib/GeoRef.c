@@ -377,7 +377,7 @@ int32_t GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Re
    
    if (Ref0->RPNHead.ig1!=Ref1->RPNHead.ig1 || Ref0->RPNHead.ig2!=Ref1->RPNHead.ig2 || Ref0->RPNHead.ig3!=Ref1->RPNHead.ig3 || Ref0->RPNHead.ig4!=Ref1->RPNHead.ig4)
      return(0);
-   //TODO: Check AX,AY
+   //TODO: Check AX,AY ?
 
    // Cloud point32_t should never be tested as equal
    if (Ref0->GRTYP[0]=='Y' || Ref0->GRTYP[1]=='Y')

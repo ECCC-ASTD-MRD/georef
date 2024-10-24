@@ -252,7 +252,7 @@ contains
         logical :: res
 
         res=.false.;
-! TODO        val=georef_write(this%ptr,file%get_c_ptr())
+        val=georef_write(this%ptr,file%get_c_ptr())
         if (val==1) then
            res=.true.
         endif

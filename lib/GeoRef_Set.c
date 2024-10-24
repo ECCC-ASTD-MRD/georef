@@ -137,7 +137,8 @@ int32_t GeoRef_SetZoneDefineOut(TGeoSet *GSet,int32_t Zone,int32_t NbPts) {
   
    offsetright = 0;
    offsetleft = 0;
-/*
+
+/* Was commented in ezscint also
    if (groptions.degre_interp == CUBIC) {
      offsetright = 2;
      offsetleft = 1;

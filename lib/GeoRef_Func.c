@@ -162,29 +162,6 @@ int32_t GeoFunc_RadialIntersect(TCoord C1,TCoord C2,double CRS13,double CRS23,TC
 }
 
 //TODO: include following ezscint32_t funcs into GeoFunc logic 
-/*
-c_ez_calcdist :
-   This function computes the distance between 2 latlon points on the sphere.
-   Source of the formula : http://mathworld.wolfram.com/GreatCircle.html
-   Latitudes and longitudes are in degrees.
-*/
-void c_ez_calcdist(float *distance, float lat1, float lon1, float lat2, float lon2)
-{
-   double degre_a_radian;
-   double radlat1, radlat2, radlon1, radlon2;
-   double dist;
-   double earth_radius = 6370997.;
-
-   degre_a_radian = M_PI / 180.0;
-
-   radlat1 = lat1 * degre_a_radian;
-   radlat2 = lat2 * degre_a_radian;
-   radlon1 = lon1 * degre_a_radian;
-   radlon2 = lon2 * degre_a_radian;
-
-   *distance = (float)(earth_radius*acos(cos(radlat1)*cos(radlat2)*cos(radlon1-radlon2)+sin(radlat1)*sin(radlat2)));
-}
-
 void c_ez_calcdist2(double *distance, float lat1, float lon1, float lat2, float lon2)
 {
    double degre_a_radian;
