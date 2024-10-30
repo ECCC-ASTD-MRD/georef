@@ -2142,6 +2142,15 @@ int32_t GeoRef_Write(TGeoRef *GRef,fst_file *File){
    int32_t i,dbl=FALSE;
    char *c;
 
+   if (!GRef) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid georef (NULL)\n",__func__);
+      return(FALSE);
+   }
+   if (!File) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid file (NULL)\n",__func__);
+      return(FALSE);
+   }
+
    if (!GRef->Name) GRef->Name=strdup("Undefined");
 
    if ((c=getenv("GEOREF_DESCRIPTOR_64"))) {
