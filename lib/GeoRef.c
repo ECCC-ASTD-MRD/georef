@@ -173,6 +173,7 @@ void GeoRef_Clear(TGeoRef *Ref,int32_t New) {
       if (Ref->Idx)          free(Ref->Idx);          Ref->Idx=NULL; Ref->NIdx=0;
       if (Ref->AX)           free(Ref->AX);           Ref->AX=NULL;
       if (Ref->AY)           free(Ref->AY);           Ref->AY=NULL;
+      if (Ref->AXY)          free(Ref->AXY);          Ref->AXY=NULL;
       if (Ref->NCX)          free(Ref->NCX);          Ref->NCX=NULL;
       if (Ref->NCY)          free(Ref->NCY);          Ref->NCY=NULL;
       if (Ref->Subs)         free(Ref->Subs);         Ref->Subs=NULL;
@@ -762,7 +763,7 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
 
 int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
-   int32_t         key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz;
+   int32_t     key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz;
    float      *ax=NULL,*ay=NULL;
    char        grref[2];
 
@@ -830,32 +831,37 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
             break;
          
          case 'U':
-   //         if (!GRef->AX) RPN_FieldReadComponent(h,&ax,"^>",1,0);
+            if (!GRef->AXY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AXY,"^>",1,APP_FLOAT64);
 
-            if (ax) {
+            if (GRef->AXY) {
                GRef->NbSub=(int)ax[2];            // Number of LAM grids (YY=2)
-               ni=(int)ax[5];                     // NI size of LAM grid 
-               nj=(int)ax[6];                     // NJ size of LAM grid
+               ni=(int)GRef->AXY[5];              // NI size of LAM grid 
+               nj=(int)GRef->AXY[6];              // NJ size of LAM grid
                GRef->NX = ni;                     // NI size of U grid
                GRef->NY = nj*GRef->NbSub;         // NJ size of U grid
                GRef->AX = (double*)malloc(ni*sizeof(double));
                GRef->AY = (double*)malloc(nj*sizeof(double));
-               for(i=0;i<ni;i++) GRef->AX[i]=ax[15+i];
-               for(i=0;i<nj;i++) GRef->AY[i]=ax[15+ni+i];
+               for(i=0;i<ni;i++) GRef->AX[i]=GRef->AXY[15+i];
+               for(i=0;i<nj;i++) GRef->AY[i]=GRef->AXY[15+ni+i];
 
                // Get subgrids
                GRef->Subs = (TGeoRef**)malloc(GRef->NbSub*sizeof(TGeoRef*));
                strcpy(grref,"E");
                idx=11;
+               float xg1,xg2,xg3,xg4;
+
                for(s=0;s<GRef->NbSub;s++) {
-                  f77name(cxgaig)(grref,&ig1,&ig2,&ig3,&ig4,&ax[idx],&ax[idx+1],&ax[idx+2],&ax[idx+3],1);
+                  xg1=GRef->AXY[idx];
+                  xg2=GRef->AXY[idx+1];
+                  xg3=GRef->AXY[idx+2];
+                  xg4=GRef->AXY[idx+3];
+                  f77name(cxgaig)(grref,&ig1,&ig2,&ig3,&ig4,&xg1,&xg2,&xg3,&xg4,1);
                   //TODO: chekc AX,AY indexes
                   GRef->Subs[s] = GeoRef_Define(NULL,ni,nj,"Z",grref,ig1,ig2,ig3,ig4,GRef->AX,GRef->AY);
                   //TODO: Do we need to do this here ?
                   GeoRef_MaskYYDefine(GRef->Subs[s]);
                   idx+=ni+nj+10;
                }
-               free(ax);
             }
       }
 
@@ -1010,6 +1016,7 @@ TGeoRef* GeoRef_New() {
    ref->Idx=NULL;
    ref->AX=NULL;
    ref->AY=NULL;
+   ref->AXY=NULL;
    ref->NCX=NULL;
    ref->NCY=NULL;
    ref->RefFrom=NULL;
@@ -2184,7 +2191,34 @@ int32_t GeoRef_Write(TGeoRef *GRef,fst_file *File){
    if (dbl)
       free(record.data);
 
-   if (GRef->AX && GRef->AY) {
+   if (GRef->AXY) {
+      record.data_type = FST_TYPE_REAL_IEEE;
+      record.ni   = GRef->NX*GRef->NY*GRef->NbSub+15;
+      record.nj   = 1;
+      record.nk   = 1;
+      record.ip1  = GRef->RPNHead.ig1;
+      record.ip2  = GRef->RPNHead.ig2;
+      record.ip3  = GRef->RPNHead.ig3;
+      strncpy(record.nomvar,"^>",FST_NOMVAR_LEN);
+      strncpy(record.grtyp,GRef->RPNHeadExt.grref,FST_GTYP_LEN);
+      record.ig1   = GRef->RPNHeadExt.igref1;
+      record.ig2   = GRef->RPNHeadExt.igref2;
+      record.ig3   = GRef->RPNHeadExt.igref3;
+      record.ig4   = GRef->RPNHeadExt.igref4;
+      if (dbl) {
+         record.data = GRef->AXY;
+         record.pack_bits = 64;
+         record.data_bits = 64;
+      } else {
+         for(i=0;i<(record.ni*record.nj);i++) ((float*)record.data)[i]=GRef->AXY[i];
+         record.pack_bits = 32;
+         record.data_bits = 32;
+      }
+      if (fst24_write(File,&record,FST_SKIP)<=0) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
+         return(FALSE);
+      } 
+   } else if (GRef->AX && GRef->AY) {
       record.data_type = FST_TYPE_REAL_IEEE;
       record.ni   = GRef->NX;
       record.nj   = GRef->Type&GRID_AXY2D?GRef->NY:1;

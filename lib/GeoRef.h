@@ -290,7 +290,7 @@ typedef struct TGeoRef {
 
    uint32_t     NIdx,*Idx;                                ///< Index dans les positions
    double       *Lat,*Lon;                                ///< Coordonnees des points de grilles (Spherical)
-   double       *AX,*AY;                                  ///< Axes de positionnement / deformation
+   double       *AX,*AY,*AXY;                             ///< Axes de positionnement / deformation
    float        *NCX,*NCY,*Hgt;                   
    double       *Wght;                                    ///< Barycentric weight array for TIN  (M grids)
 
