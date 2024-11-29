@@ -1523,7 +1523,6 @@ OGRGeometryH OGM_ClipLonWrap(OGRGeometryH Poly) {
 
    // TODO make sure it is in a lat/lon projection
 
-
    // Convert to GPC data struct
    OGM_GPCNew(&poly);
    OGM_GPCFromOGR(&poly,Poly);

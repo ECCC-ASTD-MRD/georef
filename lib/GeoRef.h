@@ -230,6 +230,11 @@ typedef struct TGeoOptions {
    float        DistTreshold;   ///< Distance treshold for point clouds
    float        LonRef;         ///< Longitude referential (-180.0,0.0)
    float        NoData;         ///< NoData Value (Default: NaN)
+   double      *Table;          ///< Data table to check of values to check for
+   float      **lutDef;         ///< Lookup table
+   int32_t      lutSize;        ///< Number of lookup elements
+   int32_t      lutDim;         ///< Dimension of the lookup elements
+   double      *Ancilliary;     ///< Pre calculated field (ex: variance, average,...)
 } TGeoOptions;
 
 #ifndef GEOREF_BUILD

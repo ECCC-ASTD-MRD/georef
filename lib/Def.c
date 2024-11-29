@@ -1614,6 +1614,8 @@ int32_t GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
  *    @param[in]     ToRef        Destination GeoRef pointer
  *    @param[in]     ToDef        Destination data definition
  *    @param[in]     FromRef      Source GeoRef pointer
+ *    @param[in]     FromDef      Source data definition
+ *    @param[in]     Opt          Interpolation options
  *    @param[in]     Final        Is this the final step (for incremental interpolation)
  *
  *    @return        FALSE on error, TRUE otherwise
@@ -1911,20 +1913,18 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
  *    @param[in]     ToRef        Destination GeoRef pointer
  *    @param[in]     ToDef        Destination data definition
  *    @param[in]     FromRef      Source GeoRef pointer
- *    @param[in]     Table        Data table to check
- *    @param[in]     lutDef       Lookup table
- *    @param[in]     lutSize      Lookup tdable size
- *    @param[in]     TmpDef       Pre calculated field (ex: variance, average,...)
+ *    @param[in]     FromDef      Source data definition
+ *    @param[in]     Opt          Interpolation options
  *    @param[in]     Final        Is this the final step (for incremental interpolation)
  *
  *    @return        FALSE on error, TRUE otherwise
 */
-int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,double *Table,TDef **lutDef, int32_t lutSize, TDef *TmpDef,int32_t Final){
+int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int32_t Final){
 
    double        val,vx,di[4],dj[4],*fld,*aux,di0,di1,dj0,dj1,ax,ay;
-   int32_t          *acc=NULL,x0,x1,y,y0,y1;
+   int32_t      *acc=NULL,x0,x1,y,y0,y1;
    unsigned long idxt,idxk,idxj,n,nijk,nij;
-   uint32_t  n2,ndi,ndj,k,t,s,x,dx,dy;
+   uint32_t      n2,ndi,ndj,k,t,s,x,dx,dy;
    TGeoScan      gscan;
 
    if (!Opt) Opt=&ToRef->Options;
@@ -2023,23 +2023,22 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
          int32_t   *rpnClass = NULL;
          int32_t    i;
 
-         if (lutDef && ToDef->NK > 0) {
-            Def_Get(lutDef[0],0,0,val);
+         if (Opt->lutDef && ToDef->NK > 0) {
+            val=Opt->lutDef[0][0];
             if (val != ToDef->NK) {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid LUT class size (%d) vs Array size (%d)  \n",__func__,(int)val,ToDef->NK);
                return(FALSE);
             }
             // first row is the class count and idno 
-            nbClass = lutDef[0]->NI - 1;       
+            nbClass = Opt->lutSize - 1;       
             fromClass = (int32_t *)malloc( sizeof(int)*nbClass );
             for (i = 0; i < nbClass ; i++) {
-               Def_Get(lutDef[0],0,i+1,val);
-               fromClass[i] = val;
+               fromClass[i] = Opt->lutDef[0][i+1];
             }
-            if (lutSize == 2) { // only FROM and TO
+            if (Opt->lutDim == 2) { // only FROM and TO
                toClass = (int32_t *)malloc( sizeof(int)*nbClass );
                for (i = 0; i < nbClass ; i++) {
-                  Def_Get(lutDef[1],0,i+1,val);
+                  val=Opt->lutDef[1][i+1];
                   // make sure to value is within range
                   if ((val >= 1) && (val <= ToDef->NK))
                      toClass[i] = val;
@@ -2047,10 +2046,9 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
                      toClass[i] = -1;
                }
             } else {
-               double val;
-               rpnClass = (int32_t *)malloc( sizeof(int)*lutSize );
-               for (i = 1; i < lutSize ; i++) { // skip 1st column : the class id 
-                  Def_Get(lutDef[i],0,0,val);
+               rpnClass = (int32_t *)malloc(sizeof(int)*Opt->lutDim);
+               for (i = 1; i < Opt->lutDim ; i++) { // skip 1st column : the class id 
+                  val=Opt->lutDef[i][0];
                   rpnClass[i] = val;
                   if ((val < 1)||(val > ToDef->NK)) {
                      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid LUT index(%d)=%f vs Array size (%d)  \n",__func__,i,val,ToDef->NK);
@@ -2154,7 +2152,7 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
                            case IR_SUM              : fld[idxt]+=vx;
                                                       break;
                            case IR_VARIANCE         : acc[idxt]++;
-                                                      Def_Get(TmpDef,0,idxt,val);
+                                                      val=Opt->Ancilliary[idxt];
                                                       fld[idxt]+=(vx-val)*(vx-val);
                                                       break;
                            case IR_SQUARE           : acc[idxt]++;
@@ -2162,17 +2160,17 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
                                                       break;
                            case IR_COUNT            : acc[idxt]++;
                            case IR_AVERAGE          :
-                           case IR_NORMALIZED_COUNT : if (Table) {
+                           case IR_NORMALIZED_COUNT : if (Opt->Table) {
                                                          t=0;
                                                          while(t<ToDef->NK) {
-                                                            if (vx==Table[t]) {
+                                                            if (vx==Opt->Table[t]) {
                                                                if (Opt->Interp!=IR_COUNT) acc[idxt]++;
                                                                fld[t*nij+idxt]+=1.0;
                                                                break;
                                                             }
                                                             t++;
                                                          }
-                                                      } else if (lutDef) {
+                                                      } else if (Opt->lutDef) {
                                                          int32_t hasvalue=0;
                                                          t=0;
                                                          while(t<nbClass) {
@@ -2184,8 +2182,8 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
                                                                      hasvalue = 1;
                                                                      }
                                                                } else {
-                                                                  for (i = 1; i < lutSize ; i++) { // skip 1st column : the class id 
-                                                                     Def_Get(lutDef[i],0,t+1,val);
+                                                                  for (i = 1; i < Opt->lutDim ; i++) { // skip 1st column : the class id 
+                                                                     val=Opt->lutDef[i][t+1];
                                                                      if (val > 0) {
                                                                         fld[(rpnClass[i]-1)*nij+idxt]+=val;
                                                                         hasvalue = 1;
@@ -2366,8 +2364,7 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
       case IR_NOP: 
       case IR_ACCUM:
       case IR_BUFFER:
-         //ToDo: add double *Table,TDef **lutDef, int32_t lutSize, TDef *TmpDef
-         code=GeoRef_InterpAverage(ToRef,ToDef,FromRef,FromDef,Opt,NULL,NULL,0,NULL,Final);
+         code=GeoRef_InterpAverage(ToRef,ToDef,FromRef,FromDef,Opt,Final);
      break;
 
       case IR_SUBNEAREST:

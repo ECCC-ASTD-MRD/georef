@@ -115,7 +115,7 @@ int32_t GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
       if (Ref->RPNHead.ig2 == 1)  {
          for (j=0; j < Nb; j++) Y[j] = Ref->j2 +1.0 - Y[j];
       }
-      // TODO: From GeoRef_RPN Fix for G grid 0-360 1/5 gridpoint32_t problem
+      // TODO: From GeoRef_RPN Fix for G grid 0-360 1/5 gridpoint problem
       for (j=0; j < Nb; j++) if (X[j]>Ref->X1+0.5) X[j]-=(Ref->X1+1);
    }
       
