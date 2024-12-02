@@ -834,7 +834,7 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
             if (!GRef->AXY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AXY,"^>",1,APP_FLOAT64);
 
             if (GRef->AXY) {
-               GRef->NbSub=(int)ax[2];            // Number of LAM grids (YY=2)
+               GRef->NbSub=(int)GRef->AXY[2];     // Number of LAM grids (YY=2)
                ni=(int)GRef->AXY[5];              // NI size of LAM grid 
                nj=(int)GRef->AXY[6];              // NJ size of LAM grid
                GRef->NX = ni;                     // NI size of U grid
