@@ -60,7 +60,7 @@ _interp = libgeoref.GeoRef_Interp
 _interp.argtypes = (
     ctypes.POINTER(_TGeoRef),
     ctypes.POINTER(_TGeoRef),
-    ctypes.POINTER(TGeoOptions),
+    ctypes.POINTER(GeoOptions),
     numpy.ctypeslib.ndpointer(dtype=numpy.float32),
     numpy.ctypeslib.ndpointer(dtype=numpy.float32)
 )
