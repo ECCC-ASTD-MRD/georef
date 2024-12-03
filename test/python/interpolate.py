@@ -29,12 +29,12 @@ def get_args():
 args = get_args()
 
 def main():
-    interp = {
+    interp_type = {
         'N': georef.RefInterpR.IR_NEAREST,
         'L': georef.RefInterpR.IR_LINEAR,
         'V': georef.RefInterpR.IR_CUBIC
     }[args.type]
-    interpolate(args.input, args.output, args.truth, args.grid, args.nomvar, args.etiket, interp)
+    interpolate(args.input, args.output, args.truth, args.grid, args.nomvar, args.etiket, interp_type)
 
 # TODO: Librmn already has this function which I could expose to Python but
 # I wanted to have it immeidately
