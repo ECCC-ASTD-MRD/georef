@@ -71,15 +71,15 @@ def interpolate(input_file: str, output_file: str, truth: str, grid: str, vars: 
 
     grid_file = rmn.fst24_file(filename=grid)
 
-    options_1 = georef.TGeoOptions(Interp=georef.RefInterpR.IR_NEAREST, NoData=0.0)
+    options_1 = georef.TGeoOptions(Interp=interp_type, NoData=0.0)
 
 
     grid_rec = next(grid_file.new_query(nomvar="GRID"))
-    refout = georef.TGeoref(grid_rec.ni, grid_rec.nj, grid_rec.grtyp, grid_rec.ig1, grid_rec.ig2, grid_rec.ig3, grid_rec.ig4, grid_file)
+    refout = georef.GeoRef(grid_rec.ni, grid_rec.nj, grid_rec.grtyp, grid_rec.ig1, grid_rec.ig2, grid_rec.ig3, grid_rec.ig4, grid_file)
     refout.valid()
 
     for rec_in in input_file.new_query(nomvar=args.nomvar[0]):
-        refin = georef.TGeoref(rec_in.ni, rec_in.nj, rec_in.grtyp, rec_in.ig1, rec_in.ig2, rec_in.ig3, rec_in.ig4, input_file)
+        refin = georef.GeoRef(rec_in.ni, rec_in.nj, rec_in.grtyp, rec_in.ig1, rec_in.ig2, rec_in.ig3, rec_in.ig4, input_file)
         refin.valid()
 
         georef.Interp(refout, refin, options_1, grid_rec.data, rec_in.data)
