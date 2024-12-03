@@ -71,7 +71,7 @@ def interpolate(input_file: str, output_file: str, truth: str, grid: str, vars: 
 
     grid_file = rmn.fst24_file(filename=grid)
 
-    options_1 = georef.TGeoOptions(Interp=interp_type, NoData=0.0)
+    options_1 = georef.GeoOptions(Interp=interp_type, NoData=0.0)
 
 
     grid_rec = next(grid_file.new_query(nomvar="GRID"))
