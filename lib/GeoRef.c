@@ -265,8 +265,8 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          case 'T': Ref->LL2XY=GeoRef_LL2XY_T; Ref->XY2LL=GeoRef_XY2LL_T; break;
          case '!': Ref->LL2XY=GeoRef_LL2XY_LAMBERT; Ref->XY2LL=GeoRef_XY2LL_LAMBERT; break;
          case '#':
-//TODO: There's something about the G grid         
          case 'G': //GeoRef_LL2XY_G(Ref,X,Y,Lat,Lon,Nb); Ref->XY2LL=GeoRef_XY2LL_G; break;
+         case 'U':
          case 'Z': Ref->LL2XY=GeoRef_LL2XY_Z; Ref->XY2LL=GeoRef_XY2LL_Z; break;
          case 'O': Ref->LL2XY=GeoRef_LL2XY_O; Ref->XY2LL=GeoRef_XY2LL_O; break;
          case 'R': Ref->LL2XY=GeoRef_LL2XY_R; Ref->XY2LL=GeoRef_XY2LL_R; break;
