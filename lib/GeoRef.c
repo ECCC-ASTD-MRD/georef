@@ -2193,7 +2193,7 @@ int32_t GeoRef_Write(TGeoRef *GRef,fst_file *File){
 
    if (GRef->AXY) {
       record.data_type = FST_TYPE_REAL_IEEE;
-      record.ni   = GRef->NX*GRef->NY*GRef->NbSub+15;
+      record.ni   = GRef->NX*GRef->NbSub+GRef->NY+25;
       record.nj   = 1;
       record.nk   = 1;
       record.ip1  = GRef->RPNHead.ig1;
@@ -2210,7 +2210,7 @@ int32_t GeoRef_Write(TGeoRef *GRef,fst_file *File){
          record.pack_bits = 64;
          record.data_bits = 64;
       } else {
-         for(i=0;i<(record.ni*record.nj);i++) ((float*)record.data)[i]=GRef->AXY[i];
+         for(i=0;i<record.ni;i++) ((float*)record.data)[i]=GRef->AXY[i];
          record.pack_bits = 32;
          record.data_bits = 32;
       }

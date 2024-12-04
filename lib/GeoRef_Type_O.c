@@ -102,7 +102,7 @@ int32_t GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
                out++;
             }
          } else {
-            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Point not found: %f %f %i\n",__func__,Lat[d],Lon[d],idx);
+            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Point not found: %f %f\n",__func__,Lat[d],Lon[d]);
             out++;
          }
       } 
