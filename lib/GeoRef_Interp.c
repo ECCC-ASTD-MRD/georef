@@ -118,10 +118,10 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
                if (!GSet) {
                   f77name(ez8_rgdint_0)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
                } else {
-                  if (GeoRef_SetEmptyIndex(GSet)) {
-                     f77name(ez8_rgd_index_0)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
-                  }
-                  f77name(ez8_apply_0)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
+                 if (GeoRef_SetEmptyIndex(GSet)) {
+                    f77name(ez8_rgd_index_0)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
+                 }
+                 f77name(ez8_apply_0)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
                }
                break;
 
@@ -374,9 +374,9 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
       }
    }
 
-  // TO USE both Yin and Yang grids in Yin-yang input grid 
-  // Masquer les grilles YY input pour enlever overlap et calculer les X,Y
-  GeoRef_SetCalcYYXY(gset);
+   // TO USE both Yin and Yang grids in Yin-yang input grid 
+   // Masquer les grilles YY input pour enlever overlap et calculer les X,Y
+   GeoRef_SetCalcYYXY(gset);
 
    // Interp yinyang to one grid
    if (yyin == 1 && yyout == 0) {

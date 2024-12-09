@@ -90,9 +90,10 @@ int32_t GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int3
  
    // Get original options
    memcpy(&opt,Opt,sizeof(TGeoOptions));
- 
+   opt.Interp=IR_NEAREST;
    opt.ExtrapValue=1.0;
    opt.Extrap=ER_VALUE;
+    
    GeoRef_Interp(RefTo,RefFrom->mymaskgrid,&opt,maskout,yin_fld);
  
    free(yin_fld);
