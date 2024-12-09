@@ -3,9 +3,9 @@
 
 void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2) {
 
-   double cart[3],carot[3],latr,lonr,cosdar;
-   int32_t    n;
-   float  r[3][3],ri[3][3];
+   double  cart[3],carot[3],latr,lonr,cosdar;
+   int32_t n;
+   float   r[3][3],ri[3][3];
 
    f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
@@ -22,7 +22,7 @@ void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,f
       carot[0] = r[0][0]*cart[0]+r[1][0]*cart[1]+r[2][0]*cart[2];
       carot[1] = r[0][1]*cart[0]+r[1][1]*cart[1]+r[2][1]*cart[2];
       carot[2] = r[0][2]*cart[0]+r[1][2]*cart[1]+r[2][2]*cart[2];
-      
+            
       Y[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[2]))));
       X[n]=RAD2DEG(atan2(carot[1],carot[0]));
       X[n]=fmod(X[n],360.0);
@@ -54,6 +54,8 @@ void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t 
      
       Lat[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[2]))));
       Lon[n]=RAD2DEG(atan2(carot[1],carot[0]));
+      Lon[n]=fmod(Lon[n],360.0);
+      if (Lon[n]<0.0) Lon[n]+=360.0;
    }
 }
 

@@ -249,7 +249,7 @@ int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zo
    App_TimerStart(int_timer);
 
    if (RefFrom->NbSub > 0 || RefTo->NbSub > 0) {
-      // get the subgrids and interpolate accordingly
+      // YY mutli grids involved
       return(GeoRef_InterpYY(RefTo,RefFrom,Opt,zout,zin));
    } else {
       gset=GeoRef_SetGet(RefTo,RefFrom,Opt);
@@ -340,7 +340,7 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
       }
    }
 
-   /* check if one input sub grid is identical to dest sub grid or dest single grid */
+   // check if one input sub grid is identical to dest sub grid or dest single grid
    if (yin_gdin == RefTo) {
       return(GeoRef_Interp(RefTo,yin_gdin,Opt,zout,zin));
    }

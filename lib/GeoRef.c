@@ -617,6 +617,15 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    ref->RPNHead.grtyp[1]=ref->GRTYP[1] = '\0';
    ref->RPNHeadExt.grref[0] = grref?grref[0]:'\0';
    ref->RPNHeadExt.grref[1] = '\0';
+
+   // No Ref means it's coming from in memory so IGs are reference IGs (ex: Ceation of YinYan subgrids)
+   if (!Ref) {
+      ref->RPNHeadExt.igref1 = IG1;
+      ref->RPNHeadExt.igref2 = IG2;
+      ref->RPNHeadExt.igref3 = IG3;
+      ref->RPNHeadExt.igref4 = IG4;
+   }
+
    ref->RPNHead.ni=ref->NX = NI;
    ref->RPNHead.nj=ref->NY = NJ;
    ref->RPNHead.ig1 = IG1;
@@ -763,7 +772,7 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
 
 int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
-   int32_t     key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz;
+   int32_t     key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz=0;
    float      *ax=NULL,*ay=NULL;
    char        grref[2];
 
@@ -839,10 +848,8 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
                nj=(int)GRef->AXY[6];              // NJ size of LAM grid
                GRef->NX = ni;                     // NI size of U grid
                GRef->NY = nj*GRef->NbSub;         // NJ size of U grid
-               GRef->AX = (double*)malloc(ni*sizeof(double));
-               GRef->AY = (double*)malloc(nj*sizeof(double));
-               for(i=0;i<ni;i++) GRef->AX[i]=GRef->AXY[15+i];
-               for(i=0;i<nj;i++) GRef->AY[i]=GRef->AXY[15+ni+i];
+               GRef->AX = (double*)malloc(ni*GRef->NbSub*sizeof(double));
+               GRef->AY = (double*)malloc(nj*GRef->NbSub*sizeof(double));
 
                // Get subgrids
                GRef->Subs = (TGeoRef**)malloc(GRef->NbSub*sizeof(TGeoRef*));
@@ -856,9 +863,12 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
                   xg3=GRef->AXY[idx+2];
                   xg4=GRef->AXY[idx+3];
                   f77name(cxgaig)(grref,&ig1,&ig2,&ig3,&ig4,&xg1,&xg2,&xg3,&xg4,1);
-                  //TODO: chekc AX,AY indexes
-                  GRef->Subs[s] = GeoRef_Define(NULL,ni,nj,"Z",grref,ig1,ig2,ig3,ig4,GRef->AX,GRef->AY);
-                  //TODO: Do we need to do this here ?
+                  Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: YY grid index %i (%ix%i) (xgs=%f,%f,%f,%f)\n",__func__,s,ni,nj,xg1,xg2,xg3,xg4);
+
+                  for(i=0;i<ni;i++) GRef->AX[s*ni+i]=GRef->AXY[idx+4+i];
+                  for(i=0;i<nj;i++) GRef->AY[s*nj+i]=GRef->AXY[idx+4+ni+i];
+
+                  GRef->Subs[s] = GeoRef_Define(NULL,ni,nj,"Z",grref,ig1,ig2,ig3,ig4,&GRef->AX[s*ni],&GRef->AY[s*nj]);
                   GeoRef_MaskYYDefine(GRef->Subs[s]);
                   idx+=ni+nj+10;
                }
@@ -869,6 +879,7 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
       if (sz>GRef->NX) {
          GRef->Type|=GRID_AXY2D;
       }
+
       // In case of WKT REF
       if (GRef->GRTYP[0]=='W' || GRef->RPNHeadExt.grref[0] == 'W') {
 #ifdef HAVE_GDAL
@@ -971,19 +982,14 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
       }
 
       if (GRTYP[0] != 'U') {
-         GeoRef_AxisCalcExpandCoeff(ref);
          ref->i1 = 1;
          ref->i2 = ref->NX;
          ref->j1 = 1;
          ref->j2 = ref->NY;
-         if (GRTYP[0]!='Y' && GRTYP[0]!='M' && GRTYP[0]!='O') {
-            GeoRef_DefRPNXG(ref);           
-            GeoRef_AxisCalcNewtonCoeff(ref);
-         }
+         GeoRef_DefRPNXG(ref);           
       }
    }
 
-   GeoRef_CalcLL(ref);
    GeoRef_Qualify(ref);
 
    return(ref);

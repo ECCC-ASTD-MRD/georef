@@ -45,7 +45,7 @@ int32_t GeoRef_MaskYYDefine(TGeoRef *Ref) {
    int32_t i0,i1,j0,j1;
    int32_t ig1ref,ig2ref,ig3ref,ig4ref;
   
-   k=0;
+   k=i0=i1=0;
    for (i=0; i < Ref->NX; i++) {
       if (Ref->AX[i] >= 45.0 && Ref->AX[i] <= 315.0) {
          k++;
@@ -55,7 +55,7 @@ int32_t GeoRef_MaskYYDefine(TGeoRef *Ref) {
    }
 
    yni=k;
-   k=0;
+   k=j0=j1=0;
    for (i=0; i < Ref->NY; i++) {
       if (Ref->AY[i] >= -45.0 && Ref->AY[i] <= 45.0) {
          k++;

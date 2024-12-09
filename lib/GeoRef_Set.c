@@ -327,6 +327,7 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
       ni = GSet->RefTo->NX;
       nj = GSet->RefTo->NY;
    }
+   // TODO: Check ni*nj vs yincout... if worth allocating twice and freeing
    nij = ni*nj;
 
    /* Masquer les grilles YY input pour enlever overlap si TRUE */
@@ -346,6 +347,7 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
    GSet->yinlon = (double*) malloc(nij*sizeof(double));
    icode = GeoRef_GetLL(yin_gdout,GSet->yinlat,GSet->yinlon);
    icode = GeoRef_MaskYYApply(yin_gdout,yin_gdin,&GSet->Opt,ni,nj,GSet->yin_maskout,GSet->yinlat,GSet->yinlon,yin2yin_lat,yin2yin_lon,&yincount_yin,yan2yin_lat,yan2yin_lon,&yancount_yin);
+
    /* store the lats and lons */
    GSet->yincount_yin = yincount_yin;
    GSet->yancount_yin = yancount_yin;
