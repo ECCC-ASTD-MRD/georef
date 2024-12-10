@@ -272,7 +272,7 @@ int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zo
       if (GeoRef_CalcLL(RefTo)) {
          GeoRef_SetCalcXY(gset);
          if (GeoRef_InterpFinally(RefTo,RefFrom,Opt,zout,lxzin,gset->X,gset->Y,RefTo->NX*RefTo->NY,gset)==0) {
-         if (Opt->PolarCorrect) {
+            if (Opt->PolarCorrect) {
                GeoRef_SetZoneDefine(gset);
                GeoRef_CorrectValue(gset,zout,lxzin);
             } 
@@ -390,16 +390,13 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
 
       yincount_yin=0;
       yancount_yin=0;
-      for(j=0; j<nj; j++) {
-         for (i=0;i<ni; i++) {
-           k=(j*ni)+i;
-           if (gset->yin_maskout[k] == 1.0) {
-               zout[k]=yan2yin_zvals[yancount_yin]; 
-               yancount_yin++;
-           } else {
-              zout[k]=yin2yin_zvals[yincount_yin]; 
-              yincount_yin++;
-           }
+      for(k=0; k<ni*nj; k++) {
+         if (gset->yin_maskout[k] == 1.0) {
+            zout[k]=yan2yin_zvals[yancount_yin]; 
+            yancount_yin++;
+         } else {
+            zout[k]=yin2yin_zvals[yincount_yin]; 
+            yincount_yin++;
          }
       }
       free(yin2yin_zvals);
@@ -426,33 +423,28 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
 
       // Interp input YY grid to Yin grid 
       yincount_yin=0; yancount_yin=0;
-      for(j=0; j<nj; j++) {
-         for (i=0;i<ni; i++) {
-            k=(j*ni)+i;
-            if (gset->yin_maskout[k] == 1.0) {
-               zout[k]=yan2yin_zvals[yancount_yin]; 
-               yancount_yin++;
-            } else {
-               zout[k]=yin2yin_zvals[yincount_yin]; 
-               yincount_yin++;
-            }
+      for(k=0; k<ni*nj; k++) {
+         if (gset->yin_maskout[k] == 1.0) {
+            zout[k]=yan2yin_zvals[yancount_yin]; 
+            yancount_yin++;
+         } else {
+            zout[k]=yin2yin_zvals[yincount_yin]; 
+            yincount_yin++;
          }
       }
 
       // Interp input YY grid to Yang grid 
       yincount_yan=0; yancount_yan=0;
-      for(j=0; j<nj; j++) {
-         for (i=0;i<ni; i++) {
-            k=(j*ni)+i;
-            if (gset->yan_maskout[k] == 1.0) {
-               zout[k+(ni*nj)]=yan2yan_zvals[yancount_yan]; 
-               yancount_yan++;
-            } else {
-               zout[k+(ni*nj)]=yin2yan_zvals[yincount_yan]; 
-               yincount_yan++;
-            }
+      for(k=0; k<ni*nj; k++) {
+         if (gset->yan_maskout[k] == 1.0) {
+            zout[k+(ni*nj)]=yan2yan_zvals[yancount_yan]; 
+            yancount_yan++;
+         } else {
+            zout[k+(ni*nj)]=yin2yan_zvals[yincount_yan]; 
+            yincount_yan++;
          }
       }
+
       free(yin2yin_zvals);
       free(yan2yin_zvals);
       free(yin2yan_zvals);

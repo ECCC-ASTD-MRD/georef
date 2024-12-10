@@ -193,6 +193,7 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
    float *temp;
 
    fudgeval_set = 0;
+	fudgeval = 0.0;
   
    if (!Set)
       return(0);
@@ -213,10 +214,9 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
       f77name(ez_aminmax)(&valmin,&valmax,zin,&(reffrom->NX),&nj);
       if (Set->Opt.Extrap) {
          if (Set->Opt.VectorMode) {
-	         fudgeval = 0.0;
             fudgeval_set = 1;
 	       } else {
-            switch (Set->Opt.CIndex) {
+            switch (Set->Opt.Extrap) {
                case ER_MAXIMUM:
                   fudgeval = valmax + 0.05 * (valmax - valmin);
                   fudgeval_set = 1;
@@ -242,7 +242,7 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
          }
          for (i=0; i < Set->zones[GRID_OUTSIDE].npts; i++) {
 	          zout[Set->zones[GRID_OUTSIDE].idx[i]] = fudgeval;
-	       }
+	      }
       } else {
          degIntCourant = Set->Opt.Interp;
          Set->Opt.Interp = Set->Opt.Extrap;
