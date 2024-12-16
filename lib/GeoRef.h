@@ -136,7 +136,7 @@ typedef struct {
 
 // Raster interpolation modes
 typedef enum {
-   IR_UNDEF                          = 0,
+   IR_UNDEF                          = 0,    
    IR_NEAREST                        = 1,
    IR_LINEAR                         = 2,
    IR_CUBIC                          = 3,
@@ -160,36 +160,36 @@ typedef enum {
 
 // Raster Extrapolation modes
 typedef enum {
-  ER_UNDEF   = 0,
-  ER_MAXIMUM = 1,
-  ER_MINIMUM = 2,
-  ER_VALUE   = 3,
-  ER_ABORT   = 4
+  ER_UNDEF   = 0,     ///< Do nothing (default)
+  ER_MAXIMUM = 1,     ///< Use field maximum value
+  ER_MINIMUM = 2,     ///< Use minimum field value
+  ER_VALUE   = 3,     ///< Use a specific value
+  ER_ABORT   = 4      ///< Abort execution
 } TRef_ExtrapR;
 
 // Vector interpolation modes
 typedef enum {
-   IV_UNDEF                          = 0,
-   IV_FAST                           = 1,
-   IV_WITHIN                         = 2,
-   IV_INTERSECT                      = 3,
-   IV_CENTROID                       = 4,
-   IV_ALIASED                        = 5,
-   IV_CONSERVATIVE                   = 6,
-   IV_NORMALIZED_CONSERVATIVE        = 7,
-   IV_POINT_CONSERVATIVE             = 8,
-   IV_LENGTH_CONSERVATIVE            = 9,
-   IV_LENGTH_NORMALIZED_CONSERVATIVE = 10,
-   IV_LENGTH_ALIASED                 = 11
+   IV_UNDEF                          = 0,   ///< Undefined
+   IV_FAST                           = 1,   ///< Use a resterization method (middle of grid cell included)
+   IV_WITHIN                         = 2,   ///< Grid cell has to be totally included in polygon
+   IV_INTERSECT                      = 3,   ///< Grid cell intersects polygon
+   IV_CENTROID                       = 4,   ///< 
+   IV_ALIASED                        = 5,   ///< Grid cells are assigned the area fraction of the intersection of the polygon value
+   IV_CONSERVATIVE                   = 6,   ///< Distribute polygon value so as to conserve geometry mass in relation to geometry total area and intersecting grid cell area
+   IV_NORMALIZED_CONSERVATIVE        = 7,   ///< Distribute polygon coverage fraction in relation to geometry area and intersecting grid cell area
+   IV_POINT_CONSERVATIVE             = 8,   ///< Distribute polygon value so as to conserve geometry mass
+   IV_LENGTH_CONSERVATIVE            = 9,   ///< Distribute contour value so as to conserve geometry mass in relation to geometry length intersecting grid cell
+   IV_LENGTH_NORMALIZED_CONSERVATIVE = 10,  ///< Distribute contour value fraction in relation to geometry length intersecting grid cell
+   IV_LENGTH_ALIASED                 = 11   ///< Grid cells are assigned the lenght fraction of the intersection of the contour value
 } TRef_InterpV;
 
-// Interpolation value combination modes
+// Interpolation value combination modes (multiple values within a grid cell)
 typedef enum {
-   CB_REPLACE   = 0,
-   CB_MIN       = 1,
-   CB_MAX       = 2,
-   CB_SUM       = 3,
-   CB_AVERAGE   = 4,
+   CB_REPLACE   = 0,     ///< Replace the value (default)
+   CB_MIN       = 1,     ///< Use the minimum
+   CB_MAX       = 2,     ///< Use the maximum
+   CB_SUM       = 3,     ///< Sum the values
+   CB_AVERAGE   = 4,     ///< use the average value
 } TRef_Combine;
 
 // Structure pour les coordonees latlon

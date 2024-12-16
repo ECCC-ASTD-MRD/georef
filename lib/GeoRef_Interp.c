@@ -225,6 +225,16 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
    return(0);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Interpolates values between 2 georeferences
+ *    @param[in]  RefTo      Destination geo-reference
+ *    @param[in]  RefFrom    Source geo-reference
+ *    @param[in]  Opt        Interpolation options
+ *    @param[out] zout       Destination interpolated values
+ *    @param[in]  zin        Source values
+ 
+ *    @return                FALSE (0) if operation failed, TRUE (1) otherwise
+*/
 int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin) {
 
    TGeoSet   *gset=NULL;
