@@ -2,7 +2,6 @@ import ctypes
 import numpy
 import numpy.ctypeslib
 import rmn
-from . import enums
 
 # import the `libgeoref` from __init__.py
 from .shared_lib import libgeoref
@@ -49,7 +48,7 @@ _georef_create.restype = ctypes.POINTER(_TGeoRef)
 
 _georef_limits = libgeoref.GeoRef_Limits
 _georef_limits.argtypes = (ctypes.POINTER(_TGeoRef),
-    ctypes.POINTER(ctypes.c_double),
+    ctypes.POINTER((ctypes.c_double),
     ctypes.POINTER(ctypes.c_double),
     ctypes.POINTER(ctypes.c_double),
     ctypes.POINTER(ctypes.c_double)
@@ -78,10 +77,10 @@ class GeoRef:
         self._ptr = ptr
 
     def limits(self):
-        lat0 = 0.0
-        lon0 = 0.0
-        lon1 = 0.0
-        lon1 = 0.0
+        lat0 = ctypes.c_double(0.0)
+        lon0 = ctypes.c_double(0.0)
+        lon1 = ctypes.c_double(0.0)
+        lon1 = ctypes.c_double(0.0)
         result = _georef_limits(
             self._ptr,
             ctypes.byref(lat0),
@@ -92,7 +91,7 @@ class GeoRef:
         if result != 0:
             raise GeoRefError(f"Failure in C function GeoRef_Limits :{result}")
         # return {"lat0": lat0, ...}
-        return (lat0, lon0, lat1, lon1)
+        return (lat0.value, lon0.value, lat1.value, lon1.value)
 
     def valid(self):
         return _valid(self._ptr)
