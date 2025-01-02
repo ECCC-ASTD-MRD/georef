@@ -384,21 +384,6 @@ interface
         integer(C_INT32_T) :: out
     end function georef_llwdval
 
-!   int32_t  GeoRef_XYInterp(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t npts);                    // c_gdxysint
-    function georef_xyinterp(ref,opt,zout,zin,x,y,n) result(out) bind(C, name = 'GeoRef_XYInterp')
-        import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
-        implicit none
-
-        type(C_PTR), intent(inout) :: ref
-        type(C_PTR), intent(in) :: opt
-        real(C_FLOAT), intent(out), dimension(*) :: zout
-        real(C_FLOAT), intent(in), dimension(*) :: zin
-        real(C_DOUBLE), intent(out), dimension(*) :: x,y
-        integer(C_INT32_T) :: n
-
-        integer(C_INT32_T) :: out
-    end function georef_xyinterp
-
 !   int32_t  GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout, float *zin);                                                  // c_ezsint
     function georef_interp(refto,reffrom,opt,zout,zin) result(out) bind(C, name = 'GeoRef_Interp')
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE

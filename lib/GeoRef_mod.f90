@@ -73,7 +73,6 @@ module georef_mod
         procedure, pass   :: interp => georef_interp_f
         procedure, pass   :: interpuv => georef_interpuv_f
         procedure, pass   :: interpwd => georef_interpwd_f
-        procedure, pass   :: xyinterp => georef_xyinterp_f
         procedure, pass   :: ud2wd => georef_uv2wd_f
         procedure, pass   :: wd2uv => georef_wd2uv_f
         procedure, pass   :: uv2uv => georef_uv2uv_f
@@ -389,20 +388,6 @@ contains
 
         out=georef_llwdval(this%ptr,C_LOC(opt),uuout,vvout,uuin,vvin,lat,lon,n)
    end function georef_llwdval_f
-
-!   c_gdxysint
-    function georef_xyinterp_f(this,reffrom,opt,zout,zin,x,y,n) result(out)
-        class(georef),  intent(inout) :: this, reffrom  !< georef instance
-        type(geooptions),  intent(in), target :: opt  !< georef instance
-        real(C_FLOAT), intent(out), dimension(*) :: zout
-        real(C_FLOAT), intent(in), dimension(*) :: zin
-        real(C_DOUBLE), intent(out), dimension(*) :: x,y
-        integer(C_INT32_T) :: n
-
-        integer(C_INT32_T) :: out
-
-        out=georef_xyinterp(reffrom%ptr,C_LOC(opt),zout,zin,x,y,n)
-    end function georef_xyinterp_f
 
 !   c_ezsint
     function georef_interp_f(this,reffrom,opt,zout,zin) result(out)
