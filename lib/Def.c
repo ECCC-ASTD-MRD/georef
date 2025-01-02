@@ -627,7 +627,7 @@ int32_t Def_Paste(TDef *ToDef,TDef *DefPaste,int32_t X0, int32_t Y0) {
 int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY){
 
    double       x,y,d;
-   int32_t          mem,ix,iy;
+   int32_t      mem,ix,iy;
    float        valf,valdf;
    void        *p0,*p1;
    uint32_t idx;
@@ -641,37 +641,43 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
    //i on est a l'interieur de la grille ou que l'extrapolation est activee
    if (C<Def->NC && X>=(Ref->X0-d) && Y>=(Ref->Y0-d) && Z>=0 && X<=(Ref->X1+d) && Y<=(Ref->Y1+d) && Z<=Def->NK-1) {
 
-      X-=Ref->X0;
-      Y-=Ref->Y0;
-      DEFCLAMP(Def,X,Y);
-
       // Index memoire du niveau desire
       mem=Def->NIJ*(int)Z;
-      ix=lrint(X);
-      iy=lrint(Y);
-      idx=iy*Def->NI+ix;
-
+ 
       // Check for mask
       if (Def->Mask && !Def->Mask[idx]) {
-         return(FALSE);
+         x=X;
+         y=Y;
+         x-=Ref->X0;
+         y-=Ref->Y0;
+         DEFCLAMP(Def,x,y);
+
+         ix=lrint(x);
+         iy=lrint(y);
+         idx=iy*Def->NI+ix;
+         if (!Def->Mask[idx]) {
+            return(FALSE);
+         }
       }
-      
+      X+=1;
+      Y+=1;
+
       if (Def->Data[1] && !C) { 
          Def_Pointer(Def,0,mem,p0);
          Def_Pointer(Def,1,mem,p1);
-         GeoRef_XYWDVal(Ref,Opt,&valf,&valdf,p0,p1,&x,&y,1);
+         GeoRef_XYWDVal(Ref,Opt,&valf,&valdf,p0,p1,&X,&Y,1);
          *Length=valf;
 
          // If it's 3D, use the mode for speed since GeoRef_XYWDVal only uses 2D
          if (Def->Data[2]) {
-            GeoRef_XYVal(Ref,Opt,&valf,(float*)&Def->Mode[mem],&x,&y,1);
+            GeoRef_XYVal(Ref,Opt,&valf,(float*)&Def->Mode[mem],&X,&Y,1);
             *Length=valf;
          }
          if (ThetaXY)
             *ThetaXY=valdf;
       } else {            
          Def_Pointer(Def,C,mem,p0);
-         GeoRef_XYVal(Ref,Opt,&valf,p0,&x,&y,1);
+         GeoRef_XYVal(Ref,Opt,&valf,p0,&X,&Y,1);
          *Length=valf;
       }
       return(TRUE);

@@ -39,7 +39,7 @@ void GeoRef_Unlock() {
 
 int32_t GeoRef_Project(struct TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int32_t Extrap,int32_t Transform) {
 
-   int32_t tr,status;
+   int32_t tr,status=TRUE;
 
    if (X<(Ref->X0-0.5) || Y<(Ref->Y0-0.5) || X>(Ref->X1+0.5) || Y>(Ref->Y1+0.5)) {
       if (!Extrap) {
@@ -51,7 +51,7 @@ int32_t GeoRef_Project(struct TGeoRef *Ref,double X,double Y,double *Lat,double 
 
    tr=Ref->Options.Transform;
    Ref->Options.Transform=Transform;
-   status=Ref->XY2LL(Ref,Lat,Lon,&X,&Y,1);
+   Ref->XY2LL(Ref,Lat,Lon,&X,&Y,1);
    Ref->Options.Transform=tr;
 
    return(status);
@@ -60,14 +60,14 @@ int32_t GeoRef_Project(struct TGeoRef *Ref,double X,double Y,double *Lat,double 
 
 int32_t GeoRef_UnProject(struct TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int32_t Extrap,int32_t Transform) {
 
-   int32_t tr,status;
+   int32_t tr,status=TRUE;
 
    if (Lat>90.0 || Lat<-90.0 || Lon==-999.0) 
      return(FALSE);
 
    tr=Ref->Options.Transform;
    Ref->Options.Transform=Transform;
-   status=Ref->LL2XY(Ref,X,Y,&Lat,&Lon,1);
+   Ref->LL2XY(Ref,X,Y,&Lat,&Lon,1);
    Ref->Options.Transform=tr;
 
    if (*X>(Ref->X1+0.5) || *Y>(Ref->Y1+0.5) || *X<(Ref->X0-0.5) || *Y<(Ref->Y0-0.5)) {
@@ -75,7 +75,7 @@ int32_t GeoRef_UnProject(struct TGeoRef *Ref,double *X,double *Y,double Lat,doub
          *X=-1.0;
          *Y=-1.0;
       }
-      return(FALSE);
+      status=FALSE;
    }
 
    return(status);
@@ -273,6 +273,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          case 'M': Ref->LL2XY=GeoRef_LL2XY_M; Ref->XY2LL=GeoRef_XY2LL_M; break;
          case 'W': Ref->LL2XY=GeoRef_LL2XY_W; Ref->XY2LL=GeoRef_XY2LL_W; break;
          case 'Y': Ref->LL2XY=GeoRef_LL2XY_Y; Ref->XY2LL=GeoRef_XY2LL_Y; break;
+         case 'V': break;
          default:
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid grid type: %c\n",__func__,Ref->GRTYP[0]);
             Ref->Type=GRID_NONE;

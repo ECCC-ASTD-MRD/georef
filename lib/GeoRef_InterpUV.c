@@ -5,6 +5,18 @@ void c_ezgfwfllw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *
 void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int32_t *ni,int32_t *nj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4);
 void c_ezllwfgff8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int32_t *ni,int32_t *nj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4);
 
+/**----------------------------------------------------------------------------
+ * @brief  Interpolates vectorial component values between 2 georeferences
+ *    @param[in]  RefTo      Destination geo-reference
+ *    @param[in]  RefFrom    Source geo-reference
+ *    @param[in]  Opt        Interpolation options
+ *    @param[out] uuout      Destination UU interpolated values
+ *    @param[out] vvout      Destination VV interpolated values
+ *    @param[in]  uuin       Source UU values
+ *    @param[in]  vvin       Source VV values
+ 
+ *    @return                FALSE (0) if operation failed, TRUE (1) otherwise
+*/
 int32_t GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
    
    int32_t npts;
@@ -52,6 +64,18 @@ int32_t GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *
    return(TRUE);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Interpolates vectorial component values between 2 georeferences and outputs rotated speed and directions
+ *    @param[in]  RefTo      Destination geo-reference
+ *    @param[in]  RefFrom    Source geo-reference
+ *    @param[in]  Opt        Interpolation options
+ *    @param[out] uuout      Destination speed interpolated values
+ *    @param[out] vvout      Destination direction interpolated values
+ *    @param[in]  uuin       Source UU values
+ *    @param[in]  vvin       Source VV values
+ 
+ *    @return                FALSE (0) if operation failed, TRUE (1) otherwise
+*/
 int32_t GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin) {
 
    int32_t npts;
@@ -527,6 +551,20 @@ int32_t GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float
    return(TRUE);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Converts meteorological winds (speed/direction) to grid winds (uu/vv).
+
+ *    @param[in]  Ref          geo-reference
+ *    @param[out] uugdout      Destination UU values
+ *    @param[out] vvgdout      Destination VV values
+ *    @param[in]  uullin       Source speed values
+ *    @param[in]  vvllin       Source direction values
+ *    @param[in]  Lat          Latitude of wind value points
+ *    @param[in]  Lon          Longitude of wind value points
+ *    @param[in]  Nb           Number of values to convert (size of arrays)
+ 
+ *    @return                FALSE (0) if operation failed, TRUE (1) otherwise
+*/
 int32_t GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float *vvllin,double *Lat,double *Lon,int32_t Nb) {
 
    int32_t   ni,nj;
@@ -578,6 +616,20 @@ int32_t GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,fl
    return(0);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Converts grid winds (uu/vv) to meteorological winds (speed/direction).
+
+ *    @param[in]  Ref          geo-reference
+ *    @param[out] spdout       Destination speed values
+ *    @param[out] wddout       Destination direction values
+ *    @param[in]  uuin         Source UU values
+ *    @param[in]  vvin         Source VV values
+ *    @param[in]  Lat          Latitude of wind value points
+ *    @param[in]  Lon          Longitude of wind value points
+ *    @param[in]  Nb           Number of values to convert (size of arrays)
+ 
+ *    @return                FALSE (0) if operation failed, TRUE (1) otherwise
+*/
 int32_t GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb) {
 
    int32_t    ni,nj;

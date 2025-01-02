@@ -124,37 +124,21 @@ void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
    }
 }
 
-int32_t GeoRef_AxisGet(TGeoRef *Ref,double *AX,double *AY) {
-
-   int32_t nix,njy;
-   
-   switch(Ref->GRTYP[0]) {
-      case 'Y':
-        nix = Ref->NX * Ref->NY;
-        njy = nix;
-        break;
-
-      default:
-        nix = Ref->NX;
-        njy = Ref->NY;
-        break;
-   }
-   
-   if (Ref->AX) {
-      memcpy(AX,Ref->AX, nix*sizeof(double));
-      memcpy(AY,Ref->AY, njy*sizeof(double));
-   } else {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Descriptor not found\n",__func__);
-      return(-1);
-   }
-   return(0);
-}
-
+/**----------------------------------------------------------------------------
+ * @brief Defines the deformation axes (the '^^' and '>>' records in a standard file) of the georeference. 
+ *        Useful mostly for 'Z', 'G' grids. Axes are linearly increasing array from 1 to ni or nj for regular grids. 
+ *
+ *    @param[in]  Ref        Geo-reference
+ *    @param[in]  AX         EW axis (>>)
+ *    @param[in]  AY         NS axis (^^)
+ 
+ *    @return                FALSE (0) if operation failed, TRUE (1) otherwise
+*/
 void GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY) {
   
-  int32_t     i;
-  double *temp, dlon;
-  int32_t     zero,deuxnj;
+  int32_t   i;
+  double   *temp, dlon;
+  int32_t   zero,deuxnj;
 
   switch (Ref->GRTYP[0]) {
     case '#':
@@ -226,6 +210,52 @@ void GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY) {
     }
 }
 
+/**----------------------------------------------------------------------------
+ * @brief Returns the deformation axes (the '^^' and '>>' records in a standard file) of the georeference. 
+ *        Useful mostly for 'Z', 'G' grids. Axes are linearly increasing array from 1 to ni or nj for regular grids. 
+ *
+ *    @param[in]   Ref        Geo-reference
+ *    @param[out]  AX         EW axis (>>)
+ *    @param[out]  AY         NS axis (^^)
+ 
+ *    @return                 FALSE (0) if operation failed, TRUE (1) otherwise
+*/
+int32_t GeoRef_AxisGet(TGeoRef *Ref,double *AX,double *AY) {
+
+   int32_t nix,njy;
+   
+   switch(Ref->GRTYP[0]) {
+      case 'Y':
+        nix = Ref->NX * Ref->NY;
+        njy = nix;
+        break;
+
+      default:
+        nix = Ref->NX;
+        njy = Ref->NY;
+        break;
+   }
+   
+   if (Ref->AX) {
+      memcpy(AX,Ref->AX, nix*sizeof(double));
+      memcpy(AY,Ref->AY, njy*sizeof(double));
+   } else {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Descriptor not found\n",__func__);
+      return(FALSE);
+   }
+   return(TRUE);
+}
+
+/**----------------------------------------------------------------------------
+ * @brief Returns the deformation axes (the '^^' and '>>' records in a standard file) of the georeference on an expanded grid ax(i1:i2), ay(j1:j2). 
+ *        Useful mostly for 'Z', 'G' grids. Axes are linearly increasing array from 1 to ni or nj for regular grids. 
+ *
+ *    @param[in]   Ref        Geo-reference
+ *    @param[out]  AX         EW axis (>>)
+ *    @param[out]  AY         NS axis (^^)
+ 
+ *    @return                 FALSE (0) if operation failed, TRUE (1) otherwise
+*/
 int32_t GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY) {
   
    int32_t nix, njy;
@@ -233,12 +263,12 @@ int32_t GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY) {
 
    if (Ref->NbSub > 0) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
-      return(-1);
+      return(FALSE);
    }
   
    if (!Ref->AX) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Grid descriptor not found\n",__func__);
-      return(-1);
+      return(FALSE);
    }
 
    switch(Ref->GRTYP[0]) {
@@ -272,5 +302,5 @@ int32_t GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY) {
             AX[nix+1] = Ref->AX[2]+360.0;
          }
    }
-   return(0);
+   return(TRUE);
 }
