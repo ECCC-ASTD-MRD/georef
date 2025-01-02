@@ -215,7 +215,7 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
       if (Set->Opt.Extrap) {
          if (Set->Opt.VectorMode) {
             fudgeval_set = 1;
-	       } else {
+	      } else {
             switch (Set->Opt.Extrap) {
                case ER_MAXIMUM:
                   fudgeval = valmax + 0.05 * (valmax - valmin);

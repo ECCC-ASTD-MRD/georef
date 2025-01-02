@@ -9,6 +9,7 @@ int32_t GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,char
       return(FALSE);
    }
 
+   if (!Opt) Opt=&RefTo->Options;
    if (!Opt) Opt=&GeoRef_Options;
    gset=GeoRef_SetGet(RefTo,RefFrom,Opt);
 

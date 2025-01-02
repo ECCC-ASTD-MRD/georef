@@ -255,6 +255,8 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
    int32_t    nx;
 
    if (Ref) {
+      Ref->Type=GRID_NONE;
+
       switch(Ref->GRTYP[0]) {
          case 'A': Ref->LL2XY=GeoRef_LL2XY_A; Ref->XY2LL=GeoRef_XY2LL_L; break;
          case 'B': Ref->LL2XY=GeoRef_LL2XY_B; Ref->XY2LL=GeoRef_XY2LL_L; break;
@@ -276,7 +278,6 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          case 'V': break;
          default:
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid grid type: %c\n",__func__,Ref->GRTYP[0]);
-            Ref->Type=GRID_NONE;
             return;
             break;
       }
@@ -610,7 +611,7 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    
    TGeoRef* ref,*fref;
 
-   ref=Ref?Ref:GeoRef_New();
+   ref=Ref?GeoRef_SubSelect(Ref):GeoRef_New();
    if (!ref)
       return(NULL);
 
@@ -637,6 +638,7 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    ref->i2 = NI;
    ref->j1 = 1;
    ref->j2 = NJ;
+   ref->Extension=0;
    ref->Type=GRID_NONE;
 
    switch (GRTYP[0]) {
@@ -1026,6 +1028,7 @@ TGeoRef* GeoRef_New() {
    ref->AXY=NULL;
    ref->NCX=NULL;
    ref->NCY=NULL;
+   ref->Extension=0;
    ref->RefFrom=NULL;
    ref->QTree=NULL;
    ref->GRTYP[0]='X';

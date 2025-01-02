@@ -113,7 +113,7 @@ int32_t GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
 */
 int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb,int32_t Extrap) {
 
-   TGeoRef *yin_gd,*yan_gd;
+   TGeoRef *yin_gd,*yan_gd,*ref;
    int32_t      i,j,icode;
    double   *latyin,*lonyin,*latyan,*lonyan;
    double   *tmpy;
@@ -122,9 +122,11 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid transform function (XY2LL): grtyp=%c\n",__func__,Ref->GRTYP[0]);
    }
 
-   if (Ref->NbSub > 0) {
-      yin_gd=Ref->Subs[0];
-      yan_gd=Ref->Subs[1];
+   ref=GeoRef_SubSelect(Ref);
+
+   if (ref->NbSub > 0) {
+      yin_gd=ref->Subs[0];
+      yan_gd=ref->Subs[1];
       j=0;
       tmpy = (double*)malloc(5*Nb*sizeof(double));
       latyin = &tmpy[j+=Nb];
@@ -165,7 +167,7 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
          }
       }
 
-      Ref->XY2LL(Ref,Lat,Lon,X,Y,Nb);
+      Ref->XY2LL(ref,Lat,Lon,X,Y,Nb);
 
       // Adjust for Longitude reference
       for (i=0; i<Nb; i++) {
@@ -175,7 +177,7 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
       icode=Nb;
       if (!Extrap) {
          for(i=0; i < Nb; i++) {
-            if (X[i]<(Ref->X0-0.5) || Y[i]<(Ref->Y0-0.5) || X[i]>(Ref->X1+0.5) || Y[i]>(Ref->Y1+0.5)) {
+            if (X[i]<(ref->X0-0.5) || Y[i]<(ref->Y0-0.5) || X[i]>(ref->X1+0.5) || Y[i]>(ref->Y1+0.5)) {
                Lat[i]=-999.0;
                Lon[i]=-999.0;
                icode--;
@@ -202,13 +204,19 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
 */
 int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb,int32_t Extrap) {
 
-   TGeoRef *yin_gd,*yan_gd;
+   TGeoRef *yin_gd,*yan_gd,*ref;
    int32_t     j,icode,maxni,maxnj;
    double  *xyin,*xyan,*yyin,*yyan;
 
-   if (Ref->NbSub > 0 ) {
-      yin_gd=Ref->Subs[0];
-      yan_gd=Ref->Subs[1];
+   if (!Ref->LL2XY) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid transform function (LL2XY): grtyp=%c\n",__func__,Ref->GRTYP[0]);
+   }
+
+   ref=GeoRef_SubSelect(Ref);
+
+   if (ref->NbSub > 0 ) {
+      yin_gd=ref->Subs[0];
+      yan_gd=ref->Subs[1];
       maxni= yin_gd->NX;
       maxnj= yin_gd->NY;
       xyin = (double*) malloc(4*Nb*sizeof(float));
@@ -240,18 +248,14 @@ int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
       free(xyin);
 
    } else {
-      if (!Ref->LL2XY) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid transform function (LL2XY): grtyp=%c\n",__func__,Ref->GRTYP[0]);
-         return(0);
-      }
-      Ref->LL2XY(Ref,X,Y,Lat,Lon,Nb);
+      Ref->LL2XY(ref,X,Y,Lat,Lon,Nb);
    }
 
    // Check for grid insidness or extrapolation enabled
    icode=Nb;
    if (!Extrap) {
       for(j=0;j<Nb;j++) {
-         if (X[j]>(Ref->X1+0.5) || Y[j]>(Ref->Y1+0.5) || X[j]<(Ref->X0-0.5) || Y[j]<(Ref->Y0-0.5)) {
+         if (X[j]>(ref->X1+0.5) || Y[j]>(ref->Y1+0.5) || X[j]<(ref->X0-0.5) || Y[j]<(ref->Y0-0.5)) {
             X[j]=-1.0;
             Y[j]=-1.0;
             icode--;

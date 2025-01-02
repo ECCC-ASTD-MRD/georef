@@ -401,7 +401,7 @@ contains
 
         integer(C_INT32_T) :: out
 
-        out=georef_xyinterp(this%ptr,reffrom%ptr,C_LOC(opt),zout,zin,x,y,n)
+        out=georef_xyinterp(reffrom%ptr,C_LOC(opt),zout,zin,x,y,n)
     end function georef_xyinterp_f
 
 !   c_ezsint

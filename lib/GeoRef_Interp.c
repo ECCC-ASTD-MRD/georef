@@ -132,7 +132,6 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
                   if (GeoRef_SetEmptyIndex(GSet)) {
                      f77name(ez8_irgd_index_1)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,&RefFrom->Extension);
                   }
-
                   f77name(ez8_apply_1)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
                }
                break;
@@ -244,6 +243,8 @@ int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zo
 
    lzin  = NULL;
    lxzin = NULL;
+
+   if (!Opt) Opt=&RefTo->Options;
    if (!Opt) Opt=&GeoRef_Options;
 
    if (!RefFrom || !RefTo) {
@@ -317,6 +318,7 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
      
    yyin=0; yyout=0; 
 
+   if (!Opt) Opt=&RefTo->Options;
    if (!Opt) Opt=&GeoRef_Options;
    gset=GeoRef_SetGet(RefTo,RefFrom,Opt);
 

@@ -133,6 +133,7 @@ typedef struct {
 #define GeoRef_ScanX(X) (((float*)GeoScanX)[X]-1.0)
 #define GeoRef_ScanY(X) (((float*)GeoScanY)[X]-1.0)
 #define GeoRef_Lon(R,L) (((L)>180 && R->Type&GRID_NEGLON)?(L)-360.0:((L)<0 && !(R->Type&GRID_NEGLON))?(L)+360.0:(L))
+#define GeoRef_SubSelect(REF) (REF->NbSub?REF->Subs[REF->Sub]:REF)
 
 // Raster interpolation modes
 typedef enum {
@@ -404,7 +405,7 @@ int32_t  GeoRef_XYWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,
 int32_t  GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *lat,double *lon,int32_t n);                                // c_gdllsval
 int32_t  GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t n);   // c_gdllvval
 int32_t  GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t n);   // c_gdllwdval
-int32_t  GeoRef_XYInterp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t npts);           // c_gdxysint
+int32_t  GeoRef_XYInterp(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t npts);           // c_gdxysint
 int32_t  GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout, float *zin);                                             // c_ezsint
 int32_t  GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                 // c_ezuvint
 int32_t  GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                 // c_ezwdint

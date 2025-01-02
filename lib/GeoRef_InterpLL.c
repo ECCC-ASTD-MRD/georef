@@ -336,19 +336,22 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
 */
 int32_t GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
 
-   int32_t n=0,i;
+   TGeoRef *ref;
+   int32_t  n=0,i;
 
-   if (Ref->NbSub > 0) {
-      i = Ref->Subs[0]->NX*Ref->Subs[1]->NY;
+   ref=GeoRef_SubSelect(Ref);
 
-      n=GeoRef_GetLL(Ref->Subs[0],Lat,Lon);           // Yin
-      n+=GeoRef_GetLL(Ref->Subs[1],&Lat[i],&Lon[i]);  // Yang
+   if (ref->NbSub > 0) {
+      i = ref->Subs[0]->NX*ref->Subs[1]->NY;
+
+      n=GeoRef_GetLL(ref->Subs[0],Lat,Lon);           // Yin
+      n+=GeoRef_GetLL(ref->Subs[1],&Lat[i],&Lon[i]);  // Yang
    } else {
-      n=GeoRef_CalcLL(Ref);
+      n=GeoRef_CalcLL(ref);
 
-      if (Ref->Lat) {
-         if (Lon) memcpy(Lon,Ref->Lon,n*sizeof(double));
-         if (Lat) memcpy(Lat,Ref->Lat,n*sizeof(double));
+      if (ref->Lat) {
+         if (Lon) memcpy(Lon,ref->Lon,n*sizeof(double));
+         if (Lat) memcpy(Lat,ref->Lat,n*sizeof(double));
       } else {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Missing descriptors\n",__func__);
          return(-1);
@@ -374,6 +377,7 @@ int32_t GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double
    double *x,*y;
    int32_t ier;
 
+   if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
 
    x = (double*)malloc(2*Nb*sizeof(double));
@@ -411,14 +415,18 @@ int32_t GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
       return(-1);
    } else {
 
+      if (!Opt) Opt=&Ref->Options;
       if (!Opt) Opt=&GeoRef_Options;
 
-      x = (double*)malloc(2*Nb*sizeof(double));
+      if (!(x=(double*)malloc(2*Nb*sizeof(double)))) {
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate temporary coordinate buffer\n",__func__);
+         return(-1);
+      }
       y = &x[Nb];
    
       ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb,TRUE);
       ier = GeoRef_XYUVVal(Ref,Opt,uuout,vvout,uuin,vvin,x,y,Nb);
-   
+  
       free(x);
 
       return(0);
@@ -441,24 +449,26 @@ int32_t GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
 */
 int32_t GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb) {
 
-   TGeoRef *yin_gd, *yan_gd;
+   TGeoRef *yin_gd, *yan_gd,*ref;
    int32_t ier,j;
    double *x,*y;
    float  *uuyin, *vvyin, *uuyan, *vvyan;
 
+   if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
+   ref=GeoRef_SubSelect(Ref);
 
-   if (Ref->NbSub > 0) {
+   if (ref->NbSub > 0) {
       x = (double*) malloc(2*Nb*sizeof(double));
       y = &x[Nb];
       uuyin = (float*) malloc(6*Nb*sizeof(float));
       vvyin = &uuyin[Nb];
       uuyan = &uuyin[Nb*2];
       vvyan = &uuyin[Nb*3];
-      ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb,TRUE);
-      ier = GeoRef_XYUVVal(Ref,Opt,uuout,vvout,uuin,vvin,x,y,Nb);
-      yin_gd=Ref->Subs[0];
-      yan_gd=Ref->Subs[1];
+      ier = GeoRef_LL2XY(ref,x,y,Lat,Lon,Nb,TRUE);
+      ier = GeoRef_XYUVVal(ref,Opt,uuout,vvout,uuin,vvin,x,y,Nb);
+      yin_gd=ref->Subs[0];
+      yan_gd=ref->Subs[1];
 
       ier = GeoRef_UV2WD(yin_gd,uuyin,vvyin,uuout,vvout,Lat,Lon,Nb);
       ier = GeoRef_UV2WD(yan_gd,uuyan,vvyan,uuout,vvout,Lat,Lon,Nb);
@@ -474,8 +484,8 @@ int32_t GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
       free(x);
       free(uuyin);
    } else {
-      ier = GeoRef_LLUVVal(Ref,Opt,uuout,vvout,uuin,vvin,Lat,Lon,Nb);
-      ier = GeoRef_UV2WD(Ref,uuout,vvout,uuout,vvout,Lat,Lon,Nb);
+      ier = GeoRef_LLUVVal(ref,Opt,uuout,vvout,uuin,vvin,Lat,Lon,Nb);
+      ier = GeoRef_UV2WD(ref,uuout,vvout,uuout,vvout,Lat,Lon,Nb);
    }
 
    return(0);
