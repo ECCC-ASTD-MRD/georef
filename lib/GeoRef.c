@@ -205,7 +205,9 @@ void GeoRef_Clear(TGeoRef *Ref,int32_t New) {
       memset(&Ref->RPNHead,0x0,sizeof(fst_record_ext));
 
       if (New) {
-         if (Ref->Name)      free(Ref->Name);         Ref->Name=NULL;
+         if (Ref->Name)
+            free(Ref->Name);
+         Ref->Name=NULL;
       }
 
 #ifdef HAVE_GDAL
@@ -275,6 +277,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          case 'M': Ref->LL2XY=GeoRef_LL2XY_M; Ref->XY2LL=GeoRef_XY2LL_M; break;
          case 'W': Ref->LL2XY=GeoRef_LL2XY_W; Ref->XY2LL=GeoRef_XY2LL_W; break;
          case 'Y': Ref->LL2XY=GeoRef_LL2XY_Y; Ref->XY2LL=GeoRef_XY2LL_Y; break;
+         case 'X':
          case 'V': break;
          default:
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid grid type: %c\n",__func__,Ref->GRTYP[0]);
@@ -292,8 +295,8 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          Ref->Type|=GRID_TILE;
       }
     
-      if (Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='O') {
-         // If grid type is X (ORCA) and a pole in within the grid, mark as wrapping grid
+      if (Ref->GRTYP[0]=='O') {
+         // If grid type is O (ORCA) and a pole in within the grid, mark as wrapping grid
          lat[0]=89.0;lat[1]=-89.0;
          lon[0]=lon[1]=0.0;
          if (GeoRef_LL2XY(Ref,x,y,lat,lon,2,TRUE)) {
@@ -303,7 +306,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
     
       if (Ref->GRTYP[0]=='A' || Ref->GRTYP[0]=='B' || Ref->GRTYP[0]=='G') {
          Ref->Type|=GRID_WRAP;
-      } else if (Ref->GRTYP[0]!='V' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
+      } else if (Ref->GRTYP[0]!='V' && Ref->GRTYP[0]!='X' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
          // Check if north is up by looking at longitude variation on an Y increment at grid limits
          x[0]=Ref->X0;x[1]=Ref->X0;
          y[0]=Ref->Y0;y[1]=Ref->Y0+1.0;
@@ -378,8 +381,14 @@ int32_t GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Re
    if (Ref0->GRTYP[0]!=Ref1->GRTYP[0] || Ref0->GRTYP[1]!=Ref1->GRTYP[1])
       return(0);
    
+   if (Ref0->NX!=Ref1->NX || Ref0->NY!=Ref1->NY)
+      return(0);
+
    if (Ref0->RPNHead.ig1!=Ref1->RPNHead.ig1 || Ref0->RPNHead.ig2!=Ref1->RPNHead.ig2 || Ref0->RPNHead.ig3!=Ref1->RPNHead.ig3 || Ref0->RPNHead.ig4!=Ref1->RPNHead.ig4)
-     return(0);
+      return(0);
+
+   if (Ref0->RPNHeadExt.igref1!=Ref1->RPNHeadExt.igref1 || Ref0->RPNHeadExt.igref2!=Ref1->RPNHeadExt.igref2 || Ref0->RPNHeadExt.igref3!=Ref1->RPNHeadExt.igref3 || Ref0->RPNHeadExt.igref4!=Ref1->RPNHeadExt.igref4)
+      return(0);
    //TODO: Check AX,AY ?
 
    // Cloud point32_t should never be tested as equal
@@ -581,97 +590,6 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
    return(NULL);
 }
 
-/**----------------------------------------------------------------------------
- * @brief  Insert a grid entry into the list of grids managed by ezscint.  Can be used
- *         with regular and irregular ('Y', 'Z') grids, although it is not very useful
- *         for regular grids.
- *         If the grid type corresponds to a regular grid type (eg. 'A', 'G', 'N', etc.),
- *         then the parameters IG1 through IG4 are taken from an ordinary data record
- *         and grref, ax and ay are not used.
- *  
- *         If grtyp == 'Z' or '#', the dimensions of ax=ni and ay=nj.
- *         If grtyp == 'Y', the dimensions of ax=ay=ni*nj. 
- * @date   Avril 2005
- *
- *   @param Ref   Georeference
- *   @param NI    Horizontal size of the grid
- *   @param NJ    Vertical size of the grid
- *   @param GRTYP Grid type ('A', 'B', 'E', 'G', 'L', 'N', 'S','Y', 'Z', '#', '!')
- *   @param grref Reference grid type ('E', 'G', 'L', 'N', 'S')
- *   @param IG1   ig1 value associated to the reference grid
- *   @param IG2   ig2 value associated to the reference grid
- *   @param IG3   ig3 value associated to the reference grid
- *   @param IG4   ig4 value associated to the reference grid
- *   @param AX    Positional axis mapped to the '>>' record
- *   @param AY    Positional axis mapped to the '^^' record
- *  
- *    @return              New geo reference pointer
-*/
-TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grref,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,double* AX,double* AY) {
-   
-   TGeoRef* ref,*fref;
-
-   ref=Ref?GeoRef_SubSelect(Ref):GeoRef_New();
-   if (!ref)
-      return(NULL);
-
-   ref->RPNHead.grtyp[0]=ref->GRTYP[0] = GRTYP[0];
-   ref->RPNHead.grtyp[1]=ref->GRTYP[1] = '\0';
-   ref->RPNHeadExt.grref[0] = grref?grref[0]:'\0';
-   ref->RPNHeadExt.grref[1] = '\0';
-
-   // No Ref means it's coming from in memory so IGs are reference IGs (ex: Ceation of YinYan subgrids)
-   if (!Ref) {
-      ref->RPNHeadExt.igref1 = IG1;
-      ref->RPNHeadExt.igref2 = IG2;
-      ref->RPNHeadExt.igref3 = IG3;
-      ref->RPNHeadExt.igref4 = IG4;
-   }
-
-   ref->RPNHead.ni=ref->NX = NI;
-   ref->RPNHead.nj=ref->NY = NJ;
-   ref->RPNHead.ig1 = IG1;
-   ref->RPNHead.ig2 = IG2;
-   ref->RPNHead.ig3 = IG3;
-   ref->RPNHead.ig4 = IG4;
-   ref->i1 = 1;
-   ref->i2 = NI;
-   ref->j1 = 1;
-   ref->j2 = NJ;
-   ref->Extension=0;
-   ref->Type=GRID_NONE;
-
-   switch (GRTYP[0]) {
-      case 'Z':
-         f77name(cigaxg)(ref->RPNHeadExt.grref,&ref->RPNHeadExt.xgref1,&ref->RPNHeadExt.xgref2,&ref->RPNHeadExt.xgref3,&ref->RPNHeadExt.xgref4,&ref->RPNHeadExt.igref1,&ref->RPNHeadExt.igref2,&ref->RPNHeadExt.igref3,&ref->RPNHeadExt.igref4,1);
-      case '#':
-      case 'Y':
-         ref->AX = AX;
-         ref->AY = AY;
-         break;
-   }
-
-   GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
-
-   if (!Ref) {
-      if (fref = GeoRef_Find(ref)) {
-         // This georef already exists
-         free(ref);
-         GeoRef_Incr(fref);
-         return(fref);
-      }
-
-      // This is a new georef
-      GeoRef_Add(ref);
-   }
-
-   GeoRef_DefRPNXG(ref);
-   GeoRef_AxisDefine(ref,AX,AY);
-   GeoRef_Qualify(ref);
-
-   return(ref);
-}
-
 int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TApp_Type Type) {
 
    fst_record *h=&GRef->RPNHead;
@@ -772,7 +690,6 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
    return(sz);
 }
 
-
 int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
    int32_t     key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz=0;
@@ -783,6 +700,9 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid GeoRef object\n",__func__);
       return(FALSE);
    }
+
+   if (!GRef->RPNHead.file)
+      return(TRUE);
 
    if (GRef->GRTYP[0]=='L' || GRef->GRTYP[0]=='A' || GRef->GRTYP[0]=='B' || GRef->GRTYP[0]=='N' || GRef->GRTYP[0]=='S' || GRef->GRTYP[0]=='G') {
       return(TRUE);
@@ -910,13 +830,103 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
          if (mtx)  free(mtx);
 
 #else
-   Lib_Log(APP_LIBGEOREF,APP_ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);
-   return(FALSE);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);
+         return(FALSE);
 #endif
       }
    }
 
    return(TRUE);
+}
+
+/**----------------------------------------------------------------------------
+ * @brief  Insert a grid entry into the list of grids managed by ezscint.  Can be used
+ *         with regular and irregular ('Y', 'Z') grids, although it is not very useful
+ *         for regular grids.
+ *         If the grid type corresponds to a regular grid type (eg. 'A', 'G', 'N', etc.),
+ *         then the parameters IG1 through IG4 are taken from an ordinary data record
+ *         and grref, ax and ay are not used.
+ *  
+ *         If grtyp == 'Z' or '#', the dimensions of ax=ni and ay=nj.
+ *         If grtyp == 'Y', the dimensions of ax=ay=ni*nj. 
+ * @date   Avril 2005
+ *
+ *   @param Ref   Georeference
+ *   @param NI    Horizontal size of the grid
+ *   @param NJ    Vertical size of the grid
+ *   @param GRTYP Grid type ('A', 'B', 'E', 'G', 'L', 'N', 'S','Y', 'Z', '#', '!')
+ *   @param grref Reference grid type ('E', 'G', 'L', 'N', 'S')
+ *   @param IG1   ig1 value associated to the reference grid
+ *   @param IG2   ig2 value associated to the reference grid
+ *   @param IG3   ig3 value associated to the reference grid
+ *   @param IG4   ig4 value associated to the reference grid
+ *   @param AX    Positional axis mapped to the '>>' record
+ *   @param AY    Positional axis mapped to the '^^' record
+ *  
+ *    @return              New geo reference pointer
+*/
+TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grref,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,double* AX,double* AY) {
+   
+   TGeoRef* ref,*fref;
+
+   ref=Ref?Ref:GeoRef_New();
+   if (!ref)
+      return(NULL);
+
+   ref->RPNHead.grtyp[0]=ref->GRTYP[0]=GRTYP[0];
+   ref->RPNHead.grtyp[1]=ref->GRTYP[1]=GRTYP[1];
+   ref->RPNHeadExt.grref[0] = grref?grref[0]:'\0';
+   ref->RPNHeadExt.grref[1] = '\0';
+
+   // No Ref means it's coming from in memory so IGs are reference IGs (ex: Ceation of YinYan subgrids)
+   if (!Ref) {
+      ref->RPNHeadExt.igref1 = IG1;
+      ref->RPNHeadExt.igref2 = IG2;
+      ref->RPNHeadExt.igref3 = IG3;
+      ref->RPNHeadExt.igref4 = IG4;
+   }
+
+   ref->RPNHead.ni=ref->NX = NI;
+   ref->RPNHead.nj=ref->NY = NJ;
+   ref->RPNHead.ig1 = IG1;
+   ref->RPNHead.ig2 = IG2;
+   ref->RPNHead.ig3 = IG3;
+//   ref->RPNHead.ig4 = (GRTYP[0]=='#' || GRTYP[0]=='U')?IG4:0;
+   ref->RPNHead.ig4 = IG4;
+   ref->i1 = 1;
+   ref->i2 = NI;
+   ref->j1 = 1;
+   ref->j2 = NJ;
+   ref->Extension=0;
+   ref->Type=GRID_NONE;
+
+   GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
+
+   if (!Ref) {
+      if (fref = GeoRef_Find(ref)) {
+         // This georef already exists
+         free(ref);
+         GeoRef_Incr(fref);
+         return(fref);
+      }
+
+      // This is a new georef
+      GeoRef_Add(ref);
+   }
+
+   // Read grid descriptors
+   if (AX && AY) {
+      GeoRef_AxisDefine(ref,AX,AY);
+   } else {
+      if (!GeoRef_Read(ref)) {
+         return(NULL);
+      }
+   }
+
+   GeoRef_DefRPNXG(ref);
+   GeoRef_Qualify(ref);
+
+   return(ref);
 }
 
 /**----------------------------------------------------------------------------
@@ -936,64 +946,20 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
 */
 TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,fst_file *File) {
 
-   TGeoRef *ref,*fref;
-   int32_t      id;
+   TGeoRef *ref;
 
    ref=GeoRef_New();
+   ref->RPNHead.file=File;
 
    // If not specified, type is X
    if (GRTYP[0]==' ') GRTYP[0]='X';
    
-   GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
-   ref->RPNHead.grtyp[0]=ref->GRTYP[0]=GRTYP[0];
-   ref->RPNHead.grtyp[1]=ref->GRTYP[1]=GRTYP[1];
-   ref->RPNHead.ip1 = 0;
-   ref->RPNHead.ip2 = 0;
-   ref->RPNHead.ip3 = 0;
-   ref->Type=GRID_NONE;
-
-   if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='P' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || File)) {
-
-      if (GRTYP[1]=='#') {
-         //TODO: CHECK For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
-      }
-
-      if (ref->GRTYP[0]=='L' || ref->GRTYP[0]=='A' || ref->GRTYP[0]=='B' || ref->GRTYP[0]=='N' || ref->GRTYP[0]=='S' || ref->GRTYP[0]=='G') {
-         // No need to look for grid descriptors
-         return(GeoRef_Define(NULL,NI,NJ,GRTYP," ",IG1,IG2,IG3,IG4,NULL,NULL));
-      }
-  
-      ref->RPNHead.file= File;
-      ref->RPNHead.ig1 = IG1;
-      ref->RPNHead.ig2 = IG2;
-      ref->RPNHead.ig3 = IG3;
-//      ref->RPNHead.ig4 = (GRTYP[0]=='#' || GRTYP[0]=='U')?IG4:0;
-      ref->RPNHead.ig4 = IG4;
-
-      // This georef already exists
-      if (fref=GeoRef_Find(ref)) {
-         free(ref);
-         GeoRef_Incr(fref);
-         return(fref);
-      }
-
-      // This is a new georef
-      GeoRef_Add(ref);
-      if (!GeoRef_Read(ref)) {
-         // problems with reading grid descriptors
-         return(NULL);
-      }
-
-      if (GRTYP[0] != 'U') {
-         ref->i1 = 1;
-         ref->i2 = ref->NX;
-         ref->j1 = 1;
-         ref->j2 = ref->NY;
-         GeoRef_DefRPNXG(ref);           
-      }
+   if (GRTYP[1]=='#') {
+      //TODO: CHECK For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
    }
 
-   GeoRef_Qualify(ref);
+   ref=GeoRef_Define(ref,NI,NJ,GRTYP," ",IG1,IG2,IG3,IG4,NULL,NULL);
+   GeoRef_Add(ref);
 
    return(ref);
 }
@@ -1029,6 +995,7 @@ TGeoRef* GeoRef_New() {
    ref->NCX=NULL;
    ref->NCY=NULL;
    ref->Extension=0;
+   ref->Hemi=GRID_GLOBAL;
    ref->RefFrom=NULL;
    ref->QTree=NULL;
    ref->GRTYP[0]='X';
@@ -2115,6 +2082,9 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
          f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
          break;
 
+      case 'U':
+         break;
+
       default:
 	      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Grid type not supported %c\n",__func__,Ref->GRTYP[0]);
          return(-1);
@@ -2345,7 +2315,7 @@ int32_t GeoRef_Write(TGeoRef *GRef,fst_file *File){
 int32_t GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec) {
 
    fst_record  srec = default_fst_record;
-   fst_record  rec;
+   fst_record  rec = default_fst_record;
    fst_query  *query;
    char       *data=NULL;
    const char *desc,**descs;
@@ -2357,15 +2327,15 @@ int32_t GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec) {
       // Loop through possible descriptors NOMVAR
       descs=fst24_record_get_descriptors();
       while((desc=descs[d++])) {
-         if (strncmp(desc,"HY  ",FST_NOMVAR_LEN)!=0) {
+        if (strncmp(desc,"HY",2)!=0) {
             srec.ip1=Rec->ig1;
             srec.ip2=Rec->ig2;
          }
 
          // Does it already exists in the destination file
-         strncmp(srec.nomvar,desc,FST_NOMVAR_LEN);
+         strncpy(srec.nomvar,desc,FST_NOMVAR_LEN);
          query = fst24_new_query(FileTo,&srec,NULL);
-         if (fst24_find_next(query,&rec)) {
+         if (!fst24_find_next(query,&rec)) {
             // If not already existing in destination
             if (fst24_read(Rec->file,&srec,NULL,&rec)) {
                if (!fst24_write(FileTo,&rec,TRUE)) {

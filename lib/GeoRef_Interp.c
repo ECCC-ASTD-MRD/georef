@@ -169,7 +169,7 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
          break;
 
       default:
-        switch (Opt->Interp) {
+         switch (Opt->Interp) {
             case IR_NEAREST:
                if (!GSet) {
                   f77name(ez8_rgdint_0)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);

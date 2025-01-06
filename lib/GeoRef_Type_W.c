@@ -181,6 +181,8 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
    }
 
    Ref->Height=NULL;
+   Ref->GRTYP[0]='W';
+   GeoRef_Qualify(Ref);
 
    return(Ref);
 #else

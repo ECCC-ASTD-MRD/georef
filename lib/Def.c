@@ -12,7 +12,7 @@
 // TODO: revisit for architecture dependencies
 int32_t TDef_Size[] = { 0,1,1,1,2,2,4,4,8,8,4,8 };
 int32_t TDef_Mult[] = { 0,0,0,0,1,1,2,2,3,3,2,3 };
-int32_t TDef_DTYP[] = { 0,2,4,2,4,2,4,2,4,5,5,-1 };
+int32_t TDef_DTYP[] = { 0,0,2,4,2,4,2,4,2,4,5,5,-1 };
 
 /*----------------------------------------------------------------------------
  * @brief  Re-initialise a data definition
@@ -638,14 +638,14 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
   *Length=Def->NoData;
    d=Ref->GRTYP[0]=='W'?1.0:0.5;
 
-   //i on est a l'interieur de la grille ou que l'extrapolation est activee
+   // Si on est a l'interieur de la grille ou que l'extrapolation est activee
    if (C<Def->NC && X>=(Ref->X0-d) && Y>=(Ref->Y0-d) && Z>=0 && X<=(Ref->X1+d) && Y<=(Ref->Y1+d) && Z<=Def->NK-1) {
 
       // Index memoire du niveau desire
       mem=Def->NIJ*(int)Z;
  
-      // Check for mask
-      if (Def->Mask && !Def->Mask[idx]) {
+      // In case of integer data, use nearest index
+      if (Def->Mask || Def->Type<=TD_Int64) {
          x=X;
          y=Y;
          x-=Ref->X0;
@@ -655,12 +655,17 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
          ix=lrint(x);
          iy=lrint(y);
          idx=iy*Def->NI+ix;
-         if (!Def->Mask[idx]) {
+      }
+
+      // Check for mask
+      if (Def->Mask && !Def->Mask[idx]) {
+          if (!Def->Mask[idx]) {
             return(FALSE);
          }
+      } else {
+         X+=1;
+         Y+=1;
       }
-      X+=1;
-      Y+=1;
 
       if (Def->Data[1] && !C) { 
          Def_Pointer(Def,0,mem,p0);
@@ -675,10 +680,14 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
          }
          if (ThetaXY)
             *ThetaXY=valdf;
-      } else {            
-         Def_Pointer(Def,C,mem,p0);
-         GeoRef_XYVal(Ref,Opt,&valf,p0,&X,&Y,1);
-         *Length=valf;
+      } else {   
+         if (Def->Type<=TD_Int64) {
+            Def_Get(Def,C,mem+idx,valf);
+         } else {
+            Def_Pointer(Def,C,mem,p0);
+            GeoRef_XYVal(Ref,Opt,&valf,p0,&X,&Y,1);
+         }
+        *Length=valf;
       }
       return(TRUE);
    }

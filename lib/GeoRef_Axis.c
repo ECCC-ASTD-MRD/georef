@@ -146,20 +146,16 @@ void GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY) {
       f77name(cigaxg)(Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,
 		      &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,1);
 
-      Ref->AX = (double*) malloc(Ref->NX*sizeof(double));
-      Ref->AY = (double*) malloc(Ref->NY*sizeof(double));
+      Ref->AX = AX;
+      Ref->AY = AY;
 
-      memcpy(Ref->AX,AX,Ref->NX*sizeof(double));
-      memcpy(Ref->AY,AY,Ref->NY*sizeof(double));
       GeoRef_AxisCalcExpandCoeff(Ref);
       GeoRef_AxisCalcNewtonCoeff(Ref);
       break;
 
     case 'Y':
-      Ref->AX = (double*) malloc(Ref->NX*Ref->NY*sizeof(double));
-      Ref->AY = (double*) malloc(Ref->NX*Ref->NY*sizeof(double));
-      memcpy(Ref->AX,AX,Ref->NX*Ref->NY*sizeof(double));
-      memcpy(Ref->AY,AY,Ref->NX*Ref->NY*sizeof(double));
+      Ref->AX = AX;
+      Ref->AY = AY;
 
       GeoRef_AxisCalcExpandCoeff(Ref);
       break;

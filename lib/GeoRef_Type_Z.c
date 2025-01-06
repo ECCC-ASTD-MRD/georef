@@ -262,7 +262,7 @@ TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int32_t NI,int32_t NJ,float DX,float DY,fl
    // f77name(set_gemhgrid4)(Ref->AX,Ref->AY,&NI,&NJ,&DX,&DY,&x0,&x1,&y0,&y1,FALSE);
    GEM_hgrid4(Ref->AX,Ref->AY,NI,NJ,&DX,&DY,x0,x1,y0,y1,FALSE);
            
-   GeoRef_Define(Ref,NI,NJ,"Z","E",Ref->RPNHead.ig1,Ref->RPNHead.ig2,Ref->RPNHead.ig3,Ref->RPNHead.ig4,Ref->AX,Ref->AY);
+   Ref=GeoRef_Define(Ref,NI,NJ,"Z","E",Ref->RPNHead.ig1,Ref->RPNHead.ig2,Ref->RPNHead.ig3,Ref->RPNHead.ig4,Ref->AX,Ref->AY);
   
    return(Ref);
 }
