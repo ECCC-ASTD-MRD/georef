@@ -48,7 +48,7 @@ _georef_create.restype = ctypes.POINTER(_TGeoRef)
 
 _georef_limits = libgeoref.GeoRef_Limits
 _georef_limits.argtypes = (ctypes.POINTER(_TGeoRef),
-    ctypes.POINTER((ctypes.c_double),
+    ctypes.POINTER(ctypes.c_double),
     ctypes.POINTER(ctypes.c_double),
     ctypes.POINTER(ctypes.c_double),
     ctypes.POINTER(ctypes.c_double)
