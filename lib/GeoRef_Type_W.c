@@ -181,7 +181,7 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
    }
 
    Ref->Height=NULL;
-   Ref->GRTYP[0]='W';
+//   Ref->GRTYP[0]='W';
    GeoRef_Qualify(Ref);
 
    return(Ref);
@@ -229,7 +229,7 @@ TGeoRef *GeoRef_CreateW(int32_t NI,int32_t NJ,char *grtyp,int32_t IG1,int32_t IG
    ref->RPNHead.ig2=IG2;
    ref->RPNHead.ig3=IG3;
    ref->RPNHead.ig4=IG4;
-   
+ //TODO: Add to list  
    return(ref);
 }
 

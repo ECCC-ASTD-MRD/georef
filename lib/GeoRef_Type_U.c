@@ -70,26 +70,5 @@ TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *GRTYP,char *grref,int32_t Ve
 
    GeoRef_Qualify(ref);
 
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: grtyp     = '%c'\n",__func__, ref->GRTYP[0]);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: grref     = '%c'\n",__func__, ref->RPNHeadExt.grref[0]);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ni        = %d\n",__func__,ref->NX);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: nj        = %d\n",__func__,ref->NY);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig1       = %d\n",__func__,ref->RPNHead.ig1);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig2       = %d\n",__func__,ref->RPNHead.ig2);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig3       = %d\n",__func__,ref->RPNHead.ig3);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig4       = %d\n",__func__,ref->RPNHead.ig4);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig1ref    = %d\n",__func__,ref->RPNHeadExt.igref1);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig2ref    = %d\n",__func__,ref->RPNHeadExt.igref2);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig3ref    = %d\n",__func__,ref->RPNHeadExt.igref3);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: ig4ref    = %d\n",__func__,ref->RPNHeadExt.igref4);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: NbSub     = %d\n",__func__,ref->NbSub);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subs[0]   = %p\n",__func__,ref->Subs[0]);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subs[1]   = %p\n",__func__,ref->Subs[1]);
-
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RPNHead.XG[1] = %f\n",__func__,ref->RPNHeadExt.xg1);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RPNHead.XG[2] = %f\n",__func__,ref->RPNHeadExt.xg2);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RPNHead.XG[3] = %f\n",__func__,ref->RPNHeadExt.xg3);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RPNHead.XG[4] = %f\n",__func__,ref->RPNHeadExt.xg4);
-
    return(ref);
 }

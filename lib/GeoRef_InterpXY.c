@@ -47,7 +47,7 @@ int32_t GeoRef_XYVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double
 
    if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
-   ref=GeoRef_SubSelect(Ref);
+   ref=GeoRef_SubGet(Ref);
 
    if (ref->NbSub > 0) {
       yin_gd=ref->Subs[0];
@@ -79,7 +79,7 @@ int32_t GeoRef_XYUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
 
    if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
-   ref=GeoRef_SubSelect(Ref);
+   ref=GeoRef_SubGet(Ref);
 
    if (ref->NbSub > 0) {
       yin_gd=ref->Subs[0];
@@ -143,7 +143,7 @@ int32_t GeoRef_XYWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
   
    if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
-   ref=GeoRef_SubSelect(Ref);
+   ref=GeoRef_SubGet(Ref);
 
    if (ref->NbSub > 0) {
       yin_gd=ref->Subs[0];

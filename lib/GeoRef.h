@@ -133,7 +133,7 @@ typedef struct {
 #define GeoRef_ScanX(X) (((float*)GeoScanX)[X]-1.0)
 #define GeoRef_ScanY(X) (((float*)GeoScanY)[X]-1.0)
 #define GeoRef_Lon(R,L) (((L)>180 && R->Type&GRID_NEGLON)?(L)-360.0:((L)<0 && !(R->Type&GRID_NEGLON))?(L)+360.0:(L))
-#define GeoRef_SubSelect(REF) (REF->NbSub?REF->Subs[REF->Sub]:REF)
+#define GeoRef_SubGet(REF) (REF->NbSub?REF->Subs[REF->Sub]:REF)
 
 // Raster interpolation modes
 typedef enum {
@@ -219,7 +219,6 @@ typedef struct TGeoOptions {
    TRef_ExtrapR Extrap;         ///< Extrapolation method
    TRef_InterpV InterpVector;   ///< Vector interpolation method
    TRef_Combine Combine;        ///< Aggregation type
-   double       ExtrapValue;    ///< Value to use for extrapolation in ER_VALUE mode
    int32_t      Transform;      ///< Apply transformation or stay within master referential
    int32_t      CIndex;         ///< C Indexing (starts st 0)
    int32_t      Symmetric;      ///< 
@@ -354,6 +353,8 @@ typedef struct TGeoScan {
 void GeoRef_Lock(void);
 void GeoRef_Unlock(void);
 
+void Georef_PrintOptions(TGeoOptions *Options);
+
 TGeoRef* GeoRef_Get(char *Name);
 int32_t  GeoRef_Incr(TGeoRef *Ref);
 void     GeoRef_Decr(TGeoRef *Ref);
@@ -391,6 +392,7 @@ TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int32_t NI,int32_t NJ,float DX,float DY,fl
 int32_t  GeoRef_Positional(TGeoRef *Ref,struct TDef *XDef,struct TDef *YDef);
 TQTree*  GeoRef_BuildIndex(TGeoRef* __restrict const Ref);
 int32_t  GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *Idxs,double *Dists,int32_t NbNear,double MaxDist);
+int32_t  GeoRef_SubSelect(TGeoRef *Ref,int N);
 
 // EZSCINT merged fonctionnalities
 int32_t  GeoRef_DefRPNXG(TGeoRef* Ref);                                                                                                       // c_ezdefxg
@@ -437,6 +439,7 @@ int32_t  GeoRef_SetWrite(TGeoSet *GSet,fst_file *File);
 int32_t  GeoRef_SetZoneDefine(TGeoSet *GSet);
 int32_t  GeoRef_SetCalcXY(TGeoSet *GSet);
 int32_t  GeoRef_SetCalcYYXY(TGeoSet *GSet);
+int32_t GeoRef_SetIndexInit(TGeoSet *GSet);
 
 int32_t  GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t npts,TGeoSet *GSet);
 int32_t  GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin);

@@ -267,6 +267,18 @@ int32_t GeoRef_SetCalcXY(TGeoSet *GSet) {
          GeoRef_LL2XY(GSet->RefFrom,GSet->X,GSet->Y,GSet->RefTo->Lat,GSet->RefTo->Lon,size,TRUE);
       }
 
+      GeoRef_SetIndexInit(GSet);
+   }
+   return(0);
+}
+
+int32_t GeoRef_SetIndexInit(TGeoSet *GSet) {
+
+   int32_t mult=1;
+   char *c;
+
+   if (GSet) {
+
       if (!GSet->Index || GSet->IndexDegree!=GSet->Opt.Interp) {   
          GSet->IndexDegree=GSet->Opt.Interp;
          if (GSet->IndexDegree==IR_CONSERVATIVE || GSet->IndexDegree==IR_NORMALIZED_CONSERVATIVE) {
@@ -279,12 +291,12 @@ int32_t GeoRef_SetCalcXY(TGeoSet *GSet) {
          }
          // Set the index size to the number of items without the multiplicator
          // the index size will be readjusted when in CONSERVATIVE modes otherwise, the multiplicator will be put in nj when writing
-         GSet->IndexSize=size;
+         GSet->IndexSize=GSet->RefTo->NX*GSet->RefTo->NY;
          GSet->Index = (float*)realloc(GSet->Index,GSet->IndexSize*mult*sizeof(float));
          GSet->Index[0]=REF_INDEX_EMPTY;
       }
    }
-   return(0);
+   return(GSet->IndexSize*mult);
 }
 
 /*----------------------------------------------------------------------------

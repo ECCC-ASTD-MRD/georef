@@ -1069,7 +1069,7 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,OGRGeom
 
 #ifdef HAVE_GDAL
    double        dx,dy,dp=1.0,val=0.0;
-   int32_t           x,y,n=0,idx2,na;
+   int32_t       x,y,n=0,idx2,na;
    OGRGeometryH  inter=NULL,pick;
    OGREnvelope   envg,envp;
 
@@ -1649,6 +1649,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
    if (!Opt) Opt=&ToRef->Options;
    if (!Opt) Opt=&GeoRef_Options;
 
+   Opt->Combine=CB_SUM;
    if (!ToRef || !ToDef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid destination\n",__func__);
       return(FALSE);
@@ -1667,6 +1668,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
       }
    }
    gset=GeoRef_SetGet(ToRef,FromRef,Opt);
+   GeoRef_SetIndexInit(gset);
 
    // Define the max size of the indexes
    isize=1024;
@@ -1682,7 +1684,6 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
 
       // Do we have and index
       if (gset->Index && gset->Index[0]!=REF_INDEX_EMPTY) {
-
          // As long as the file or the list is not empty
          ip=gset->Index;
          while(*ip!=REF_INDEX_END) {
@@ -1696,7 +1697,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
                return(FALSE);
             }
 
-            // Get this gridpoint32_t value
+            // Get this gridpoint value
             Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
             if (!DEFVALID(FromDef,val1)) {
                continue;
@@ -1802,7 +1803,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
 
                   if (area>0.0) {
 
-                    Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
+                     Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
                      // If we are saving the indexes, we have to process even if nodata but use 0.0 so as to not affect results
                      if (!DEFVALID(FromDef,val1)) {
                         if (lp) {
@@ -1833,10 +1834,11 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
                   }
                }
 
-              area=OGR_G_Area(cell);
+               area=OGR_G_Area(cell);
 
                if (area>0.0) {
                   Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
+                  fprintf(stderr,"---- %f ", val1);
                   if (!DEFVALID(FromDef,val1)) {
                      // If we are saving the indexes, we have to process even if nodata but use 0.0 so as to not affect results
                      if (lp) {
@@ -1906,7 +1908,6 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
             }
          }
       }
-
    }
 
    OGR_G_DestroyGeometry(ring);

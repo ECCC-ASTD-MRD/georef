@@ -202,10 +202,10 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
    refto=Set->RefTo;
 
    nj = reffrom->j2 - reffrom->j1 +1;
-   ierc = 0; /* no extrapolation */
+   ierc = 0; // no extrapolation
 
    if (Set->zones[GRID_OUTSIDE].npts > 0) {
-      ierc = 2; /* code to indicate extrapolation */
+      ierc = 2; // code to indicate extrapolation
       if (Set->Opt.Extrap == ER_ABORT) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Points on destination lie outside source. Aborting as requested\n",__func__);
          return(-1);
@@ -213,33 +213,25 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
 
       f77name(ez_aminmax)(&valmin,&valmax,zin,&(reffrom->NX),&nj);
       if (Set->Opt.Extrap) {
-         if (Set->Opt.VectorMode) {
-            fudgeval_set = 1;
-	      } else {
+         if (!Set->Opt.VectorMode) {
             switch (Set->Opt.Extrap) {
                case ER_MAXIMUM:
                   fudgeval = valmax + 0.05 * (valmax - valmin);
-                  fudgeval_set = 1;
                   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Maximum: %f \n",__func__,fudgeval);
                   break;
 
                case ER_MINIMUM:
                   fudgeval = valmin - 0.05 * (valmax - valmin);
-                  fudgeval_set = 1;
                   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Minimum: %f \n",__func__,fudgeval);
                   break;
 
                case ER_VALUE:
-                  fudgeval = Set->Opt.ExtrapValue;
-                  fudgeval_set = 1;
+                  fudgeval = Set->Opt.NoData;
                   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Value: %f \n",__func__,fudgeval);
                   break;
             }
          }
 
-         if (fudgeval_set == 0) {
-            Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Fudgeval not set\n",__func__);
-         }
          for (i=0; i < Set->zones[GRID_OUTSIDE].npts; i++) {
 	          zout[Set->zones[GRID_OUTSIDE].idx[i]] = fudgeval;
 	      }

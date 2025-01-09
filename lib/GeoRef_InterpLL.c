@@ -339,7 +339,7 @@ int32_t GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
    TGeoRef *ref;
    int32_t  n=0,i;
 
-   ref=GeoRef_SubSelect(Ref);
+   ref=GeoRef_SubGet(Ref);
 
    if (ref->NbSub > 0) {
       i = ref->Subs[0]->NX*ref->Subs[1]->NY;
@@ -456,7 +456,7 @@ int32_t GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
 
    if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
-   ref=GeoRef_SubSelect(Ref);
+   ref=GeoRef_SubGet(Ref);
 
    if (ref->NbSub > 0) {
       x = (double*) malloc(2*Nb*sizeof(double));

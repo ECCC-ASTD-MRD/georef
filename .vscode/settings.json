@@ -34,7 +34,8 @@
       "utility": "c",
       "triangle.h": "c",
       "gdal_safe.h": "c",
-      "array.h": "c"
+      "array.h": "c",
+      "cmath": "c"
    },
    "C_Cpp.errorSquiggles": "Disabled",
    "python.pythonPath": "/usr/bin/python3",

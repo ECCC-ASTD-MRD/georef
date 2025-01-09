@@ -89,12 +89,11 @@ module georef_mod
     end type georef
 
     type, bind(C) :: geooptions
-        type(C_PTR) :: ptr = c_null_ptr ! Pointer to C control structure
+        type(C_PTR) :: ptr = c_null_ptr              !< Pointer to C control structure
         integer(C_INT32_T) :: Interp = IR_CUBIC      !< Interpolation degree
         integer(C_INT32_T) :: Extrap = ER_MAXIMUM    !< Extrapolation method
         integer(C_INT32_T) :: InterpVector = IV_FAST !< Vector interpolation method
         integer(C_INT32_T) :: Combine = CB_REPLACE   !< Aggregation type
-        real(C_DOUBLE)     :: ExtrapValue = 0.0      !< Value to use for extrapolation in ER_VALUE mode
         integer(C_INT32_T) :: Transform = 1          !< Apply transformation or stay within master referential
         integer(C_INT32_T) :: CIndex = 0             !< C Indexing (starts st 0)
         integer(C_INT32_T) :: Symmetric = 0          !< 
@@ -106,7 +105,13 @@ module georef_mod
         real(C_FLOAT)      :: DistTreshold = 10.0    !< Distance treshold for point32_t clouds
         real(C_FLOAT)      :: LonRef = 0.0           !< Longitude referential (-180.0,0.0)
         real(C_FLOAT)      :: NoData = 0.0           !< NoData Value (Default: NaN)
+        type(C_PTR) :: Table = c_null_ptr            !< Data table to check of values to check for
+        type(C_PTR) :: lutDef = c_null_ptr           !< Lookup table
+        integer(C_INT32_T) :: lutSize = 0            !< Number of lookup elements
+        integer(C_INT32_T) :: lutDim = 0             !< Dimension of the lookup elements
+        type(C_PTR) :: Ancilliary = c_null_ptr       !< PPre calculated field (ex: variance, average,...)
     end type geooptions
+
 contains
 
     function georef_init_f(this) result(res)
