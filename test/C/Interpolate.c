@@ -58,7 +58,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    GeoRef_Options.Interp=Type;
    GeoRef_Options.NoData=0.0;
 
-   GeoRef_Write(refout,fout);   
+   GeoRef_Write(refout,NULL,fout);   
 
    strncpy(crit.nomvar,Vars[0],FST_NOMVAR_LEN);
    fst_query* query = fst24_new_query(fin,&crit,NULL);
@@ -68,7 +68,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       if (!refin) {
          refin=GeoRef_Create(record.ni,record.nj,record.grtyp,record.ig1,record.ig2,record.ig3,record.ig4,(fst_file*)record.file);
       }
-      fprintf(stderr,"VVVV %p %p\n",refin,refout);
+
       // Proceed with interpolation
       if (!GeoRef_Interp(refout,refin,&GeoRef_Options,grid.data,record.data)) {
          App_Log(APP_ERROR,"Interpolation problem");

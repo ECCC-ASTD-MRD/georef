@@ -77,97 +77,19 @@ int32_t GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
 */
 int32_t GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
-   double   tmpwgts[GRID_MAXWEIGHTNUM],total_wgt;
-   int32_t      locmax,i,iz,idx,idxz,tmp_idxs[GRID_MAXWEIGHTNUM][2],previous_val_polar_correction;
-   TPoint2D bbox[2];
-   TGeoSet *set=Ref->LastSet;
+   int32_t idx,idxs[8],nb=0;;
+   double  dists[8];
 
-   previous_val_polar_correction = Ref->Options.PolarCorrect;
-   Ref->Options.PolarCorrect = FALSE;
-//TODO: finish this func
-   set->n_wts = FMIN(Ref->Options.WeightNum,GRID_MAXWEIGHTNUM);
-   set->wts =  (double *) malloc(Nb*set->n_wts*sizeof(float));
-   set->idx =  (int32_t *) calloc(Nb,set->n_wts*sizeof(int));
-   set->mask = (int32_t *) malloc(Nb*sizeof(int));
    GeoRef_CalcLL(Ref);
 
-   // Find bbox
-   bbox[0].X=bbox[0].Y=1e30;
-   bbox[1].X=bbox[1].Y=-1e30;
-
-   for(i=0;i<Nb;i++) {
-      bbox[0].Y=FMIN(Lat[i],bbox[0].Y);
-      bbox[0].X=FMIN(Lon[i],bbox[0].X);
-      bbox[1].Y=FMAX(Lat[i],bbox[1].Y);
-      bbox[1].X=FMAX(Lon[i],bbox[1].X);
-   }
-
-   // Initialize weights
-   for(i=0;i<Nb*set->n_wts;i++) {
-      tmpwgts[i] = 1.0e30;
-   }
-
    for (idx=0;idx<Nb;idx++) {
-      X[idx]=-1.0;
-      Y[idx]=-1.0;
-      idxz=idx*set->n_wts;
-      locmax=1;
-      for(i=0;i<GRID_MAXWEIGHTNUM;i++) tmpwgts[i] = 1.0e30;
-      memset(tmp_idxs,0x0,GRID_MAXWEIGHTNUM*2);
-
-// From original GeoRef_RPN
-//             // Get nearest point
-//             if (GeoRef_Nearest(Ref,Lon,Lat,&idx,dists,1,0.0)) {
-//                if (dists[0]<1.0) {
-//                   *Y=(int)(idx/Ref->NX);
-//                   *X=idx-(*Y)*Ref->NX;
-//                   return(TRUE);
-//                }         
-//             }
-      if (GeoRef_Nearest(Ref,Lon[idx],Lat[idx],&set->idx[idxz],&set->wts[idxz],1,Ref->Options.DistTreshold)) {
-         if (set->idx[idxz]<Ref->Options.DistTreshold) {
-               if (set->wts[idxz] < tmpwgts[locmax]) {
-   //TODO: finalise (ez_calcxy_y)
-   //               tmpwgts[locmax] = Set->wts[idxz];
-   //               Set->idx(idx,locmax) = Set->idx[idxz];
-   //               tmp_idxs[locmax][0] = Set->idx[idxz];
-   //               tmp_idxs[locmax][1] = 1;
-   //               locmax = maxloc(tmpwgts,1)
-               }
-            }
-      }
-      FWITHIN(0,bbox[0].Y,bbox[0].X,bbox[1].Y,bbox[1].X,Y[idx],X[idx]);
-      if (set->mask[idx]) {
-//         (f77name)inside_or_outside(&Set->mask[idx],&Set->x[idx],&Set->y[idx],&Lat[idx],&Lon[idx],Ref->Lat,Ref->Lon,&Ref->NX,&Ref->NY,tmpwgts,tmp_idxs,&Set->n_wts;
-      }
-
-      if (set->mask[idx]) {
-         for(iz=0;iz<set->n_wts;iz++) {
-            idxz=idx*Nb+iz;
-            set->wts[idxz] = tmpwgts[iz];
-         }
-         idxz=idx*Nb;
-         if (set->wts[idxz] > 6371000.0) {
-            for(iz=0;iz>set->n_wts;iz++) { 
-               set->wts[idxz+iz] = 1.0e30;
-            }
-            set->mask[idx] = 0;
-         } else {
-            total_wgt = 0.0;
-            for (iz=0;iz<set->n_wts;iz++) {
-               idxz=idx*Nb+iz;
-               set->wts[idxz] = fmax(set->wts[idxz],1.0e-10);
-               set->wts[idxz] = 1.0 / set->wts[idxz];
-               total_wgt+=set->wts[idxz];
-            }
-            for (iz=0;iz<set->n_wts;iz++) {
-               idxz=idx*Nb+iz;
-               set->wts[idxz]/=total_wgt;
-            }
+      if (GeoRef_Nearest(Ref,Lon[idx],Lat[idx],&idx,dists,1,Ref->Options.DistTreshold)) {
+         if (dists[0]<1.0) {
+            Y[idx]=(int)(idx/Ref->NX);
+            X[idx]=idx-(*Y)*Ref->NX;
+            nb++;
          }
       }
    }
-
-   Ref->Options.PolarCorrect = previous_val_polar_correction;
-   return(0);
+   return(nb);
 }

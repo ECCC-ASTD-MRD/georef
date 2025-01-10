@@ -638,24 +638,21 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
   *Length=Def->NoData;
    d=Ref->GRTYP[0]=='W'?1.0:0.5;
 
-   // Si on est a l'interieur de la grille ou que l'extrapolation est activee
+   // Si on est a l'interieur de la grille
    if (C<Def->NC && X>=(Ref->X0-d) && Y>=(Ref->Y0-d) && Z>=0 && X<=(Ref->X1+d) && Y<=(Ref->Y1+d) && Z<=Def->NK-1) {
 
       // Index memoire du niveau desire
       mem=Def->NIJ*(int)Z;
  
-      // In case of integer data, use nearest index
-      if (Def->Mask || Def->Type<=TD_Int64) {
-         x=X;
-         y=Y;
-         x-=Ref->X0;
-         y-=Ref->Y0;
-         DEFCLAMP(Def,x,y);
+      x=X;
+      y=Y;
+      x-=Ref->X0;
+      y-=Ref->Y0;
+      DEFCLAMP(Def,x,y);
 
-         ix=lrint(x);
-         iy=lrint(y);
-         idx=iy*Def->NI+ix;
-      }
+      ix=lrint(x);
+      iy=lrint(y);
+      idx=iy*Def->NI+ix;
 
       // Check for mask
       if (Def->Mask && !Def->Mask[idx]) {
@@ -681,7 +678,7 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
          if (ThetaXY)
             *ThetaXY=valdf;
       } else {   
-         if (Def->Type<=TD_Int64) {
+         if (Def->Type<=TD_Int64 || (ix==x && iy==y)) {
             Def_Get(Def,C,mem+idx,valf);
          } else {
             Def_Pointer(Def,C,mem,p0);
@@ -1671,7 +1668,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
    GeoRef_SetIndexInit(gset);
 
    // Define the max size of the indexes
-   isize=1024;
+   isize=102;
    if ((c=getenv("GEOREF_INDEX_SIZE_HINT"))) {
       isize=atoi(c);
    }
@@ -1741,7 +1738,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
          #pragma omp parallel for collapse(2) firstprivate(cell,ring,pick,poly) private(i,j,nidx,wrap,intersect,cnt,p,x,y,z,lp,area,val1,env,n,na) shared(k,isize,FromRef,FromDef,ToRef,ToDef,error) reduction(+:nt)
          for(j=0;j<FromDef->NJ;j++) {
             for(i=0;i<FromDef->NI;i++) {
-
+ 
                nidx=j*FromDef->NI+i;
                if (index) index[nidx]=NULL;
                if (error) continue;
@@ -1838,7 +1835,6 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
 
                if (area>0.0) {
                   Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
-                  fprintf(stderr,"---- %f ", val1);
                   if (!DEFVALID(FromDef,val1)) {
                      // If we are saving the indexes, we have to process even if nodata but use 0.0 so as to not affect results
                      if (lp) {
@@ -1867,10 +1863,13 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
                }
             }
          }
-
          // Merge indexes
          n=0;
          if (ip && nt && !error) {
+            if (gset->IndexSize<nt*3) {
+               gset->IndexSize=nt*3;
+               gset->Index = (float*)realloc(gset->Index,gset->IndexSize*sizeof(float));
+            }
             for(j=0;j<FromDef->NJ;j++) {
                for(i=0;i<FromDef->NI;i++) {
                   nidx=j*FromDef->NI+i;
@@ -1942,6 +1941,8 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
    unsigned long idxt,idxk,idxj,n,nijk,nij;
    uint32_t      n2,ndi,ndj,k,t,s,x,dx,dy;
    TGeoScan      gscan;
+   TGeoSet      *gset=NULL;
+   TRef_InterpR  interp;
 
    if (!Opt) Opt=&ToRef->Options;
    if (!Opt) Opt=&GeoRef_Options;
@@ -1961,6 +1962,11 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
    nij=FSIZE2D(ToDef);
    nijk=FSIZE3D(ToDef);
    val=vx=0.0;
+   interp=Opt->Interp;
+
+   gset=GeoRef_SetGet(ToRef,FromRef,Opt);
+//TODO: create an index
+//   GeoRef_SetIndexInit(gset);
 
    if (Opt->Interp!=IR_NOP && Opt->Interp!=IR_ACCUM && Opt->Interp!=IR_BUFFER) {
       if (!GeoRef_Intersect(ToRef,FromRef,&x0,&y0,&x1,&y1,0)) {
@@ -1971,12 +1977,11 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
       if (Opt->Interp==IR_AVERAGE || Opt->Interp==IR_VECTOR_AVERAGE || Opt->Interp==IR_VARIANCE || 
           Opt->Interp==IR_SQUARE || Opt->Interp==IR_NORMALIZED_COUNT || Opt->Interp==IR_COUNT) {
          if (!ToDef->Accum) {
-            acc=ToDef->Accum=malloc(nij*sizeof(int));
+            acc=ToDef->Accum=calloc(nij,sizeof(int32_t));
             if (!ToDef->Accum) {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate accumulation buffer\n",__func__);
                return(FALSE);
             }
-            for(n=0;n<nij;n++) acc[n]=0;
          }
       }
 
@@ -2000,15 +2005,19 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
 
       if (ToRef->GRTYP[0]=='Y') {
          // Point cloud interpolations
+
+         GeoRef_CalcLL(ToRef);
          for(idxt=0;idxt<nij;idxt++) {
-            ax=ToRef->AX[idxt];ay=ToRef->AY[idxt];
-            if (GeoRef_LL2XY(FromRef,&di0,&dj0,&ax,&ay,1,FALSE)) {
+            if (GeoRef_LL2XY(FromRef,&di0,&dj0,&ToRef->Lat[idxt],&ToRef->Lon[idxt],1,FALSE)) {
                di0=floor(di0);
                dj0=floor(dj0);
+
+               Opt->Interp=IR_NEAREST;   
                Def_GetValue(FromRef,FromDef,Opt,0,di0,dj0,FromDef->Level,&di[0],&vx);
                Def_GetValue(FromRef,FromDef,Opt,0,di0+1.0,dj0,FromDef->Level,&di[1],&vx);
                Def_GetValue(FromRef,FromDef,Opt,0,di0,dj0+1.0,FromDef->Level,&di[2],&vx);
                Def_GetValue(FromRef,FromDef,Opt,0,di0+1.0,dj0+1.0,FromDef->Level,&di[3],&vx);
+               Opt->Interp=interp;   
             }
             for(s=0;s<4;s++) {
                vx=di[s];
@@ -2237,7 +2246,6 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
          if (rpnClass) free(rpnClass);
       }
    }
-
    // Finalize and reassign
    if (Final || Opt->Interp==IR_ACCUM || Opt->Interp==IR_BUFFER) {
       idxk=0;

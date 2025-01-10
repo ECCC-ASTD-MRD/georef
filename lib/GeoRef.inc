@@ -227,11 +227,12 @@ interface
         real(C_DOUBLE) :: out
     end function georef_griddistance
 
-!   int32_t  GeoRef_Write(TGeoRef *GRef,fst_file *File);
-    function georef_write(ref,file) result(out) bind(C, name = 'GeoRef_Write')
-        import :: C_PTR,C_INT32_T
+!   int32_t  GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File);
+    function georef_write(ref,name,file) result(out) bind(C, name = 'GeoRef_Write')
+        import :: C_PTR,C_CHAR,C_INT32_T
         implicit none
 
+        character(kind = C_CHAR), dimension(*), intent(in) :: name
         type(C_PTR), intent(in) :: ref,file
 
         integer(C_INT32_T) :: out

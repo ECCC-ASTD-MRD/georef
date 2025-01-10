@@ -129,6 +129,11 @@ void GeoRef_Size(TGeoRef *Ref,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_
    Ref->BD=BD;
    Ref->NX=X1-X0+1;
    Ref->NY=Y1-Y0+1;
+
+   Ref->i1 = 1;
+   Ref->i2 = Ref->NX+1;
+   Ref->j1 = 1;
+   Ref->j2 = Ref->NY+1;
 }
 
 /**----------------------------------------------------------------------------
@@ -335,7 +340,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
     
       if (Ref->GRTYP[0]=='A' || Ref->GRTYP[0]=='B' || Ref->GRTYP[0]=='G') {
          Ref->Type|=GRID_WRAP;
-      } else if (Ref->GRTYP[0]!='V' && Ref->GRTYP[0]!='X' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
+      } else if (Ref->GRTYP[0]!='V' && Ref->GRTYP[0]!='R' && Ref->GRTYP[0]!='X' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
          // Check if north is up by looking at longitude variation on an Y increment at grid limits
          x[0]=Ref->X0;x[1]=Ref->X0;
          y[0]=Ref->Y0;y[1]=Ref->Y0+1.0;
@@ -756,8 +761,8 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
             if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,"LO",0,APP_FLOAT64);
             if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
             if (!GRef->Hgt) GeoRef_ReadDescriptor(GRef,(void **)&GRef->Hgt,"ZH",0,APP_FLOAT32);
-
-           break;
+            GeoRef_BuildIndex(GRef);          
+            break;
 
          case 'X':
          case 'O':
@@ -921,10 +926,6 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    ref->RPNHead.ig3 = IG3;
 //   ref->RPNHead.ig4 = (GRTYP[0]=='#' || GRTYP[0]=='U')?IG4:0;
    ref->RPNHead.ig4 = IG4;
-   ref->i1 = 1;
-   ref->i2 = NI;
-   ref->j1 = 1;
-   ref->j2 = NJ;
    ref->Extension=0;
    ref->Type=GRID_NONE;
 
@@ -1205,18 +1206,17 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
 */
 int32_t GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *Idxs,double *Dists,int32_t NbNear,double MaxDist) {
 
-   double       dx,dy,l;
-   uint32_t n,nn,nr,nnear;
-   TQTree      *node;
-   int32_t          dxy,x,y,xd,yd,rx;
-  
+   double    dx,dy,l;
+   uint32_t  n,nn,nr,nnear;
+   TQTree   *node;
+   int32_t   dxy,x,y,xd,yd,rx;
+ 
    if (!NbNear || !Idxs || !Dists) return(0);
 
    Dists[0]=1e32;
    dxy=nnear=0;
 
    if (Ref->QTree) {     
-      
       // Find the closest point(s) by circling larger around cell      
       node=&Ref->QTree[0];
 
@@ -1361,7 +1361,7 @@ int32_t GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict cons
    }
 
    // If destination is global
-   if (Ref0->Type&GRID_WRAP) {
+   if (Ref0->GRTYP[0]=='Y' || Ref0->Type&GRID_WRAP) {
       *X0=Ref1->X0; *Y0=Ref1->Y0;
       *X1=Ref1->X1; *Y1=Ref1->Y1;
       in=1;
@@ -2099,10 +2099,11 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
 
       case '#':
       case 'Z':
-         if (Ref->RPNHeadExt.grref[0] == 'N') Ref->Hemi = GRID_NORTH;
-         if (Ref->RPNHeadExt.grref[0] == 'S') Ref->Hemi = GRID_SOUTH;
-         f77name(cigaxg)(Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,&Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,1);
-         
+         if (Ref->RPNHeadExt.grref[0] != 'W') {;
+            if (Ref->RPNHeadExt.grref[0] == 'N') Ref->Hemi = GRID_NORTH;
+            if (Ref->RPNHeadExt.grref[0] == 'S') Ref->Hemi = GRID_SOUTH;
+            f77name(cigaxg)(Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,&Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,1);
+         }
          break;
 
       case 'L':
@@ -2165,7 +2166,7 @@ int32_t GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,in
  *
  *    @return             Error code (0=ok)
 */
-int32_t GeoRef_Write(TGeoRef *GRef,fst_file *File){
+int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
 
    fst_record record=default_fst_record;
    int32_t i,dbl=FALSE;
@@ -2198,7 +2199,7 @@ int32_t GeoRef_Write(TGeoRef *GRef,fst_file *File){
    strncpy(record.typvar,"X",FST_TYPVAR_LEN);
    strncpy(record.nomvar,"GRID",FST_NOMVAR_LEN);
    strncpy(record.grtyp,GRef->RPNHead.grtyp,FST_GTYP_LEN);
-   strncpy(record.etiket,GRef->Name,FST_ETIKET_LEN);
+   strncpy(record.etiket,Name?Name:GRef->Name,FST_ETIKET_LEN);
    record.ig1   = GRef->RPNHead.ig1;
    record.ig2   = GRef->RPNHead.ig2;
    record.ig3   = GRef->RPNHead.ig3;

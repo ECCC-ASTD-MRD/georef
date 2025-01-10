@@ -181,7 +181,9 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
    }
 
    Ref->Height=NULL;
-//   Ref->GRTYP[0]='W';
+   if (Ref->GRTYP[0]==' ' || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='\0') {
+      Ref->GRTYP[0]='W';
+   }
    GeoRef_Qualify(Ref);
 
    return(Ref);
@@ -210,7 +212,7 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
 */
 TGeoRef *GeoRef_CreateW(int32_t NI,int32_t NJ,char *grtyp,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
 
-   TGeoRef *ref;
+   TGeoRef *ref,*fref;
 
    ref=GeoRef_New();
    GeoRef_Size(ref,0,0,NI>0?NI-1:0,NJ>0?NJ-1:0,0);
@@ -229,7 +231,18 @@ TGeoRef *GeoRef_CreateW(int32_t NI,int32_t NJ,char *grtyp,int32_t IG1,int32_t IG
    ref->RPNHead.ig2=IG2;
    ref->RPNHead.ig3=IG3;
    ref->RPNHead.ig4=IG4;
- //TODO: Add to list  
+
+    if ((fref=GeoRef_Find(ref))) {
+      // This georef already exists
+      free(ref);
+      GeoRef_Incr(fref);
+      return(fref);
+   }
+
+   // This is a new georef
+   GeoRef_Add(ref);
+   GeoRef_Qualify(ref);
+
    return(ref);
 }
 

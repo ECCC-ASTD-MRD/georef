@@ -48,6 +48,7 @@ TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int32_t R,double Res
    ref->ResA=ResA;
 
    GeoRef_Size(ref,0,0,360/ResA,R-1,0);
+   GeoRef_Qualify(ref);
 
    ref->Height=GeoRef_RDRHeight;
 
@@ -72,11 +73,12 @@ int32_t GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
    double x,y,d;
    int32_t    n;
 
-   #pragma omp parallel for default(none) private(n,loc0,x,y,d) shared(Nb,Ref,X,Y,Lat,Lon)
+   loc0.Lat=DEG2RAD(Ref->Loc.Lat);
+   loc0.Lon=DEG2RAD(Ref->Loc.Lon);
+
+   #pragma omp parallel for default(none) private(n,x,y,d) shared(Nb,Ref,X,Y,Lat,Lon,loc0)
    for(n=0;n<Nb;n++) {
 
-      loc0.Lat=DEG2RAD(Ref->Loc.Lat);
-      loc0.Lon=DEG2RAD(Ref->Loc.Lon);
 
       x=X[n]*Ref->ResA;
       y=Y[n]*Ref->ResR;
@@ -87,8 +89,8 @@ int32_t GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
       if (Ref->Options.Transform) {
          Lat[n]=asin(sin(loc0.Lat)*cos(d)+cos(loc0.Lat)*sin(d)*cos(x));
          Lon[n]=fmod(loc0.Lon+(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(*Lat)))+M_PI,M_2PI)-M_PI;
-         Lat[n]=RAD2DEG(*Lat);
-         Lon[n]=RAD2DEG(*Lon);
+         Lat[n]=RAD2DEG(Lat[n]);
+         Lon[n]=RAD2DEG(Lon[n]);
       } else {
          Lat[n]=d;
          Lon[n]=x;
@@ -116,10 +118,11 @@ int32_t GeoRef_LL2XY_R(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
    double  x,d,lat,lon;
    int32_t     n;
 
-   #pragma omp parallel for default(none) private(n,loc0,x,d,lat,lon) shared(Nb,Ref,X,Y,Lat,Lon)
+   loc0.Lat=DEG2RAD(Ref->Loc.Lat);
+   loc0.Lon=DEG2RAD(Ref->Loc.Lon);
+
+   #pragma omp parallel for default(none) private(n,x,d,lat,lon) shared(Nb,Ref,X,Y,Lat,Lon,loc0)
    for(n=0;n<Nb;n++) {
-      loc0.Lat=DEG2RAD(Ref->Loc.Lat);
-      loc0.Lon=DEG2RAD(Ref->Loc.Lon);
       lat=DEG2RAD(Lat[n]);
       lon=DEG2RAD(Lon[n]);
 

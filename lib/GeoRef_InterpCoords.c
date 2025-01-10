@@ -253,7 +253,7 @@ int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
 
    // Check for grid insidness or extrapolation enabled
    icode=Nb;
-   if (!Extrap) {
+   if (!Extrap && !Ref->Type&GRID_SPARSE) {
       for(j=0;j<Nb;j++) {
          if (X[j]>(ref->X1+0.5) || Y[j]>(ref->Y1+0.5) || X[j]<(ref->X0-0.5) || Y[j]<(ref->Y0-0.5)) {
             X[j]=-1.0;
@@ -280,5 +280,6 @@ int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
          }
       }
    }
+
    return(icode);
 }

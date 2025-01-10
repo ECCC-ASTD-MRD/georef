@@ -248,15 +248,16 @@ contains
         out=georef_griddistance(this%ptr,x0,y0,x1,y1)
     end function georef_griddistance_f
 
-    function georef_write_f(this,file) result(res)
+    function georef_write_f(this,name,file) result(res)
         class(georef),  intent(in) :: this  !< georef instance
+        character(len=*), intent(in) :: name
         type(fst_file), intent(in) :: file
 
         integer(C_INT32_T) :: val
         logical :: res
 
         res=.false.;
-        val=georef_write(this%ptr,file%get_c_ptr())
+        val=georef_write(this%ptr,trim(name)//C_NULL_CHAR,file%get_c_ptr())
         if (val==1) then
            res=.true.
         endif

@@ -202,7 +202,7 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
             break;
 
          case 'M':
-            for (i=0;i<npts;i++) {
+            for (i=0;i<ni;i++) {
                Ref->Lat[i]=Ref->AY[i];
                Ref->Lon[i]=Ref->AX[i];
             }
@@ -219,6 +219,19 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
             }
             // We can reuse the same lat lon array because the transform function makes internal copies
             GeoRef_XY2LL_W(Ref,Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts);
+            break;
+
+         case 'R':
+            npts=0;
+            for (j=0;j<nj;j++) {
+               for (i=0;i<ni;i++) {
+                  Ref->Lat[npts]=j;
+                  Ref->Lon[npts]=i;
+                  npts++;
+               }
+            }
+            // We can reuse the same lat lon array because the transform function makes internal copies
+            GeoRef_XY2LL_R(Ref,Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts);
             break;
 
          case 'O':

@@ -378,7 +378,7 @@ int32_t  GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,d
 int32_t  GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,double *I0,double *J0,double *I1,double *J1);
 int32_t  GeoRef_Valid(TGeoRef* __restrict const Ref);
 double   GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1);
-int32_t  GeoRef_Write(TGeoRef *GRef,fst_file *File);
+int32_t  GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File);
 int32_t  GeoRef_Read(struct TGeoRef *GRef);
 int32_t  GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec);
   
