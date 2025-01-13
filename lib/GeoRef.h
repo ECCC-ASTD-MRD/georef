@@ -352,7 +352,6 @@ typedef struct TGeoScan {
 
 void GeoRef_Lock(void);
 void GeoRef_Unlock(void);
-
 void Georef_PrintOptions(TGeoOptions *Options);
 
 TGeoRef* GeoRef_Get(char *Name);
