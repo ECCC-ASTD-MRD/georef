@@ -182,19 +182,19 @@ int32_t GEM_grid_param(int32_t *F_bsc_base,int32_t *F_bsc_ext1,int32_t *F_extens
       if (*F_xl_8 < 0.) *F_xl_8=*F_xl_8+360.0;
 
       if (*F_x0_8 < 0.) {
-         fprintf(stderr,"Longitude of WEST %f < 0.0\n",*F_x0_8);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Longitude of WEST %f < 0.0\n",__func__,*F_x0_8);
          return(0);
       }
       if (*F_y0_8 < -90.) {
-         fprintf(stderr,"Latitude of SOUTH %f < 0.0\n",*F_y0_8);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Latitude of SOUTH %f < 0.0\n",__func__,*F_y0_8);
          return(0);
       }
       if (*F_xl_8 > 360.) {
-         fprintf(stderr,"Longitude of EAST %f < 0.0\n",*F_xl_8);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Longitude of EAST %f < 0.0\n",__func__,*F_xl_8);
          return(0);
       }
       if (*F_yl_8 > 90.) {
-         fprintf(stderr,"Latitude of NORTH %f < 0.0\n",*F_yl_8);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Latitude of NORTH %f < 0.0\n",__func__,*F_yl_8);
          return(0);
       }
    }
