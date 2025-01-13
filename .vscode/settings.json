@@ -36,7 +36,8 @@
       "gdal_safe.h": "c",
       "array.h": "c",
       "cmath": "c",
-      "chrono": "c"
+      "chrono": "c",
+      "variant": "c"
    },
    "C_Cpp.errorSquiggles": "Disabled",
    "python.pythonPath": "/usr/bin/python3",

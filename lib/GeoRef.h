@@ -392,7 +392,7 @@ TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int32_t NI,int32_t NJ,float DX,float DY,fl
 int32_t  GeoRef_Positional(TGeoRef *Ref,struct TDef *XDef,struct TDef *YDef);
 TQTree*  GeoRef_BuildIndex(TGeoRef* __restrict const Ref);
 int32_t  GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *Idxs,double *Dists,int32_t NbNear,double MaxDist);
-int32_t  GeoRef_SubSelect(TGeoRef *Ref,int N);
+TGeoRef* GeoRef_SubSelect(TGeoRef *Ref,int N);
 
 // EZSCINT merged fonctionnalities
 int32_t  GeoRef_DefRPNXG(TGeoRef* Ref);                                                                                                       // c_ezdefxg

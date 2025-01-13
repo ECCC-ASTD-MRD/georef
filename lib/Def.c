@@ -1853,7 +1853,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
                      env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
                      env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
 
-                     nt+=n=GeoRef_InterpQuad(ToRef,ToDef,Opt,poly,cell,Opt->Interp=IR_CONSERVATIVE?'C':'N','A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k,&lp);
+                  nt+=n=GeoRef_InterpQuad(ToRef,ToDef,Opt,poly,cell,Opt->Interp=IR_CONSERVATIVE?'C':'N','A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k,&lp);
 
                      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: %i hits on grid point32_t %i %i (%.0f %.0f x %.0f %.0f)\n",__func__,n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
                   }
@@ -1864,14 +1864,14 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
             }
          }
 
-         // Merge indexes
+        // Merge indexes
          n=0;
          if (ip && nt && !error) {
-            if (gset->IndexSize<nt*3) {
+           if (gset->IndexSize<nt*3) {
                gset->IndexSize=nt*3+FSIZE2D(FromDef)*3+1;
                ip=gset->Index = (float*)realloc(gset->Index,gset->IndexSize*sizeof(float));
             }
-            for(j=0;j<FromDef->NJ;j++) {
+           for(j=0;j<FromDef->NJ;j++) {
                for(i=0;i<FromDef->NI;i++) {
                   nidx=j*FromDef->NI+i;
 

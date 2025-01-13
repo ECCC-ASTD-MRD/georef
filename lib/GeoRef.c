@@ -1071,14 +1071,21 @@ TGeoRef* GeoRef_New() {
    return(ref);
 }
 
-int GeoRef_SubSelect(TGeoRef *Ref,int N) {
+TGeoRef *GeoRef_SubSelect(TGeoRef *Ref,int N) {
 
-   int ig;
-   char grtyp[2];
+   int i;
 
    // If the subgrid index is different from the current
    if (Ref->GRTYP[0]=='U' && N!=Ref->Sub && N<=Ref->NbSub) {
  
+      for (i=0; i<Ref->NbSet; i++) {
+         if (Ref->Sets[i].Index) {
+            free(Ref->Sets[i].Index);
+            Ref->Sets[i].Index=NULL;
+            Ref->Sets[i].IndexDegree=IR_UNDEF;
+         }
+      }
+   
       Ref->Sub=N;
 
       // Define grid limits
@@ -1086,9 +1093,10 @@ int GeoRef_SubSelect(TGeoRef *Ref,int N) {
       Ref->NY=Ref->Subs[N>0?N-1:N]->NY;
       Ref->X0=0;    Ref->Y0=0;
       Ref->X1=Ref->NX-1; Ref->Y1=Ref->NY-1;
-      return(1);
+
+      return(Ref->Subs[N]);
    }
-   return(0);
+   return(NULL);
 }
 
 /**----------------------------------------------------------------------------
@@ -1898,7 +1906,6 @@ int32_t GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
 int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* DA) {
 
    uint32_t i,gi,j,gj,nid,pnid,pidx,idx,*tidx;
-   int32_t          ig, nx, ny;
    double       di[4],dj[4],dlat[4],dlon[4];
    double       fx,fy,fz,dx[4],dy[4],s,a,b,c;
    char         grtyp[2];
@@ -1948,23 +1955,16 @@ int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* D
    } else {
       pnid=Ref->Sub;
       pidx=0;
-      nx = Ref->NX;
-      ny = Ref->NY;
       
       // Loop on the subgrids if needed
 /*       for(nid=(pnid?pnid:(Ref->NbId>1?1:0));nid<=(pnid?pnid:(Ref->NbId>1?Ref->NbId:0));nid++) { */
       for(nid=pnid;nid<=(pnid?pnid:(Ref->NbSub>1?(Ref->NbSub-1):0));nid++) {
-         if (Ref->NbSub>1 && !pnid) {
-/*             c_ezgprm(Ref->Subs[nid],grtyp,&Ref->NX,&Ref->NY,&ig,&ig,&ig,&ig); */ 
-            Ref->NX = Ref->Subs[nid]->NX;
-            Ref->NY = Ref->Subs[nid]->NY;
-         }
 
          gr = pnid?Ref->Subs[nid-1]:(Ref->NbSub>1?Ref->Subs[nid]:Ref);
 
-         for(j=0,gj=1;j<Ref->NY;j++,gj++) {
-            idx=pidx+j*Ref->NX;
-            for(i=0,gi=1;i<Ref->NX;i++,idx++,gi++) {
+         for(j=0,gj=1;j<gr->NY;j++,gj++) {
+            idx=pidx+j*gr->NX;
+            for(i=0,gi=1;i<gr->NX;i++,idx++,gi++) {
                
                di[0]=gi-0.5; dj[0]=gj;
                di[1]=gi+0.5; dj[1]=gj;
@@ -1994,12 +1994,6 @@ int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* D
             }
          }
          pidx+=idx;
-      }
-      // Set back original grid
-      if (Ref->NbSub>1 && !pnid) {
-/*          c_ezgprm(Ref->Subs[pnid],grtyp,&Ref->NX,&Ref->NY,&ig,&ig,&ig,&ig); */
-         Ref->NX = nx;
-         Ref->NY = ny;
       }
    }
    
