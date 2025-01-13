@@ -95,6 +95,7 @@ int32_t GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
          GeoRef_LL2XY_W(Ref,X,Y,Lat,Lon,Nb);
          break;
    }
+   
    return(1);
 }
 

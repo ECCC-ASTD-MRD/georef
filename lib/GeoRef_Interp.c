@@ -44,14 +44,14 @@ int32_t c_gdcompatible_grids(TGeoRef *RefFrom, TGeoRef* RefTo) {
 
 int32_t gd_interpm(TGeoRef *Ref,TGeoOptions *Opt,float *Out,float *In,double *X,double *Y,int32_t Nb) {
 
-   Vect3d       b,v;
-   int32_t          d,n,ix;
+   Vect3d  b,v;
+   int32_t d,n,ix;
 
    #pragma omp parallel for default(none) private(d,b,ix,n,v) shared(Nb,Ref,Opt,X,Y,Out,In)
    for(d=0;d<Nb;d++) {
       if (X[d]>=0 && Y[d]>=0) {
-         b[0]=X[d]-(int)X[d];
-         b[1]=Y[d]-(int)Y[d];
+         b[0]=X[d]-(int)X[d]-1.0;
+         b[1]=Y[d]-(int)Y[d]-1.0;
          b[2]=1.0-b[0]-b[1];
          ix=(int)X[d];
 
@@ -74,7 +74,7 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
 
    int32_t ier, un, j;
    int32_t old_degre_interp;
-   double *gdst_lats, tmp, real_un=1.0, real_j;
+   double *gdst_lats, tmp, real_un=1.0, real_j, *x,*y;
 
    // RefTo needed for type 4,5 and Y grid
    // TODO: Check old type 4 and,
@@ -87,6 +87,19 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
    if (!X || !Y) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Local coordinates not available\n",__func__);
       return(-1);
+   }
+
+   if (Opt->CIndex) {
+      x=(double*)malloc(npts*sizeof(double)*2);
+      y=&x[npts];
+   
+      for(j=0;j<npts;j++) {
+         X[j]+=1.0;
+         Y[j]+=1.0;
+      }
+   } else {
+      x=X;
+      y=Y; 
    }
 
    old_degre_interp = Opt->Interp;
@@ -108,7 +121,7 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
 
    switch(RefFrom->GRTYP[0]) {
       case 'M':
-         gd_interpm(RefFrom,Opt,zout,zin,X,Y,npts);
+         gd_interpm(RefFrom,Opt,zout,zin,x,y,npts);
          break;
       case '#':
       case 'Z':
@@ -116,10 +129,10 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
          switch (Opt->Interp) {
             case IR_NEAREST:
                if (!GSet) {
-                  f77name(ez8_rgdint_0)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
+                  f77name(ez8_rgdint_0)(zout,x,y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
                } else {
                  if (GeoRef_SetEmptyIndex(GSet)) {
-                    f77name(ez8_rgd_index_0)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
+                    f77name(ez8_rgd_index_0)(GSet->Index,x,y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
                  }
                  f77name(ez8_apply_0)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
                }
@@ -127,21 +140,21 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
 
             case IR_LINEAR:
                if (!GSet) {
-                  f77name(ez8_irgdint_1)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,&RefFrom->Extension,&Opt->NoData);
+                  f77name(ez8_irgdint_1)(zout,x,y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,&RefFrom->Extension,&Opt->NoData);
                } else {
                   if (GeoRef_SetEmptyIndex(GSet)) {
-                     f77name(ez8_irgd_index_1)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,&RefFrom->Extension);
+                     f77name(ez8_irgd_index_1)(GSet->Index,x,y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,&RefFrom->Extension);
                   }
                   f77name(ez8_apply_1)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
                }
                break;
 
             case IR_CUBIC:
-               f77name(ez8_irgdint_3)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->i1,&RefFrom->i2,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,RefFrom->NCX,RefFrom->NCY,&RefFrom->Extension,&Opt->NoData);
+               f77name(ez8_irgdint_3)(zout,x,y,&npts,zin,&RefFrom->NX,&RefFrom->i1,&RefFrom->i2,&RefFrom->j1,&RefFrom->j2,RefFrom->AX,RefFrom->AY,RefFrom->NCX,RefFrom->NCY,&RefFrom->Extension,&Opt->NoData);
                break;
 
             case 4:
-               f77name(ez_avg)(zout,X,Y,&RefTo->NX,&RefTo->NY,zin,&RefFrom->NX,&RefFrom->NY,&RefFrom->Extension);
+               f77name(ez_avg)(zout,x,y,&RefTo->NX,&RefTo->NY,zin,&RefFrom->NX,&RefFrom->NY,&RefFrom->Extension);
                break;
 
             case 5:
@@ -150,7 +163,7 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
                   real_j = 1.0 * (j+1);
                   ier = GeoRef_XY2LL(RefTo,&gdst_lats[j],&tmp,&real_un,&real_j,1,TRUE);
                }
-               f77name(ez_avg_sph)(zout,X,Y,gdst_lats,&RefTo->NX,&RefTo->NY,zin,&RefFrom->NX,&RefFrom->NY,&RefFrom->Extension);
+               f77name(ez_avg_sph)(zout,x,y,gdst_lats,&RefTo->NX,&RefTo->NY,zin,&RefFrom->NX,&RefFrom->NY,&RefFrom->Extension);
                break;
          }
          break;
@@ -158,7 +171,7 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
       case 'Y':
          un = 1;
          if (RefFrom->NX > 1 && RefFrom->NY > 1 && Opt->Interp==IR_LINEAR) {
-            f77name(ez8_rgdint_1)(zout,X,Y,&npts,zin,&RefFrom->NX,&un,&RefFrom->NY,0,&Opt->NoData);
+            f77name(ez8_rgdint_1)(zout,x,y,&npts,zin,&RefFrom->NX,&un,&RefFrom->NY,0,&Opt->NoData);
          } else {
             if (!GSet) {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: GeoSet not defined\n",__func__);
@@ -172,10 +185,10 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
          switch (Opt->Interp) {
             case IR_NEAREST:
                if (!GSet) {
-                  f77name(ez8_rgdint_0)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
+                  f77name(ez8_rgdint_0)(zout,x,y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
                } else {
                   if (GeoRef_SetEmptyIndex(GSet)) {
-                     f77name(ez8_rgd_index_0)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
+                     f77name(ez8_rgd_index_0)(GSet->Index,x,y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2);
                   }
                   f77name(ez8_apply_0)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
                }
@@ -183,10 +196,10 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
 
             case IR_LINEAR:
                if (!GSet) {
-                  f77name(ez8_rgdint_1)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension,&Opt->NoData);
+                  f77name(ez8_rgdint_1)(zout,x,y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension,&Opt->NoData);
                } else {
                   if (GeoRef_SetEmptyIndex(GSet)) {
-                     f77name(ez8_rgd_index_1)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
+                     f77name(ez8_rgd_index_1)(GSet->Index,x,y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
                   }
                   f77name(ez8_apply_1)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
                }
@@ -194,17 +207,17 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
 
             case IR_CUBIC:
                if (!GSet) {
-                  f77name(ez8_rgdint_3)(zout,X,Y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension,&Opt->NoData);
+                  f77name(ez8_rgdint_3)(zout,x,y,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension,&Opt->NoData);
                } else {
                   if (GeoRef_SetEmptyIndex(GSet)) {
-                     f77name(ez8_rgd_index_3)(GSet->Index,X,Y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
+                     f77name(ez8_rgd_index_3)(GSet->Index,x,y,&npts,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&RefFrom->Extension);
                   }
                   f77name(ez8_apply_3)(GSet->Index,zout,&npts,zin,&RefFrom->NX,&RefFrom->j1,&RefFrom->j2,&Opt->NoData);
                }
                break;
 
             case 4:
-               f77name(ez_avg)(zout,X,Y,&RefTo->NX,&RefTo->NY,zin,&RefFrom->NX,&RefFrom->NY,&RefFrom->Extension);
+               f77name(ez_avg)(zout,x,y,&RefTo->NX,&RefTo->NY,zin,&RefFrom->NX,&RefFrom->NY,&RefFrom->Extension);
                break;
 
             case 5:
@@ -213,13 +226,16 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
                   real_j = 1.0 * (j+1);
                   ier = GeoRef_XY2LL(RefTo,&gdst_lats[j],&tmp,&real_un,&real_j,1,TRUE);
                }
-               f77name(ez_avg_sph)(zout,X,Y,gdst_lats,&RefTo->NX,&RefTo->NY,zin,&RefFrom->NX,&RefFrom->NY,&RefFrom->Extension);
+               f77name(ez_avg_sph)(zout,x,y,gdst_lats,&RefTo->NX,&RefTo->NY,zin,&RefFrom->NX,&RefFrom->NY,&RefFrom->Extension);
                free(gdst_lats);
                break;
          }
          break;
    }
 
+   if (Opt->CIndex) {
+      free(x);
+   }
    Opt->Interp = old_degre_interp;
    return(0);
 }

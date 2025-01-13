@@ -21,7 +21,7 @@ int32_t GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
    switch (Ref->RPNHeadExt.grref[0]) {
       case 'L':
          for (i=0; i < Nb; i++) {
-            indx=ROUND(Y[i])*(Ref->X1-Ref->X0)+ROUND(X[i]);
+            indx=ROUND(Y[i]-1.0)*(Ref->X1-Ref->X0)+ROUND(X[i]-1.0);
             Lat[i]=Ref->AY[indx];
             Lon[i]=Ref->AX[indx];
          }
@@ -32,10 +32,10 @@ int32_t GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
          tmpy = &tmpx[Nb];
 
          for (i=0; i < Nb; i++) {
-            sx=floor(X[i]);sx=CLAMP(sx,Ref->X0,Ref->X1);
-            sy=floor(Y[i]);sy=CLAMP(sy,Ref->Y0,Ref->Y1);
-            dx=X[i]-sx;;
-            dy=Y[i]-sy;
+            sx=floor(X[i]-1.0);sx=CLAMP(sx,Ref->X0,Ref->X1);
+            sy=floor(Y[i]-1.0);sy=CLAMP(sy,Ref->Y0,Ref->Y1);
+            dx=X[i]-1.0-sx;;
+            dy=Y[i]-1.0-sy;
 
             s=sy*Ref->NX+sx;
             tmpx[i]=Ref->AX[s];
@@ -45,11 +45,13 @@ int32_t GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
                s=sy*Ref->NX+sx;
                tmpx[i]+=(Ref->AX[s]-tmpx[i])*dx;
             }
+            tmpx[i]+=1.0;
 
             if (++sy<=Ref->Y1) {
                s=sy*Ref->NX+(sx-1);
                tmpy[i]+=(Ref->AY[s]-tmpy[i])*dy;
             }
+            tmpy[i]+=1.0;
          }
          GeoRef_XY2LL_W(Ref,Lat,Lon,tmpx,tmpy,Nb);
          free(tmpx);

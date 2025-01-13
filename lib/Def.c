@@ -1668,7 +1668,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
    GeoRef_SetIndexInit(gset);
 
    // Define the max size of the indexes
-   isize=102;
+   isize=256;
    if ((c=getenv("GEOREF_INDEX_SIZE_HINT"))) {
       isize=atoi(c);
    }
@@ -1863,12 +1863,13 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
                }
             }
          }
+
          // Merge indexes
          n=0;
          if (ip && nt && !error) {
             if (gset->IndexSize<nt*3) {
-               gset->IndexSize=nt*3;
-               gset->Index = (float*)realloc(gset->Index,gset->IndexSize*sizeof(float));
+               gset->IndexSize=nt*3+FSIZE2D(FromDef)*3+1;
+               ip=gset->Index = (float*)realloc(gset->Index,gset->IndexSize*sizeof(float));
             }
             for(j=0;j<FromDef->NJ;j++) {
                for(i=0;i<FromDef->NI;i++) {

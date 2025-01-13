@@ -279,7 +279,7 @@ int32_t GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY) {
          njy = Ref->NY;
          if (Ref->i2 == (nix+1)) istart = 1;
          if (Ref->i2 == (nix+2)) istart = 2;
-         if (Ref->i2 == (nix)) istart = 0;
+         if (Ref->i2 == (nix))   istart = 0;
 
          if (Ref->j2 == (njy+1)) jstart = 1;
          if (Ref->j2 == (njy+2)) jstart = 2;

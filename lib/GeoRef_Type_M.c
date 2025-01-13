@@ -19,7 +19,7 @@ int32_t GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
  
    TQTree *node;
    Vect3d  b;
-   int32_t     n,d,idx;
+   int32_t n,d,idx;
 
    #pragma omp parallel for default(none) private(d,node,b,n,idx) shared(Nb,Ref,X,Y,Lat,Lon)
    for(d=0;d<Nb;d++) {
