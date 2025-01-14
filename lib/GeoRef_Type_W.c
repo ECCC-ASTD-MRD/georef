@@ -178,14 +178,16 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
       return(NULL);
    }
 
-   Ref->Height=NULL;
-   Ref->Type=GRID_NONE;
-   
    if (Ref->GRTYP[0]==' ' || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='\0') {
       Ref->GRTYP[0]='W';
    }
-   GeoRef_Qualify(Ref);
 
+   // We might be defining a Z frid mapped on W so we don't want to rerun the qualification
+   if (Ref->GRTYP[0]=='W') {
+      Ref->Height=NULL;
+      Ref->Type=GRID_NONE;
+      GeoRef_Qualify(Ref);
+   }
    return(Ref);
 #else
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);

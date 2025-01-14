@@ -11,7 +11,7 @@
  
 static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
-__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_MAXIMUM, IV_FAST, CB_REPLACE, TRUE, FALSE, FALSE, 16, 1, 1, TRUE, FALSE, 10.0, 0.0, 0.0, NULL, NULL, 0, 0, NULL };  ///< Default options
+__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, IV_FAST, CB_REPLACE, TRUE, FALSE, FALSE, 16, 1, 1, TRUE, FALSE, 10.0, 0.0, 0.0, NULL, NULL, 0, 0, NULL };  ///< Default options
 
 const char *TRef_InterpVString[] = { "UNDEF","FAST","WITHIN","INTERSECT","CENTROID","ALIASED","CONSERVATIVE","NORMALIZED_CONSERVATIVE","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
 const char *TRef_InterpRString[] = { "UNDEF","NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
@@ -2299,9 +2299,6 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
    }
 
    if (GRef->Transform) {
-      record.data = GRef->Transform;
-      record.pack_bits = 64;
-      record.data_bits = 64;
       record.data_type = FST_TYPE_REAL_IEEE;
       record.ni   = 6;
       record.nj   = 1;
@@ -2315,10 +2312,21 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       record.ig2   = GRef->RPNHeadExt.igref2;
       record.ig3   = GRef->RPNHeadExt.igref3;
       record.ig4   = GRef->RPNHeadExt.igref4;
+      if (dbl) {
+         record.data = GRef->Transform;
+         record.pack_bits = 64;
+         record.data_bits = 64;
+      } else {
+         record.data = (float*)calloc(record.ni,sizeof(float));
+         for(i=0;i<record.ni;i++) ((float*)record.data)[i]=GRef->Transform[i];
+         record.pack_bits = 32;
+         record.data_bits = 32;
+      }
       if (fst24_write(File,&record,FST_SKIP)<=0) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write MTRX field (fst24_write failed)\n",__func__);
          return(FALSE);
       }
+      if (!dbl) free(record.data);
    }
 
    if (GRef->String) {
