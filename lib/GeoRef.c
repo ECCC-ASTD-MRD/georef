@@ -291,8 +291,6 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
    int32_t    nx;
 
    if (Ref) {
-      Ref->Type=GRID_NONE;
-
       switch(Ref->GRTYP[0]) {
          case 'A': Ref->LL2XY=GeoRef_LL2XY_A; Ref->XY2LL=GeoRef_XY2LL_L; break;
          case 'B': Ref->LL2XY=GeoRef_LL2XY_B; Ref->XY2LL=GeoRef_XY2LL_L; break;

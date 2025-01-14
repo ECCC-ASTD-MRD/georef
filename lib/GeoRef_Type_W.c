@@ -179,6 +179,8 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
    }
 
    Ref->Height=NULL;
+   Ref->Type=GRID_NONE;
+   
    if (Ref->GRTYP[0]==' ' || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='\0') {
       Ref->GRTYP[0]='W';
    }
