@@ -107,8 +107,6 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
       Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Projection string: %s\n",__func__,string);
    }
 
-//TODO: Reenable ?   GeoRef_Clear(Ref,0);
-
    if (Transform || InvTransform) {
       if (!Ref->Transform)
          Ref->Transform=(double*)calloc(6,sizeof(double));

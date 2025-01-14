@@ -161,7 +161,7 @@ int32_t GeoFunc_RadialIntersect(TCoord C1,TCoord C2,double CRS13,double CRS23,TC
    return(1);
 }
 
-//TODO: include following ezscint32_t funcs into GeoFunc logic 
+//TODO: include following ezscint funcs into GeoFunc logic 
 void c_ez_calcdist2(double *distance, float lat1, float lon1, float lat2, float lon2)
 {
    double degre_a_radian;

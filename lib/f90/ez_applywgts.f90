@@ -1,34 +1,14 @@
-   subroutine ez_applywgts(outfld, wts, idxs, infld, masque, ni_src, nj_src, ni_dst, nj_dst, n_wts)
+   subroutine ez_applywgts(outfld, wts, idxs, infld, masque, ni_src, nj_src, ni_dst, nj_dst, n_wts, nodata)
 
    implicit none
    integer ni_src, nj_src, ni_dst, nj_dst, n_wts, n
-   real :: infld(ni_src*nj_src), outfld(ni_dst*nj_dst)
-   real rmin, rmax
+   real :: infld(ni_src*nj_src), outfld(ni_dst*nj_dst), nodata
    integer i,j,k
 
    real :: wts(ni_dst, nj_dst, n_wts)
    integer :: idxs(ni_dst, nj_dst, n_wts), masque(ni_dst*nj_dst)
-   integer :: ezgetval, ezgetopt, ier
 
-   character(len=32) :: interopt, xtrapopt
-   real xtrapval
-
-!   TODO passe theses values
-   ier = ezgetopt('INTERP_DEGREE', interopt)
-   ier = ezgetopt('EXTRAP_DEGREE', xtrapopt)
-   ier = ezgetval('EXTRAP_VALUE', xtrapval)
-!   print *, interopt, xtrapopt, xtrapval
-
-   if (xtrapopt(1:5) == 'value') then
-      ier = ezgetval('EXTRAP_VALUE', xtrapval)
-      outfld = xtrapval
-   else
-      rmin = minval(infld)
-      rmax = maxval(infld)
-      rmin  = rmin - 0.1*(rmax-rmin)
-      outfld = rmin
-   endif
-
+   outfld = nodata
 
    !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(k,i,j) SHARED(ni_dst,nj_dst,masque,outfld,wts,n_wts,infld,idxs)
    do k=1,ni_dst*nj_dst

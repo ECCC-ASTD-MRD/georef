@@ -177,7 +177,7 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: GeoSet not defined\n",__func__);
                return(-1);
             }
-            f77name(ez_applywgts)(zout,GSet->wts,GSet->idx,zin,GSet->mask,&RefFrom->NX,&RefFrom->NY,&RefTo->NX,&RefTo->NY,&(GSet->n_wts));
+            f77name(ez_applywgts)(zout,GSet->wts,GSet->idx,zin,GSet->mask,&RefFrom->NX,&RefFrom->NY,&RefTo->NX,&RefTo->NY,&(GSet->n_wts),&Opt->NoData);
          }
          break;
 
