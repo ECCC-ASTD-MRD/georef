@@ -311,8 +311,6 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
    TGeoRef *yin_ref,*yan_ref,*yin_gdout,*yan_gdout;
    int32_t icode,k,nij,ni,nj;
    int32_t yancount_yin,yincount_yin, yancount_yan,yincount_yan;
-   double *yin2yin_lat,*yin2yin_lon,*yan2yin_lat,*yan2yin_lon;
-   double *yin2yan_lat,*yin2yan_lon,*yan2yan_lat,*yan2yan_lon;
     
    //  Need only access to either yin or Yang info for the lat and lon val   
    if (!GSet || (GSet->flags & SET_YYXY)) {
@@ -338,10 +336,10 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
 
    // Masquer les grilles YY input pour enlever overlap si TRUE 
    k=0;
-   yin2yin_lat = (double*)malloc(4*nij*sizeof(double));
-   yin2yin_lon = &yin2yin_lat[k+=nij];
-   yan2yin_lat = &yin2yin_lat[k+=nij];
-   yan2yin_lon = &yin2yin_lat[k+=nij];
+   GSet->yin2yin_lat = (double*)malloc(4*nij*sizeof(double));
+   GSet->yin2yin_lon = (double*)malloc(4*nij*sizeof(double));
+   GSet->yan2yin_lat = (double*)malloc(4*nij*sizeof(double));
+   GSet->yan2yin_lon = (double*)malloc(4*nij*sizeof(double));
    yancount_yin=0;
    yincount_yin=0;
 
@@ -350,19 +348,15 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
    GSet->yinlat = (double*) malloc(nij*sizeof(double));
    GSet->yinlon = (double*) malloc(nij*sizeof(double));
    icode = GeoRef_GetLL(yin_gdout,GSet->yinlat,GSet->yinlon);
-   icode = GeoRef_MaskYYApply(yin_gdout,yin_ref,&GSet->Opt,ni,nj,GSet->yin_maskout,GSet->yinlat,GSet->yinlon,yin2yin_lat,yin2yin_lon,&yincount_yin,yan2yin_lat,yan2yin_lon,&yancount_yin);
+   icode = GeoRef_MaskYYApply(yin_gdout,yin_ref,&GSet->Opt,ni,nj,GSet->yin_maskout,GSet->yinlat,GSet->yinlon,GSet->yin2yin_lat,GSet->yin2yin_lon,&yincount_yin,GSet->yan2yin_lat,GSet->yan2yin_lon,&yancount_yin);
 
    // Store the lats and lons
    GSet->yincount_yin = yincount_yin;
    GSet->yancount_yin = yancount_yin;
-   GSet->yin2yin_lat = (double*) malloc(yincount_yin*sizeof(double));
-   GSet->yin2yin_lon = (double*) malloc(yincount_yin*sizeof(double));
-   GSet->yan2yin_lat = (double*) malloc(yancount_yin*sizeof(double));
-   GSet->yan2yin_lon = (double*) malloc(yancount_yin*sizeof(double));
-   memcpy(GSet->yin2yin_lat,yin2yin_lat,yincount_yin*sizeof(double));
-   memcpy(GSet->yin2yin_lon,yin2yin_lon,yincount_yin*sizeof(double));
-   memcpy(GSet->yan2yin_lat,yan2yin_lat,yancount_yin*sizeof(double));
-   memcpy(GSet->yan2yin_lon,yan2yin_lon,yancount_yin*sizeof(double));
+   GSet->yin2yin_lat = (double*) realloc(GSet->yin2yin_lat,yincount_yin*sizeof(double));
+   GSet->yin2yin_lon = (double*) realloc(GSet->yin2yin_lon,yincount_yin*sizeof(double));
+   GSet->yan2yin_lat = (double*) realloc(GSet->yan2yin_lat,yancount_yin*sizeof(double));
+   GSet->yan2yin_lon = (double*) realloc(GSet->yan2yin_lon,yancount_yin*sizeof(double));
 
    // Store the Xs and Ys
    GSet->yin2yin_x = (double*) malloc(yincount_yin*sizeof(double));
@@ -372,41 +366,35 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
    icode = GeoRef_LL2XY(yin_ref,GSet->yin2yin_x,GSet->yin2yin_y,GSet->yin2yin_lat,GSet->yin2yin_lon,GSet->yincount_yin,TRUE);
    icode = GeoRef_LL2XY(yan_ref,GSet->yan2yin_x,GSet->yan2yin_y,GSet->yan2yin_lat,GSet->yan2yin_lon,GSet->yancount_yin,TRUE);
 
-   free(yin2yin_lat);
-
    // If destination grid is YY
    if (GSet->RefTo->NbSub > 0) {
 
       k=0;
-      yin2yan_lat = (double*)malloc(4*nij*sizeof(double));
-      yin2yan_lon = &yin2yan_lat[k+=nij];
-      yan2yan_lat = &yin2yan_lat[k+=nij];
-      yan2yan_lon = &yin2yan_lat[k+=nij];
+      GSet->yin2yan_lat = (double*)malloc(4*nij*sizeof(double));
+      GSet->yin2yan_lon = (double*)malloc(4*nij*sizeof(double));
+      GSet->yan2yan_lat = (double*)malloc(4*nij*sizeof(double));
+      GSet->yan2yan_lon = (double*)malloc(4*nij*sizeof(double));
 
       // Create mask (Yin priority) with src Yin,src Yang onto dest Yang and store x,y pos
       GSet->yan_maskout = (float *) malloc(nij*sizeof(float));
       GSet->yanlat = (double*) malloc(nij*sizeof(double));
       GSet->yanlon = (double*) malloc(nij*sizeof(double));
       icode = GeoRef_GetLL(yan_gdout,GSet->yanlat,GSet->yanlon);
-      icode = GeoRef_MaskYYApply(yan_gdout,yin_ref,&GSet->Opt,ni,nj,GSet->yan_maskout,GSet->yanlat,GSet->yanlon,yin2yan_lat,yin2yan_lon,&yincount_yan,yan2yan_lat,yan2yan_lon,&yancount_yan);
+      icode = GeoRef_MaskYYApply(yan_gdout,yin_ref,&GSet->Opt,ni,nj,GSet->yan_maskout,GSet->yanlat,GSet->yanlon,GSet->yin2yan_lat,GSet->yin2yan_lon,&yincount_yan,GSet->yan2yan_lat,GSet->yan2yan_lon,&yancount_yan);
       GSet->yincount_yan = yincount_yan;
       GSet->yancount_yan = yancount_yan;
-      GSet->yin2yan_lat = (double*) malloc(yincount_yan*sizeof(double));
-      GSet->yin2yan_lon = (double*) malloc(yincount_yan*sizeof(double));
-      GSet->yan2yan_lat = (double*) malloc(yancount_yan*sizeof(double));
-      GSet->yan2yan_lon = (double*) malloc(yancount_yan*sizeof(double));
-      memcpy(GSet->yin2yan_lat,yin2yan_lat,yincount_yan*sizeof(double));
-      memcpy(GSet->yin2yan_lon,yin2yan_lon,yincount_yan*sizeof(double));
-      memcpy(GSet->yan2yan_lat,yan2yan_lat,yancount_yan*sizeof(double));
-      memcpy(GSet->yan2yan_lon,yan2yan_lon,yancount_yan*sizeof(double));
+      GSet->yin2yan_lat = (double*) realloc(GSet->yin2yan_lat,yincount_yan*sizeof(double));
+      GSet->yin2yan_lon = (double*) realloc(GSet->yin2yan_lon,yincount_yan*sizeof(double));
+      GSet->yan2yan_lat = (double*) realloc(GSet->yan2yan_lat,yancount_yan*sizeof(double));
+      GSet->yan2yan_lon = (double*) realloc(GSet->yan2yan_lon,yancount_yan*sizeof(double));
+
+      // Store the Xs and Ys
       GSet->yin2yan_x = (double*) malloc(yincount_yan*sizeof(double));
       GSet->yin2yan_y = (double*) malloc(yincount_yan*sizeof(double));
       GSet->yan2yan_x = (double*) malloc(yancount_yan*sizeof(double));
       GSet->yan2yan_y = (double*) malloc(yancount_yan*sizeof(double));
-      icode = GeoRef_LL2XY(yin_ref,GSet->yin2yan_x,GSet->yin2yan_y,yin2yan_lat,yin2yan_lon,yincount_yan,TRUE);
-      icode = GeoRef_LL2XY(yan_ref,GSet->yan2yan_x,GSet->yan2yan_y,yan2yan_lat,yan2yan_lon,yancount_yan,TRUE);
-
-      free(yin2yan_lat);
+      icode = GeoRef_LL2XY(yin_ref,GSet->yin2yan_x,GSet->yin2yan_y,GSet->yin2yan_lat,GSet->yin2yan_lon,yincount_yan,TRUE);
+      icode = GeoRef_LL2XY(yan_ref,GSet->yan2yan_x,GSet->yan2yan_y,GSet->yan2yan_lat,GSet->yan2yan_lon,yancount_yan,TRUE);
    }
 
    GSet->flags |= SET_YYXY;

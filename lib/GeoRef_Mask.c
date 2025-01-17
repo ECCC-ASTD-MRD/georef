@@ -28,7 +28,7 @@ int32_t GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int32_t *MaskOut,int32_
    
    if (RefTo->NbSub > 0 || RefFrom->NbSub > 0) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
-      return(-1);
+      return(FALSE);
    }
 
    gset=GeoRef_SetGet(RefTo,RefFrom,NULL);
@@ -37,7 +37,7 @@ int32_t GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int32_t *MaskOut,int32_
    npts_out = RefTo->NX*RefTo->NY;
 
    f77name(qqq_ezget_mask_zones)(MaskOut,gset->X,gset->Y, &RefTo->NX, &RefTo->NY, MaskIn, &RefFrom->NX, &RefFrom->NY);
-   return(0);
+   return(TRUE);
 }
 
 int32_t GeoRef_MaskYYDefine(TGeoRef *Ref) {
@@ -71,7 +71,7 @@ int32_t GeoRef_MaskYYDefine(TGeoRef *Ref) {
    Ref->mymaskgridj0=j0;
    Ref->mymaskgridj1=j1;
  
-  return(0);
+  return(TRUE);
 }
 
 int32_t GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int32_t ni,int32_t nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int32_t *yyincount,double *yanlat,double *yanlon,int32_t *yyancount) {
@@ -83,12 +83,13 @@ int32_t GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int3
 
    yin_fld = (float*)calloc(RefFrom->mymaskgrid->NX*RefFrom->mymaskgrid->NY,sizeof(float));
  
-   // Get original options
+   // Set interpolation options from originals
    opt=*Opt;
    opt.Interp=IR_NEAREST;
    opt.Extrap=ER_VALUE;
    opt.NoData=1.0;
     
+   // Interpolate yin grid into destination as a mask 
    GeoRef_Interp(RefTo,RefFrom->mymaskgrid,&opt,maskout,yin_fld);
  
    free(yin_fld);
@@ -110,5 +111,5 @@ int32_t GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int3
    *yyincount = yincount;
    *yyancount = yancount;
 
-   return(1);
+   return(TRUE);
 }

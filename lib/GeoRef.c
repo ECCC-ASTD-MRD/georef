@@ -909,7 +909,7 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    ref->RPNHeadExt.grref[0] = grref?grref[0]:'\0';
    ref->RPNHeadExt.grref[1] = '\0';
 
-   // No Ref means it's coming from in memory so IGs are reference IGs (ex: Ceation of YinYan subgrids)
+   // No GRID_SUB means it's a subgrid definitiopn so IGs are reference IGs (ex: Ceation of YinYan subgrids)
    if (Ref==GRID_SUB) {
       ref->RPNHeadExt.igref1 = IG1;
       ref->RPNHeadExt.igref2 = IG2;
