@@ -191,24 +191,24 @@ int32_t GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float
    /* User must specify one specific grid ezsetival(SUBGRIDID) */
    /* This is only appropriate if the destination grid is non yin-yang grid */
  
-   if (RefFrom->Sub) { // User specifies to use 1 grid only
+   if (RefFrom->Sub>=0) { // User specifies to use 1 grid only
       // Output is a Yin-Yang grid 
       if (yyout == 1) { 
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Cannot use subgrid to interpolate to a Yin-Yang grid\n",__func__);
          return(FALSE);
       }
       // Is specified subgrid within the subgrid list
-      if (RefFrom->Sub>RefFrom->NbSub) { 
+      if (RefFrom->Sub>=RefFrom->NbSub) { 
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Sub);
          return(FALSE);
       }
       // Use yin input grid
-      if (RefFrom->Sub==1) { 
+      if (RefFrom->Sub==0) { 
          return(GeoRef_InterpUV(yin_gdout,yin_gdin,Opt,uuout,vvout,uuin,vvin));
       }
 
       // Use yang input grid
-      if (RefFrom->Sub==2) { 
+      if (RefFrom->Sub==1) { 
          return(GeoRef_InterpUV(yin_gdout,yan_gdin,Opt,uuout,vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)]));
       }
    }
@@ -415,24 +415,24 @@ int32_t GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float
    /* User must specify one specific grid ezsetival(SUBGRIDID) */
    /* This is only appropriate if the destination grid is non yin-yang grid */
 
-   if (RefFrom->Sub) { // User specifies to use 1 grid only
+   if (RefFrom->Sub>=0) { // User specifies to use 1 grid only
       // Output is a Yin-Yang grid 
       if (yyout == 1) { 
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Cannot use subgrid to interpolate to a Yin-Yang grid\n",__func__);
          return(FALSE);
       }
       // Is specified subgrid within the subgrid list
-      if (RefFrom->Sub>RefFrom->NbSub) { 
+      if (RefFrom->Sub>=RefFrom->NbSub) { 
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Sub);
          return(FALSE);
       }
       // Use yin input grid
-      if (RefFrom->Sub==1) { 
+      if (RefFrom->Sub==0) { 
          return(GeoRef_InterpWD(yin_gdout,yin_gdin,Opt,uuout,vvout,uuin,vvin));
       }
 
       // Use yang input grid
-      if (RefFrom->Sub==2) { 
+      if (RefFrom->Sub==1) { 
          return(GeoRef_InterpWD(yin_gdout,yan_gdin,Opt,uuout,vvout,&uuin[(yin_gdin->NX)*(yin_gdin->NY)],&vvin[(yin_gdin->NX)*(yin_gdin->NY)]));
       }
    }

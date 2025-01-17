@@ -65,17 +65,11 @@ int32_t GeoRef_MaskYYDefine(TGeoRef *Ref) {
       }
    }
    ynj=k;
-   Ref->mymaskgrid = GeoRef_Define(NULL,yni,ynj,Ref->GRTYP,Ref->RPNHeadExt.grref,Ref->RPNHeadExt.igref1,Ref->RPNHeadExt.igref2,Ref->RPNHeadExt.igref3,Ref->RPNHeadExt.igref4,&Ref->AX[i0],&Ref->AY[j0]);
+   Ref->mymaskgrid = GeoRef_Define(GRID_SUB,yni,ynj,Ref->GRTYP,Ref->RPNHeadExt.grref,Ref->RPNHeadExt.igref1,Ref->RPNHeadExt.igref2,Ref->RPNHeadExt.igref3,Ref->RPNHeadExt.igref4,&Ref->AX[i0],&Ref->AY[j0]);
    Ref->mymaskgridi0=i0;
    Ref->mymaskgridi1=i1;
    Ref->mymaskgridj0=j0;
    Ref->mymaskgridj1=j1;
-
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subgd.mymaskgrid   = %p\n",__func__,Ref->mymaskgrid);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subgd.mymaskgridi0 = %d pt=%f\n",__func__,Ref->mymaskgridi0, Ref->AX[i0]);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subgd.mymaskgridi1 = %d pt=%f\n",__func__,Ref->mymaskgridi1, Ref->AX[i1]);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subgd.mymaskgridj0 = %d pt=%f\n",__func__,Ref->mymaskgridj0, Ref->AY[j0]);
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Subgd.mymaskgridj1 = %d pt=%f\n",__func__,Ref->mymaskgridj1, Ref->AY[j1]);
  
   return(0);
 }
@@ -90,10 +84,10 @@ int32_t GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int3
    yin_fld = (float*)calloc(RefFrom->mymaskgrid->NX*RefFrom->mymaskgrid->NY,sizeof(float));
  
    // Get original options
-   memcpy(&opt,Opt,sizeof(TGeoOptions));
+   opt=*Opt;
    opt.Interp=IR_NEAREST;
-   opt.NoData=1.0;
    opt.Extrap=ER_VALUE;
+   opt.NoData=1.0;
     
    GeoRef_Interp(RefTo,RefFrom->mymaskgrid,&opt,maskout,yin_fld);
  

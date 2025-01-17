@@ -38,7 +38,7 @@ void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t 
 
    f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
-   #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(ri,npts,Lat,Lon,X,Y)
+   #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(stderr,ri,npts,Lat,Lon,X,Y)
    for(n=0;n<npts;n++) {
       latr=DEG2RAD(Y[n]);
       lonr=DEG2RAD(X[n]);
@@ -115,9 +115,9 @@ int32_t GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
 int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb,int32_t Extrap) {
 
    TGeoRef *yin_gd,*yan_gd,*ref;
-   int32_t      i,j,icode;
-   double   *latyin,*lonyin,*latyan,*lonyan;
-   double   *tmpy;
+   int32_t  i,j,icode;
+   double  *latyin,*lonyin,*latyan,*lonyan;
+   double  *tmpy;
    
    if (!Ref->XY2LL) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid transform function (XY2LL): grtyp=%c\n",__func__,Ref->GRTYP[0]);

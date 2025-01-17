@@ -71,6 +71,7 @@ typedef struct {
 #define GRID_SOUTH      2
 #define GRID_NORTH_POLE 3
 #define GRID_SOUTH_POLE 4
+#define GRID_SUB       ((TGeoRef*)0x1)
 
 #define GRID_NONE     0x0        ///< No flags defined
 #define GRID_REGULAR  0x1        ///< Regular grid
@@ -99,7 +100,6 @@ typedef struct {
 #define REF_DEFAULT "GEOGCS[\"GCS_WGS_1984\",DATUM[\"WGS_1984\",SPHEROID[\"WGS84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.017453292519943295]]"
 #define REF_CLAMPBD(R,PX0,PY0,PX1,PY1) if (PX0<(R->X0+R->BD)) PX0=R->X0+R->BD; if (PY0<(R->Y0+R->BD)) PY0=R->Y0+R->BD; if (PX1>(R->X1-R->BD)) PX1=R->X1-R->BD; if (PY1>(R->Y1-R->BD)) PY1=R->Y1-R->BD;
 #define REF_CLAMP(R,PX0,PY0,PX1,PY1)   if (PX0<R->X0) PX0=R->X0; if (PY0<R->Y0) PY0=R->Y0; if (PX1>R->X1) PX1=R->X1; if (PY1>R->Y1) PY1=R->Y1;
-#define REF_GET(REF)                   (REF->Sub?REF->Subs[REF->Sub-1]:REF)
 #define REF_INDEX_SEPARATOR -1.0
 #define REF_INDEX_END       -2.0
 #define REF_INDEX_EMPTY     -3.0
@@ -133,7 +133,7 @@ typedef struct {
 #define GeoRef_ScanX(X) (((float*)GeoScanX)[X]-1.0)
 #define GeoRef_ScanY(X) (((float*)GeoScanY)[X]-1.0)
 #define GeoRef_Lon(R,L) (((L)>180 && R->Type&GRID_NEGLON)?(L)-360.0:((L)<0 && !(R->Type&GRID_NEGLON))?(L)+360.0:(L))
-#define GeoRef_SubGet(REF) (REF->NbSub?REF->Subs[REF->Sub]:REF)
+#define GeoRef_SubGet(REF) ((REF->Sub<REF->NbSub && REF->Sub>=0)?REF->Subs[REF->Sub]:REF)
 
 // Raster interpolation modes
 typedef enum {

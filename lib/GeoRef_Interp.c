@@ -252,7 +252,7 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
 */
 int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin) {
 
-   TGeoSet   *gset=NULL;
+   TGeoSet    *gset=NULL;
    TApp_Timer *int_timer = App_TimerCreate();
    float      *lzin,*lxzin;
    int32_t         ok=TRUE;
@@ -306,7 +306,7 @@ int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zo
          } else {
             ok=FALSE;
          }
-       } 
+      } 
 
       if (lzin && lzin!=zin) {
          free(lzin);
@@ -336,7 +336,6 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
 
    if (!Opt) Opt=&RefTo->Options;
    if (!Opt) Opt=&GeoRef_Options;
-   gset=GeoRef_SetGet(RefTo,RefFrom,Opt);
 
    // Setup for input grid
    if (RefFrom->NbSub > 0) {
@@ -360,7 +359,7 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
    nj = yin_gdout->NY;
 
    // Interp input one grid to yygrid - no masking needed
-   if (yyin == 0 && yyout == 1) {
+   if (!yyin && yyout) {
       if (GeoRef_Interp(yin_gdout,RefFrom,Opt,zout,zin) && GeoRef_Interp(yan_gdout,RefFrom,Opt,&zout[ni*nj],zin)) {
          return(TRUE);
       } else {
@@ -380,34 +379,36 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
    /* User must specify the sub grid value in ezsetival(SUBGRIDID) */
    /* This is only appropriate if the destination grid is non yin-yang grid */
 
-   if (RefFrom->Sub) { // User specifies to use 1 grid only
+   if (RefFrom->Sub>=0) { // User specifies to use 1 grid only
       // Output is a Yin-Yang grid 
-      if (yyout == 1) { 
+      if (yyout) { 
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Cannot use subgrid to interpolate to a Yin-Yang grid\n",__func__);
          return(FALSE);
       }
       // Is specified subgrid within the subgrid list
-      if (RefFrom->Sub>RefFrom->NbSub) { 
+      if (RefFrom->Sub>=RefFrom->NbSub) { 
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Sub);
          return(FALSE);
       }
       // Use yin input grid
-      if (RefFrom->Sub==1) { 
+      if (RefFrom->Sub==0) { 
          return(GeoRef_Interp(yin_gdout,yin_gdin,Opt,zout,zin));
       }
 
       // Use yang input grid
-      if (RefFrom->Sub==2) { 
+      if (RefFrom->Sub==1) { 
          return(GeoRef_Interp(yin_gdout,yan_gdin,Opt,zout,&zin[(yin_gdin->NX)*(yin_gdin->NY)]));
       }
    }
 
-   // TO USE both Yin and Yang grids in Yin-yang input grid 
+   // To use both Yin and Yang grids in Yin-yang input grid 
    // Masquer les grilles YY input pour enlever overlap et calculer les X,Y
+   gset=GeoRef_SetGet(RefTo,RefFrom,Opt);
    GeoRef_SetCalcYYXY(gset);
 
-   // Interp yinyang to one grid
-   if (yyin == 1 && yyout == 0) {
+   if (!yyout) {
+      // Interp yinyang to one grid
+
       yincount_yin = gset->yincount_yin;
       yancount_yin = gset->yancount_yin;
       yin2yin_zvals = (float *) malloc(yincount_yin*sizeof(float));
@@ -430,11 +431,9 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
       free(yin2yin_zvals);
       free(yan2yin_zvals);
       return(TRUE);
-   }
+   } else {
+      // Interp yinyang to yinyang
 
-   // Interp yinyang to yinyang
-   if (yyout == 1 && yyin == 1) {
-      // Interp input YY grid to YY grid 
       yincount_yin = gset->yincount_yin;
       yancount_yin = gset->yancount_yin;
       yincount_yan = gset->yincount_yan;

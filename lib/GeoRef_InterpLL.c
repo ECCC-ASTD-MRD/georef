@@ -355,7 +355,7 @@ int32_t GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
    ref=GeoRef_SubGet(Ref);
 
    if (ref->NbSub > 0) {
-      i = ref->Subs[0]->NX*ref->Subs[1]->NY;
+      i = ref->Subs[0]->NX*ref->Subs[0]->NY;
 
       n=GeoRef_GetLL(ref->Subs[0],Lat,Lon);           // Yin
       n+=GeoRef_GetLL(ref->Subs[1],&Lat[i],&Lon[i]);  // Yang

@@ -92,15 +92,15 @@ int32_t GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
     
    GeoRef_LL2GREF(Ref,X,Y,Lat,Lon,Nb);
 
-   // Look into expansion descriptor
-   #pragma omp parallel for default(none) private(i,d,indx,indy) shared(Nb,Ref,X,Y,Lat,Lon)
-   for(i=0;i<Nb;i++) {
-      d=(Ref->Type&GRID_AXY2D)?Ref->NX:1;
+   d=(Ref->Type&GRID_AXY2D)?Ref->NX:1;
 
+   // Look into expansion descriptor
+   #pragma omp parallel for default(none) private(i,indx,indy) shared(stderr,d,Nb,Ref,X,Y,Lat,Lon)
+   for(i=0;i<Nb;i++) {
       //TODO: clarify NX and j2 index          
       indx = GeoRef_XFind(X[i],Ref->AX,Ref->NX,1);
       indy = GeoRef_XFind(Y[i],Ref->AY,Ref->j2,d);
-     
+    
       if (indx >= Ref->NX-1) indx = Ref->NX - 2;
       if (indy >= Ref->j2-1) indy = Ref->j2 - 2;
 

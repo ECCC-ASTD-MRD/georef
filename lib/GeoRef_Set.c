@@ -262,7 +262,7 @@ int32_t GeoRef_SetCalcXY(TGeoSet *GSet) {
       if (!GSet->X) {
 
          GSet->X = (double*)calloc(size*2,sizeof(double));
-         GSet->Y=&GSet->X[size];
+         GSet->Y = &GSet->X[size];
 
          GeoRef_LL2XY(GSet->RefFrom,GSet->X,GSet->Y,GSet->RefTo->Lat,GSet->RefTo->Lon,size,TRUE);
       }
@@ -314,8 +314,7 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
    double *yin2yin_lat,*yin2yin_lon,*yan2yin_lat,*yan2yin_lon;
    double *yin2yan_lat,*yin2yan_lon,*yan2yan_lat,*yan2yan_lon;
     
-   //  Need only access to either yin or Yang info for the lat and lon val
-      
+   //  Need only access to either yin or Yang info for the lat and lon val   
    if (!GSet || (GSet->flags & SET_YYXY)) {
       return 0;
    }
@@ -329,13 +328,12 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
       yan_gdout = GSet->RefTo->Subs[1];
       ni = yin_gdout->NX;
       nj = yin_gdout->NY;
-   } else {
+  } else {
       yin_gdout = GSet->RefTo;
       ni = GSet->RefTo->NX;
       nj = GSet->RefTo->NY;
    }
 
-   // TODO: Check ni*nj vs yincout... if worth allocating twice and freeing
    nij = ni*nj;
 
    // Masquer les grilles YY input pour enlever overlap si TRUE 
@@ -347,7 +345,6 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
    yancount_yin=0;
    yincount_yin=0;
 
-   // Destination grid is one grid 
    // Create mask with Yin as a priority choice and store x,y,lat,lon pos
    GSet->yin_maskout = (float *) malloc(nij*sizeof(float));
    GSet->yinlat = (double*) malloc(nij*sizeof(double));
@@ -634,7 +631,7 @@ TGeoSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGeoOptions *Opt) {
    RefTo->Sets[i].RefTo = RefTo;
    RefTo->Sets[i].G2G[0]=RefFrom->GRTYP[0];
    RefTo->Sets[i].G2G[1]=RefTo->GRTYP[0];
-   if (Opt) memcpy(&RefTo->Sets[i].Opt,Opt,sizeof(TGeoOptions));
+   if (Opt) RefTo->Sets[i].Opt=*Opt;
    
    Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RefFrom : %p RefTo: %p\n",__func__,RefFrom,RefTo);
 

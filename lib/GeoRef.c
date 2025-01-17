@@ -823,7 +823,7 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
                   for(i=0;i<ni;i++) GRef->AX[s*ni+i]=GRef->AXY[idx+4+i];
                   for(i=0;i<nj;i++) GRef->AY[s*nj+i]=GRef->AXY[idx+4+ni+i];
 
-                  GRef->Subs[s] = GeoRef_Define((TGeoRef*)0x1,ni,nj,"Z",grref,ig1,ig2,ig3,ig4,&GRef->AX[s*ni],&GRef->AY[s*nj]);
+                  GRef->Subs[s] = GeoRef_Define(GRID_SUB,ni,nj,"Z",grref,ig1,ig2,ig3,ig4,&GRef->AX[s*ni],&GRef->AY[s*nj]);
                   GeoRef_MaskYYDefine(GRef->Subs[s]);
                   idx+=ni+nj+10;
                }
@@ -900,7 +900,7 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    
    TGeoRef* ref,*fref=NULL;
 
-   ref=Ref<(TGeoRef*)0x2?GeoRef_New():Ref;
+   ref=Ref<=GRID_SUB?GeoRef_New():Ref;
    if (!ref)
       return(NULL);
 
@@ -910,7 +910,7 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    ref->RPNHeadExt.grref[1] = '\0';
 
    // No Ref means it's coming from in memory so IGs are reference IGs (ex: Ceation of YinYan subgrids)
-   if (!Ref) {
+   if (Ref==GRID_SUB) {
       ref->RPNHeadExt.igref1 = IG1;
       ref->RPNHeadExt.igref2 = IG2;
       ref->RPNHeadExt.igref3 = IG3;
@@ -1001,7 +1001,7 @@ TGeoRef* GeoRef_New() {
    // General
    ref->Name=NULL;
    ref->Subs=NULL;
-   ref->Sub=0;
+   ref->Sub=-1;
    ref->NbSub=0;
    ref->Type=GRID_NONE;
    ref->NRef=1;
@@ -1074,7 +1074,7 @@ TGeoRef *GeoRef_SubSelect(TGeoRef *Ref,int N) {
    int i;
 
    // If the subgrid index is different from the current
-   if (Ref->GRTYP[0]=='U' && N!=Ref->Sub && N<=Ref->NbSub) {
+   if (N!=Ref->Sub && N<Ref->NbSub) {
  
       for (i=0; i<Ref->NbSet; i++) {
          if (Ref->Sets[i].Index) {
@@ -1085,14 +1085,7 @@ TGeoRef *GeoRef_SubSelect(TGeoRef *Ref,int N) {
       }
    
       Ref->Sub=N;
-
-      // Define grid limits
-      Ref->NX=Ref->Subs[N>0?N-1:N]->NX;
-      Ref->NY=Ref->Subs[N>0?N-1:N]->NY;
-      Ref->X0=0;    Ref->Y0=0;
-      Ref->X1=Ref->NX-1; Ref->Y1=Ref->NY-1;
-
-      return(Ref->Subs[N]);
+      return(N>0?Ref->Subs[N]:Ref);
    }
    return(NULL);
 }
@@ -1903,10 +1896,9 @@ int32_t GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
 */
 int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* DA) {
 
-   uint32_t i,gi,j,gj,nid,pnid,pidx,idx,*tidx;
-   double       di[4],dj[4],dlat[4],dlon[4];
-   double       fx,fy,fz,dx[4],dy[4],s,a,b,c;
-   char         grtyp[2];
+   uint32_t i,gi,j,gj,nid,pidx,idx,*tidx;
+   double   di[4],dj[4],dlat[4],dlon[4];
+   double   fx,fy,fz,dx[4],dy[4],s,a,b,c;
    TGeoRef *gr;
 
    if (!Ref || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='Y') {
@@ -1951,14 +1943,16 @@ int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* D
       }
 
    } else {
-      pnid=Ref->Sub;
       pidx=0;
       
       // Loop on the subgrids if needed
-/*       for(nid=(pnid?pnid:(Ref->NbId>1?1:0));nid<=(pnid?pnid:(Ref->NbId>1?Ref->NbId:0));nid++) { */
-      for(nid=pnid;nid<=(pnid?pnid:(Ref->NbSub>1?(Ref->NbSub-1):0));nid++) {
+      for(nid=0;nid<Ref->NbSub;nid++) {
 
-         gr = pnid?Ref->Subs[nid-1]:(Ref->NbSub>1?Ref->Subs[nid]:Ref);
+         if (Ref->Sub==-1 || Ref->Sub==nid) {
+            gr=Ref->Subs[nid];
+         } else {
+            continue;
+         }
 
          for(j=0,gj=1;j<gr->NY;j++,gj++) {
             idx=pidx+j*gr->NX;
@@ -1970,7 +1964,6 @@ int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* D
                di[3]=gi;     dj[3]=gj+0.5;
 
                // Reproject gridpoint32_t length coordinates of segments crossing center of cell
-/*                c_gdllfxy(Ref->Subs[nid],dlat,dlon,di,dj,4); */
                GeoRef_XY2LL(gr,dlat,dlon,di,dj,4,TRUE);
                dx[0]=DEG2RAD(dlon[0]); dy[0]=DEG2RAD(dlat[0]);
                dx[1]=DEG2RAD(dlon[1]); dy[1]=DEG2RAD(dlat[1]);
