@@ -28,18 +28,19 @@ void GeoRef_SetZoneFree(TGeoSet *GSet) {
  * @date   
  *    @param[in]  GSet    Grid set pointer
  *    @param[in]  Zone    Zone identifier (GRID_NORTH_POLE,GRID_SOUTH_POLE)
- *    @param[in]  NbPts   Number of points to check
  *
  *    @return             Error code (0=ok)
 */
-int32_t GeoRef_SetZoneDefinePole(TGeoSet *GSet,int32_t Zone,int32_t NbPts) {
+int32_t GeoRef_SetZoneDefinePole(TGeoSet *GSet,int32_t Zone) {
 
    TGeoZone *zone=&GSet->zones[Zone];
    double    latpole,lonpole,xpole,ypole;
-   int32_t      *tmpidx,i;
+   int32_t  *tmpidx,i,nbpts;
   
+   nbpts=(GSet->RefTo->NX*GSet->RefTo->NY);
+
    // On commence par trouver les points au pole
-   tmpidx = (int*)malloc(NbPts*sizeof(int));
+   tmpidx = (int*)malloc(nbpts*sizeof(int));
   
    zone->npts = 0;
    if (GSet->RefFrom->GRTYP[0] == 'Z' && GSet->RefFrom->RPNHeadExt.grref[0] == 'E') {
@@ -51,7 +52,7 @@ int32_t GeoRef_SetZoneDefinePole(TGeoSet *GSet,int32_t Zone,int32_t NbPts) {
       GeoRef_LL2XY(GSet->RefFrom,&xpole,&ypole,&latpole,&lonpole,1,TRUE);
    }
   
-   for (i=0; i<NbPts; i++) {
+   for (i=0; i<nbpts; i++) {
       if (fabs(GSet->Y[i]-ypole) < 1.0e-3) {
          tmpidx[zone->npts]=i;
          zone->npts++;
@@ -81,20 +82,20 @@ int32_t GeoRef_SetZoneDefinePole(TGeoSet *GSet,int32_t Zone,int32_t NbPts) {
  * @date   
  *    @param[in]  GSet    Grid set pointer
  *    @param[in]  Zone    Zone identifier (GRID_NORTH,GRID_SOUTH)
- *    @param[in]  NbPts   Number of points to check
  *
  *    @return             Error code (0=ok)
 */
-int32_t GeoRef_SetZoneDefineThem(TGeoSet *GSet,int32_t Zone,int32_t NbPts) {
+int32_t GeoRef_SetZoneDefineThem(TGeoSet *GSet,int32_t Zone) {
 
    TGeoZone *zone=&GSet->zones[Zone];
-   int32_t      *tmpidx,i,jlim;
+   int32_t  *tmpidx,i,jlim,nbpts;
   
-   tmpidx = (int*) malloc(NbPts*sizeof(int));
+   nbpts=(GSet->RefTo->NX*GSet->RefTo->NY);
+   tmpidx = (int*) malloc(nbpts*sizeof(int));
   
    zone->npts = 0;
    jlim = (Zone==GRID_SOUTH)?GSet->RefFrom->j1+1:GSet->RefFrom->j2-2;
-   for (i=0; i<NbPts; i++) {
+   for (i=0; i<nbpts; i++) {
       if ((Zone==GRID_SOUTH)?((int)GSet->Y[i] < jlim):((int)GSet->Y[i] > jlim)) {
          tmpidx[zone->npts]=i;
          zone->npts++;
@@ -124,16 +125,16 @@ int32_t GeoRef_SetZoneDefineThem(TGeoSet *GSet,int32_t Zone,int32_t NbPts) {
  * @date   
  *    @param[in]  GSet    Grid set pointer
  *    @param[in]  Zone    Zone identifier (GRID_OUTSIDE)
- *    @param[in]  NbPts   Number of points to check
  *
  *    @return             Error code (0=ok)
 */
-int32_t GeoRef_SetZoneDefineOut(TGeoSet *GSet,int32_t Zone,int32_t NbPts) {
+int32_t GeoRef_SetZoneDefineOut(TGeoSet *GSet,int32_t Zone) {
 
    TGeoZone *zone=&GSet->zones[Zone];
-   int32_t      *tmpidx,i,offsetleft,offsetright,ix,iy;
+   int32_t  *tmpidx,i,offsetleft,offsetright,ix,iy,nbpts;
     
-   tmpidx=(int*)malloc(NbPts*sizeof(int));
+   nbpts=(GSet->RefTo->NX*GSet->RefTo->NY);
+   tmpidx=(int32_t*)malloc(nbpts*sizeof(int32_t));
   
    offsetright = 0;
    offsetleft = 0;
@@ -148,11 +149,10 @@ int32_t GeoRef_SetZoneDefineOut(TGeoSet *GSet,int32_t Zone,int32_t NbPts) {
    }
 */
 
-   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: NbPoints %d, Offset left: %d, Offset right: %d\n",__func__,NbPts,offsetleft, offsetright);
    zone->npts=0;
-   for (i=0; i<NbPts; i++) {
-      ix = (int)(GSet->X[i]+0.5);
-      iy = (int)(GSet->Y[i]+0.5);
+   for (i=0; i<nbpts; i++) {
+      ix = (int32_t)(GSet->X[i]+0.5);
+      iy = (int32_t)(GSet->Y[i]+0.5);
       if (ix < (1+offsetleft) || iy < (1+offsetleft) || ix > (GSet->RefFrom->NX-offsetright) || iy > (GSet->RefFrom->NY-offsetright)) {
          tmpidx[zone->npts]=i;
          zone->npts++;
@@ -162,8 +162,8 @@ int32_t GeoRef_SetZoneDefineOut(TGeoSet *GSet,int32_t Zone,int32_t NbPts) {
    if (zone->npts>0) {
       zone->x = (double*)malloc(zone->npts*sizeof(double));
       zone->y = (double*)malloc(zone->npts*sizeof(double));
-      zone->idx = (int32_t *) malloc(zone->npts*sizeof(int));
-      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Number of outside pointst: \n",__func__,offsetleft,zone->npts);
+      zone->idx = (int32_t *) malloc(zone->npts*sizeof(int32_t));
+      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Number of outside points: %i \n",__func__,zone->npts);
     
       for (i=0; i < zone->npts; i++) {
          zone->x[i]   = GSet->X[tmpidx[i]];      
@@ -218,7 +218,7 @@ int32_t GeoRef_SetZoneDefine(TGeoSet *GSet) {
 	             break;
 	  
 	          case 'E':
-	             if (359.0 > (GSet->RefFrom->AX[GSet->RefFrom->NX-1] - GSet->RefFrom->AX[0])) {
+	             if (358.0 > (GSet->RefFrom->AX[GSet->RefFrom->NX-1] - GSet->RefFrom->AX[0])) {
 	                extrap = TRUE;
 	             }
 	             break;
@@ -229,15 +229,14 @@ int32_t GeoRef_SetZoneDefine(TGeoSet *GSet) {
    for (i=0; i<SET_NZONES; i++) {
       GSet->zones[i].npts = 0;
    }
-   npts = GSet->RefTo->NX * GSet->RefTo->NY;
 
    if (extrap) {
-      GeoRef_SetZoneDefineOut(GSet,GRID_OUTSIDE,npts);
+      GeoRef_SetZoneDefineOut(GSet,GRID_OUTSIDE);
    } else {
-      GeoRef_SetZoneDefinePole(GSet,GRID_NORTH_POLE,npts);
-      GeoRef_SetZoneDefinePole(GSet,GRID_SOUTH_POLE,npts);
-      GeoRef_SetZoneDefineThem(GSet,GRID_SOUTH,npts);
-      GeoRef_SetZoneDefineThem(GSet,GRID_NORTH,npts);
+      GeoRef_SetZoneDefinePole(GSet,GRID_NORTH_POLE);
+      GeoRef_SetZoneDefinePole(GSet,GRID_SOUTH_POLE);
+      GeoRef_SetZoneDefineThem(GSet,GRID_SOUTH);
+      GeoRef_SetZoneDefineThem(GSet,GRID_NORTH);
    }
   
    GSet->flags |= SET_ZONES;

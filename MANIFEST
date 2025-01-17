@@ -1,6 +1,7 @@
 NAME       : georef
 VERSION    : 
 BUILD      : 
+STATUS     : -alpha
 DESCRIPTION: ECCC-CCMEP Geo reference manipulation library
 SUMMARY    : This library allows for reprojection, coordinate transform and interpolation in between various type of geo reference (RPN,WTK,meshes,...)
 MAINTAINER : Jean-Philippe Gauthier - Jean-Philippe.Gauthier@canada.ca

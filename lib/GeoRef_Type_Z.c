@@ -99,10 +99,10 @@ int32_t GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
    for(i=0;i<Nb;i++) {
       //TODO: clarify NX and j2 index          
       indx = GeoRef_XFind(X[i],Ref->AX,Ref->NX,1);
-      indy = GeoRef_XFind(Y[i],Ref->AY,Ref->j2,d);
+      indy = GeoRef_XFind(Y[i],Ref->AY,Ref->NY,d);
     
       if (indx >= Ref->NX-1) indx = Ref->NX - 2;
-      if (indy >= Ref->j2-1) indy = Ref->j2 - 2;
+      if (indy >= Ref->NY-1) indy = Ref->NY - 2;
 
       X[i] = indx+(X[i]-Ref->AX[indx])/(Ref->AX[indx+1]-Ref->AX[indx])+1;
       Y[i] = indy+(Y[i]-Ref->AY[indy*d])/(Ref->AY[(indy+1)*d]-Ref->AY[indy*d])+1;

@@ -80,10 +80,6 @@ int32_t GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
       case 'L':
          f77name(cigaxg)(Ref->RPNHeadExt.grref,&xlat0,&xlon0,&dlat,&dlon,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
          GeoRef_LL2GD(X,Y,Lat,Lon,Nb,xlat0,xlon0,dlat,dlon,(Ref->AX[0]<0.0)?-180.0:0.0);
-         for(i=0;i<Nb;i++) {
-            X[i]-=1.0;
-            Y[i]-=1.0;
-         }
          break;
 
       case 'E':

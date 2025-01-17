@@ -185,15 +185,11 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
 
    TGeoRef *reffrom,*refto;
    int32_t i,ierc;
-   float valmax, valmin,fudgeval;
-   int32_t fudgeval_set;
+   float valmax, valmin,fudgeval= 0.0;
    int32_t degIntCourant;
    int32_t npts,nj;
    float vpolnor, vpolsud;
    float *temp;
-
-   fudgeval_set = 0;
-	fudgeval = 0.0;
   
    if (!Set)
       return(0);
@@ -211,16 +207,17 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
          return(-1);
       }
 
-      f77name(ez_aminmax)(&valmin,&valmax,zin,&(reffrom->NX),&nj);
       if (Set->Opt.Extrap) {
          if (!Set->Opt.VectorMode) {
             switch (Set->Opt.Extrap) {
                case ER_MAXIMUM:
+                  f77name(ez_aminmax)(&valmin,&valmax,zin,&(reffrom->NX),&nj);
                   fudgeval = valmax + 0.05 * (valmax - valmin);
                   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Maximum: %f \n",__func__,fudgeval);
                   break;
 
                case ER_MINIMUM:
+                  f77name(ez_aminmax)(&valmin,&valmax,zin,&(reffrom->NX),&nj);
                   fudgeval = valmin - 0.05 * (valmax - valmin);
                   Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Minimum: %f \n",__func__,fudgeval);
                   break;
@@ -233,7 +230,7 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
          }
 
          for (i=0; i < Set->zones[GRID_OUTSIDE].npts; i++) {
-	          zout[Set->zones[GRID_OUTSIDE].idx[i]] = fudgeval;
+	         zout[Set->zones[GRID_OUTSIDE].idx[i]] = fudgeval;
 	      }
       } else {
          degIntCourant = Set->Opt.Interp;
@@ -263,7 +260,7 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
    }
 
    if (Set->zones[GRID_NORTH_POLE].npts > 0 || Set->zones[GRID_SOUTH_POLE].npts > 0) {
-      if (reffrom->GRTYP[0] != 'w') {
+      if (reffrom->GRTYP[0] != 'W') {
          npts = reffrom->NX * reffrom->j2;
          f77name(ez_calcpoleval)(&vpolnor,&(zin[(nj-1)*reffrom->NX]),&(reffrom->NX),reffrom->AX,reffrom->GRTYP,reffrom->RPNHeadExt.grref,1,1);
          for (i=0; i < Set->zones[GRID_NORTH_POLE].npts; i++) {
