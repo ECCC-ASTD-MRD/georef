@@ -94,8 +94,8 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
       y=&x[npts];
    
       for(j=0;j<npts;j++) {
-         X[j]+=1.0;
-         Y[j]+=1.0;
+         x[j]=X[j]+1.0;
+         y[j]=Y[j]+1.0;
       }
    } else {
       x=X;
