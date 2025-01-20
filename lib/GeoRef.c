@@ -286,8 +286,7 @@ void GeoRef_Clear(TGeoRef *Ref,int32_t New) {
  */
 void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
 
-   TCoord co[2];
-   double d[2],lat[2],lon[2],n[2],x[2],y[2];
+   double d[2],lat[2],lon[2],x[2],y[2];
    int32_t    nx;
 
    if (Ref) {
@@ -724,8 +723,7 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
 
 int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
-   int32_t     key,ni,nj,nk,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz=0;
-   float      *ax=NULL,*ay=NULL;
+   int32_t     ni,nj,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz=0;
    char        grref[2];
 
    if (!GRef) {
@@ -1555,7 +1553,6 @@ int32_t GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,do
 int32_t GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Ref1) {
 
    double la,lo,x0,y0,x1,y1;
-   int32_t    x,y;
 
    if (!Ref0 || !Ref1) return(0);
    
@@ -1581,7 +1578,7 @@ int32_t GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const R
       }
    }
 
-   for(y0=Ref0->Y0,x0=Ref0->X1;y0<=Ref0->Y1;y+=1.0) {
+   for(y0=Ref0->Y0,x0=Ref0->X1;y0<=Ref0->Y1;y0+=1.0) {
       GeoRef_XY2LL(Ref0,&la,&lo,&x0,&y0,1,TRUE);
       if (!GeoRef_LL2XY(Ref1,&x1,&y1,&la,&lo,1,FALSE)) {
          return(0);
@@ -1898,7 +1895,7 @@ int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* D
 
    uint32_t i,gi,j,gj,nid,pidx,idx,*tidx;
    double   di[4],dj[4],dlat[4],dlon[4];
-   double   fx,fy,fz,dx[4],dy[4],s,a,b,c;
+   double   fx,fy,dx[4],dy[4],s,a,b,c;
    TGeoRef *gr;
 
    if (!Ref || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='Y') {
@@ -2353,10 +2350,8 @@ int32_t GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec) {
    fst_record  srec = default_fst_record;
    fst_record  rec = default_fst_record;
    fst_query  *query;
-   char       *data=NULL;
    const char *desc,**descs;
-   int32_t         d=0,ni,nj,nk,sz=0,ip1,ip2;
-   int32_t         key;
+   int32_t     d=0;
 
    if (Rec->file) {
 

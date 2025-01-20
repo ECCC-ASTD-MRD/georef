@@ -1937,7 +1937,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
 */
 int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int32_t Final){
 
-   double        val,vx,di[4],dj[4],*fld,*aux,di0,di1,dj0,dj1,ax,ay;
+   double        val,vx,di[4],dj[4],*fld,*aux,di0,di1,dj0,dj1;
    int32_t      *acc=NULL,x0,x1,y,y0,y1;
    unsigned long idxt,idxk,idxj,n,nijk,nij;
    uint32_t      n2,ndi,ndj,k,t,s,x,dx,dy;
@@ -2607,9 +2607,10 @@ int32_t GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,T
 
    register int32_t idx,x,y,n=0;
    int32_t          d=0,sz,dd;
-   double       x0,y0,v;
    int32_t          ix, iy;
-   
+#ifdef HAVE_GDAL
+   double           x0,y0,v;
+#endif   
    if (!Opt) Opt=&ToRef->Options;
    if (!Opt) Opt=&GeoRef_Options;
 
