@@ -45,10 +45,10 @@ test:rhel-8-icelake-64_inteloneapi-2022.1.2:
       - build:rhel-8-icelake-64_inteloneapi-2022.1.2
    script:
       - set +e
-      - source ${ECCI_ENV}/latest/rhel-8-icelake-64/inteloneapi-2024.2.0.sh
+      - source ${ECCI_ENV}/latest/rhel-8-icelake-64/inteloneapi-2022.1.2.sh
       - . r.load.dot ${ECCI_PROCESS_SSM}/libs
       - set -e
-      - cd ${PIPELINE_SUBDIR}/build_rhel-8-icelake-64_inteloneapi-2024.2.0
+      - cd ${PIPELINE_SUBDIR}/build_rhel-8-icelake-64_inteloneapi-2022.1.2
       - make check
 
 package:rhel-8-icelake-64_inteloneapi-2022.1.2:
@@ -103,10 +103,10 @@ test:rhel-8-amd64_inteloneapi-2022.1.2:
       - build:rhel-8-amd64_inteloneapi-2022.1.2
    script:
       - set +e
-      - source ${ECCI_ENV}/latest/rhel-8-amd-64/inteloneapi-2024.2.0.sh
+      - source ${ECCI_ENV}/latest/rhel-8-amd-64/inteloneapi-2022.1.2.sh
       - . r.load.dot ${ECCI_PROCESS_SSM}/libs
       - set -e
-      - cd ${PIPELINE_SUBDIR}/build_rhel-8-amd64_inteloneapi-2024.2.0
+      - cd ${PIPELINE_SUBDIR}/build_rhel-8-amd64_inteloneapi-2022.1.2
       - make check
 
 package:rhel-8-amd64_inteloneapi-2022.1.2:
