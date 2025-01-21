@@ -37,6 +37,11 @@ void GeoRef_Unlock() {
    pthread_mutex_unlock(&GeoRef_Mutex);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Print interpolation options
+ * @date   July 2005
+ *    @param[in]  Options   Pointer to interpolation otions object
+ */
 void Georef_PrintOptions(TGeoOptions *Options) {
 
    Lib_Log(APP_LIBGEOREF,APP_ALWAYS,
@@ -146,7 +151,9 @@ void GeoRef_Size(TGeoRef *Ref,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_
  */
 int32_t GeoRef_Free(TGeoRef *Ref) {
 
-  if (!Ref)
+   int32_t n;
+
+   if (!Ref)
       return(0);
 
    if (__sync_sub_and_fetch(&Ref->NRef,1)!=0) {
@@ -156,6 +163,11 @@ int32_t GeoRef_Free(TGeoRef *Ref) {
    if (Ref->RefFrom) {
 //      GeoRef_Free(Ref->RefFrom);
       __sync_sub_and_fetch(&Ref->RefFrom->NRef,1);
+   }
+
+   // Free sub grids
+   for (n=0;n<Ref->NbSub;n++) {
+      GeoRef_Free(Ref->Subs[n]);
    }
 
    GeoRef_Clear(Ref,1);
@@ -721,6 +733,10 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
    return(sz);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Read georeference definition records
+ *    @param[in]  Ref   Pointer to geo reference
+ */
 int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
    int32_t     ni,nj,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz=0;
@@ -1089,7 +1105,7 @@ TGeoRef *GeoRef_SubSelect(TGeoRef *Ref,int N) {
 }
 
 /**----------------------------------------------------------------------------
- * @brief  Create spatial index
+ * @brief  Create spatial index (quad-tree) for grid M,Y,X or O.
  * @date   Janvier 2016
  *    @param[in]  Ref     Pointeur sur la reference
  *
@@ -1880,11 +1896,21 @@ int32_t GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
 
 /**----------------------------------------------------------------------------
  * @brief  Obtenir les valeurs de distance en X et Y ainsi que l'aire
- *         pour chaque cellule de la grille
+ *         pour chaque cellule de la grille. Les distance de centre des cellules 
+ *         sont utilisées
+ *            
+ *         +-------+
+ *         |   :   |
+ *         |...x...| < width
+ *         |   :   |
+ *         +-------+
+ *             ^
+ *           height
+ * 
  * @remark Si un des tableau est NULL, il ne sera pas remplie
  * @date   Avril 2010 
  *    @param[in]  Grid     Grille
- *    @param[in]  Invert   Invert (1/area)
+ *    @param[in]  Invert   Invert of area (1/area)
  *    @param[out] DX       Valeurs de distance en X
  *    @param[out] DY       Valeurs de distance en y
  *    @param[out] DA       Valeurs de l'aire
@@ -2141,7 +2167,7 @@ int32_t GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,in
 }
 
 /*----------------------------------------------------------------------------
- * @brief  Writes a grid definition
+ * @brief  Writes a grid definition's info / records
  * @date   January 2020
  *    @param[in]  GRef      GeoRef pointer
  *    @param[in]  File      FSTD file pointer
@@ -2345,6 +2371,14 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
    return(TRUE);
 }
 
+/*----------------------------------------------------------------------------
+ * @brief  Copy a grid definition from a record previously read into a different file
+ * @date   January 2020
+ *    @param[in]  FileTo    file pointer
+ *    @param[in]  Rec       record pointer
+ *
+ *    @return             Error code (0=ok)
+*/
 int32_t GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec) {
 
    fst_record  srec = default_fst_record;

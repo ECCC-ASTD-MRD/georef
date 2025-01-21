@@ -136,8 +136,8 @@ static inline void Permut(double *Z,int32_t NI,int32_t NJ) {
 */
 int32_t GeoRef_CalcLL(TGeoRef* Ref) {
 
-   float  xlat00, xlon00, dlat, dlon;
-   int32_t    i,j,k,ni, nj, npts, hemisphere;
+   float   xlat00, xlon00, dlat, dlon;
+   int32_t i,j,k,ni,nj,npts, hemisphere;
    double *lonp,*latp,*xp,*yp;
 
    ni = Ref->NX;
@@ -258,26 +258,28 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
             }
             break;
 
-         case '#':
-         case 'Z':
          case 'G':
             k=0;
             for (j=0; j<nj; j++) {
                for (i=0; i<ni; i++) {
-                  Ref->Lat[k] = Ref->AY[j];
+                  Ref->Lat[k] = (Ref->RPNHead.ig1 == GRID_NORTH)?Ref->AY[j+nj]:Ref->AY[j];
+                  Ref->Lat[k] = Ref->RPNHead.ig2==1?-Ref->Lat[k]:Ref->Lat[k];
                   Ref->Lon[k] = Ref->AX[i];
                   k++;
                }
             }
 
-	         if (Ref->GRTYP[0] == 'G' && Ref->RPNHead.ig1 == GRID_NORTH) {
-               k=0;
-	            for (j=0; j<nj; j++) {
-	               for (i=0; i<ni; i++) {
-		               Ref->Lat[k++] = Ref->AY[j+nj];
-		            }
-	            }
-	         }
+         case '#':
+         case 'Z':
+            k=0;
+            for (j=0; j<nj; j++) {
+               for (i=0; i<ni; i++) {
+                  // Fix for G grids which seems to have inverted lat on IG2=1
+                  Ref->Lat[k] = Ref->AY[j];
+                  Ref->Lon[k] = Ref->AX[i];
+                  k++;
+               }
+            }
 
             switch (Ref->RPNHeadExt.grref[0]) {
 	            case 'N':
@@ -299,6 +301,16 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
                case 'E':
                   GeoRef_RotateInvertXY(Ref->Lat,Ref->Lon,Ref->Lon,Ref->Lat,npts,Ref->RPNHeadExt.xgref1,Ref->RPNHeadExt.xgref2,Ref->RPNHeadExt.xgref3,Ref->RPNHeadExt.xgref4);
                   break;
+            }
+            break;
+
+         case 'U':
+            npts=0;
+            for (j=0;j<Ref->NbSub;j++) {
+               k=GeoRef_CalcLL(Ref->Subs[j]);
+               memcpy(&Ref->Lat[npts],Ref->Subs[j]->Lat,k*sizeof(double));
+               memcpy(&Ref->Lon[npts],Ref->Subs[j]->Lon,k*sizeof(double));
+               npts+=k;
             }
             break;
 

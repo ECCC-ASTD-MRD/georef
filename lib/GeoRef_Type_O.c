@@ -93,8 +93,8 @@ int32_t GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
             if (!ISNAN(X[d]) && !ISNAN(Y[d])) {
                y=idx/Ref->NX;
                x=idx-y*Ref->NX;
-               Y[d]+=y+dy+1;
-               X[d]+=x+dx+1; 
+               Y[d]+=y+dy+1.0;
+               X[d]+=x+dx+1.0; 
             } else {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid coordinate (NAN): ll(%f,%f) xy(%f,%f) %i\n",__func__,Lat[d],Lon[d],X[d],Y[d],idx);
                X[d]=-1.0;
