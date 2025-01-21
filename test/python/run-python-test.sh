@@ -1,3 +1,5 @@
+#!/usr/bin/env -S bash -o errexit -o nounset
+
 this_dir=$(cd $(dirname $0) && pwd)
 # Librmn with the python package must be loaded
 # This python package must be loaded.  This can either be the
