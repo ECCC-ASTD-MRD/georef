@@ -171,7 +171,7 @@ int32_t GeoRef_Free(TGeoRef *Ref) {
    }
 
    GeoRef_Clear(Ref,1);
-   free(Ref);
+   //free(Ref);
 
    // Remove from Georef list
    GeoRef_Lock();
@@ -1005,7 +1005,7 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
  * @date   Janvier 2015
  *
  *    @return              New geo reference pointer
-*/
+*/ 
 TGeoRef* GeoRef_New() {
 
    TGeoRef *ref=malloc(sizeof(TGeoRef));
@@ -1078,6 +1078,8 @@ TGeoRef* GeoRef_New() {
    ref->XY2LL=NULL;
    ref->LL2XY=NULL;
    ref->Height=NULL;
+
+   ref->mymaskgrid=NULL;
 
    pthread_mutex_init(&ref->Mutex, NULL);
    return(ref);

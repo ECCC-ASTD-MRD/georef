@@ -638,8 +638,11 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
   *Length=Def->NoData;
    d=Ref->GRTYP[0]=='W'?1.0:0.5;
 
+   if (C>=Def->NC)
+      return(FALSE);
+
    // Si on est a l'interieur de la grille
-   if (C<Def->NC && X>=(Ref->X0-d) && Y>=(Ref->Y0-d) && Z>=0 && X<=(Ref->X1+d) && Y<=(Ref->Y1+d) && Z<=Def->NK-1) {
+   if ((Ref->GRTYP[0]=='M' && X>=0 && X<Ref->NIdx) || (X>=(Ref->X0-d) && Y>=(Ref->Y0-d) && Z>=0 && X<=(Ref->X1+d) && Y<=(Ref->Y1+d) && Z<=Def->NK-1)) {
 
       // Index memoire du niveau desire
       mem=Def->NIJ*(int)Z;
@@ -648,8 +651,6 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
       y=Y;
       x-=Ref->X0;
       y-=Ref->Y0;
-      DEFCLAMP(Def,x,y);
-
       ix=lrint(x);
       iy=lrint(y);
       idx=iy*Def->NI+ix;

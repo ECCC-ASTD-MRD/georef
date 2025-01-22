@@ -45,23 +45,28 @@ int32_t c_gdcompatible_grids(TGeoRef *RefFrom, TGeoRef* RefTo) {
 int32_t gd_interpm(TGeoRef *Ref,TGeoOptions *Opt,float *Out,float *In,double *X,double *Y,int32_t Nb) {
 
    Vect3d  b,v;
-   int32_t d,n,ix;
+   int32_t d,n,idx;
 
-   #pragma omp parallel for default(none) private(d,b,ix,n,v) shared(Nb,Ref,Opt,X,Y,Out,In)
+   #pragma omp parallel for default(none) private(d,b,idx,n,v) shared(Nb,Ref,Opt,X,Y,Out,In)
    for(d=0;d<Nb;d++) {
       if (X[d]>=0 && Y[d]>=0) {
          b[0]=X[d]-(int)X[d]-1.0;
          b[1]=Y[d]-(int)Y[d]-1.0;
          b[2]=1.0-b[0]-b[1];
-         ix=(int)X[d];
+         idx=(int)X[d];
 
+         if(idx>Ref->NIdx) {
+            Out[d]=Opt->NoData;
+            continue;
+         }
+           
          if (Opt->Interp==IR_NEAREST) {
-            n=(b[0]>b[1]?(b[0]>b[2]?0:2):(b[1]>b[2]?1:2));
-            Out[d]=In[Ref->Idx[ix+n]];
+            n=Bary_Nearest(b);
+            Out[d]=In[Ref->Idx[idx+n]];
          } else {
-            v[0]=In[Ref->Idx[ix]];
-            v[1]=In[Ref->Idx[ix+1]];
-            v[2]=In[Ref->Idx[ix+2]];
+            v[0]=In[Ref->Idx[idx]];
+            v[1]=In[Ref->Idx[idx+1]];
+            v[2]=In[Ref->Idx[idx+2]];
 
             Out[d]=Bary_InterpV(b,v);
           }
