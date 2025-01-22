@@ -85,7 +85,7 @@ int32_t GeoRef_Project(struct TGeoRef *Ref,double X,double Y,double *Lat,double 
 
    tr=Ref->Options.Transform;
    Ref->Options.Transform=Transform;
-   Ref->XY2LL(Ref,Lat,Lon,&X,&Y,1);
+   GeoRef_XY2LL(Ref,Lat,Lon,&X,&Y,1,Extrap);
    Ref->Options.Transform=tr;
 
    return(status);
@@ -101,7 +101,7 @@ int32_t GeoRef_UnProject(struct TGeoRef *Ref,double *X,double *Y,double Lat,doub
 
    tr=Ref->Options.Transform;
    Ref->Options.Transform=Transform;
-   Ref->LL2XY(Ref,X,Y,&Lat,&Lon,1);
+   GeoRef_LL2XY(Ref,X,Y,&Lat,&Lon,1,Extrap);
    Ref->Options.Transform=tr;
 
    if (*X>(Ref->X1+0.5) || *Y>(Ref->Y1+0.5) || *X<(Ref->X0-0.5) || *Y<(Ref->Y0-0.5)) {

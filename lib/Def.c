@@ -660,9 +660,6 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
           if (!Def->Mask[idx]) {
             return(FALSE);
          }
-      } else {
-         X+=1;
-         Y+=1;
       }
 
       if (Def->Data[1] && !C) { 

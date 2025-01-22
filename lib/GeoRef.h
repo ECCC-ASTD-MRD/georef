@@ -274,7 +274,7 @@ typedef struct {
 
    int32_t n_wts;                ///< Nombre de poids
    double *wts;                  ///< Tableau de poids
-   int32_t *mask, *idx;          ///< Indice du point32_t dans le champ de destination
+   int32_t *mask, *idx;          ///< Indice du point dans le champ de destination
 } TGeoSet;
 
 typedef struct TGeoRef {
