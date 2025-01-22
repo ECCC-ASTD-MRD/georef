@@ -23,6 +23,11 @@ void GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref) {
 
    int32_t nni,nnj;
  
+   if (!Ref->AX || !Ref->AY) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Descriptor not found\n",__func__);
+      return(FALSE);
+   }
+   
    if (Ref->GRTYP[0]!='Y' && !Ref->NCX) {
 
       nni = Ref->NX;
@@ -262,7 +267,7 @@ int32_t GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY) {
       return(FALSE);
    }
   
-   if (!Ref->AX) {
+   if (!Ref->AX || !Ref->AY) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Grid descriptor not found\n",__func__);
       return(FALSE);
    }

@@ -19,6 +19,10 @@ int32_t GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
    double  delxx,delyy,*tmpx,*tmpy,*ytmp;
    float   xlat1, xlon1, xlat2, xlon2;
 
+   if (!Ref->AX || !Ref->AY) {
+      return(FALSE);
+   }
+   
    tmpx = (double*)malloc(3*Nb*sizeof(double));
    tmpy = &tmpx[Nb];
    ytmp = &tmpx[Nb*2];
@@ -71,7 +75,7 @@ int32_t GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
    }
    free(tmpx);
 
-   return(0);
+   return(Nb);
 }
 
 /*----------------------------------------------------------------------------
@@ -90,6 +94,10 @@ int32_t GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
 
    int32_t   i,j,indx,indy,d;
     
+   if (!Ref->AX || !Ref->AY) {
+      return(FALSE);
+   }
+   
    GeoRef_LL2GREF(Ref,X,Y,Lat,Lon,Nb);
 
    d=(Ref->Type&GRID_AXY2D)?Ref->NX:1;
@@ -119,7 +127,7 @@ int32_t GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
       for (j=0; j < Nb; j++) if (X[j]>Ref->X1+0.5) X[j]-=(Ref->X1+1);
    }
       
-   return(0);
+   return(Nb);
 }
 
 int32_t GEM_grid_param(int32_t *F_bsc_base,int32_t *F_bsc_ext1,int32_t *F_extension ,int32_t F_maxcfl,float *F_lonr,float *F_latr,int32_t *F_ni,int32_t *F_nj,float *F_dx,float *F_dy,double *F_x0_8,double *F_y0_8,double *F_xl_8,double *F_yl_8,int32_t F_overlap,int32_t F_yinyang_L) {

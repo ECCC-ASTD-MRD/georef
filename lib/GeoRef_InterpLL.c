@@ -274,7 +274,6 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
             k=0;
             for (j=0; j<nj; j++) {
                for (i=0; i<ni; i++) {
-                  // Fix for G grids which seems to have inverted lat on IG2=1
                   Ref->Lat[k] = Ref->AY[j];
                   Ref->Lon[k] = Ref->AX[i];
                   k++;

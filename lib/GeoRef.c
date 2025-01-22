@@ -311,7 +311,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          case 'S': Ref->LL2XY=GeoRef_LL2XY_NS; Ref->XY2LL=GeoRef_XY2LL_NS; break;
          case 'T': Ref->LL2XY=GeoRef_LL2XY_T; Ref->XY2LL=GeoRef_XY2LL_T; break;
          case '!': Ref->LL2XY=GeoRef_LL2XY_LAMBERT; Ref->XY2LL=GeoRef_XY2LL_LAMBERT; break;
-         case '#':
+         case '#': break;
          case 'G': //GeoRef_LL2XY_G(Ref,X,Y,Lat,Lon,Nb); Ref->XY2LL=GeoRef_XY2LL_G; break;
          case 'U':
          case 'Z': Ref->LL2XY=GeoRef_LL2XY_Z; Ref->XY2LL=GeoRef_XY2LL_Z; break;
@@ -604,7 +604,7 @@ TGeoRef* GeoRef_Add(TGeoRef *Ref) {
 
    TList *head;
 
-  GeoRef_Lock();
+   GeoRef_Lock();
    if (head=TList_Add(GeoRef_List,(void*)Ref)) {
       GeoRef_List=head;
    }
@@ -741,6 +741,7 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
    int32_t     ni,nj,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz=0;
    char        grref[2];
+   double      *ax,*ay;
 
    if (!GRef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid GeoRef object\n",__func__);
@@ -807,41 +808,43 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
    //            for (i=0; i < GRef->NX; i++) GRef->AX[i] = ax[i+offsetx];
    //         }
             break;
-         
-         case 'U':
-            if (!GRef->AXY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AXY,"^>",1,APP_FLOAT64);
+      }
+   }
 
-            if (GRef->AXY) {
-               GRef->NbSub=(int)GRef->AXY[2];     // Number of LAM grids (YY=2)
-               ni=(int)GRef->AXY[5];              // NI size of LAM grid 
-               nj=(int)GRef->AXY[6];              // NJ size of LAM grid
-               GRef->NX = ni;                     // NI size of U grid
-               GRef->NY = nj*GRef->NbSub;         // NJ size of U grid
-               GRef->AX = (double*)malloc(ni*GRef->NbSub*sizeof(double));
-               GRef->AY = (double*)malloc(nj*GRef->NbSub*sizeof(double));
+   if (GRef->GRTYP[0]=='U' && !GRef->AXY) {
+      GeoRef_ReadDescriptor(GRef,(void **)&GRef->AXY,"^>",1,APP_FLOAT64);
 
-               // Get subgrids
-               GRef->Subs = (TGeoRef**)malloc(GRef->NbSub*sizeof(TGeoRef*));
-               strcpy(grref,"E");
-               idx=11;
-               float xg1,xg2,xg3,xg4;
+      if (GRef->AXY) {
+         GRef->NbSub=(int)GRef->AXY[2];     // Number of LAM grids (YY=2)
+         ni=(int)GRef->AXY[5];              // NI size of LAM grid 
+         nj=(int)GRef->AXY[6];              // NJ size of LAM grid
+         GRef->NX = ni;                     // NI size of U grid
+         GRef->NY = nj*GRef->NbSub;         // NJ size of U grid
 
-               for(s=0;s<GRef->NbSub;s++) {
-                  xg1=GRef->AXY[idx];
-                  xg2=GRef->AXY[idx+1];
-                  xg3=GRef->AXY[idx+2];
-                  xg4=GRef->AXY[idx+3];
-                  f77name(cxgaig)(grref,&ig1,&ig2,&ig3,&ig4,&xg1,&xg2,&xg3,&xg4,1);
-                  Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: YY grid index %i (%ix%i) (xgs=%f,%f,%f,%f)\n",__func__,s,ni,nj,xg1,xg2,xg3,xg4);
+         // Get subgrids
+         GRef->Subs = (TGeoRef**)malloc(GRef->NbSub*sizeof(TGeoRef*));
 
-                  for(i=0;i<ni;i++) GRef->AX[s*ni+i]=GRef->AXY[idx+4+i];
-                  for(i=0;i<nj;i++) GRef->AY[s*nj+i]=GRef->AXY[idx+4+ni+i];
+         strcpy(grref,"E");
+         idx=11;
+         float xg1,xg2,xg3,xg4;
 
-                  GRef->Subs[s] = GeoRef_Define(GRID_SUB,ni,nj,"Z",grref,ig1,ig2,ig3,ig4,&GRef->AX[s*ni],&GRef->AY[s*nj]);
-                  GeoRef_MaskYYDefine(GRef->Subs[s]);
-                  idx+=ni+nj+10;
-               }
-            }
+         for(s=0;s<GRef->NbSub;s++) {
+            xg1=GRef->AXY[idx];
+            xg2=GRef->AXY[idx+1];
+            xg3=GRef->AXY[idx+2];
+            xg4=GRef->AXY[idx+3];
+            f77name(cxgaig)(grref,&ig1,&ig2,&ig3,&ig4,&xg1,&xg2,&xg3,&xg4,1);
+            Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: YY grid index %i (%ix%i) (xgs=%f,%f,%f,%f)\n",__func__,s,ni,nj,xg1,xg2,xg3,xg4);
+
+            ax = (double*)malloc(ni*sizeof(double));
+            ay = (double*)malloc(nj*sizeof(double));
+            for(i=0;i<ni;i++) ax[i]=GRef->AXY[idx+4+i];
+            for(j=0;j<nj;j++) ay[j]=GRef->AXY[idx+4+ni+j];
+
+            GRef->Subs[s] = GeoRef_Define(GRID_SUB,ni,nj,"Z",grref,ig1,ig2,ig3,ig4,ax,ay);
+            GeoRef_MaskYYDefine(GRef->Subs[s]);
+            idx+=ni+nj+10;
+         }
       }
 
       // Check for 2D AX/AY
@@ -1506,8 +1509,8 @@ int32_t GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,do
    // Source grid Y
    if (Ref->GRTYP[0]=='Y' || Ref->GRTYP[1]=='Y' || Ref->GRTYP[0]=='X' || Ref->GRTYP[1]=='X' || Ref->GRTYP[0]=='O') {
       for(x=0;x<((Ref->X1-Ref->X0)+1)*((Ref->Y1-Ref->Y0)+1);x++) {
-         *Lat0=fmin(*Lat0,Ref->AY[x]); *Lon0=fmin(*Lon0,Ref->AX[x]);
-         *Lat1=fmax(*Lat1,Ref->AY[x]); *Lon1=fmax(*Lon1,Ref->AX[x]);
+         *Lat0=fmin(*Lat0,Ref->Lat[x]); *Lon0=fmin(*Lon0,Ref->Lon[x]);
+         *Lat1=fmax(*Lat1,Ref->Lat[x]); *Lon1=fmax(*Lon1,Ref->Lon[x]);
       }
       return(1);
    }
@@ -1691,10 +1694,10 @@ int32_t GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int32_t Idx0,int3
    
    if (Idx0<sz && Idx1<sz && Idx2<sz && Idx3<sz && Idx0>=0 && Idx1>=0 && Idx2>=0 && Idx3>=0) {
       
-      Pt[0][0]=Ref->AX[Idx0]; Pt[0][1]=Ref->AY[Idx0];
-      Pt[1][0]=Ref->AX[Idx1]; Pt[1][1]=Ref->AY[Idx1];
-      Pt[2][0]=Ref->AX[Idx2]; Pt[2][1]=Ref->AY[Idx2];
-      Pt[3][0]=Ref->AX[Idx3]; Pt[3][1]=Ref->AY[Idx3];
+      Pt[0][0]=Ref->Lon[Idx0]; Pt[0][1]=Ref->Lat[Idx0];
+      Pt[1][0]=Ref->Lon[Idx1]; Pt[1][1]=Ref->Lat[Idx1];
+      Pt[2][0]=Ref->Lon[Idx2]; Pt[2][1]=Ref->Lat[Idx2];
+      Pt[3][0]=Ref->Lon[Idx3]; Pt[3][1]=Ref->Lat[Idx3];
       
       // Make sure all coordinates are on same side of -180/180
       if (Pos[0]>90) {
@@ -1940,9 +1943,9 @@ int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* D
          tidx=Ref->Idx;
          for(idx=0;idx<Ref->NIdx;idx+=3) {
             
-            dx[0]=DEG2RAD(Ref->AX[tidx[idx]]);   dy[0]=DEG2RAD(Ref->AY[tidx[idx]]);
-            dx[1]=DEG2RAD(Ref->AX[tidx[idx+1]]); dy[1]=DEG2RAD(Ref->AY[tidx[idx+1]]);
-            dx[2]=DEG2RAD(Ref->AX[tidx[idx+2]]); dy[2]=DEG2RAD(Ref->AY[tidx[idx+2]]);
+            dx[0]=DEG2RAD(Ref->Lon[tidx[idx]]);   dy[0]=DEG2RAD(Ref->Lat[tidx[idx]]);
+            dx[1]=DEG2RAD(Ref->Lon[tidx[idx+1]]); dy[1]=DEG2RAD(Ref->Lat[tidx[idx+1]]);
+            dx[2]=DEG2RAD(Ref->Lon[tidx[idx+2]]); dy[2]=DEG2RAD(Ref->Lat[tidx[idx+2]]);
             
             s =(dx[1]-dx[0])*(2+sin(dy[0])+sin(dy[1]));
             s+=(dx[2]-dx[1])*(2+sin(dy[1])+sin(dy[2]));

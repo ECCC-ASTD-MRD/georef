@@ -18,6 +18,10 @@ int32_t GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
    int32_t     i,s,sx,sy,indx;
    double *tmpx,*tmpy,dx,dy;
 
+   if (!Ref->AX || !Ref->AY) {
+      return(FALSE);
+   }
+
    switch (Ref->RPNHeadExt.grref[0]) {
       case 'L':
          for (i=0; i < Nb; i++) {
@@ -62,7 +66,7 @@ int32_t GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
          return(-1);
          break;
    }
-   return(0);
+   return(Nb);
 }
 
 /*----------------------------------------------------------------------------

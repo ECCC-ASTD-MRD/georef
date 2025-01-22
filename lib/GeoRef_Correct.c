@@ -42,6 +42,10 @@ int32_t GeoRef_CorrValNorth(TGeoSet *Set,float *zout,float *zin) {
 	             case 'Z':
 	             case 'E':
 	             case 'G':
+                  if (!reffrom->AX || !reffrom->AY) {
+                     Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Descriptor not found\n",__func__);
+                     return(FALSE);
+                  } 
                   if  (reffrom->AY[reffrom->j2-1] == 90.0) {
                      ay[0] = reffrom->AY[reffrom->j2-4];
                      ay[1] = reffrom->AY[reffrom->j2-3];
@@ -55,7 +59,7 @@ int32_t GeoRef_CorrValNorth(TGeoSet *Set,float *zout,float *zin) {
                      ay[3] = 90.0;
                      f77name(ez8_irgdint_3_wnnc)(vals,Set->zones[GRID_NORTH].x,Set->zones[GRID_NORTH].y,&npts,temp,&ni, &j1, &j2,reffrom->AX, ay, &(reffrom->Extension));
                   }
-	                break;
+	               break;
 	             default:
 	                f77name(ez8_rgdint_3)(vals,Set->zones[GRID_NORTH].x,Set->zones[GRID_NORTH].y,&npts,temp,&ni, &j1, &j2, &(reffrom->Extension),&Set->Opt.NoData);
 	                break;
@@ -128,6 +132,10 @@ int32_t GeoRef_CorrValSouth(TGeoSet *Set,float *zout,float *zin) {
                case 'Z':
                case 'E':
                case 'G':
+                  if (!reffrom->AX || !reffrom->AY) {
+                     Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Descriptor not found\n",__func__);
+                     return(FALSE);
+                  } 
                   if  (reffrom->AY[reffrom->j1-1] == -90.0) {
                      ay[0] = reffrom->AY[0];
                      ay[1] = reffrom->AY[1];
@@ -518,10 +526,14 @@ int32_t GeoRef_CorrVecNorth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,f
 	          case 'Z':
 	          case 'E':
 	          case 'G':
-               ay[0] = reffrom->AY[reffrom->j2-3];
-               ay[1] = reffrom->AY[reffrom->j2-2];
-               ay[2] = reffrom->AY[reffrom->j2-1];
-               ay[3] = 90.0;
+                if (!reffrom->AX || !reffrom->AY) {
+                   Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Descriptor not found\n",__func__);
+                   return(FALSE);
+                } 
+                ay[0] = reffrom->AY[reffrom->j2-3];
+                ay[1] = reffrom->AY[reffrom->j2-2];
+                ay[2] = reffrom->AY[reffrom->j2-1];
+                ay[3] = 90.0;
 	             f77name(ez8_irgdint_3_wnnc)(corr_uus,Set->zones[GRID_NORTH].x,Set->zones[GRID_NORTH].y,&npts,polar_uu_in,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
 	             f77name(ez8_irgdint_3_wnnc)(corr_vvs,Set->zones[GRID_NORTH].x,Set->zones[GRID_NORTH].y,&npts,polar_vv_in,&ni,&j1,&j2,reffrom->AX,ay,&reffrom->Extension);
 	             break;
@@ -604,6 +616,10 @@ int32_t GeoRef_CorrVecSouth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,f
 	          case 'Z':
 	          case 'E':
 	          case 'G':
+               if (!reffrom->AX || !reffrom->AY) {
+                  Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Descriptor not found\n",__func__);
+                  return(FALSE);
+               } 
                ay[0] = -90.;
                ay[1] = reffrom->AY[0];
                ay[2] = reffrom->AY[1];
