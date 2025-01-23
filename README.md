@@ -5,13 +5,14 @@ Georeference / Grids management and interpolation library
 Georef builds on the ezscint package by adding:
 * More interpolation methods (conservative, average, geometric, rasterization)
 * More projections through PROJ4
+* Manage tripole grids ('O'), triangular meshes ('M') and cube sphere ('C')
 * All coordinates transformations are done at double precision
 * Can save and read interpolation indexes and weights
 * Thread safety
 
 ## Environment variables
 
-* GEOREF_PRESERVE       : How many of the first georef creted will be kept preserved in cache (default: 10)
+* GEOREF_PRESERVE       : How many of the first georef created will be kept preserved in cache (default: 10)
 * GEOREF_DESCRIPTOR_64  : Use 64 bit precision when writing of grid descriptors, (default: 32 bit)
 * GEOREF_INDEX_SIZE_HINT: Hint for size of interpolation weight index (default: 1024)
 
