@@ -422,8 +422,8 @@ int32_t  GeoRef_MaskYYDefine(TGeoRef *Ref);
 
 void     GeoRef_GridGetExpanded(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin);                                                         // gdxpngd
 int32_t  GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,int32_t *IG1,int32_t *IG2,int32_t *IG3,int32_t *IG4,char *grref,int32_t *IG1REF,int32_t *IG2REF,int32_t *IG3REF,int32_t *IG4REF);  //c_ezgxprm
-int32_t  GeoRef_AxisGet(TGeoRef *Ref,double *AX,double *AY);                                                                                   // gdaxes
-int32_t  GeoRef_AxisGetExpanded(TGeoRef* Ref,double *AX,double *AY);                                                                           // gdgxpndaxes
+void     GeoRef_AxisDefine(TGeoRef * const Ref, double * const AX, double * const AY);                                                         // gdaxes
+int32_t  GeoRef_AxisGetExpanded(const TGeoRef * const Ref, double * const AX, double * const AY);                                              // gdgxpndaxes
 void     GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY);
 void     GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref);
 void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
