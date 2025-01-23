@@ -224,7 +224,7 @@ int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
       icode = GeoRef_LL2XY(yan_gd,xyan,yyan,Lat,Lon,Nb,Extrap);
       for (j=0; j < Nb; j++) {
          if (xyin[j] > maxni || xyin[j] < 1 || yyin[j] > maxnj || yyin[j] < 1) {
-            // point32_t is no good, take from YAN eventhough it may not be good
+            // point is no good, take from YAN eventhough it may not be good
             X[j]=xyan[j];
             Y[j]=yyan[j]+maxnj;
          } else {

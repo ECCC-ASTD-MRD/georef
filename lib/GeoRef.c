@@ -10,6 +10,7 @@
 #include "Triangle.h"
  
 static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
+static uint32_t        GeoRef_Preserve=-10;                                                                                    ///< How many of teh first created georef to keep cached (negative means uninitialized)
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
 __thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, IV_FAST, CB_REPLACE, TRUE, FALSE, FALSE, 16, 1, 1, TRUE, FALSE, 10.0, 0.0, 0.0, NULL, NULL, 0, 0, NULL };  ///< Default options
 
@@ -809,6 +810,11 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
    //         }
             break;
       }
+
+      // Check for 2D AX/AY
+      if (sz>GRef->NX) {
+         GRef->Type|=GRID_AXY2D;
+      }
    }
 
    if (GRef->GRTYP[0]=='U' && !GRef->AXY) {
@@ -845,11 +851,6 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
             GeoRef_MaskYYDefine(GRef->Subs[s]);
             idx+=ni+nj+10;
          }
-      }
-
-      // Check for 2D AX/AY
-      if (sz>GRef->NX) {
-         GRef->Type|=GRID_AXY2D;
       }
    }
 
@@ -915,7 +916,8 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
 */
 TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grref,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,double* AX,double* AY) {
    
-   TGeoRef* ref,*fref=NULL;
+   TGeoRef *ref,*fref=NULL;
+   char    *c;
 
    ref=Ref<=GRID_SUB?GeoRef_New():Ref;
    if (!ref)
@@ -949,12 +951,27 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    if ((fref=GeoRef_Find(ref))) {
       // This georef already exists
       free(ref);
+
       GeoRef_Incr(fref);
       return(fref);
    }
 
    // This is a new georef
    GeoRef_Add(ref);
+
+   // Initialize number of preserved georef in cache
+   if (GeoRef_Preserve<0) {
+      GeoRef_Preserve=-GeoRef_Preserve;
+      if ((c=getenv("GEOREF_PRESERVE"))) {
+         GeoRef_Preserve=atoi(c);
+      }
+   }
+
+   // Check if we keep it cached
+   if (__sync_sub_and_fetch(&GeoRef_Preserve,1)) {
+      GeoRef_Incr(ref);
+   }
+
 
    // Read grid descriptors
    if (AX && AY) {
