@@ -332,13 +332,13 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
          case 'G':
          case 'B':
          case 'A':
-         if (Ref->RPNHead.ig2 == 1) {
-            Permut(Ref->Lat,Ref->NX,Ref->NY);
-         }
-         break;
+            if (Ref->RPNHead.ig2 == 1) {
+               Permut(Ref->Lat,Ref->NX,Ref->NY);
+            }
+            break;
 
          default:
-         break;
+            break;
       }
 
       for (i=0; i < npts; i++) {
@@ -371,8 +371,6 @@ int32_t GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
       n=GeoRef_GetLL(ref->Subs[0],Lat,Lon);           // Yin
       n+=GeoRef_GetLL(ref->Subs[1],&Lat[i],&Lon[i]);  // Yang
    } else {
-      n=GeoRef_CalcLL(ref);
-
       if (ref->Lat) {
          if (Lon) memcpy(Lon,ref->Lon,n*sizeof(double));
          if (Lat) memcpy(Lat,ref->Lat,n*sizeof(double));
