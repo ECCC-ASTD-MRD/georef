@@ -982,6 +982,7 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    }
 
    GeoRef_DefRPNXG(ref);
+   GeoRef_CalcLL(ref);
    GeoRef_Qualify(ref);
 
    return(ref);

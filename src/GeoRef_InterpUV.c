@@ -32,10 +32,7 @@ int32_t GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *
    if (RefFrom->NbSub > 0 || RefTo->NbSub > 0) {
       return(GeoRef_InterpYYUV(RefTo,RefFrom,Opt,uuout,vvout,uuin,vvin));
    } else {
-
       npts = RefTo->NX*RefTo->NY;
-      GeoRef_CalcLL(RefTo);
-
       memcpy(&opt,Opt,sizeof(TGeoOptions));
 
       opt.VectorMode = TRUE;
@@ -116,7 +113,6 @@ int32_t GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *
       vvllout = &uullout[npts];
 
       // ezsint32_t does not allocate lat,lon if RefFrom=RefTo
-      GeoRef_CalcLL(RefTo);
       GeoRef_UV2WD(RefFrom,uullout,vvllout,uuout,vvout,RefTo->Lat,RefTo->Lon,npts);
 
       memcpy(uuout, uullout, npts*sizeof(float));

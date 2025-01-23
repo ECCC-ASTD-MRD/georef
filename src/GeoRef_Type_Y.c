@@ -86,8 +86,6 @@ int32_t GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
    int32_t idx,nb=0;
    double  dists[8];
 
-   GeoRef_CalcLL(Ref);
-
    for (idx=0;idx<Nb;idx++) {
       if (GeoRef_Nearest(Ref,Lon[idx],Lat[idx],&idx,dists,1,Ref->Options.DistTreshold)) {
          if (dists[0]<1.0) {

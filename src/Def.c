@@ -2012,7 +2012,6 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
       if (ToRef->GRTYP[0]=='Y') {
          // Point cloud interpolations
 
-         GeoRef_CalcLL(ToRef);
          for(idxt=0;idxt<nij;idxt++) {
             if (GeoRef_LL2XY(FromRef,&di0,&dj0,&ToRef->Lat[idxt],&ToRef->Lon[idxt],1,FALSE)) {
                di0=floor(di0);
