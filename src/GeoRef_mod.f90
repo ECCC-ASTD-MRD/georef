@@ -318,7 +318,7 @@ contains
         real(C_FLOAT), intent(in), dimension(*) :: zin
         real(C_FLOAT), intent(out), dimension(*) :: zout
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
-        integer(C_INT32_T) :: n,extrap
+        integer(C_INT32_T) :: n
 
         integer(C_INT32_T) :: out
 
