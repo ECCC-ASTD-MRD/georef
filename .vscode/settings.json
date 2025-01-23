@@ -37,7 +37,8 @@
       "array.h": "c",
       "cmath": "c",
       "chrono": "c",
-      "variant": "c"
+      "variant": "c",
+      "random": "c"
    },
    "C_Cpp.errorSquiggles": "Disabled",
    "python.pythonPath": "/usr/bin/python3",

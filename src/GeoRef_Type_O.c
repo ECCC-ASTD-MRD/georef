@@ -50,6 +50,7 @@ int32_t GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
    Vect2d  pts[4],pt;
 
    GeoRef_LL2GREF(Ref,X,Y,Lat,Lon,Nb);
+   
    #pragma omp parallel for default(none) private(n,nd,d,dx,dy,x,y,xx,yy,idx,idxs,pt,pts,dists) shared(Nb,Ref,X,Y,Lat,Lon) reduction(+:out)
    for(d=0;d<Nb;d++) {
 
