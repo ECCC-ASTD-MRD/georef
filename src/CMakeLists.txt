@@ -2,7 +2,7 @@ message(STATUS "Generating libgeoref librairie")
 
 file(GLOB PROJECT_INCLUDE_FILES *.h)
 file(GLOB PROJECT_C_FILES *.c)
-file(GLOB PROJECT_F_FILES *.f90 */*.f90 )
+file(GLOB PROJECT_F_FILES *.F90 F90/*.F90)
 
 set(targets georef-static georef-shared)
 set(shared_targets georef-shared)
@@ -12,7 +12,6 @@ add_library(georef-static STATIC ${PROJECT_INCLUDE_FILES} ${PROJECT_C_FILES} ${P
 target_include_directories(georef-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_include_directories(georef-static INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
-target_compile_options(georef-static PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:-cpp>)
 add_dependencies(georef-static ${PROJECT_NAME}_build_info)
 target_compile_definitions(georef-static PRIVATE HAVE_GPC)
 set_target_properties(georef-static PROPERTIES
@@ -24,7 +23,6 @@ set_target_properties(georef-static PROPERTIES
     POSITION_INDEPENDENT_CODE ON)
 
 add_library(georef-shared SHARED $<TARGET_OBJECTS:georef-static>)
-target_compile_options(georef-shared PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:-cpp>)
 add_dependencies(georef-shared ${PROJECT_NAME}_build_info)
 target_compile_definitions(georef-shared PRIVATE HAVE_GPC)
 set_target_properties(georef-shared PROPERTIES
