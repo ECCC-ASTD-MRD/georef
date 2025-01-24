@@ -39,11 +39,11 @@ typedef struct TZRef {
    float *A,*B;           // Pressure calculation factors
    float *P0,*P0LS;       // Pressure at surface
    float *PCube;          // 3D Pressure cube
-   int32_t    LevelNb;        // Number of Levels
-   int32_t    NRef;           // Reference count
-   int32_t    Version;        // Version
-   int32_t    Type;           // Type of levels
-   int32_t    SLEVE;          // Is SLEVE type (boolean 0/1)
+   int32_t    LevelNb;    // Number of Levels
+   int32_t    NRef;       // Reference count
+   int32_t    Version;    // Version
+   int32_t    Type;       // Type of levels
+   int32_t    SLEVE;      // Is SLEVE type (boolean 0/1)
    float  POff;           // Pressure offset from level
    float  PTop;           // Pressure at top of atmosphere
    float  PRef;           // Reference pressure
@@ -51,35 +51,31 @@ typedef struct TZRef {
    float  ETop;           // Eta coordinate a top
 
    TZRef_IP1Mode Style;   // IP style
-
-#ifdef HAVE_RPNC   
-   int32_t NC_Id,NC_NZDimId;  // netCDF identifiers
-#endif
 } TZRef;
 
 #define ZRef_Incr(ZREF) __sync_add_and_fetch(&ZREF->NRef,1)
 #define ZRef_Decr(ZREF) __sync_sub_and_fetch(&ZREF->NRef,1)
 
-TZRef* ZRef_New(void);
-TZRef* ZRef_Define(int32_t Type,int32_t NbLevels,float *Levels);
-int32_t    ZRef_Free(TZRef *ZRef);
-int32_t    ZRef_Equal(TZRef *Zref0,TZRef *ZRef1);
-TZRef* ZRef_Copy(TZRef *ZRef);
-TZRef* ZRef_HardCopy(TZRef *ZRef);
-int32_t    ZRef_DecodeRPN(TZRef *ZRef,fst_file* File);
-int32_t    ZRef_SetRestrictLevels(float *Levels,int32_t NbLevels);
-int32_t    ZRef_AddRestrictLevel(float Level);
-int32_t    ZRef_GetLevels(TZRef *ZRef,const fst_record* restrict const H,int32_t Invert);
-double ZRef_K2Pressure(TZRef* restrict const ZRef,double P0,double P0LS,int32_t K);
-int32_t    ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,float *P0LS,int32_t NIJ,int32_t Log,float *Pres);
-int32_t    ZRef_KCube2Meter(TZRef* restrict const ZRef,float *GZ,const int32_t NIJ,float *Height);
-double ZRef_Level2Pressure(TZRef* restrict const ZRef,double P0,double P0LS,double Level);
-double ZRef_Pressure2Level(TZRef* restrict const ZRef,double P0,double Pressure);
-double ZRef_IP2Meter(int32_t IP);
-double ZRef_Level2Meter(double Level,int32_t Type);
-double ZRef_IP2Level(int32_t IP,int32_t *Type);
-int32_t    ZRef_Level2IP(float Level,int32_t Type,TZRef_IP1Mode Mode);
-int32_t    ZRef_IPFormat(char *Buf,int32_t IP,int32_t Interval);
+TZRef*  ZRef_New(void);
+TZRef*  ZRef_Define(int32_t Type,int32_t NbLevels,float *Levels);
+int32_t ZRef_Free(TZRef *ZRef);
+int32_t ZRef_Equal(TZRef *Zref0,TZRef *ZRef1);
+TZRef*  ZRef_Copy(TZRef *ZRef);
+TZRef*  ZRef_HardCopy(TZRef *ZRef);
+int32_t ZRef_DecodeRPN(TZRef *ZRef,fst_file* File);
+int32_t ZRef_SetRestrictLevels(float *Levels,int32_t NbLevels);
+int32_t ZRef_AddRestrictLevel(float Level);
+int32_t ZRef_GetLevels(TZRef *ZRef,const fst_record* restrict const H,int32_t Invert);
+double  ZRef_K2Pressure(TZRef* restrict const ZRef,double P0,double P0LS,int32_t K);
+int32_t ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,float *P0LS,int32_t NIJ,int32_t Log,float *Pres);
+int32_t ZRef_KCube2Meter(TZRef* restrict const ZRef,float *GZ,const int32_t NIJ,float *Height);
+double  ZRef_Level2Pressure(TZRef* restrict const ZRef,double P0,double P0LS,double Level);
+double  ZRef_Pressure2Level(TZRef* restrict const ZRef,double P0,double Pressure);
+double  ZRef_IP2Meter(int32_t IP);
+double  ZRef_Level2Meter(double Level,int32_t Type);
+double  ZRef_IP2Level(int32_t IP,int32_t *Type);
+int32_t ZRef_Level2IP(float Level,int32_t Type,TZRef_IP1Mode Mode);
+int32_t ZRef_IPFormat(char *Buf,int32_t IP,int32_t Interval);
 
 const char** ZRef_LevelNames();
 const char*  ZRef_LevelName(int32_t Type);

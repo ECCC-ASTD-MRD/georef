@@ -1,24 +1,29 @@
-# Description
+# Georeference / Grid management and interpolation library
 
-Georeference / Grids management and interpolation library
+## Description
+
+This package provides C/Fortran/Python functions to project latitude/longitude coordinates to x/y grid space coordinates and vice-versa, get values at latitude/longitude or x/y coordinate values and interpolation from one grid to another.
 
 Georef builds on the ezscint package by adding:
 * More interpolation methods (conservative, average, geometric, rasterization)
-* More projections through PROJ4
+* More projections through PROJ4 ('W'), Needs to build with optional GDAL library
+* Manage tripole grids ('O'), triangular meshes ('M') and cube sphere ('C')
 * All coordinates transformations are done at double precision
+* Can read and save grid records in 64 bits (export GEOREF_DESCRIPTOR_64=TRUE)
 * Can save and read interpolation indexes and weights
-* Thread safety
+* Many levels of internal caches to speed-up transformations
+* Functions are re-entrant (thread safety)
 
 ## Environment variables
 
 * GEOREF_DESCRIPTOR_64  : Use 64 bit precision when writing of grid descriptors, (default: 32 bit)
 * GEOREF_INDEX_SIZE_HINT: Hint for size of interpolation weight index (default: 1024)
 
-## Structures
+## Data structures
 
 * TGeoOptions : Defines various intepolation parameters
-* TGeoRef     : Geo-Reference definition    
-* TGeoSet     : Links 2 Geo-Reference for interpolation. Contains cached values and index/weights to be reused on each intepolation betwee the 2 geo-reference
+* TGeoRef     : Geo-Reference definition
+* TGeoSet     : Links 2 Geo-Reference for interpolation. Contains cached values and index/weights to be reused on each intepolation between the 2 geo-reference
 
 ## Example usage:
 
@@ -41,10 +46,9 @@ Georef builds on the ezscint package by adding:
    ...
 
    // Define interpolation options
-   GeoRef_Options.Interp=IR_LINEAR;
-   GeoRef_Options.NoData=0.0;
-   GeoRef_Options.Extrap=ER_VALUE;
-   GeoRef_Options.ExtrapValue=-999.0;
+   GeoRef_Options.Interp=IR_LINEAR;    // Linear interpolation
+   GeoRef_Options.NoData=-999.0;       // No data value
+   GeoRef_Options.Extrap=ER_VALUE;     // Use nodata value when extrapolating
 
    ...
 

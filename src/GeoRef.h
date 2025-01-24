@@ -139,26 +139,26 @@ typedef struct {
 
 // Raster interpolation modes
 typedef enum {
-   IR_UNDEF                          = 0,    
-   IR_NEAREST                        = 1,
-   IR_LINEAR                         = 2,
-   IR_CUBIC                          = 3,
-   IR_NORMALIZED_CONSERVATIVE        = 4,
-   IR_CONSERVATIVE                   = 5,
-   IR_MAXIMUM                        = 6,
-   IR_MINIMUM                        = 7,
-   IR_SUM                            = 8,
-   IR_AVERAGE                        = 9,
-   IR_VARIANCE                       = 10,
-   IR_SQUARE                         = 11,
-   IR_NORMALIZED_COUNT               = 12,
-   IR_COUNT                          = 13,
-   IR_VECTOR_AVERAGE                 = 14,
-   IR_NOP                            = 15,
-   IR_ACCUM                          = 16,
-   IR_BUFFER                         = 17,
-   IR_SUBNEAREST                     = 18,
-   IR_SUBLINEAR                      = 19
+   IR_UNDEF                          = 0,    ///< Undefined
+   IR_NEAREST                        = 1,    ///< Nearest point
+   IR_LINEAR                         = 2,    ///< Linear
+   IR_CUBIC                          = 3,    ///< Cubic
+   IR_NORMALIZED_CONSERVATIVE        = 4,    ///< Mass conservative, distribute the ration of the cell into intersecting grid cells
+   IR_CONSERVATIVE                   = 5,    ///< Mass conservative, distribute value on the intersecting grid cells
+   IR_MAXIMUM                        = 6,    ///< Use maximum of intersecting cells
+   IR_MINIMUM                        = 7,    ///< Use minimum of intersecting cells
+   IR_SUM                            = 8,    ///< Sum values of intersecting cells
+   IR_AVERAGE                        = 9,    ///< Average value of intersecting cells
+   IR_VARIANCE                       = 10,   ///< Variance  of intersecting cells (useful for ...)
+   IR_SQUARE                         = 11,   ///< Average of squared values of intersecting cells (useful for ...)
+   IR_NORMALIZED_COUNT               = 12,   ///< Normalized % of table (TGeoOptions->Table) specifed values in intersection
+   IR_COUNT                          = 13,   ///< Count % of table (TGeoOptions->Table) specifed values in intersection
+   IR_VECTOR_AVERAGE                 = 14,   ///< Vectorial direction average
+   IR_NOP                            = 15,   ///< Used on multiple interpolsation iertafins
+   IR_ACCUM                          = 16,   ///< To get the accumulation matrix of the number of source cell intersecting destination cells
+   IR_BUFFER                         = 17,   ///< To get the interpolation state of multipl loops before finalization (ie: destionation cell fraction covered in CONSERVATIVE mode)
+   IR_SUBNEAREST                     = 18,   ///< Sub grid resolution nearest interpolation
+   IR_SUBLINEAR                      = 19    ///< Sub grid resolution linear intelpolation 
 } TRef_InterpR;
 
 // Raster Extrapolation modes
@@ -166,17 +166,17 @@ typedef enum {
   ER_UNDEF   = 0,     ///< Do nothing (default)
   ER_MAXIMUM = 1,     ///< Use field maximum value
   ER_MINIMUM = 2,     ///< Use minimum field value
-  ER_VALUE   = 3,     ///< Use a specific value
+  ER_VALUE   = 3,     ///< Use a specific value (TGeoOptions->NoData)
   ER_ABORT   = 4      ///< Abort execution
 } TRef_ExtrapR;
 
 // Vector interpolation modes
 typedef enum {
    IV_UNDEF                          = 0,   ///< Undefined
-   IV_FAST                           = 1,   ///< Use a resterization method (middle of grid cell included)
+   IV_FAST                           = 1,   ///< Use a rasterization method (middle of grid cell inclusion)
    IV_WITHIN                         = 2,   ///< Grid cell has to be totally included in polygon
    IV_INTERSECT                      = 3,   ///< Grid cell intersects polygon
-   IV_CENTROID                       = 4,   ///< 
+   IV_CENTROID                       = 4,   ///< Centroid of geometry is within grid cell
    IV_ALIASED                        = 5,   ///< Grid cells are assigned the area fraction of the intersection of the polygon value
    IV_CONSERVATIVE                   = 6,   ///< Distribute polygon value so as to conserve geometry mass in relation to geometry total area and intersecting grid cell area
    IV_NORMALIZED_CONSERVATIVE        = 7,   ///< Distribute polygon coverage fraction in relation to geometry area and intersecting grid cell area
@@ -217,7 +217,7 @@ typedef double  (TGeoRef_Height) (struct TGeoRef *Ref,TZRef *ZRef,double X,doubl
 
 // Geospatial manipulation options
 typedef struct TGeoOptions {
-   TRef_InterpR Interp;         ///< Interpolation degree
+   TRef_InterpR Interp;         ///< Interpolation method
    TRef_ExtrapR Extrap;         ///< Extrapolation method
    TRef_InterpV InterpVector;   ///< Vector interpolation method
    TRef_Combine Combine;        ///< Aggregation type
@@ -287,7 +287,7 @@ typedef struct TGeoRef {
    int32_t      BD;                                       ///< Bordure
    int32_t      NX,NY,X0,Y0,X1,Y1;                        ///< Grid size and limits
    int32_t      Extension;                                ///< related to the newtonian coefficient
-   char         GRTYP[3];                                 ///< Type de grille
+   char         GRTYP[2];                                 ///< Type de grille
    int32_t      Hemi;                                     ///< Hemisphere side (0=GRID_GLOBAL,1=NORTH,2=SOUTH)
    int32_t      NbSet;                                    ///< Nombre de set d'interpolation
    TGeoSet      *Sets,*LastSet;                           ///< Tableau de set d'interpolation et du dernier utilise
@@ -328,10 +328,6 @@ typedef struct TGeoRef {
    int32_t mymaskgridj0,mymaskgridj1;
 
    pthread_mutex_t Mutex;
-
-#ifdef HAVE_RPNC   
-   int32_t NC_Id,NC_NXDimId,NC_NYDimId;                   ///< netCDF identifiers
-#endif
 } TGeoRef;
 
 typedef struct TGeoPos {
