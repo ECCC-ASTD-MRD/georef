@@ -788,6 +788,7 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
          case 'V':
             if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
             if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
+//      GeoRef_ReadDescriptor(GRef,(void **)&GRef->AXY,"^>",1,APP_FLOAT64);
 //TODO:            RPN_FieldReadLevels(Field);
             break;
 
