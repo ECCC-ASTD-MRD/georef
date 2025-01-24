@@ -97,7 +97,6 @@ module georef_mod
         integer(C_INT32_T) :: Transform = 1          !< Apply transformation or stay within master referential
         integer(C_INT32_T) :: CIndex = 0             !< C Indexing (starts st 0)
         integer(C_INT32_T) :: Symmetric = 0          !< 
-        integer(C_INT32_T) :: WeightNum = 16         !<
         integer(C_INT32_T) :: Segment = 1            !< How much segmentation (Conservatives/Geometric modes)
         integer(C_INT32_T) :: Sampling = 1           !< Sampling interval
         integer(C_INT8_T)  :: PolarCorrect = 1       !< Apply polar corrections

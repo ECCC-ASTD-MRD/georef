@@ -21,6 +21,7 @@
    #include "ogr_stub.h"
 #endif
 
+// Extended fst_record information
 typedef struct {
     char grref[FST_GTYP_LEN]; //!< Type of geographical projection
     float xg1;                //!< First grid descriptor
@@ -92,7 +93,6 @@ typedef struct {
 
 #define GRID_YQTREESIZE   1000   ///< Default Y grid quad tree 2D size
 #define GRID_MQTREEDEPTH  8      ///< Default M grid quad tree depth
-#define GRID_MAXWEIGHTNUM 256
 
 //#define REF_DEFAULT "GEOGCS[\"GCS_North_American_1983\",DATUM[\"D_North_American_1983\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]]"
 //#define REF_DEFAULT "GEOGCS[\"NAD83",DATUM[\"North_American_Datum_1983\",SPHEROID[\"GRS 1980\",6378137,298.257222101]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]"
@@ -103,32 +103,6 @@ typedef struct {
 #define REF_INDEX_SEPARATOR -1.0
 #define REF_INDEX_END       -2.0
 #define REF_INDEX_EMPTY     -3.0
-
-#define REF_COORD(REF,N,C)\
-   if (REF->GRTYP[1]!='\0') {\
-      REF->Project(REF,REF->Lon[N],REF->Lat[N],&C.lat,&C.lon,1,1);\
-   } else {\
-      C.lat=REF->Lat[N];\
-      C.lon=REF->Lon[N];\
-   }
-
-#define REF_TRANSFORM(REF,X,Y,IX,IY)\
-   if (REF->Transform) {\
-      X=REF->Transform[0]+REF->Transform[1]*(IX)+REF->Transform[2]*(IY);\
-      Y=REF->Transform[3]+REF->Transform[4]*(IX)+REF->Transform[5]*(IY);\
-   } else {\
-      X=IX;\
-      Y=IY;\
-   }
-
-#define REF_INVTRANSFORM(REF,X,Y,IX,IY)\
-   if (REF->InvTransform) {\
-      X=REF->InvTransform[0]+REF->InvTransform[1]*(IX)+REF->InvTransform[2]*(IY);\
-      Y=REF->InvTransform[3]+REF->InvTransform[4]*(IX)+REF->InvTransform[5]*(IY);\
-   } else {\
-      X=IX;\
-      Y=IY;\
-   }
 
 #define GeoRef_ScanX(X)         (((float*)GeoScanX)[X]-1.0)
 #define GeoRef_ScanY(X)         (((float*)GeoScanY)[X]-1.0)
@@ -200,6 +174,7 @@ typedef struct TCoord {
    double Lon,Lat,Elev;
 } TCoord;
 
+// Geo vector (grid / geographical coordinates)
 typedef union {
    Vect3d V;
    TCoord C;
@@ -217,18 +192,17 @@ typedef double  (TGeoRef_Height) (struct TGeoRef *Ref,TZRef *ZRef,double X,doubl
 
 // Geospatial manipulation options
 typedef struct TGeoOptions {
-   TRef_InterpR Interp;         ///< Interpolation method
-   TRef_ExtrapR Extrap;         ///< Extrapolation method
-   TRef_InterpV InterpVector;   ///< Vector interpolation method
+   TRef_InterpR Interp;         ///< Raster interpolation method
+   TRef_ExtrapR Extrap;         ///< Raster extrapolation method
+   TRef_InterpV InterpVector;   ///< Vector geometry interpolation method
    TRef_Combine Combine;        ///< Aggregation type
    int32_t      Transform;      ///< Apply transformation or stay within master referential
    int32_t      CIndex;         ///< C Indexing (starts st 0)
    int32_t      Symmetric;      ///< 
-   int32_t      WeightNum;      ///<
    int32_t      Segment;        ///< How much segmentation (Conservatives/Geometric modes)
    int32_t      Sampling;       ///< Sampling interval
    char         PolarCorrect;   ///< Apply polar corrections
-   char         VectorMode;     ///< Process data as vector
+   char         VectorMode;     ///< Process data as vector (ie: wind)
    float        DistTreshold;   ///< Distance treshold for point clouds
    float        LonRef;         ///< Longitude referential (-180.0,0.0)
    float        NoData;         ///< NoData Value (Default: NaN)
@@ -236,11 +210,11 @@ typedef struct TGeoOptions {
    double     **lutDef;         ///< Lookup table
    int32_t      lutSize;        ///< Number of lookup elements
    int32_t      lutDim;         ///< Dimension of the lookup elements
-   double      *Ancilliary;     ///< Pre calculated field (ex: variance, average,...)
+   double      *Ancilliary;     ///< Pre calculated field to be passed to interpolation (ex: variance, average,...)
 } TGeoOptions;
 
 #ifndef GEOREF_BUILD
-extern __thread TGeoOptions GeoRef_Options;       ///< Global Options pointer
+extern __thread TGeoOptions GeoRef_Options;  ///< Global Options pointer
 #endif
 
 typedef struct TRotationTransform {
@@ -254,15 +228,16 @@ typedef struct {
 } TGeoZone;
 
 typedef struct {
-   struct TGeoOptions Opt;
-   struct TGeoRef *RefFrom,*RefTo;
-   TGeoZone        zones[SET_NZONES];
-   char            G2G[2];                          ///<GRTYP of source and destination for index identification
-   int32_t         flags;
-   TRef_InterpR    IndexDegree;
-   int32_t         IndexSize;
-   float          *Index;
-   double         *X,*Y;
+   struct TGeoOptions Opt;              ///< Interpolation options
+   struct TGeoRef *RefFrom;             ///< Source geo reference
+   struct TGeoRef *RefTo;               ///< Destination geo reference
+   TGeoZone        zones[SET_NZONES];   ///< Extrapolation zone definitions
+   char            G2G[2];              ///< GRTYP of source and destination for index identification
+   int32_t         flags;               ///< State flags
+   TRef_InterpR    IndexMethod;         ///< Index interpolation method
+   int32_t         IndexSize;           ///< Index size
+   float          *Index;               ///< Array of index values
+   double         *X,*Y;                ///< Grid coordinates of the destination grid into the source grid
 
    float *yin_maskout,*yan_maskout;
    double *yinlat,*yinlon,*yanlat,*yanlon;
