@@ -216,7 +216,7 @@ int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
       yan_gd=ref->Subs[1];
       maxni= yin_gd->NX;
       maxnj= yin_gd->NY;
-      xyin = (double*) malloc(4*Nb*sizeof(float));
+      xyin = (double*) malloc(4*Nb*sizeof(double));
       xyan = &xyin[Nb];
       yyin = &xyin[Nb*2];
       yyan = &xyin[Nb*3];
