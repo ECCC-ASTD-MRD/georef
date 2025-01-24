@@ -17,8 +17,8 @@ if (EC_INIT_DONE LESS 2)
         add_executable(Interpolate Interpolate.c)
         add_dependencies(check Interpolate)
 
-        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../lib)
-        link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../lib)
+        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../src/lib)
+        link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../src/lib)
 
         target_link_libraries(Interpolate georef-shared -lm rmn::rmn-ompi)
         set_target_properties(Interpolate PROPERTIES VERSION ${PROJECT_VERSION})

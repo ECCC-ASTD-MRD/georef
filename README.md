@@ -19,7 +19,7 @@ Georef builds on the ezscint package by adding:
 ## Structures
 
 * TGeoOptions : Defines various intepolation parameters
-* TGeoRef     : Geo-Reference definition    
+* TGeoRef     : Geo-Reference definition
 * TGeoSet     : Links 2 Geo-Reference for interpolation. Contains cached values and index/weights to be reused on each intepolation betwee the 2 geo-reference
 
 ## Example usage:

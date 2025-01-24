@@ -19,7 +19,7 @@ enable_language(C)
 enable_language(Fortran)
 enable_testing()
 
-#include(doxygen)    # Doxygen target
+include(ec_doxygen)
 include(ec_compiler_presets)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -66,7 +66,7 @@ endif()
 add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ _GNU_SOURCE)
 
 link_libraries("-Wl,--disable-new-dtags")
-add_subdirectory(lib lib)
+add_subdirectory(src/lib lib)
 add_subdirectory(test/C test)
 
 configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)

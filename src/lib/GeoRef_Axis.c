@@ -25,18 +25,18 @@ void GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref) {
  
    if (!Ref->AX || !Ref->AY) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Descriptor not found\n",__func__);
-      return(FALSE);
-   }
+   } else {
    
-   if (Ref->GRTYP[0]!='Y' && !Ref->NCX) {
+      if (Ref->GRTYP[0]!='Y' && !Ref->NCX) {
 
-      nni = Ref->NX;
-      nnj = Ref->j2 - Ref->j1 + 1;
+         nni = Ref->NX;
+         nnj = Ref->j2 - Ref->j1 + 1;
 
-      Ref->NCX = (float *) malloc(nni*6*sizeof(float));
-      Ref->NCY = (float *) malloc(nnj*6*sizeof(float));
-      f77name(ez8_nwtncof)(Ref->NCX,Ref->NCY,Ref->AX,Ref->AY,&Ref->NX,&Ref->NY,&Ref->i1,&Ref->i2,&Ref->j1,&Ref->j2,&Ref->Extension);
-   }  
+         Ref->NCX = (float *) malloc(nni*6*sizeof(float));
+         Ref->NCY = (float *) malloc(nnj*6*sizeof(float));
+         f77name(ez8_nwtncof)(Ref->NCX,Ref->NCY,Ref->AX,Ref->AY,&Ref->NX,&Ref->NY,&Ref->i1,&Ref->i2,&Ref->j1,&Ref->j2,&Ref->Extension);
+      }  
+   }
 }
 
 void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
