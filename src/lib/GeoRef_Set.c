@@ -278,15 +278,15 @@ int32_t GeoRef_SetIndexInit(TGeoSet *GSet) {
 
    if (GSet) {
 
-      if (!GSet->Index || GSet->IndexDegree!=GSet->Opt.Interp) {   
-         GSet->IndexDegree=GSet->Opt.Interp;
-         if (GSet->IndexDegree==IR_CONSERVATIVE || GSet->IndexDegree==IR_NORMALIZED_CONSERVATIVE) {
+      if (!GSet->Index || GSet->IndexMethod!=GSet->Opt.Interp) {   
+         GSet->IndexMethod=GSet->Opt.Interp;
+         if (GSet->IndexMethod==IR_CONSERVATIVE || GSet->IndexMethod==IR_NORMALIZED_CONSERVATIVE) {
             mult=1024;
             if ((c=getenv("GEOREF_INDEX_SIZE_HINT"))) {
                mult=atoi(c);
             }
          } else {
-            mult=GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:2);          
+            mult=GSet->IndexMethod==IR_CUBIC?10:(GSet->IndexMethod==IR_LINEAR?6:2);          
          }
          // Set the index size to the number of items without the multiplicator
          // the index size will be readjusted when in CONSERVATIVE modes otherwise, the multiplicator will be put in nj when writing
@@ -419,7 +419,7 @@ void GeoRef_SetFree(TGeoSet* GSet) {
    if (GSet->Index) {
       free(GSet->Index);
       GSet->Index=NULL;
-      GSet->IndexDegree=IR_UNDEF;
+      GSet->IndexMethod=IR_UNDEF;
    }
    if (GSet->X) {
       free(GSet->X);
@@ -473,7 +473,7 @@ TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_f
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset index field (fst24_read failed)\n",__func__);
          return(NULL);
       }
-      gset->IndexDegree=(TRef_InterpR)InterpType;
+      gset->IndexMethod=(TRef_InterpR)InterpType;
       gset->Index=(float*)record.data;
       record.data=NULL;
    
@@ -510,7 +510,7 @@ int32_t GeoRef_SetWrite(TGeoSet *GSet,fst_file *File){
    fst_record record=default_fst_record;
 
    if (GeoRef_SetHasIndex(GSet)) {
-      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s:  Writing index (%ix%i)\n",__func__,size,GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1));
+      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s:  Writing index (%ix%i)\n",__func__,size,GSet->IndexMethod==IR_CUBIC?10:(GSet->IndexMethod==IR_LINEAR?6:1));
 
       record.data = GSet->X;
       record.pack_bits = 64;
@@ -548,8 +548,8 @@ int32_t GeoRef_SetWrite(TGeoSet *GSet,fst_file *File){
       record.data = GSet->Index;
       record.pack_bits = 32;
       record.ni   = GSet->IndexSize;
-      record.nj   = GSet->IndexDegree==IR_CUBIC?10:(GSet->IndexDegree==IR_LINEAR?6:1);
-      record.ip3  = GSet->IndexDegree;
+      record.nj   = GSet->IndexMethod==IR_CUBIC?10:(GSet->IndexMethod==IR_LINEAR?6:1);
+      record.ip3  = GSet->IndexMethod;
       strncpy(record.nomvar,"####",FST_NOMVAR_LEN);
       record.data_bits = 32;
       if (fst24_write(File,&record,FST_SKIP)<=0) {
