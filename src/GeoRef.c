@@ -8,7 +8,7 @@
 #include "GeoRef.h"
 #include "Def.h"
 #include "Triangle.h"
- 
+
 static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
 __thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, IV_FAST, CB_REPLACE, TRUE, FALSE, FALSE, 1, 1, TRUE, FALSE, 10.0, 0.0, 0.0, NULL, NULL, 0, 0, NULL };  ///< Default options
@@ -64,7 +64,7 @@ void Georef_PrintOptions(TGeoOptions *Options) {
         "Lookup table        : %p\n"
         "Lookup table size   : %i\n"
         "Lookup table dim    : %i\n"
-        "Ancilliary buffer   : %p\n",     
+        "Ancilliary buffer   : %p\n",
          Options->Interp,Options->Extrap,Options->InterpVector,Options->Combine,Options->Transform,Options->CIndex,
          Options->Symmetric,Options->Segment,Options->Sampling,Options->PolarCorrect,Options->VectorMode,Options->DistTreshold,
          Options->LonRef,Options->NoData,Options->Table,Options->lutDef,Options->lutSize,Options->lutDim,Options->Ancilliary);
@@ -95,7 +95,7 @@ int32_t GeoRef_UnProject(struct TGeoRef *Ref,double *X,double *Y,double Lat,doub
 
    int32_t tr,status=TRUE;
 
-   if (Lat>90.0 || Lat<-90.0 || Lon==-999.0) 
+   if (Lat>90.0 || Lat<-90.0 || Lon==-999.0)
      return(FALSE);
 
    tr=Ref->Options.Transform;
@@ -146,7 +146,7 @@ void GeoRef_Size(TGeoRef *Ref,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_
  *    @param[in]  Ref   Pointer to geo reference
  *
  *    @return           Freed code (0=not freed, 1=freed)
- * 
+ *
  */
 int32_t GeoRef_Free(TGeoRef *Ref) {
 
@@ -205,7 +205,7 @@ int32_t GeoRef_Incr(TGeoRef *Ref) {
 void GeoRef_Clear(TGeoRef *Ref,int32_t New) {
 
    int32_t n;
-   
+
    if (Ref) {
       if (Ref->String)       free(Ref->String);       Ref->String=NULL;
       if (Ref->Transform)    free(Ref->Transform);    Ref->Transform=NULL;
@@ -271,12 +271,12 @@ void GeoRef_Clear(TGeoRef *Ref,int32_t New) {
       if (Ref->Spatial) {
          OSRDestroySpatialReference(Ref->Spatial);
       }
-      
+
       if (Ref->Function) {
          OCTDestroyCoordinateTransformation(Ref->Function);
          Ref->Function=NULL;
       }
-      
+
       if (Ref->InvFunction) {
          OCTDestroyCoordinateTransformation(Ref->InvFunction);
          Ref->InvFunction=NULL;
@@ -306,7 +306,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          case 'B': Ref->LL2XY=GeoRef_LL2XY_B; Ref->XY2LL=GeoRef_XY2LL_L; break;
          case 'E': Ref->LL2XY=GeoRef_LL2XY_E; Ref->XY2LL=GeoRef_XY2LL_E; break;
          case 'L': Ref->LL2XY=GeoRef_LL2XY_L; Ref->XY2LL=GeoRef_XY2LL_L; break;
-         case 'N': 
+         case 'N':
          case 'S': Ref->LL2XY=GeoRef_LL2XY_NS; Ref->XY2LL=GeoRef_XY2LL_NS; break;
          case 'T': Ref->LL2XY=GeoRef_LL2XY_T; Ref->XY2LL=GeoRef_XY2LL_T; break;
          case '!': Ref->LL2XY=GeoRef_LL2XY_LAMBERT; Ref->XY2LL=GeoRef_XY2LL_LAMBERT; break;
@@ -336,7 +336,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
       if (Ref->GRTYP[0]=='#') {
          Ref->Type|=GRID_TILE;
       }
-    
+
       if (Ref->GRTYP[0]=='O') {
          // If grid type is O (ORCA) and a pole in within the grid, mark as wrapping grid
          lat[0]=89.0;lat[1]=-89.0;
@@ -344,8 +344,8 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          if (GeoRef_LL2XY(Ref,x,y,lat,lon,2,TRUE)) {
             Ref->Type|=GRID_WRAP;
          }
-      }  
-    
+      }
+
       if (Ref->GRTYP[0]=='A' || Ref->GRTYP[0]=='B' || Ref->GRTYP[0]=='G') {
          Ref->Type|=GRID_WRAP;
       } else if (Ref->GRTYP[0]!='V' && Ref->GRTYP[0]!='R' && Ref->GRTYP[0]!='X' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
@@ -362,7 +362,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          if (fabs(d[0])>0.0001 || fabs(d[1])>0.0001) {
             Ref->Type|=GRID_ROTATED;
          }
-                  
+
          // Get size of a gridpoint
          x[0]=Ref->X0+(Ref->X1-Ref->X0)/2.0;x[1]=x[0]+1.0;
          y[0]=y[1]=Ref->Y0+(Ref->Y1-Ref->Y0)/2.0;
@@ -392,19 +392,19 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
 
       if (Ref->GRTYP[0]=='R') {
          Ref->Type|=GRID_RADIAL;
-      }     
-   
+      }
+
       // Check for negative longitude (-180 <-> 180, or 0 <-> 360)
       if (Ref->AX) {
-         for(nx=0;nx<Ref->NX;nx++) { 
-            if (Ref->AX[nx]<0) { 
-               Ref->Type|=GRID_NEGLON; 
-               break; 
-            } 
-         } 
+         for(nx=0;nx<Ref->NX;nx++) {
+            if (Ref->AX[nx]<0) {
+               Ref->Type|=GRID_NEGLON;
+               break;
+            }
+         }
       }
    }
-}         
+}
 
 /**----------------------------------------------------------------------------
  * @brief  Test two GeoRef for equality
@@ -422,7 +422,7 @@ int32_t GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Re
 
    if (Ref0->GRTYP[0]!=Ref1->GRTYP[0] || Ref0->GRTYP[1]!=Ref1->GRTYP[1])
       return(0);
-  
+
    if (Ref0->NX!=Ref1->NX || Ref0->NY!=Ref1->NY)
       return(0);
 
@@ -444,14 +444,14 @@ int32_t GeoRef_Equal(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const Re
    // Check on grid limits (exclude U grids since they can be switched internally and they'll be tested earlier anyway)
    if (Ref0->BD!=Ref1->BD || (Ref0->GRTYP[0]!='U' && (Ref0->X0!=Ref1->X0 || Ref0->X1!=Ref1->X1 || Ref0->Y0!=Ref1->Y0 || Ref0->Y1!=Ref1->Y1)))
       return(0);
-  
+
    if (Ref0->Subs && Ref1->Subs && Ref0->Subs[0]!=Ref1->Subs[0])
        return(0);
 
    if (Ref0->R!=Ref1->R || Ref0->ResR!=Ref1->ResR || Ref0->ResA!=Ref1->ResA || Ref0->Loc.Lat!=Ref1->Loc.Lat || Ref0->Loc.Lon!=Ref1->Loc.Lon || Ref0->Loc.Elev!=Ref1->Loc.Elev)
       return(0);
 
-#ifdef HAVE_GDAL 
+#ifdef HAVE_GDAL
    if ((Ref0->Spatial && !Ref1->Spatial) || (!Ref0->Spatial && Ref1->Spatial))
       return(0);
 
@@ -539,7 +539,7 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       ref->Type=Ref->Type;
       ref->NbSub=Ref->NbSub;
       ref->QTree=NULL;
-      
+
       if (Ref->Subs) {
          ref->Subs=(TGeoRef**)malloc(Ref->NbSub*sizeof(TGeoRef*));
          memcpy(ref->Subs,Ref->Subs,Ref->NbSub*sizeof(TGeoRef*));
@@ -683,8 +683,8 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
                   if (!(*Ptr=(double*)malloc(sz*sizeof(double)))) {
                      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Not enough memory to read descriptor field %s\n",__func__,Var);
                      return(0);
-                  } 
-                  for(i=0;i<sz;i++) ((double*)*Ptr)[i]=((float*)record.data)[i]; 
+                  }
+                  for(i=0;i<sz;i++) ((double*)*Ptr)[i]=((float*)record.data)[i];
                   fst24_record_free(&record);
                }
                break;
@@ -696,7 +696,7 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
                   if (!(*Ptr=(unsigned int*)malloc(sz*sizeof(unsigned int)))) {
                      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Not enough memory to read descriptor field\n",__func__,Var);
                      return(0);
-                  } 
+                  }
                   for(i=0;i<sz;i++) ((unsigned int*)*Ptr)[i]=((int*)record.data)[i];
                   fst24_record_free(&record);
                }
@@ -709,7 +709,7 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
                   if (!(*Ptr=(int*)malloc(sz*sizeof(int)))) {
                      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Not enough memory to read descriptor field\n",__func__,Var);
                      return(0);
-                  } 
+                  }
                   for(i=0;i<sz;i++) ((int*)*Ptr)[i]=((int*)record.data)[i];
                   fst24_record_free(&record);
                }
@@ -728,7 +728,7 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
       GRef->RPNHeadExt.igref3=record.ig3;
       GRef->RPNHeadExt.igref4=record.ig4;
    }
-   
+
    return(sz);
 }
 
@@ -738,7 +738,7 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
  */
 int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
-   int32_t     ni,nj,ig1,ig2,ig3,ig4,idx,s,i,j,offsetx,offsety,sz=0;
+   int32_t     ni,nj,ig1,ig2,ig3,ig4,idx,s,i,j,sz=0;
    char        grref[2];
    double      *ax,*ay;
 
@@ -773,14 +773,14 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
             if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,"LO",0,APP_FLOAT64);
             if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
             if (!GRef->Hgt) GeoRef_ReadDescriptor(GRef,(void **)&GRef->Hgt,"ZH",0,APP_FLOAT32);
-            GeoRef_BuildIndex(GRef);          
+            GeoRef_BuildIndex(GRef);
             break;
 
          case 'X':
          case 'O':
             if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
             if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
-            GeoRef_BuildIndex(GRef);          
+            GeoRef_BuildIndex(GRef);
             break;
 
          case 'V':
@@ -816,7 +816,7 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
       if (GRef->AXY) {
          GRef->NbSub=(int)GRef->AXY[2];     // Number of LAM grids (YY=2)
-         ni=(int)GRef->AXY[5];              // NI size of LAM grid 
+         ni=(int)GRef->AXY[5];              // NI size of LAM grid
          nj=(int)GRef->AXY[6];              // NJ size of LAM grid
          GRef->NX = ni;                     // NI size of U grid
          GRef->NY = nj*GRef->NbSub;         // NJ size of U grid
@@ -894,9 +894,9 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
  *         If the grid type corresponds to a regular grid type (eg. 'A', 'G', 'N', etc.),
  *         then the parameters IG1 through IG4 are taken from an ordinary data record
  *         and grref, ax and ay are not used.
- *  
+ *
  *         If grtyp == 'Z' or '#', the dimensions of ax=ni and ay=nj.
- *         If grtyp == 'Y', the dimensions of ax=ay=ni*nj. 
+ *         If grtyp == 'Y', the dimensions of ax=ay=ni*nj.
  * @date   Avril 2005
  *
  *   @param Ref   Georeference (NULL will create a new one, 0x1 to be used for U subgrids)
@@ -910,11 +910,11 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
  *   @param IG4   ig4 value associated to the reference grid
  *   @param AX    Positional axis mapped to the '>>' record
  *   @param AY    Positional axis mapped to the '^^' record
- *  
+ *
  *    @return              New geo reference pointer
 */
 TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grref,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,double* AX,double* AY) {
-   
+
    TGeoRef* ref,*fref=NULL;
 
    ref=Ref<=GRID_SUB?GeoRef_New():Ref;
@@ -983,7 +983,7 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
  *   @param IG3   ig3 value associated to the reference grid
  *   @param IG4   ig4 value associated to the reference grid
  *   @param FID   FSTD file identifier where to look for grid descriptors
- * 
+ *
  *   @return              New geo reference pointer
 */
 TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,fst_file *File) {
@@ -995,7 +995,7 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
 
    // If not specified, type is X
    if (GRTYP[0]==' ' || GRTYP[0]=='\0') GRTYP[0]='X';
-   
+
    if (GRTYP[1]=='#') {
       //TODO: CHECK For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
    }
@@ -1008,7 +1008,7 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
  * @date   Janvier 2015
  *
  *    @return              New geo reference pointer
-*/ 
+*/
 TGeoRef* GeoRef_New() {
 
    TGeoRef *ref=malloc(sizeof(TGeoRef));
@@ -1094,7 +1094,7 @@ TGeoRef *GeoRef_SubSelect(TGeoRef *Ref,int N) {
 
    // If the subgrid index is different from the current
    if (N!=Ref->Sub && N<Ref->NbSub) {
- 
+
       for (i=0; i<Ref->NbSet; i++) {
          if (Ref->Sets[i].Index) {
             free(Ref->Sets[i].Index);
@@ -1102,7 +1102,7 @@ TGeoRef *GeoRef_SubSelect(TGeoRef *Ref,int N) {
             Ref->Sets[i].IndexMethod=IR_UNDEF;
          }
       }
-   
+
       Ref->Sub=N;
       return(N>0?Ref->Subs[N]:Ref);
    }
@@ -1121,15 +1121,15 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
    uint32_t  n,x,y,t;
    double        dx,dy,lat0,lon0,lat1,lon1;
    Vect2d        tr[3],pt;
-   
+
    if (!Ref->AX || !Ref->AY) {
       return(NULL);
    }
-            
-   // Check data limits   
+
+   // Check data limits
    lat0=lon0=1e10;
    lat1=lon1=-1e10;
-   
+
    for(n=0;n<Ref->NX*Ref->NY;n++) {
       dy=Ref->AY[n];
       dx=CLAMPLON(Ref->AX[n]);
@@ -1138,16 +1138,16 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
       lat1=fmax(lat1,dy);
       lon1=fmax(lon1,dx);
    }
-      
+
    if (Ref->GRTYP[0]=='M') {
-      
+
       // Allocate barycentric weight array if needed
       if (!Ref->Wght) {
          if (!(Ref->Wght=(double*)calloc(Ref->NIdx/3,sizeof(double)))) {
             Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Failed to allocate baricentric weight array\n",__func__);
          }
       }
-      
+
       // Create the tree on the data limits
       if (!(Ref->QTree=QTree_New(lon0,lat0,lon1,lat1,NULL))) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Failed to create QTree index\n",__func__);
@@ -1155,20 +1155,20 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
       }
 
       // Loop on triangles
-      for(n=0,t=0;n<Ref->NIdx;n+=3,t++) {          
+      for(n=0,t=0;n<Ref->NIdx;n+=3,t++) {
          tr[0][0]=Ref->AX[Ref->Idx[n]];     tr[0][1]=Ref->AY[Ref->Idx[n]];
          tr[1][0]=Ref->AX[Ref->Idx[n+1]];   tr[1][1]=Ref->AY[Ref->Idx[n+1]];
          tr[2][0]=Ref->AX[Ref->Idx[n+2]];   tr[2][1]=Ref->AY[Ref->Idx[n+2]];
-         
+
          // Calculate barycentric weight
           if (Ref->Wght)
              Ref->Wght[t]=1.0/((tr[1][0]-tr[0][0])*(tr[2][1]-tr[0][1])-(tr[2][0]-tr[0][0])*(tr[1][1]-tr[0][1]));
- 
+
          // Put it in the quadtree, in any child nodes intersected and set false pointer increment (+1)
          if (!QTree_AddTriangle(Ref->QTree,tr,GRID_MQTREEDEPTH,(void*)(n+1))) {
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Failed to add node\n",__func__);
             return(NULL);
-         }      
+         }
       }
    } else  if (Ref->GRTYP[0]=='Y' || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='O' || Ref->GRTYP[1]=='Y' || Ref->GRTYP[1]=='X') {
 
@@ -1191,21 +1191,21 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
       Ref->QTree[0].BBox[0].Y=lat0;
       Ref->QTree[0].BBox[1].X=lon1;
       Ref->QTree[0].BBox[1].Y=lat1;
-   
+
       // Loop on points
-      for(n=0;n<Ref->NX*Ref->NY;n++) {     
-         
+      for(n=0;n<Ref->NX*Ref->NY;n++) {
+
          pt[0]=Ref->AX[n];
-         pt[1]=Ref->AY[n];  
-         
+         pt[1]=Ref->AY[n];
+
          x=(pt[0]-lon0)/dx;
          y=(pt[1]-lat0)/dy;
-               
+
          // Add location and set false pointer increment (+1);
          QTree_AddData(&Ref->QTree[y*GRID_YQTREESIZE+x],pt[0],pt[1],(void*)(n+1));
       }
    }
-   
+
    return(Ref->QTree);
 }
 
@@ -1228,14 +1228,14 @@ int32_t GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *
    uint32_t  n,nn,nr,nnear;
    TQTree   *node;
    int32_t   dxy,x,y,xd,yd,rx;
- 
+
    if (!NbNear || !Idxs || !Dists) return(0);
 
    Dists[0]=1e32;
    dxy=nnear=0;
 
-   if (Ref->QTree) {     
-      // Find the closest point(s) by circling larger around cell      
+   if (Ref->QTree) {
+      // Find the closest point(s) by circling larger around cell
       node=&Ref->QTree[0];
 
       if (!(Ref->Type&GRID_WRAP) && !FWITHIN(0,node->BBox[0].Y,node->BBox[0].X,node->BBox[1].Y,node->BBox[1].X,Y,X)) {
@@ -1246,14 +1246,14 @@ int32_t GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *
       dy=(node->BBox[1].Y-node->BBox[0].Y)/GRID_YQTREESIZE;
       xd=(X-node->BBox[0].X)/dx;
       yd=(Y-node->BBox[0].Y)/dy;
-                    
+
       while(dxy<(GRID_YQTREESIZE>>1)) {
 
          // Y circling increment
          for(y=yd-dxy;y<=yd+dxy;y++) {
             if (y<0) continue;
             if (y>=GRID_YQTREESIZE) break;
-            
+
             // X Circling increment (avoid revisiting previous cells)
             for(x=xd-dxy;x<=xd+dxy;x+=((!dxy || y==yd-dxy || y==yd+dxy)?1:(dxy+dxy))) {
                rx=x;
@@ -1261,10 +1261,10 @@ int32_t GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *
                   if (Ref->Type&GRID_WRAP) {
                      rx=x+GRID_YQTREESIZE;
                   } else {
-                     continue;                  
+                     continue;
                   }
                }
-               
+
                if (x>=GRID_YQTREESIZE) {
                   if (Ref->Type&GRID_WRAP) {
                      rx=x-GRID_YQTREESIZE;
@@ -1272,17 +1272,17 @@ int32_t GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *
                      break;
                   }
                }
-               
+
                node=&Ref->QTree[y*GRID_YQTREESIZE+rx];
 
                // Loop on points in this cell and get closest point
                for(n=0;n<node->NbData;n++) {
-                      
+
                   dx=X-node->Data[n].Pos.X;
                   // flip distances for wrap-around
                   if (dx>=180)  dx-=360;
                   if (dx<=-180) dx+=360;
-                  
+
                   dy=Y-node->Data[n].Pos.Y;
                   l=dx*dx+dy*dy;
 
@@ -1290,13 +1290,13 @@ int32_t GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *
                   for(nn=0;nn<NbNear;nn++) {
                      // If this is closer
                      if ((MaxDist==0.0 || l<=MaxDist) && l<Dists[nn]) {
-                           
+
                         // Move farther nearest in order
                         for(nr=NbNear-1;nr>nn;nr--) {
                            Dists[nr]=Dists[nr-1];
-                           Idxs[nr]=Idxs[nr-1];                       
+                           Idxs[nr]=Idxs[nr-1];
                         }
-                           
+
                         // Assign found nearest
                         Dists[nn]=l;
                         Idxs[nn]=(intptr_t)node->Data[n].Ptr-1; // Remove false pointer increment
@@ -1305,40 +1305,40 @@ int32_t GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *
                      }
                   }
                }
-            }            
+            }
          }
-         
+
          // If we made at least one cycle and found enough nearest
-         if (nnear>=NbNear && dxy) 
+         if (nnear>=NbNear && dxy)
             break;
          dxy++;
       }
    } else {
-      // Find closest by looping in all points   
+      // Find closest by looping in all points
       for(n=0;n<Ref->NX*Ref->NY;n++) {
          dx=X-Ref->AX[n];
          dy=Y-Ref->AY[n];
-         
+
          if (Ref->Type&GRID_WRAP) {
             if (dx>180)  dx-=360;
             if (dx<-180) dx+=360;
          }
-         
+
          l=dx*dx+dy*dy;
-         
+
          for(nn=0;nn<NbNear;nn++) {
             if (l<Dists[nn]) {
-                  
+
                // Move farther nearest in order
                for(nr=NbNear-1;nr>nn;nr--) {
                   Dists[nr]=Dists[nr-1];
                   Idxs[nr]=Idxs[nr-1];
                }
-               
+
                // Assign found nearest
                Dists[nn]=l;
                Idxs[nn]=n;
-               
+
                nnear++;
                break;
             }
@@ -1352,7 +1352,7 @@ int32_t GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *
 
 /**----------------------------------------------------------------------------
  * @brief  Check for intersection of 2 geo reference
- * @date   Aout 2006 
+ * @date   Aout 2006
  *    @param[in]  Ref0     Pointeur sur la reference 0
  *    @param[in]  Ref1     Pointeur sur la reference 1
  *    @param[out] X0       First x corner limit of Ref1 in Ref0
@@ -1505,7 +1505,7 @@ int32_t GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,do
    *Lat1=*Lon1=-1e32;
 
    if (!Ref) return(0);
-   
+
    // Source grid Y
    if (Ref->GRTYP[0]=='Y' || Ref->GRTYP[1]=='Y' || Ref->GRTYP[0]=='X' || Ref->GRTYP[1]=='X' || Ref->GRTYP[0]=='O') {
       for(x=0;x<((Ref->X1-Ref->X0)+1)*((Ref->Y1-Ref->Y0)+1);x++) {
@@ -1576,7 +1576,7 @@ int32_t GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const R
    double la,lo,x0,y0,x1,y1;
 
    if (!Ref0 || !Ref1) return(0);
-   
+
    // Project Ref0 Border within Ref1 and get limits
    for(x0=Ref0->X0,y0=Ref0->Y0;x0<=Ref0->X1;x0+=1.0) {
       GeoRef_XY2LL(Ref0,&la,&lo,&x0,&y0,1,TRUE);
@@ -1607,7 +1607,7 @@ int32_t GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const R
    }
    return(1);
 }
-                    
+
 /**----------------------------------------------------------------------------
  * @brief  Check if a geographic range is within a georef
  * @date   February 2009
@@ -1617,7 +1617,7 @@ int32_t GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const R
  *    @param[in]  Lat1     Latitude of second corner
  *    @param[in]  Lon1     Longitude of second corner
  *    @param[in]  In       Check for all inside or outside
- * 
+ *
  *    @return              True or False
 */
 int32_t GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,int32_t In) {
@@ -1626,7 +1626,7 @@ int32_t GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0
    int32_t    d0,d1,d2,d3;
 
    if (!Ref) return(0);
-   
+
    if (Lat0>Lat1) {
       dl=Lat0;
       Lat0=Lat1;
@@ -1644,7 +1644,7 @@ int32_t GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0
    } else {
       dl=0;
    }
-   
+
    // Check image within range
    x[0]=Ref->X0; y[0]=Ref->Y0;
    x[1]=Ref->X1; y[1]=Ref->Y0;
@@ -1688,29 +1688,29 @@ int32_t GeoRef_WithinRange(TGeoRef* __restrict const Ref,double Lat0,double Lon0
 }
 
 int32_t GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int32_t Idx0,int32_t Idx1,int32_t Idx2,int32_t Idx3) {
- 
+
    Vect3d b;
    int32_t    t0,t1,sz=Ref->NX*Ref->NY;
-   
+
    if (Idx0<sz && Idx1<sz && Idx2<sz && Idx3<sz && Idx0>=0 && Idx1>=0 && Idx2>=0 && Idx3>=0) {
-      
+
       Pt[0][0]=Ref->Lon[Idx0]; Pt[0][1]=Ref->Lat[Idx0];
       Pt[1][0]=Ref->Lon[Idx1]; Pt[1][1]=Ref->Lat[Idx1];
       Pt[2][0]=Ref->Lon[Idx2]; Pt[2][1]=Ref->Lat[Idx2];
       Pt[3][0]=Ref->Lon[Idx3]; Pt[3][1]=Ref->Lat[Idx3];
-      
+
       // Make sure all coordinates are on same side of -180/180
       if (Pos[0]>90) {
-         if (Pt[0][0]<0) Pt[0][0]+=360;   
-         if (Pt[1][0]<0) Pt[1][0]+=360;   
-         if (Pt[2][0]<0) Pt[2][0]+=360;   
-         if (Pt[3][0]<0) Pt[3][0]+=360;         
+         if (Pt[0][0]<0) Pt[0][0]+=360;
+         if (Pt[1][0]<0) Pt[1][0]+=360;
+         if (Pt[2][0]<0) Pt[2][0]+=360;
+         if (Pt[3][0]<0) Pt[3][0]+=360;
       } else if (Pos[0]<-90) {
-         if (Pt[0][0]>0) Pt[0][0]-=360;   
-         if (Pt[1][0]>0) Pt[1][0]-=360;   
-         if (Pt[2][0]>0) Pt[2][0]-=360;   
-         if (Pt[3][0]>0) Pt[3][0]-=360;        
-      }      
+         if (Pt[0][0]>0) Pt[0][0]-=360;
+         if (Pt[1][0]>0) Pt[1][0]-=360;
+         if (Pt[2][0]>0) Pt[2][0]-=360;
+         if (Pt[3][0]>0) Pt[3][0]-=360;
+      }
       t0=Bary_Get(b,0.0,Pos[0],Pos[1],Pt[0][0],Pt[0][1],Pt[1][0],Pt[1][1],Pt[2][0],Pt[2][1]);
       t1=Bary_Get(b,0.0,Pos[0],Pos[1],Pt[0][0],Pt[0][1],Pt[2][0],Pt[2][1],Pt[3][0],Pt[3][1]);
 
@@ -1718,7 +1718,7 @@ int32_t GeoRef_WithinCell(TGeoRef *Ref,Vect2d Pos,Vect2d Pt[4],int32_t Idx0,int3
    }
    return(0);
 }
-                     
+
 /**----------------------------------------------------------------------------
  * @brief  Project a latlon geographic bounding box into grid coordinates
  * @date   February 2009
@@ -1739,7 +1739,7 @@ int32_t GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0
    double di,dj;
 
    if (!Ref) return(0);
-   
+
    *I0=*J0=1000000;
    *I1=*J1=-1000000;
 
@@ -1797,7 +1797,7 @@ int32_t GeoRef_Valid(TGeoRef* __restrict const Ref) {
    double x[2],y[2],lat[2],lon[2];
 
    if (!Ref) return(0);
-   
+
    x[0]=Ref->X0;y[0]=Ref->Y0;
    x[1]=Ref->X1;y[1]=Ref->Y1;
    GeoRef_XY2LL(Ref,lat,lon,x,y,2,TRUE);
@@ -1810,7 +1810,7 @@ int32_t GeoRef_Valid(TGeoRef* __restrict const Ref) {
 
 /**----------------------------------------------------------------------------
  * @brief  Assigner des vecteurs de positions X et Y
- * @date   Mars 2010 
+ * @date   Mars 2010
  *    @param[in]  Ref      Pointeur sur la reference
  *    @param[in]  XDef     Data definition des positions en X
  *    @param[in]  YDef     Data definition des positions en X
@@ -1820,7 +1820,7 @@ int32_t GeoRef_Valid(TGeoRef* __restrict const Ref) {
 int32_t GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
 
    int32_t d,dx,dy,nx,ny;
-   
+
    if (!Ref) return(0);
 
    // Check the dimensions
@@ -1901,9 +1901,9 @@ int32_t GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
 
 /**----------------------------------------------------------------------------
  * @brief  Obtenir les valeurs de distance en X et Y ainsi que l'aire
- *         pour chaque cellule de la grille. Les distance de centre des cellules 
+ *         pour chaque cellule de la grille. Les distance de centre des cellules
  *         sont utilisées
- *            
+ *
  *         +-------+
  *         |   :   |
  *         |...x...| < width
@@ -1911,9 +1911,9 @@ int32_t GeoRef_Positional(TGeoRef *Ref,TDef *XDef,TDef *YDef) {
  *         +-------+
  *             ^
  *           height
- * 
+ *
  * @remark Si un des tableau est NULL, il ne sera pas remplie
- * @date   Avril 2010 
+ * @date   Avril 2010
  *    @param[in]  Grid     Grille
  *    @param[in]  Invert   Invert of area (1/area)
  *    @param[out] DX       Valeurs de distance en X
@@ -1926,43 +1926,43 @@ int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* D
 
    uint32_t i,gi,j,gj,nid,pidx,idx,*tidx;
    double   di[4],dj[4],dlat[4],dlon[4];
-   double   fx,fy,dx[4],dy[4],s,a,b,c;
+   double   fx,fy,dx[4],dy[4],s,a;
    TGeoRef *gr;
 
    if (!Ref || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='Y') {
-      Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: DX, DY and DA cannot be calculated on an X or Y grid\n",__func__);        
+      Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: DX, DY and DA cannot be calculated on an X or Y grid\n",__func__);
       return(FALSE);
    } else if (Ref->GRTYP[0]=='M') {
-      
+
       if (DX || DY) {
-         Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: DX and DY cannot be calculated on an M grid\n",__func__);        
+         Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: DX and DY cannot be calculated on an M grid\n",__func__);
       }
-      
+
       if (DA) {
          a=(EARTHRADIUS*EARTHRADIUS)*0.5;
          tidx=Ref->Idx;
          for(idx=0;idx<Ref->NIdx;idx+=3) {
-            
+
             dx[0]=DEG2RAD(Ref->Lon[tidx[idx]]);   dy[0]=DEG2RAD(Ref->Lat[tidx[idx]]);
             dx[1]=DEG2RAD(Ref->Lon[tidx[idx+1]]); dy[1]=DEG2RAD(Ref->Lat[tidx[idx+1]]);
             dx[2]=DEG2RAD(Ref->Lon[tidx[idx+2]]); dy[2]=DEG2RAD(Ref->Lat[tidx[idx+2]]);
-            
+
             s =(dx[1]-dx[0])*(2+sin(dy[0])+sin(dy[1]));
             s+=(dx[2]-dx[1])*(2+sin(dy[1])+sin(dy[2]));
-            s+=(dx[0]-dx[2])*(2+sin(dy[2])+sin(dy[0]));          
+            s+=(dx[0]-dx[2])*(2+sin(dy[2])+sin(dy[0]));
             s=fabs(s*a);
 
 //             a =(dx[1]-dx[0])*(2+sin(dy[0])+sin(dy[1]));
 //             b =(dx[2]-dx[1])*(2+sin(dy[1])+sin(dy[2]));
-//             c =(dx[0]-dx[2])*(2+sin(dy[2])+sin(dy[0]));    
-//             s = (a+b+c)*0.5;           
+//             c =(dx[0]-dx[2])*(2+sin(dy[2])+sin(dy[0]));
+//             s = (a+b+c)*0.5;
 //             s = atan(sqrt(tan(s/2.0)*tan((s-a)/2.0)*tan((s-b)/2.0)*tan((s-c)/2.0)))*0.25*EARTHRADIUS;
-            
+
             // Split area over 3 vertices
             s/=3.0;
             DA[tidx[idx]]+=s;
             DA[tidx[idx+1]]+=s;
-            DA[tidx[idx+2]]+=s;    
+            DA[tidx[idx+2]]+=s;
          }
 
          if (Invert) {
@@ -1972,7 +1972,7 @@ int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* D
 
    } else {
       pidx=0;
-      
+
       // Loop on the subgrids if needed
       for(nid=0;nid<Ref->NbSub;nid++) {
 
@@ -1985,7 +1985,7 @@ int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* D
          for(j=0,gj=1;j<gr->NY;j++,gj++) {
             idx=pidx+j*gr->NX;
             for(i=0,gi=1;i<gr->NX;i++,idx++,gi++) {
-               
+
                di[0]=gi-0.5; dj[0]=gj;
                di[1]=gi+0.5; dj[1]=gj;
                di[2]=gi;     dj[2]=gj-0.5;
@@ -2015,7 +2015,7 @@ int32_t GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* D
          pidx+=idx;
       }
    }
-   
+
    return(TRUE);
 }
 
@@ -2150,7 +2150,7 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
 }
 
 int32_t GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,int32_t *IG1,int32_t *IG2,int32_t *IG3,int32_t *IG4,char *grref,int32_t *IG1REF,int32_t *IG2REF,int32_t *IG3REF,int32_t *IG4REF) {
-   
+
    *NI     = Ref->RPNHead.ni;
    *NJ     = Ref->RPNHead.nj;
 
@@ -2158,7 +2158,7 @@ int32_t GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,in
    GRTYP[1]  = '\0';
    grref[0]  = Ref->RPNHeadExt.grref[0];
    grref[1]  = '\0';
-  
+
    *IG1    = Ref->RPNHead.ig1;
    *IG2    = Ref->RPNHead.ig2;
    *IG3    = Ref->RPNHead.ig3;
@@ -2253,7 +2253,7 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       if (fst24_write(File,&record,FST_SKIP)<=0) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
          return(FALSE);
-      } 
+      }
    } else if (GRef->AX && GRef->AY) {
       record.data_type = FST_TYPE_REAL_IEEE;
       record.ni   = GRef->NX;
@@ -2372,7 +2372,7 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
          return(FALSE);
       }
    }
-   
+
    return(TRUE);
 }
 

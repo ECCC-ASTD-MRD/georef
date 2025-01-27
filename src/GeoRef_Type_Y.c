@@ -83,7 +83,7 @@ int32_t GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
 */
 int32_t GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
-   int32_t idx,idxs[8],nb=0;;
+   int32_t idx,nb=0;
    double  dists[8];
 
    GeoRef_CalcLL(Ref);

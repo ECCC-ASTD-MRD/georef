@@ -4,14 +4,14 @@
 /**----------------------------------------------------------------------------
  * @brief  Get latitude and longitudes of a 2d point32_t (Copy of fortran function, but using double precision)
  * @date   February 1975
- *    @param[out]  Lat     Latitude in degrees 
+ *    @param[out]  Lat     Latitude in degrees
  *    @param[out]  Lon     Longitude in degrees
  *    @param[in]   X       X coordinate
  *    @param[in]   Y       Y coordinate
  *    @param[in]   D60     Distance in meters between the gridpoints at 60 degree latitude
  *    @param[in]   DGRW    Angle between  the X axis and the Greenwich meridian
  *    @param[in]   HEM     Side of the hemisphere (1=North, 2=South)
- * 
+ *
  */
 static inline void llfxy(double *Lat,double *Lon,double X,double Y,double D60,double DGRW,int32_t HEM) {
 
@@ -27,7 +27,7 @@ static inline void llfxy(double *Lat,double *Lon,double X,double Y,double D60,do
    if (X!=0.0 || Y!=0.0) {
 
       // Calculate longitude in map coordinates
-      if (X==0.0) { 
+      if (X==0.0) {
          *Lon=SIGN(90.0,Y);
       } else {
          *Lon=RAD2DEG(atan(Y/X));
@@ -37,7 +37,7 @@ static inline void llfxy(double *Lat,double *Lon,double X,double Y,double D60,do
       // Adjust for grid orientation
       *Lon-=DGRW;
       *Lon=CLAMPLON(*Lon);
-      
+
       // Calculate latitude
       r2=X*X+Y*Y;
       *Lat=(re2-r2)/(re2+r2);
@@ -62,7 +62,7 @@ static inline void llfxy(double *Lat,double *Lon,double X,double Y,double D60,do
  *    @param[in]   Lon0    Lower left corner longitude
  *    @param[in]   DLat    Latitude spacing in degrees
  *    @param[in]   Dlon    Longitudr spacing in degrees
- * 
+ *
  */
 static inline void grll(double *Lat,double *Lon,int32_t NI,int32_t NJ,double Lat0,double Lon0,double DLat,double DLon) {
 
@@ -91,16 +91,16 @@ static inline void grll(double *Lat,double *Lon,int32_t NI,int32_t NJ,double Lat
  *    @param[in]   D60     Distance in meters between the gridpoints at 60 degree latitude
  *    @param[in]   DGRW    Angle between  the X axis and the Greenwich meridian
  *    @param[in]   HEM     Side of the hemisphere (1=North, 2=South)
- * 
+ *
  */
 static inline void grps(double *Lat,double *Lon,int32_t NI,int32_t NJ,double PI,double PJ,double D60,double DGRW,int32_t HEM) {
 
-   int32_t    i,j,idx=0;
-   double lat,lon,x,y;
+   int32_t idx = 0;
+   double x,y;
 
-   for(j=0;j<NJ;j++){
+   for(int32_t j = 0; j < NJ; j++) {
       y=j+1-PJ;
-      for(i=0;i<NI;i++) {
+      for(int32_t i = 0; i < NI; i++) {
          x=i+1-PI;
          llfxy(&Lat[idx],&Lon[idx],x,y,D60,DGRW,HEM);
          idx++;
@@ -115,8 +115,8 @@ static inline void Permut(double *Z,int32_t NI,int32_t NJ) {
 
    ncc = NJ>>1;
 
-   for(j=0;j<ncc;j++) { 
-      for(i=0;i<NI;i++) { 
+   for(j=0;j<ncc;j++) {
+      for(i=0;i<NI;i++) {
           idx=(NJ+1-j)+NI+i;
           idxn=j*NI+i;
 
@@ -131,14 +131,14 @@ static inline void Permut(double *Z,int32_t NI,int32_t NJ) {
  * @brief  Calculer la position latlon de tous les points de grille.
  * @date   June 2015
  *    @param[in]  Ref     Pointeur sur la reference geographique
- *  
+ *
  *    @return             Number of coordinates
 */
 int32_t GeoRef_CalcLL(TGeoRef* Ref) {
 
    float   xlat00, xlon00, dlat, dlon;
    int32_t i,j,k,ni,nj,npts, hemisphere;
-   double *lonp,*latp,*xp,*yp;
+   double *xp,*yp;
 
    ni = Ref->NX;
    nj = Ref->NY;
@@ -290,7 +290,7 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
                   for (i=0; i < npts; i++) {
                      Ref->Lon[i] = Ref->RPNHeadExt.xgref2 + Ref->RPNHeadExt.xgref4 * Ref->Lon[i];
                      Ref->Lat[i] = Ref->RPNHeadExt.xgref1 + Ref->RPNHeadExt.xgref3 * Ref->Lat[i];
-                  }   
+                  }
                   break;
 
                case 'W':
@@ -355,7 +355,7 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
  *    @param[in]  Ref     Pointeur sur la reference geographique
  *    @param[out] Lat     Latitude array
  *    @param[out] Lon     Longitude array
- 
+
  *    @return             Number of coordinates
 */
 int32_t GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
@@ -393,13 +393,12 @@ int32_t GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
  *    @param[in]  Lat     Latitudes of interpolation
  *    @param[in]  Lon     Longitudes of interpolation
  *    @param[in]  Nb      Number on position tu interpolate to
- *  
+ *
  *    @return             Number of interpolated values
 */
-int32_t GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *Lat,double *Lon,int32_t Nb) { 
+int32_t GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *Lat,double *Lon,int32_t Nb) {
 
    double *x,*y;
-   int32_t ier;
 
    if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
@@ -407,9 +406,9 @@ int32_t GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double
    x = (double*)malloc(2*Nb*sizeof(double));
    y = &x[Nb];
 
-   ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb,TRUE);
-   ier = GeoRef_XYVal(Ref,Opt,zout,zin,x,y,Nb);
-   
+   GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb,TRUE);
+   GeoRef_XYVal(Ref,Opt,zout,zin,x,y,Nb);
+
    free(x);
 
    return(0);
@@ -426,14 +425,13 @@ int32_t GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double
  *    @param[in]  Lat     Latitudes of interpolation
  *    @param[in]  Lon     Longitudes of interpolation
  *    @param[in]  Nb      Number on position tu interpolate to
- *  
+ *
  *    @return             Number of interpolated values
 */
 int32_t GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb) {
 
    double *x,*y;
-   int32_t ier;
-   
+
    if (Ref->NbSub > 0) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
       return(-1);
@@ -447,10 +445,10 @@ int32_t GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
          return(-1);
       }
       y = &x[Nb];
-   
-      ier = GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb,TRUE);
-      ier = GeoRef_XYUVVal(Ref,Opt,uuout,vvout,uuin,vvin,x,y,Nb);
-  
+
+      GeoRef_LL2XY(Ref,x,y,Lat,Lon,Nb,TRUE);
+      GeoRef_XYUVVal(Ref,Opt,uuout,vvout,uuin,vvin,x,y,Nb);
+
       free(x);
 
       return(0);
@@ -468,13 +466,13 @@ int32_t GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
  *    @param[in]  Lat     Latitudes of interpolation
  *    @param[in]  Lon     Longitudes of interpolation
  *    @param[in]  Nb      Number on position tu interpolate to
- *  
+ *
  *    @return             Number of interpolated values
 */
 int32_t GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb) {
 
    TGeoRef *yin_gd, *yan_gd,*ref;
-   int32_t ier,j;
+   int32_t j;
    double *x,*y;
    float  *uuyin, *vvyin, *uuyan, *vvyan;
 
@@ -489,13 +487,13 @@ int32_t GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
       vvyin = &uuyin[Nb];
       uuyan = &uuyin[Nb*2];
       vvyan = &uuyin[Nb*3];
-      ier = GeoRef_LL2XY(ref,x,y,Lat,Lon,Nb,TRUE);
-      ier = GeoRef_XYUVVal(ref,Opt,uuout,vvout,uuin,vvin,x,y,Nb);
+      GeoRef_LL2XY(ref,x,y,Lat,Lon,Nb,TRUE);
+      GeoRef_XYUVVal(ref,Opt,uuout,vvout,uuin,vvin,x,y,Nb);
       yin_gd=ref->Subs[0];
       yan_gd=ref->Subs[1];
 
-      ier = GeoRef_UV2WD(yin_gd,uuyin,vvyin,uuout,vvout,Lat,Lon,Nb);
-      ier = GeoRef_UV2WD(yan_gd,uuyan,vvyan,uuout,vvout,Lat,Lon,Nb);
+      GeoRef_UV2WD(yin_gd,uuyin,vvyin,uuout,vvout,Lat,Lon,Nb);
+      GeoRef_UV2WD(yan_gd,uuyan,vvyan,uuout,vvout,Lat,Lon,Nb);
       for (j=0; j< Nb; j++) {
          if (y[j] > yin_gd->NY) {
             uuout[j]=uuyan[j];
@@ -508,8 +506,8 @@ int32_t GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
       free(x);
       free(uuyin);
    } else {
-      ier = GeoRef_LLUVVal(ref,Opt,uuout,vvout,uuin,vvin,Lat,Lon,Nb);
-      ier = GeoRef_UV2WD(ref,uuout,vvout,uuout,vvout,Lat,Lon,Nb);
+      GeoRef_LLUVVal(ref,Opt,uuout,vvout,uuin,vvin,Lat,Lon,Nb);
+      GeoRef_UV2WD(ref,uuout,vvout,uuout,vvout,Lat,Lon,Nb);
    }
 
    return(0);

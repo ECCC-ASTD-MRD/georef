@@ -16,7 +16,7 @@ int32_t GeoRef_CorrValNorth(TGeoSet *Set,float *zout,float *zin) {
 
    if (!Set)
       return(0);
-   
+
    reffrom=Set->RefFrom;
 
    npts = Set->zones[GRID_NORTH].npts;
@@ -45,7 +45,7 @@ int32_t GeoRef_CorrValNorth(TGeoSet *Set,float *zout,float *zin) {
                   if (!reffrom->AX || !reffrom->AY) {
                      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Descriptor not found\n",__func__);
                      return(FALSE);
-                  } 
+                  }
                   if  (reffrom->AY[reffrom->j2-1] == 90.0) {
                      ay[0] = reffrom->AY[reffrom->j2-4];
                      ay[1] = reffrom->AY[reffrom->j2-3];
@@ -103,21 +103,17 @@ int32_t GeoRef_CorrValSouth(TGeoSet *Set,float *zout,float *zin) {
    float vpolesud;
    float *temp, *temp_y, *vals;
    double ay[4];
-   int32_t ni, nj, i1, i2, j1, j2;
-   int32_t un = 1;
-   int32_t quatre = 4;
-  
+   int32_t ni, j1, j2;
+
    if (!Set)
       return(0);
-   
+
    reffrom=Set->RefFrom;
 
    npts = Set->zones[GRID_SOUTH].npts;
    if (npts > 0) {
       ni = reffrom->NX;
 
-      i1 = 1;
-      i2 = ni;
       j1 = reffrom->j1 - 1;
       j2 = j1 + 3;
 
@@ -135,7 +131,7 @@ int32_t GeoRef_CorrValSouth(TGeoSet *Set,float *zout,float *zin) {
                   if (!reffrom->AX || !reffrom->AY) {
                      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Descriptor not found\n",__func__);
                      return(FALSE);
-                  } 
+                  }
                   if  (reffrom->AY[reffrom->j1-1] == -90.0) {
                      ay[0] = reffrom->AY[0];
                      ay[1] = reffrom->AY[1];
@@ -195,13 +191,13 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
    int32_t i,ierc;
    float valmax, valmin,fudgeval= 0.0;
    int32_t degIntCourant;
-   int32_t npts,nj;
+   int32_t nj;
    float vpolnor, vpolsud;
    float *temp;
-  
+
    if (!Set)
       return(0);
-   
+
    reffrom=Set->RefFrom;
    refto=Set->RefTo;
 
@@ -269,7 +265,6 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
 
    if (Set->zones[GRID_NORTH_POLE].npts > 0 || Set->zones[GRID_SOUTH_POLE].npts > 0) {
       if (reffrom->GRTYP[0] != 'W') {
-         npts = reffrom->NX * reffrom->j2;
          f77name(ez_calcpoleval)(&vpolnor,&(zin[(nj-1)*reffrom->NX]),&(reffrom->NX),reffrom->AX,reffrom->GRTYP,reffrom->RPNHeadExt.grref,1,1);
          for (i=0; i < Set->zones[GRID_NORTH_POLE].npts; i++) {
 	          zout[Set->zones[GRID_NORTH_POLE].idx[i]] = vpolnor;
@@ -289,7 +284,7 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
 }
 
 int32_t GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_vv_in,float *uuin,float *vvin,int32_t ni,int32_t nj) {
-  
+
    int32_t k1, k2;
    float *polar_wd, *polar_spd, *polar_uu, *polar_vv;
    double *polar_lat,*polar_lon,*polar_lat_gem, *polar_lon_gem, *polar_x, *polar_y;
@@ -297,7 +292,7 @@ int32_t GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
    float xlat1, xlat2, xlon1, xlon2;
    int32_t ig1n, ig2n, ig3n, ig4n;
    float pi, pj, d60, dgrw;
-   int32_t i,j,ier;
+   int32_t i,j;
    TGeoRef *gda, *gdps;
    float uupole, vvpole;
    double quatrevingtdix, zero;
@@ -315,18 +310,18 @@ int32_t GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
       polar_x[i] = 1.0 * (i+1);
       polar_y[i] = 1.0 * nj;
    }
-  
+
    GeoRef_XY2LL(Ref,polar_lat,polar_lon,polar_x,polar_y, ni,TRUE);
 
    if (Ref->GRTYP[0] == 'Z' && Ref->RPNHeadExt.grref[0] == 'E') {
       polar_lat_gem   = (double*) malloc(2*ni*sizeof(double));
       polar_lon_gem   = &polar_lat_gem[ni];
-    
+
       for (i=0; i < ni; i++) {
          polar_lat_gem[i] = polar_lat[i];
          polar_lon_gem[i] = polar_lon[i];
       }
-    
+
      f77name(cigaxg)(Ref->RPNHeadExt.grref, &xlat1, &xlon1, &xlat2, &xlon2, &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,1);
      GeoRef_RotateXY(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
    }
@@ -334,7 +329,7 @@ int32_t GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
    grtypa[0] = 'A';
    gda = GeoRef_Create(24,12, grtypa, 0,0,0,0,0);
    GeoRef_UV2WD(gda, polar_spd, polar_wd,  &uuin[(nj-1)*ni], &vvin[(nj-1)*ni], polar_lat, polar_lon, ni);
-  
+
    pi   = 0.0;
    pj   = 0.0;
    d60  = 1000.0;
@@ -350,7 +345,7 @@ int32_t GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
    quatrevingtdix = 90.0;
    zero = 0.0;
    GeoRef_UV2WD(gdps, polar_spd, polar_wd,  &uupole, &vvpole, &quatrevingtdix, &zero, 1);
- 
+
 
    polar_lat[0] = 90.0;
    for (i=1; i < ni; i++) {
@@ -359,9 +354,9 @@ int32_t GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
      polar_lat[i] = 90.0;
    }
    polar_wd[0] = polar_wd[0] + polar_lon[0];
-  
+
    GeoRef_WD2UV(gda, polar_uu, polar_vv, polar_spd,  polar_wd, polar_lat, polar_lon, ni);
-  
+
    for (j=0; j < 3; j++) {
      for (i=0; i < ni; i++) {
         k1 = j * ni + i;
@@ -370,7 +365,7 @@ int32_t GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
         polar_vv_in[k1] = vvin[k2];
       }
    }
-  
+
    for (i=0; i < ni; i++) {
      k1 = 3 * ni+i;
      polar_uu_in[k1] = polar_uu[i];
@@ -384,7 +379,7 @@ int32_t GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
      free(polar_lat_gem);
    }
 
-   ier = GeoRef_Free(gdps);
+   GeoRef_Free(gdps);
    return(0);
 }
 
@@ -397,7 +392,7 @@ int32_t GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
    float xlat1, xlat2, xlon1, xlon2;
    int32_t ig1n, ig2n, ig3n, ig4n;
    float pi, pj, d60, dgrw;
-   int32_t i,j,ier;
+   int32_t i,j;
    TGeoRef *gda, *gdps;
    float uupole, vvpole;
    double quatrevingtdix, zero;
@@ -415,18 +410,18 @@ int32_t GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
       polar_x[i] = 1.0 * (i+1);
       polar_y[i] = 1.0;
    }
-  
+
    GeoRef_XY2LL(Ref,polar_lat,polar_lon,polar_x,polar_y,ni,TRUE);
 
    if (Ref->GRTYP[0] == 'Z' && Ref->RPNHeadExt.grref[0] == 'E') {
       polar_lat_gem   = (double*) malloc(2*ni*sizeof(double));
       polar_lon_gem   = &polar_lat_gem[ni];
-    
+
      for (i=0; i < ni; i++) {
         polar_lat_gem[i] = polar_lat[i];
         polar_lon_gem[i] = polar_lon[i];
      }
-    
+
      f77name(cigaxg)(Ref->RPNHeadExt.grref, &xlat1, &xlon1, &xlat2, &xlon2, &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,1);
      GeoRef_RotateXY(polar_lat_gem,polar_lon_gem,polar_lon,polar_lat,ni,xlat1,xlon1,xlat2,xlon2);
    }
@@ -434,7 +429,7 @@ int32_t GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
    grtypa[0] = 'A';
    gda = GeoRef_Create(24,12, grtypa, 0,0,0,0,0);
    GeoRef_UV2WD(gda, polar_spd, polar_wd,  uuin, vvin, polar_lat, polar_lon, ni);
-  
+
    pi   = 0.0;
    pj   = 0.0;
    d60  = 1000.0;
@@ -450,7 +445,7 @@ int32_t GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
    quatrevingtdix = -90.0;
    zero = 0.0;
    GeoRef_UV2WD(gdps, polar_spd, polar_wd,  &uupole, &vvpole, &quatrevingtdix, &zero, 1);
-  
+
    polar_lat[0] = -90.0;
    for (i=1; i < ni; i++) {
      polar_wd[i]  = polar_wd[0] - polar_lon[i];
@@ -458,9 +453,9 @@ int32_t GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
      polar_lat[i] = -90.0;
    }
    polar_wd[0] = polar_wd[0] + polar_lon[0];
-  
+
    GeoRef_WD2UV(gda, polar_uu, polar_vv, polar_spd,  polar_wd, polar_lat, polar_lon, ni);
-  
+
    for (j=0; j < 3; j++) {
      for (i=0; i < ni; i++) {
         k1 = j * ni + i;
@@ -469,7 +464,7 @@ int32_t GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
         polar_vv_in[k2] = vvin[k1];
      }
    }
-  
+
    for (i=0; i < ni; i++) {
      polar_uu_in[i] = polar_uu[i];
      polar_vv_in[i] = polar_vv[i];
@@ -482,34 +477,30 @@ int32_t GeoRef_CalcPolarWindSouth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
      free(polar_lat_gem);
    }
 
-   ier = GeoRef_Free(gdps);
+   GeoRef_Free(gdps);
    return(0);
 }
 
 int32_t GeoRef_CorrVecNorth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,float *vvin) {
 
    TGeoRef  *reffrom=NULL;
-   float     uupole, vvpole;
-   float    *polar_uu_in, *polar_vv_in, *polar_uu_out, *polar_vv_out, *corr_uus, *corr_vvs;
+   float    *polar_uu_in, *polar_vv_in, *corr_uus, *corr_vvs;
    double    ay[4];
    double   *temp_y;
-   int32_t       ni, nj, i1, i2, j1, j2, degree,npts,i;
+   int32_t       ni, nj, j1, j2, npts,i;
    int32_t       quatre = 4;
    int32_t       un = 1;
 
    if (!Set)
       return(0);
-   
+
    reffrom=Set->RefFrom;
 
    ni = reffrom->NX;
    nj = reffrom->j2 - reffrom->j1 + 1;
 
-   i1 = 1;
-   i2 = ni;
    j1 = reffrom->j2-2;
    j2 = j1 + 3;
-   degree = 3;
 
    npts = Set->zones[GRID_NORTH].npts;
 
@@ -529,7 +520,7 @@ int32_t GeoRef_CorrVecNorth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,f
                 if (!reffrom->AX || !reffrom->AY) {
                    Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Descriptor not found\n",__func__);
                    return(FALSE);
-                } 
+                }
                 ay[0] = reffrom->AY[reffrom->j2-3];
                 ay[1] = reffrom->AY[reffrom->j2-2];
                 ay[2] = reffrom->AY[reffrom->j2-1];
@@ -552,7 +543,7 @@ int32_t GeoRef_CorrVecNorth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,f
          f77name(ez8_rgdint_1)(corr_uus,Set->zones[GRID_NORTH].x,temp_y,&npts,polar_uu_in,&ni, &un, &quatre, &reffrom->Extension,&Set->Opt.NoData);
          f77name(ez8_rgdint_1)(corr_vvs,Set->zones[GRID_NORTH].x,temp_y,&npts,polar_vv_in,&ni, &un, &quatre, &reffrom->Extension,&Set->Opt.NoData);
          free(temp_y);
-         
+
          break;
 
       case IR_NEAREST:
@@ -581,27 +572,23 @@ int32_t GeoRef_CorrVecNorth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,f
 }
 
 int32_t GeoRef_CorrVecSouth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,float *vvin) {
-  
+
    TGeoRef  *reffrom=NULL;
-   float *polar_uu_in, *polar_vv_in, *corr_uus, *corr_vvs, *temp_y;
+   float *polar_uu_in, *polar_vv_in, *corr_uus, *corr_vvs;
    double ay[4];
-   int32_t ni, nj, i1, i2, j1, j2, degree,npts,i;
-   int32_t idx_gdin;
+   int32_t ni, nj, j1, j2, npts,i;
 
    if (!Set)
       return(0);
-   
+
    reffrom=Set->RefFrom;
 
    npts = Set->zones[GRID_SOUTH].npts;
    ni = reffrom->NX;
    nj = reffrom->j2 - reffrom->j1 + 1;
 
-   i1 = 1;
-   i2 = ni;
    j1 = reffrom->j1 - 1;
    j2 = j1 + 3;
-   degree = 3;
 
    polar_uu_in = (float *) malloc(4 * ni * sizeof(float));
    polar_vv_in = (float *) malloc(4 * ni * sizeof(float));
@@ -619,7 +606,7 @@ int32_t GeoRef_CorrVecSouth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,f
                if (!reffrom->AX || !reffrom->AY) {
                   Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Descriptor not found\n",__func__);
                   return(FALSE);
-               } 
+               }
                ay[0] = -90.;
                ay[1] = reffrom->AY[0];
                ay[2] = reffrom->AY[1];
@@ -661,25 +648,21 @@ int32_t GeoRef_CorrVecSouth(TGeoSet *Set,float *uuout,float *vvout,float *uuin,f
 }
 
 int32_t GeoRef_CorrectVector(TGeoSet *Set,float *uuout,float *vvout,float *uuin,float *vvin) {
- 
-   int32_t ier;
-  
-  
-   if (Set->zones[GRID_NORTH].npts > 0) {
-      ier = GeoRef_CorrVecNorth(Set,uuout,vvout,uuin,vvin);
-   }
-  
-   if (Set->zones[GRID_SOUTH].npts > 0) {
-     ier = GeoRef_CorrVecSouth(Set,uuout,vvout,uuin,vvin);
-   }
-  
-   if (Set->zones[GRID_NORTH_POLE].npts > 0) {
-     ier = GeoRef_CorrVecNorth(Set,uuout,vvout,uuin,vvin);
-   }
-  
-   if (Set->zones[GRID_SOUTH_POLE].npts > 0) {
-     ier = GeoRef_CorrVecSouth(Set,uuout,vvout,uuin,vvin);
-   }
-      
-   return(0);
+    if (Set->zones[GRID_NORTH].npts > 0) {
+        GeoRef_CorrVecNorth(Set,uuout,vvout,uuin,vvin);
+    }
+
+    if (Set->zones[GRID_SOUTH].npts > 0) {
+        GeoRef_CorrVecSouth(Set,uuout,vvout,uuin,vvin);
+    }
+
+    if (Set->zones[GRID_NORTH_POLE].npts > 0) {
+        GeoRef_CorrVecNorth(Set,uuout,vvout,uuin,vvin);
+    }
+
+    if (Set->zones[GRID_SOUTH_POLE].npts > 0) {
+        GeoRef_CorrVecSouth(Set,uuout,vvout,uuin,vvin);
+    }
+
+    return(0);
 }

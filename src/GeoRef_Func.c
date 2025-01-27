@@ -14,11 +14,10 @@
 */
 double GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1) {
 
-   char *unit,geo;
    double i[2],j[2],lat[2],lon[2],u;
 
    // Check for unit type 
-   geo=1;
+   char geo=1;
 #ifdef HAVE_GDAL
    if (Ref->Spatial) {
       u=OSRGetLinearUnits(Ref->Spatial,&unit);
@@ -166,7 +165,6 @@ void c_ez_calcdist2(double *distance, float lat1, float lon1, float lat2, float 
 {
    double degre_a_radian;
    double radlat1, radlat2, radlon1, radlon2;
-   double dist;
    double earth_radius = 6370997.;
    double a,c,dlat,dlon,sindlat, sindlon;
 
@@ -232,7 +230,6 @@ void c_ez_calcarea_rect(float *area, float lat1, float lon1, float lat2, float l
 {
    double degre_a_radian;
    double radlat1, radlat2, radlon1, radlon2;
-   double dist;
    double earth_radius = 6370997.;
    double a,b,c,d,e;
    double seg_a, seg_b, seg_c, seg_d, seg_e;
@@ -284,7 +281,6 @@ void c_ez_calcarea(float *area, float lats[], float lons[])
 {
    double degre_a_radian;
    double radlat[4], radlon[4];
-   double dist;
    double earth_radius = 6370997.;
    double a,b,c,d,e;
    double seg_a, seg_b, seg_c, seg_d, seg_e;
@@ -339,24 +335,10 @@ void c_ez_calcarea(float *area, float lats[], float lons[])
 
 void c_ez_calcarea2(double *area, float lats[], float lons[])
 {
-   double degre_a_radian;
-   double radlat[4], radlon[4];
-   double dist;
-   double earth_radius = 6370997.;
-   double a,b,c,d,e;
+   const double earth_radius = 6370997.;
    double seg_a, seg_b, seg_c, seg_d, seg_e;
    double area1, area2;
    double s, excess;
-   int32_t i;
-
-   degre_a_radian = M_PI / 180.0;
-
-   for (i=0; i < 4; i++)
-      {
-      radlat[i] = lats[i] * degre_a_radian;
-      radlon[i] = lons[i] * degre_a_radian;
-      }
-
 
    /*
    seg_a = distance pt(1,1) - pt(2,1)
@@ -404,4 +386,3 @@ void c_ez_calcarea2(double *area, float lats[], float lons[])
 //      printf("area2:%f\n", area2);
       }
 }
-
