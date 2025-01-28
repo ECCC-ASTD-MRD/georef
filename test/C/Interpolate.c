@@ -1,7 +1,7 @@
 #include <App.h>
 #include <rmn.h>
-#include "GeoRef.h"
-#include "georef_build_info.h"
+#include <GeoRef.h>
+#include <georef_build_info.h>
 
 #define APP_NAME "Interpolate"
 #define APP_DESC "ECCC/CMC RPN fstd interpolation tool."
