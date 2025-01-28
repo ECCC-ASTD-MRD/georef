@@ -22,24 +22,24 @@ void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,f
       carot[0] = r[0][0]*cart[0]+r[1][0]*cart[1]+r[2][0]*cart[2];
       carot[1] = r[0][1]*cart[0]+r[1][1]*cart[1]+r[2][1]*cart[2];
       carot[2] = r[0][2]*cart[0]+r[1][2]*cart[1]+r[2][2]*cart[2];
-            
+
       Y[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[2]))));
       X[n]=RAD2DEG(atan2(carot[1],carot[0]));
       X[n]=fmod(X[n],360.0);
       if (X[n]<0.0) X[n]+=360.0;
    }
 }
- 
+
 void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2) {
 
    double cart[3],carot[3],latr,lonr,cosdar;
-   int32_t i,k,n,c;
    float r[3][3],ri[3][3];
 
    f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
+   int32_t n;
    #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(stderr,ri,npts,Lat,Lon,X,Y)
-   for(n=0;n<npts;n++) {
+   for(n = 0; n < npts; n++) {
       latr=DEG2RAD(Y[n]);
       lonr=DEG2RAD(X[n]);
       cosdar = cos(latr);
@@ -51,7 +51,7 @@ void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t 
       carot[0] = ri[0][0]*cart[0]+ri[1][0]*cart[1]+ri[2][0]*cart[2];
       carot[1] = ri[0][1]*cart[0]+ri[1][1]*cart[1]+ri[2][1]*cart[2];
       carot[2] = ri[0][2]*cart[0]+ri[1][2]*cart[1]+ri[2][2]*cart[2];
-     
+
       Lat[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[2]))));
       Lon[n]=RAD2DEG(atan2(carot[1],carot[0]));
       Lon[n]=fmod(Lon[n],360.0);
@@ -61,9 +61,9 @@ void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t 
 
 int32_t GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
-   int32_t   i,hemi;
+   int32_t hemi;
    float pi,pj,dgrw,d60,dlat,dlon,xlat0,xlon0,xlat1,xlon1,xlat2,xlon2;
-    
+
    switch(Ref->RPNHeadExt.grref[0]) {
       case 'N':
          f77name(cigaxg)(Ref->RPNHeadExt.grref,&pi,&pj,&d60,&dgrw,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
@@ -91,7 +91,7 @@ int32_t GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
          GeoRef_LL2XY_W(Ref,X,Y,Lat,Lon,Nb);
          break;
    }
-   
+
    return(1);
 }
 
@@ -105,7 +105,7 @@ int32_t GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
  *    @param[in]  Y       Y array
  *    @param[in]  Nb      Number of coordinates
  *    @param[in]  Extrap  Enable extrapolation
- 
+
  *    @return             Error code (0=ok)
 */
 int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb,int32_t Extrap) {
@@ -114,7 +114,7 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
    int32_t  i,j,icode;
    double  *latyin,*lonyin,*latyan,*lonyan;
    double  *tmpy;
-   
+
    if (!Ref->XY2LL) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid transform function (XY2LL): grtyp=%c\n",__func__,Ref->GRTYP[0]);
    }
@@ -156,7 +156,7 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
             Y[j]+=0.5;
          }
       }
-   
+
       if (Ref->Options.CIndex) {
          for(i=0;i<Nb;i++) {
             X[i]+=1.0;
@@ -196,7 +196,7 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
  *    @param[in]  Lon     Longitude array
  *    @param[in]  Nb      Number of coordinates
  *    @param[in]  Extrap  Enable extrapolation
-  
+
  *    @return             Error code (0=ok)
 */
 int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb,int32_t Extrap) {
@@ -262,7 +262,7 @@ int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
 
    if (Ref->Type&GRID_CORNER) {
       for(j=0;j<Nb;j++) {
-         if (X[j]!=-1.0) { 
+         if (X[j]!=-1.0) {
             X[j]-=0.5;
             Y[j]-=0.5;
          }
@@ -271,7 +271,7 @@ int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
 
    if (Ref->Options.CIndex) {
       for(j=0;j<Nb;j++) {
-         if (X[j]!=-1.0) { 
+         if (X[j]!=-1.0) {
             X[j]-=1.0;
             Y[j]-=1.0;
          }

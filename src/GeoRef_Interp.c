@@ -59,7 +59,7 @@ int32_t gd_interpm(TGeoRef *Ref,TGeoOptions *Opt,float *Out,float *In,double *X,
             Out[d]=Opt->NoData;
             continue;
          }
-           
+
          if (Opt->Interp==IR_NEAREST) {
             n=Bary_Nearest(b);
             Out[d]=In[Ref->Idx[idx+n]];
@@ -97,14 +97,14 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
    if (Opt->CIndex) {
       x=(double*)malloc(npts*sizeof(double)*2);
       y=&x[npts];
-   
+
       for(j=0;j<npts;j++) {
          x[j]=X[j]+1.0;
          y[j]=Y[j]+1.0;
       }
    } else {
       x=X;
-      y=Y; 
+      y=Y;
    }
 
    old_degre_interp = Opt->Interp;
@@ -252,7 +252,7 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
  *    @param[in]  Opt        Interpolation options
  *    @param[out] zout       Destination interpolated values
  *    @param[in]  zin        Source values
- 
+
  *    @return                FALSE (0) if operation failed, TRUE (1) otherwise
 */
 int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin) {
@@ -307,11 +307,11 @@ int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zo
             if (Opt->PolarCorrect) {
                GeoRef_SetZoneDefine(gset);
                GeoRef_CorrectValue(gset,zout,lxzin);
-            } 
+            }
          } else {
             ok=FALSE;
          }
-      } 
+      }
 
       if (lzin && lzin!=zin) {
          free(lzin);
@@ -331,13 +331,13 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
 
    TGeoSet *gset=NULL;
    TGeoRef *yin_gdin, *yan_gdin, *yin_gdout, *yan_gdout;
-   int32_t i,j,k,ni,nj;
+   int32_t k,ni,nj;
    int32_t yancount_yin,yincount_yin, yancount_yan,yincount_yan;
    int32_t yyin,yyout;
    float *yin2yin_zvals,*yan2yin_zvals;
    float *yin2yan_zvals,*yan2yan_zvals;
-     
-   yyin=0; yyout=0; 
+
+   yyin=0; yyout=0;
 
    if (!Opt) Opt=&RefTo->Options;
    if (!Opt) Opt=&GeoRef_Options;
@@ -359,7 +359,7 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
    } else {
       yin_gdout = RefTo;
    }
-  
+
    ni = yin_gdout->NX;
    nj = yin_gdout->NY;
 
@@ -385,28 +385,28 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
    /* This is only appropriate if the destination grid is non yin-yang grid */
 
    if (RefFrom->Sub>=0) { // User specifies to use 1 grid only
-      // Output is a Yin-Yang grid 
-      if (yyout) { 
+      // Output is a Yin-Yang grid
+      if (yyout) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Cannot use subgrid to interpolate to a Yin-Yang grid\n",__func__);
          return(FALSE);
       }
       // Is specified subgrid within the subgrid list
-      if (RefFrom->Sub>=RefFrom->NbSub) { 
+      if (RefFrom->Sub>=RefFrom->NbSub) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid subgrid: %i\n",__func__,RefFrom->Sub);
          return(FALSE);
       }
       // Use yin input grid
-      if (RefFrom->Sub==0) { 
+      if (RefFrom->Sub==0) {
          return(GeoRef_Interp(yin_gdout,yin_gdin,Opt,zout,zin));
       }
 
       // Use yang input grid
-      if (RefFrom->Sub==1) { 
+      if (RefFrom->Sub==1) {
          return(GeoRef_Interp(yin_gdout,yan_gdin,Opt,zout,&zin[(yin_gdin->NX)*(yin_gdin->NY)]));
       }
    }
 
-   // To use both Yin and Yang grids in Yin-yang input grid 
+   // To use both Yin and Yang grids in Yin-yang input grid
    // Masquer les grilles YY input pour enlever overlap et calculer les X,Y
    gset=GeoRef_SetGet(RefTo,RefFrom,Opt);
    GeoRef_SetCalcYYXY(gset);
@@ -426,10 +426,10 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
       yancount_yin=0;
       for(k=0; k<ni*nj; k++) {
          if (gset->yin_maskout[k] == 1.0) {
-            zout[k]=yan2yin_zvals[yancount_yin]; 
+            zout[k]=yan2yin_zvals[yancount_yin];
             yancount_yin++;
          } else {
-            zout[k]=yin2yin_zvals[yincount_yin]; 
+            zout[k]=yin2yin_zvals[yincount_yin];
             yincount_yin++;
          }
       }
@@ -447,32 +447,32 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
       yan2yin_zvals = (float *) malloc(yancount_yin*sizeof(float));
       yin2yan_zvals = (float *) malloc(yincount_yan*sizeof(float));
       yan2yan_zvals = (float *) malloc(yancount_yan*sizeof(float));
-    
+
       GeoRef_XYVal(yin_gdin,Opt,yin2yin_zvals,zin,gset->yin2yin_x,gset->yin2yin_y,gset->yincount_yin);
       GeoRef_XYVal(yan_gdin,Opt,yan2yin_zvals,&zin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yin_x,gset->yan2yin_y,gset->yancount_yin);
       GeoRef_XYVal(yin_gdin,Opt,yin2yan_zvals,zin,gset->yin2yan_x,gset->yin2yan_y,gset->yincount_yan);
       GeoRef_XYVal(yan_gdin,Opt,yan2yan_zvals,&zin[(yin_gdin->NX)*(yin_gdin->NY)],gset->yan2yan_x,gset->yan2yan_y,gset->yancount_yan);
 
-      // Interp input YY grid to Yin grid 
+      // Interp input YY grid to Yin grid
       yincount_yin=0; yancount_yin=0;
       for(k=0; k<ni*nj; k++) {
          if (gset->yin_maskout[k] == 1.0) {
-            zout[k]=yan2yin_zvals[yancount_yin]; 
+            zout[k]=yan2yin_zvals[yancount_yin];
             yancount_yin++;
          } else {
-            zout[k]=yin2yin_zvals[yincount_yin]; 
+            zout[k]=yin2yin_zvals[yincount_yin];
             yincount_yin++;
          }
       }
 
-      // Interp input YY grid to Yang grid 
+      // Interp input YY grid to Yang grid
       yincount_yan=0; yancount_yan=0;
       for(k=0; k<ni*nj; k++) {
          if (gset->yan_maskout[k] == 1.0) {
-            zout[k+(ni*nj)]=yan2yan_zvals[yancount_yan]; 
+            zout[k+(ni*nj)]=yan2yan_zvals[yancount_yan];
             yancount_yan++;
          } else {
-            zout[k+(ni*nj)]=yin2yan_zvals[yincount_yan]; 
+            zout[k+(ni*nj)]=yin2yan_zvals[yincount_yan];
             yincount_yan++;
          }
       }

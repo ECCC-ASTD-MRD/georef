@@ -2,11 +2,11 @@
 #include "OGR.h"
 //#include "DynArray.h"
 
+#ifdef HAVE_GDAL
+
 static  __thread Vect3d*  OGM_Geom[2];
 static  __thread Vect3d** OGM_Ptr;
 static  __thread uint32_t OGM_GeomNb=0;
-
-#ifdef HAVE_GDAL
 
 void OGM_ClearVect3d(void) {
 
@@ -413,7 +413,7 @@ OGRGeometryH OGM_GPCOnOGRGeometry(gpc_op Op,OGRGeometryH *Geom) {
    p=&poly0;
    r=&result;
    t=NULL;
- 
+
    for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
       if ((geom=OGR_G_GetGeometryRef(Geom,g))) {
          OGM_GPCFromOGR((t?&poly1:&result),geom);
@@ -1340,28 +1340,28 @@ double OGM_AngleMin(OGRGeometryH Geom) {
    int32_t    i,vi,n;
    double a,ma=M_2PI;
    Vect3d pt[3],v[2];
-   
+
    // Parse subgeometry
    for(i=0;i<OGR_G_GetGeometryCount(Geom);i++) {
       a=OGM_AngleMin(OGR_G_GetGeometryRef(Geom,i));
       ma=fmin(DEG2RAD(a),ma);
    }
-   
+
    // On polygons, don't use the last point32_t as it's a repeat of the first. on other, don't use the last 2
    n=OGR_G_GetPointCount(Geom);
    for(i=0;i<n-(OGR_G_GetGeometryType(Geom)!=wkbLinearRing?2:1);i++) {
       vi=i;   OGR_G_GetPoint(Geom,vi<n?vi:vi-n,&pt[0][0],&pt[0][1],&pt[0][2]);
       vi=i+1; OGR_G_GetPoint(Geom,vi<n?vi:vi-n,&pt[1][0],&pt[1][1],&pt[1][2]);
       vi=i+2; OGR_G_GetPoint(Geom,vi<n?vi:vi-n,&pt[2][0],&pt[2][1],&pt[2][2]);
-      
+
       // Use dot product method to get the angle
       Vect_Init(v[0],pt[1][0]-pt[0][0],pt[1][1]-pt[0][1],0.0);
       Vect_Init(v[1],pt[1][0]-pt[2][0],pt[1][1]-pt[2][1],0.0);
-      
-      a=fabs(acos(Vect_DotProduct(v[0],v[1])/Vect_Norm(v[0])/Vect_Norm(v[1])));    
+
+      a=fabs(acos(Vect_DotProduct(v[0],v[1])/Vect_Norm(v[0])/Vect_Norm(v[1])));
       ma=fmin(a,ma);
    }
-   
+
    return(RAD2DEG(ma));
 }
 
@@ -1369,7 +1369,7 @@ int32_t OGM_Clean(OGRGeometryH Geom) {
 
    uint32_t g;
    int32_t    i,v,r=0;
-   
+
    // Get vertices into a temporary vector array
    g=OGM_ToVect3d(Geom,OGM_ARRAY0);
 
@@ -1384,19 +1384,19 @@ int32_t OGM_Clean(OGRGeometryH Geom) {
          i--;
       }
    }
-   
+
    // If found any, rebuild geometry without the repeats
    if (r) {
       v=OGR_G_GetCoordinateDimension(Geom);
       OGR_G_SetPoints(Geom,g,&OGM_Geom[0][0][0],sizeof(Vect3d),&OGM_Geom[0][0][1],sizeof(Vect3d),&OGM_Geom[0][0][2],sizeof(Vect3d));
       OGR_G_SetCoordinateDimension(Geom,v);
    }
-   
+
    // Parse subgeometry
    for(i=0;i<OGR_G_GetGeometryCount(Geom);i++) {
       r+=OGM_Clean(OGR_G_GetGeometryRef(Geom,i));
    }
-   
+
    return(r);
 }
 

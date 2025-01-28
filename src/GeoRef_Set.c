@@ -3,7 +3,7 @@
 
 /*----------------------------------------------------------------------------
  * @brief  Free gridset zone definitions
- * @date   
+ * @date
  *    @param[in]  GSet    Grid set pointer
 */
 void GeoRef_SetZoneFree(TGeoSet *GSet) {
@@ -25,7 +25,7 @@ void GeoRef_SetZoneFree(TGeoSet *GSet) {
 
 /*----------------------------------------------------------------------------
  * @brief  Finds the points at a pole
- * @date   
+ * @date
  *    @param[in]  GSet    Grid set pointer
  *    @param[in]  Zone    Zone identifier (GRID_NORTH_POLE,GRID_SOUTH_POLE)
  *
@@ -36,12 +36,12 @@ int32_t GeoRef_SetZoneDefinePole(TGeoSet *GSet,int32_t Zone) {
    TGeoZone *zone=&GSet->zones[Zone];
    double    latpole,lonpole,xpole,ypole;
    int32_t  *tmpidx,i,nbpts;
-  
+
    nbpts=(GSet->RefTo->NX*GSet->RefTo->NY);
 
    // On commence par trouver les points au pole
    tmpidx = (int*)malloc(nbpts*sizeof(int));
-  
+
    zone->npts = 0;
    if (GSet->RefFrom->GRTYP[0] == 'Z' && GSet->RefFrom->RPNHeadExt.grref[0] == 'E') {
       xpole = 0.5 * GSet->RefFrom->NX;
@@ -51,27 +51,27 @@ int32_t GeoRef_SetZoneDefinePole(TGeoSet *GSet,int32_t Zone) {
       lonpole = 0.0;
       GeoRef_LL2XY(GSet->RefFrom,&xpole,&ypole,&latpole,&lonpole,1,TRUE);
    }
-  
+
    for (i=0; i<nbpts; i++) {
       if (fabs(GSet->Y[i]-ypole) < 1.0e-3) {
          tmpidx[zone->npts]=i;
          zone->npts++;
       }
    }
-  
+
    if (zone->npts>0) {
       zone->x = (double*)malloc(zone->npts*sizeof(double));
       zone->y = (double*)malloc(zone->npts*sizeof(double));
       zone->idx = (int32_t *)malloc(zone->npts*sizeof(int));
       Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Number of points at pole: %d\n",__func__,zone->npts);
-      
+
       for (i=0; i<zone->npts; i++) {
-         zone->x[i]   = GSet->X[tmpidx[i]];      
+         zone->x[i]   = GSet->X[tmpidx[i]];
          zone->y[i]   = GSet->Y[tmpidx[i]];
          zone->idx[i] = tmpidx[i];
       }
    }
-  
+
    free(tmpidx);
 
    return(0);
@@ -79,7 +79,7 @@ int32_t GeoRef_SetZoneDefinePole(TGeoSet *GSet,int32_t Zone) {
 
 /*----------------------------------------------------------------------------
  * @brief  Finds the points between the pole and a limit
- * @date   
+ * @date
  *    @param[in]  GSet    Grid set pointer
  *    @param[in]  Zone    Zone identifier (GRID_NORTH,GRID_SOUTH)
  *
@@ -89,10 +89,10 @@ int32_t GeoRef_SetZoneDefineThem(TGeoSet *GSet,int32_t Zone) {
 
    TGeoZone *zone=&GSet->zones[Zone];
    int32_t  *tmpidx,i,jlim,nbpts;
-  
+
    nbpts=(GSet->RefTo->NX*GSet->RefTo->NY);
    tmpidx = (int*) malloc(nbpts*sizeof(int));
-  
+
    zone->npts = 0;
    jlim = (Zone==GRID_SOUTH)?GSet->RefFrom->j1+1:GSet->RefFrom->j2-2;
    for (i=0; i<nbpts; i++) {
@@ -101,20 +101,20 @@ int32_t GeoRef_SetZoneDefineThem(TGeoSet *GSet,int32_t Zone) {
          zone->npts++;
       }
    }
-  
+
    if (zone->npts>0) {
       zone->x = (double*)malloc(zone->npts*sizeof(double));
       zone->y = (double*)malloc(zone->npts*sizeof(double));
       zone->idx = (int32_t *) malloc(zone->npts*sizeof(int));
       Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Number of points between pole and limit: %d\n",__func__,zone->npts);
-    
+
       for (i=0; i<zone->npts; i++) {
-         zone->x[i]   = GSet->X[tmpidx[i]];      
+         zone->x[i]   = GSet->X[tmpidx[i]];
          zone->y[i]   = GSet->Y[tmpidx[i]];
          zone->idx[i] = tmpidx[i];
       }
    }
-  
+
    free(tmpidx);
 
    return(0);
@@ -122,7 +122,7 @@ int32_t GeoRef_SetZoneDefineThem(TGeoSet *GSet,int32_t Zone) {
 
 /*----------------------------------------------------------------------------
  * @brief  Finds the points outside of the source data
- * @date   
+ * @date
  *    @param[in]  GSet    Grid set pointer
  *    @param[in]  Zone    Zone identifier (GRID_OUTSIDE)
  *
@@ -132,10 +132,10 @@ int32_t GeoRef_SetZoneDefineOut(TGeoSet *GSet,int32_t Zone) {
 
    TGeoZone *zone=&GSet->zones[Zone];
    int32_t  *tmpidx,i,offsetleft,offsetright,ix,iy,nbpts;
-    
+
    nbpts=(GSet->RefTo->NX*GSet->RefTo->NY);
    tmpidx=(int32_t*)malloc(nbpts*sizeof(int32_t));
-  
+
    offsetright = 0;
    offsetleft = 0;
 
@@ -144,7 +144,7 @@ int32_t GeoRef_SetZoneDefineOut(TGeoSet *GSet,int32_t Zone) {
      offsetright = 2;
      offsetleft = 1;
    } else {
-     offsetright = 0; 
+     offsetright = 0;
      offsetleft = 0;
    }
 */
@@ -164,36 +164,33 @@ int32_t GeoRef_SetZoneDefineOut(TGeoSet *GSet,int32_t Zone) {
       zone->y = (double*)malloc(zone->npts*sizeof(double));
       zone->idx = (int32_t *) malloc(zone->npts*sizeof(int32_t));
       Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Number of outside points: %i \n",__func__,zone->npts);
-    
+
       for (i=0; i < zone->npts; i++) {
-         zone->x[i]   = GSet->X[tmpidx[i]];      
+         zone->x[i]   = GSet->X[tmpidx[i]];
          zone->y[i]   = GSet->Y[tmpidx[i]];
          zone->idx[i] = tmpidx[i];
       }
    }
-  
+
    free(tmpidx);
-  
+
    return(0);
 }
 
 /*----------------------------------------------------------------------------
  * @brief  Defines the various zones
- * @date   
+ * @date
  *    @param[in]  GridSet   GridSet
  *
  *    @return             Error code (0=ok)
 */
 int32_t GeoRef_SetZoneDefine(TGeoSet *GSet) {
 
-   int32_t       i,npts;
-   int32_t       extrap;
-  
    if (!GSet || (GSet->flags & SET_ZONES)) {
       return(0);
    }
 
-   extrap = FALSE;
+   int32_t extrap = FALSE;
    switch (GSet->RefFrom->GRTYP[0]) {
       case 'N':
       case 'S':
@@ -206,7 +203,7 @@ int32_t GeoRef_SetZoneDefine(TGeoSet *GSet) {
                extrap = TRUE;
          }
          break;
-      
+
       case '#':
       case 'Z':
       case 'Y':
@@ -216,7 +213,7 @@ int32_t GeoRef_SetZoneDefine(TGeoSet *GSet) {
 	          case 'L':
 	             extrap = TRUE;
 	             break;
-	  
+
 	          case 'E':
 	             if (358.0 > (GSet->RefFrom->AX[GSet->RefFrom->NX-1] - GSet->RefFrom->AX[0])) {
 	                extrap = TRUE;
@@ -225,8 +222,8 @@ int32_t GeoRef_SetZoneDefine(TGeoSet *GSet) {
 	       }
          break;
    }
-  
-   for (i=0; i<SET_NZONES; i++) {
+
+   for (int32_t i=0; i<SET_NZONES; i++) {
       GSet->zones[i].npts = 0;
    }
 
@@ -238,25 +235,22 @@ int32_t GeoRef_SetZoneDefine(TGeoSet *GSet) {
       GeoRef_SetZoneDefineThem(GSet,GRID_SOUTH);
       GeoRef_SetZoneDefineThem(GSet,GRID_NORTH);
    }
-  
+
    GSet->flags |= SET_ZONES;
    return(0);
 }
 
 /*----------------------------------------------------------------------------
  * @brief  Calculates XY correspondance of destination points within the source grid
- * @date   
+ * @date
  *    @param[in]  GridSet   GridSet
  *
  *    @return             Error code (0=ok)
 */
 int32_t GeoRef_SetCalcXY(TGeoSet *GSet) {
 
-   int32_t size=0,mult=1;
-   char *c;
-
    if (GSet) {
-      size=GSet->RefTo->NX*GSet->RefTo->NY;
+      int32_t size = GSet->RefTo->NX * GSet->RefTo->NY;
 
       if (!GSet->X) {
 
@@ -278,7 +272,7 @@ int32_t GeoRef_SetIndexInit(TGeoSet *GSet) {
 
    if (GSet) {
 
-      if (!GSet->Index || GSet->IndexMethod!=GSet->Opt.Interp) {   
+      if (!GSet->Index || GSet->IndexMethod!=GSet->Opt.Interp) {
          GSet->IndexMethod=GSet->Opt.Interp;
          if (GSet->IndexMethod==IR_CONSERVATIVE || GSet->IndexMethod==IR_NORMALIZED_CONSERVATIVE) {
             mult=1024;
@@ -286,7 +280,7 @@ int32_t GeoRef_SetIndexInit(TGeoSet *GSet) {
                mult=atoi(c);
             }
          } else {
-            mult=GSet->IndexMethod==IR_CUBIC?10:(GSet->IndexMethod==IR_LINEAR?6:2);          
+            mult=GSet->IndexMethod==IR_CUBIC?10:(GSet->IndexMethod==IR_LINEAR?6:2);
          }
          // Set the index size to the number of items without the multiplicator
          // the index size will be readjusted when in CONSERVATIVE modes otherwise, the multiplicator will be put in nj when writing
@@ -300,7 +294,7 @@ int32_t GeoRef_SetIndexInit(TGeoSet *GSet) {
 
 /*----------------------------------------------------------------------------
  * @brief  Calculates XY correspondance of destination points within the source grid (for YY grids)
- * @date   
+ * @date
  *    @param[in]  GridSet   GridSet
  *
  *    @return             Error code (0=ok)
@@ -308,10 +302,10 @@ int32_t GeoRef_SetIndexInit(TGeoSet *GSet) {
 int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
 
    TGeoRef *yin_ref,*yan_ref,*yin_gdout,*yan_gdout;
-   int32_t icode,k,nij,ni,nj;
+   int32_t icode,nij,ni,nj;
    int32_t yancount_yin,yincount_yin, yancount_yan,yincount_yan;
-    
-   //  Need only access to either yin or Yang info for the lat and lon val   
+
+   //  Need only access to either yin or Yang info for the lat and lon val
    if (!GSet || (GSet->flags & SET_YYXY)) {
       return 0;
    }
@@ -333,8 +327,7 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
 
    nij = ni*nj;
 
-   // Masquer les grilles YY input pour enlever overlap si TRUE 
-   k=0;
+   // Masquer les grilles YY input pour enlever overlap si TRUE
    GSet->yin2yin_lat = (double*)malloc(4*nij*sizeof(double));
    GSet->yin2yin_lon = (double*)malloc(4*nij*sizeof(double));
    GSet->yan2yin_lat = (double*)malloc(4*nij*sizeof(double));
@@ -367,8 +360,6 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
 
    // If destination grid is YY
    if (GSet->RefTo->NbSub > 0) {
-
-      k=0;
       GSet->yin2yan_lat = (double*)malloc(4*nij*sizeof(double));
       GSet->yin2yan_lon = (double*)malloc(4*nij*sizeof(double));
       GSet->yan2yan_lat = (double*)malloc(4*nij*sizeof(double));
@@ -403,13 +394,11 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
 
 /*----------------------------------------------------------------------------
  * @brief  Free grid set structure
- * @date   
+ * @date
  *    @param[in]  GSet      Gridset pointer
  *
 */
 void GeoRef_SetFree(TGeoSet* GSet) {
-
-   int32_t i;
 
 //TODO: Check to free
    if (GSet->RefFrom) {
@@ -454,11 +443,11 @@ TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_f
    TGeoSet  *gset=NULL;
    fst_record record,crit=default_fst_record;
    char       typvar[2];
-   
+
    if (!(gset=GeoRef_SetGet(RefTo,RefFrom,NULL))) {
       return(NULL);
    }
-   
+
    if (File) {
 
       typvar[0]=RefTo->GRTYP[0];
@@ -476,7 +465,7 @@ TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_f
       gset->IndexMethod=(TRef_InterpR)InterpType;
       gset->Index=(float*)record.data;
       record.data=NULL;
-   
+
       strncpy(crit.nomvar,"#>>#",FST_NOMVAR_LEN);
       if (fst24_read(File,&crit,NULL,&record)!=TRUE) {
           Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset longitude field (fst24_read failed)\n",__func__);
@@ -562,7 +551,7 @@ int32_t GeoRef_SetWrite(TGeoSet *GSet,fst_file *File){
 
 /*----------------------------------------------------------------------------
  * @brief  Find a gridset within the cached list
- * @date   
+ * @date
  *    @param[in]  RefTo     Destination georeference pointer
  *    @param[in]  RefFrom   Source georeference pointer
  *    @param[in]  Opt       Interpolation parameters
@@ -572,7 +561,6 @@ int32_t GeoRef_SetWrite(TGeoSet *GSet,fst_file *File){
  */
 TGeoSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGeoOptions *Opt) {
 
-   TGeoSet* gset=NULL;
    int32_t i;
 
    if (!RefTo || !RefFrom) {
@@ -581,7 +569,7 @@ TGeoSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGeoOptions *Opt) {
 
    pthread_mutex_lock(&RefTo->Mutex);
    if (!RefTo->Sets) {
-      RefTo->Sets=(TGeoSet*)calloc(sizeof(TGeoSet),SET_MAX);
+      RefTo->Sets = (TGeoSet*)calloc(SET_MAX, sizeof(TGeoSet));
    }
 
    // Check for last set (most cases)
@@ -613,13 +601,13 @@ TGeoSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGeoOptions *Opt) {
    RefTo->NbSet++;
    pthread_mutex_unlock(&RefTo->Mutex);
 
-   // If we get here, we have'nt found any sets, create a new one    
+   // If we get here, we have'nt found any sets, create a new one
    RefTo->Sets[i].RefFrom = RefFrom;
    RefTo->Sets[i].RefTo = RefTo;
    RefTo->Sets[i].G2G[0]=RefFrom->GRTYP[0];
    RefTo->Sets[i].G2G[1]=RefTo->GRTYP[0];
    if (Opt) RefTo->Sets[i].Opt=*Opt;
-   
+
    Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RefFrom : %p RefTo: %p\n",__func__,RefFrom,RefTo);
 
    return(&RefTo->Sets[i]);

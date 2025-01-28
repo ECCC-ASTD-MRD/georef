@@ -29,7 +29,7 @@ void Def_Clear(TDef *Def){
          Def_Set(Def,n,i,Def->NoData);
       }
    }
-   
+
    if (Def->Buffer) {
       free(Def->Buffer);
       Def->Buffer=NULL;
@@ -62,7 +62,7 @@ void Def_Clear(TDef *Def){
  * @date   Mars 2009
  *    @param[inout]  ToDef      Data definition to be adjusted
  *    @param[in]     FromDef    Data definition
- * 
+ *
  *    @return        Compatible, FALSE or TRUE
  */
 int32_t Def_Compat(TDef *ToDef,TDef *FromDef) {
@@ -78,7 +78,7 @@ int32_t Def_Compat(TDef *ToDef,TDef *FromDef) {
    }
    ToDef->Mode=NULL;
    ToDef->Dir=NULL;
-   
+
    // Verifier la dimension verticale
    if (ToDef->NK!=FromDef->NK || ToDef->NC!=FromDef->NC) {
       if (ToDef->Idx) {
@@ -87,7 +87,7 @@ int32_t Def_Compat(TDef *ToDef,TDef *FromDef) {
       }
       if (ToDef->Data[0]) free(ToDef->Data[0]);
       ToDef->Data[0]=ToDef->Data[1]=ToDef->Data[2]=ToDef->Data[3]=NULL;
-      
+
       ToDef->NK=FromDef->NK;
       ToDef->NC=FromDef->NC;
       nijk=FSIZE3D(ToDef);
@@ -97,7 +97,7 @@ int32_t Def_Compat(TDef *ToDef,TDef *FromDef) {
       for(n=1;n<ToDef->NC;n++) {
          ToDef->Data[n]=&ToDef->Data[0][nijk*n*TDef_Size[ToDef->Type]];
       }
-      ch=FALSE;      
+      ch=FALSE;
    }
 
    // Verifier le masque
@@ -108,7 +108,7 @@ int32_t Def_Compat(TDef *ToDef,TDef *FromDef) {
          }
       }
    } else if (ToDef->Mask) {
-      free(ToDef->Mask); 
+      free(ToDef->Mask);
       ToDef->Mask=NULL;
    }
 
@@ -119,7 +119,7 @@ int32_t Def_Compat(TDef *ToDef,TDef *FromDef) {
  * @brief  Copy a data definition
  * @date   Fevrier 2003
  *    @param[in]  Def      Data definition to copy
- * 
+ *
  *    @return     new data definition, NULL on error
  */
 TDef *Def_Copy(TDef *Def){
@@ -175,8 +175,8 @@ TDef *Def_Copy(TDef *Def){
          }
          def->Mode=def->Data[0];
          def->Dir=NULL;
-         
-         if (Def->Mask) { 
+
+         if (Def->Mask) {
             if (!(def->Mask=(char*)malloc(nijk))) {
                return(NULL);
             }
@@ -192,7 +192,7 @@ TDef *Def_Copy(TDef *Def){
  * @date   Fevrier 2003
  *    @param[in]  Def      Data definition to copy
  *    @param[in]  Type     New data type
- * 
+ *
  *    @return     new data definition, NULL on error
  */
 TDef *Def_CopyPromote(TDef *Def,TDef_Type Type){
@@ -243,13 +243,13 @@ TDef *Def_CopyPromote(TDef *Def,TDef_Type Type){
 
          def->Mode=def->Data[0];
          def->Dir=NULL;
-         
-         if (Def->Mask) { 
+
+         if (Def->Mask) {
             if (!(def->Mask=(char*)malloc(nijk))) {
                return(NULL);
             }
             memcpy(def->Mask,Def->Mask,nijk);
-         }         
+         }
       }
 
    return(def);
@@ -260,7 +260,7 @@ TDef *Def_CopyPromote(TDef *Def,TDef_Type Type){
  * @date   Fevrier 2003
  *    @param[in]  ToDef      Destination data definition
  *    @param[in]  FromDef    Source data definition
- * 
+ *
  *    @return     new data definition, NULL on error
  */
 TDef *Def_CopyData(TDef *ToDef,TDef *FromDef){
@@ -298,10 +298,10 @@ TDef *Def_CopyData(TDef *ToDef,TDef *FromDef){
 }
 
 /*----------------------------------------------------------------------------
- * @brief  Free a data from a data definition 
+ * @brief  Free a data from a data definition
  * @date   Fevrier 2003
  *    @param[in]  Def      Data definition to free
- * 
+ *
  */
 void Def_Free(TDef *Def){
 
@@ -338,71 +338,75 @@ void Def_Free(TDef *Def){
  *    @param[in]  Dim    Number of components (1-4)
  *    @param[in]  Type   Data type
  *    @param[in]  Alias  Is this an alias to another data definition
- * 
+ *
  *    @return     new data definition, NULL on error
  */
-TDef *Def_New(int32_t NI,int32_t NJ,int32_t NK,int32_t Dim,TDef_Type Type,int32_t Alias) {
+TDef *Def_New(
+    int32_t NI,
+    int32_t NJ,
+    int32_t NK,
+    int32_t Dim,
+    TDef_Type Type,
+    int32_t Alias
+) {
+    TDef * def = (TDef*)malloc(sizeof(TDef));
 
-   int32_t   n,nijk;
-   TDef *def;
+    if (!def) return NULL;
 
-   if (!(def=(TDef*)malloc(sizeof(TDef))))
-     return(NULL);
+    def->NI=NI;
+    def->NJ=NJ;
+    def->NK=NK;
+    def->NIJ=NI*NJ;
+    def->NC=abs(Dim);
+    def->Alias=Alias;
+    def->CellDim=2;
+    def->NoData=nan("NaN");
+    def->Level=0;
+    def->Idx=0;
 
-   def->NI=NI;
-   def->NJ=NJ;
-   def->NK=NK;
-   def->NIJ=NI*NJ;
-   def->NC=abs(Dim);
-   def->Alias=Alias;
-   def->CellDim=2;
-   def->NoData=nan("NaN");
-   def->Level=0;
-   def->Idx=0;
+    def->Limits[0][0]=0;
+    def->Limits[1][0]=0;
+    def->Limits[2][0]=0;
+    def->Limits[0][1]=NI-1;
+    def->Limits[1][1]=NJ-1;
+    def->Limits[2][1]=NK-1;
 
-   def->Limits[0][0]=0;
-   def->Limits[1][0]=0;
-   def->Limits[2][0]=0;
-   def->Limits[0][1]=NI-1;
-   def->Limits[1][1]=NJ-1;
-   def->Limits[2][1]=NK-1;
+    def->CoordLimits[0][0]=-180;
+    def->CoordLimits[0][1]=180;
+    def->CoordLimits[1][0]=-90;
+    def->CoordLimits[1][1]=90;
 
-   def->CoordLimits[0][0]=-180;
-   def->CoordLimits[0][1]=180;
-   def->CoordLimits[1][0]=-90;
-   def->CoordLimits[1][1]=90;
+    def->SubSample=def->Sample=1;
 
-   def->SubSample=def->Sample=1;
+    def->Type=Type;
+    def->Buffer=NULL;
+    def->Aux=NULL;
+    def->Segments=NULL;
+    def->Accum=NULL;
+    def->Mask=NULL;
+    def->Sub=NULL;
+    def->Pres=NULL;
+    def->PresLS=NULL;
+    def->Height=NULL;
+    def->Pick=def->Poly=NULL;
 
-   def->Type=Type;
-   def->Buffer=NULL;
-   def->Aux=NULL;
-   def->Segments=NULL;
-   def->Accum=NULL;
-   def->Mask=NULL;
-   def->Sub=NULL;
-   def->Pres=NULL;
-   def->PresLS=NULL;
-   def->Height=NULL;
-   def->Pick=def->Poly=NULL;
+    // Allocate a single buffer and set component pointer to right address
+    int32_t nijk = FSIZE3D(def);
+    def->Data[0]=def->Data[1]=def->Data[2]=def->Data[3]=def->Dir=NULL;
 
-   // Allocate a single buffer and set component pointer to right address
-   nijk=FSIZE3D(def);
-   def->Data[0]=def->Data[1]=def->Data[2]=def->Data[3]=def->Dir=NULL;
-   
-   if (!def->Alias) {
-      if (!(def->Data[0]=(char*)calloc(nijk*def->NC,TDef_Size[Type]))) {
-         Def_Free(def);
-         return(NULL);
-      }
-      
-      for(n=1;n<def->NC;n++) {
-         def->Data[n]=&def->Data[0][nijk*n*TDef_Size[def->Type]];
-      }
-   }
-   def->Mode=def->Data[0];
+    if (!def->Alias) {
+        if (!(def->Data[0]=(char*)calloc(nijk*def->NC,TDef_Size[Type]))) {
+            Def_Free(def);
+            return NULL;
+        }
 
-   return(def);
+        for(int32_t n = 1; n < def->NC; n++) {
+            def->Data[n]=&def->Data[0][nijk*n*TDef_Size[def->Type]];
+        }
+    }
+    def->Mode = def->Data[0];
+
+    return def;
 }
 
 /*----------------------------------------------------------------------------
@@ -415,23 +419,26 @@ TDef *Def_New(int32_t NI,int32_t NJ,int32_t NK,int32_t Dim,TDef_Type Type,int32_
  *    @param[in]  Comp0  1st component
  *    @param[in]  Comp1  2nd component (if vectorial field)
  *    @param[in]  Mask   Mask, if available
- * 
+ *
  *    @return     new data definition, NULL on error
  */
-TDef *Def_Create(int32_t NI,int32_t NJ,int32_t NK,TDef_Type Type,char* Comp0,char* Comp1,char* Mask) {
-   
-   TDef *def=NULL;
-   int32_t dim;
+TDef *Def_Create(
+    int32_t NI,
+    int32_t NJ,
+    int32_t NK,
+    TDef_Type Type,
+    char* Comp0,
+    char* Comp1,
+    char* Mask
+) {
+    int32_t dim = (Comp0 != NULL) + (Comp1 != NULL);
+    TDef * def = Def_New(NI, NJ, NK, dim, Type, TRUE);
+    if (!def) return NULL;
 
-   if (def=(TDef*)malloc(sizeof(TDef))) {
-      dim=(Comp0!=NULL)+(Comp1!=NULL);
-      def=Def_New(NI,NJ,NK,dim,Type,TRUE);
-
-      def->Data[0]=Comp0;
-      def->Data[1]=Comp1;
-      def->Mask=Mask;
-   }
-   return (def);
+    def->Data[0] = Comp0;
+    def->Data[1] = Comp1;
+    def->Mask = Mask;
+    return def;
 }
 
 /*
@@ -454,7 +461,7 @@ static inline float* Def_ToFloat(TDef *Def,char* Buffer) {
       case TD_Int32:  for(n=0;n<sz;n++) buf[n]=((int*)Buffer)[n];break;
       case TD_UInt64: for(n=0;n<sz;n++) buf[n]=((unsigned long long*)Buffer)[n];break;
       case TD_Int64:  for(n=0;n<sz;n++) buf[n]=((long long*)Buffer)[n];break;
-      case TD_Float32: buf=(float*)Buffer;break; 
+      case TD_Float32: buf=(float*)Buffer;break;
       case TD_Float64: for(n=0;n<sz;n++) buf[n]=((double*)Buffer)[n];break;
    }
 
@@ -476,7 +483,7 @@ static inline float* Def_FromFloat(TDef *Def) {
       case TD_Int32:  for(n=0;n<sz;n++) ((int*)Buffer)[n]=buf[n];break;
       case TD_UInt64: for(n=0;n<sz;n++) ((unsigned long long*)Buffer)[n]=buf[n];break;
       case TD_Int64:  for(n=0;n<sz;n++) ((long long*)Buffer)[n]=buf[n];break;
-      case TD_Float32: (float*)Buffer=buf;break; 
+      case TD_Float32: (float*)Buffer=buf;break;
       case TD_Float64: for(n=0;n<sz;n++) ((double*)Buffer)[n]=buf[n];break;
    }
 
@@ -538,7 +545,7 @@ TDef *Def_Resize(TDef *Def,int32_t NI,int32_t NJ,int32_t NK){
       }
       Def->Mode=Def->Data[0];
       Def->Dir=NULL;
-      
+
       if (Def->Buffer)             free(Def->Buffer); Def->Buffer=NULL;
       if (Def->Aux)                free(Def->Aux);    Def->Aux=NULL;
       if (Def->Accum)              free(Def->Accum);  Def->Accum=NULL;
@@ -581,21 +588,21 @@ int32_t Def_Paste(TDef *ToDef,TDef *DefPaste,int32_t X0, int32_t Y0) {
 
    // Maximum number of band to paste
    nc=fmin(ToDef->NC,DefPaste->NC);
-   
+
    dy=Y0;
    for (y=y0;y<y1;y++) {
       dx=X0;
       for (x=x0;x<x1;x++) {
          idxs=FIDX2D(DefPaste,x,y);
          idxd=FIDX2D(ToDef,dx,dy);
-         
+
          if (DefPaste->NC==4) {
             Def_Get(DefPaste,3,idxs,a);
          }
 
-         for(c=0;c<nc;c++) {               
+         for(c=0;c<nc;c++) {
             Def_Get(DefPaste,c,idxs,src);
-            
+
             if (DefPaste->NC==4) {
                Def_Get(ToDef,c,idxd,dst);
                src=src*a+dst*(1.0-a);
@@ -646,7 +653,7 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
 
       // Index memoire du niveau desire
       mem=Def->NIJ*(int)Z;
- 
+
       x=X;
       y=Y;
       x-=Ref->X0;
@@ -662,7 +669,7 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
          }
       }
 
-      if (Def->Data[1] && !C) { 
+      if (Def->Data[1] && !C) {
          Def_Pointer(Def,0,mem,p0);
          Def_Pointer(Def,1,mem,p1);
          GeoRef_XYWDVal(Ref,Opt,&valf,&valdf,p0,p1,&X,&Y,1);
@@ -675,7 +682,7 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
          }
          if (ThetaXY)
             *ThetaXY=valdf;
-      } else {   
+      } else {
          if (Def->Type<=TD_Int64 || (ix==x && iy==y)) {
             Def_Get(Def,C,mem+idx,valf);
          } else {
@@ -686,7 +693,7 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
       }
       return(TRUE);
    }
-   
+
    return(FALSE);
 }
 
@@ -1033,7 +1040,7 @@ int32_t GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int32_
    if ((x1-x0)>((ToRef->X1-ToRef->X0)>>1)) {
       return(-pt);
    }
-   
+
    return(pt);
 #else
    Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
@@ -1104,7 +1111,7 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,OGRGeom
                case 'A':  // Area mode
 #ifdef HAVE_GPC
                   inter=OGM_GPCOnOGR(GPC_INT,Geom,Poly);
-#else                  
+#else
                   inter=OGR_G_Intersection(Geom,Poly);
 #endif
                   if (Mode=='C' || Mode=='N') {
@@ -1332,7 +1339,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer 
          }
          ip=gset->Index;
       }
-      
+
       // If the request is in meters
       if (fld==-3 || fld==-5) {
          // Create an UTM referential and transform to convert to meters
@@ -1352,7 +1359,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer 
       // Trouve la feature en intersection
       #pragma omp parallel for private(f,geom,hgeom,utmgeom,env,co,value,vr,n,area,mode,type,lp) firstprivate(pick,poly) shared(Layer,LayerRef,ToRef,fld,tr,error,ip,index,isize) reduction(+:nt)
       for(f=0;f<Layer->NFeature;f++) {
-         
+
          if (index) index[f]=NULL;
          if (error) continue;
          n=0;
@@ -1469,7 +1476,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer 
                               Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate local index memory (%i)\n",__func__,f);
                               error=1;
                               continue;
-                           } 
+                           }
                            lp=index[f];
                         }
                         if (lp) {
@@ -1588,7 +1595,7 @@ int32_t GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
       } else {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable ot allocate subgrid\n",__func__);
          return(0);
-      }  
+      }
    }
 
    d=1.0/(Opt->Sampling-1);
@@ -1736,7 +1743,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
          #pragma omp parallel for collapse(2) firstprivate(cell,ring,pick,poly) private(i,j,nidx,wrap,intersect,cnt,p,x,y,z,lp,area,val1,env,n,na) shared(k,isize,FromRef,FromDef,ToRef,ToDef,error) reduction(+:nt)
          for(j=0;j<FromDef->NJ;j++) {
             for(i=0;i<FromDef->NI;i++) {
- 
+
                nidx=j*FromDef->NI+i;
                if (index) index[nidx]=NULL;
                if (error) continue;
@@ -1776,7 +1783,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
                      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to allocate local index memory\n",__func__);
                      error=1;
                      continue;
-                  } 
+                  }
                   index[nidx][0]=REF_INDEX_EMPTY;
                   lp=index[nidx];
                }
@@ -1973,7 +1980,7 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
       }
 
       // In case of average, we need an accumulator
-      if (Opt->Interp==IR_AVERAGE || Opt->Interp==IR_VECTOR_AVERAGE || Opt->Interp==IR_VARIANCE || 
+      if (Opt->Interp==IR_AVERAGE || Opt->Interp==IR_VECTOR_AVERAGE || Opt->Interp==IR_VARIANCE ||
           Opt->Interp==IR_SQUARE || Opt->Interp==IR_NORMALIZED_COUNT || Opt->Interp==IR_COUNT) {
          if (!ToDef->Accum) {
             acc=ToDef->Accum=calloc(nij,sizeof(int32_t));
@@ -2010,12 +2017,12 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
                di0=floor(di0);
                dj0=floor(dj0);
 
-               Opt->Interp=IR_NEAREST;   
+               Opt->Interp=IR_NEAREST;
                Def_GetValue(FromRef,FromDef,Opt,0,di0,dj0,FromDef->Level,&di[0],&vx);
                Def_GetValue(FromRef,FromDef,Opt,0,di0+1.0,dj0,FromDef->Level,&di[1],&vx);
                Def_GetValue(FromRef,FromDef,Opt,0,di0,dj0+1.0,FromDef->Level,&di[2],&vx);
                Def_GetValue(FromRef,FromDef,Opt,0,di0+1.0,dj0+1.0,FromDef->Level,&di[3],&vx);
-               Opt->Interp=interp;   
+               Opt->Interp=interp;
             }
             for(s=0;s<4;s++) {
                vx=di[s];
@@ -2052,8 +2059,8 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid LUT class size (%d) vs Array size (%d)  \n",__func__,(int)val,ToDef->NK);
                return(FALSE);
             }
-            // first row is the class count and idno 
-            nbClass = Opt->lutSize - 1;       
+            // first row is the class count and idno
+            nbClass = Opt->lutSize - 1;
             fromClass = (int32_t *)malloc( sizeof(int)*nbClass );
             for (i = 0; i < nbClass ; i++) {
                fromClass[i] = Opt->lutDef[0][i+1];
@@ -2070,7 +2077,7 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
                }
             } else {
                rpnClass = (int32_t *)malloc(sizeof(int)*Opt->lutDim);
-               for (i = 1; i < Opt->lutDim ; i++) { // skip 1st column : the class id 
+               for (i = 1; i < Opt->lutDim ; i++) { // skip 1st column : the class id
                   val=Opt->lutDef[i][0];
                   rpnClass[i] = val;
                   if ((val < 1)||(val > ToDef->NK)) {
@@ -2198,14 +2205,14 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
                                                          t=0;
                                                          while(t<nbClass) {
                                                             if (vx==fromClass[t]) {
-                                                               if (toClass) { // toClass is between 1 and 26 
+                                                               if (toClass) { // toClass is between 1 and 26
                                                                   if (toClass[t] > 0)
                                                                      {
                                                                      fld[(toClass[t]-1)*nij+idxt]+=1.0;
                                                                      hasvalue = 1;
                                                                      }
                                                                } else {
-                                                                  for (i = 1; i < Opt->lutDim ; i++) { // skip 1st column : the class id 
+                                                                  for (i = 1; i < Opt->lutDim ; i++) { // skip 1st column : the class id
                                                                      val=Opt->lutDef[i][t+1];
                                                                      if (val > 0) {
                                                                         fld[(rpnClass[i]-1)*nij+idxt]+=val;
@@ -2219,7 +2226,7 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
                                                          }
                                                          // Dont count missing values
                                                          if (hasvalue)
-                                                            if (Opt->Interp!=IR_COUNT) acc[idxt]++; 
+                                                            if (Opt->Interp!=IR_COUNT) acc[idxt]++;
                                                       } else {
                                                          if (DEFVALID(FromDef,vx)) {
                                                             fld[idxt]+=vx;
@@ -2383,7 +2390,7 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
       case IR_NORMALIZED_COUNT:
       case IR_COUNT:
       case IR_VECTOR_AVERAGE:
-      case IR_NOP: 
+      case IR_NOP:
       case IR_ACCUM:
       case IR_BUFFER:
          code=GeoRef_InterpAverage(ToRef,ToDef,FromRef,FromDef,Opt,Final);
@@ -2449,14 +2456,14 @@ void GeoScan_Clear(TGeoScan *Scan) {
  *    @param[in]  Scan     Reprojection buffer
  *    @param[in]  ToRef    Destination geo reference
  *    @param[in]  ToDef    Destination data definition
- *    @param[in]  FromRef  Source geo reference   
- *    @param[in]  FromDef  Destination data definition  
+ *    @param[in]  FromRef  Source geo reference
+ *    @param[in]  FromDef  Destination data definition
  *    @param[in]  X0       Lower x limit
  *    @param[in]  Y0       Lower y limiy
  *    @param[in]  X1       Higher x limit
  *    @param[in]  Y1       Higher y limit
  *    @param[in]  Dim      Grid cell dimension (1=point, 2=area)
- *    @param[in]  Degree   Interpolation degree 
+ *    @param[in]  Degree   Interpolation degree
  *
  *    @return              Size of results
 */
@@ -2465,7 +2472,7 @@ int32_t _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,
    register int32_t idx,x,y,n=0;
    int32_t          d=0,sz,dd;
    double       x0,y0,v;
-   
+
    if (!Opt) Opt=&ToRef->Options;
    if (!Opt) Opt=&GeoRef_Options;
 
@@ -2509,7 +2516,7 @@ int32_t _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,
 
          x0=dd?x-0.5:x;
          y0=dd?y-0.5:y;
-         
+
          GeoRef_XY2LL(FromRef,&x0,&y0,&Scan->X[n],&Scan->Y[n],1,FALSE);
 
 
@@ -2586,7 +2593,7 @@ int32_t _GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,
    for(x=n-1;x>=0;x--) {
       x0=Scan->X[x];
       y0=Scan->Y[x];
-      
+
       if (ToDef) {
          Scan->D[x]=ToDef->NoData;
       }
@@ -2607,7 +2614,7 @@ int32_t GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,T
    int32_t          ix, iy;
 #ifdef HAVE_GDAL
    double           x0,y0,v;
-#endif   
+#endif
    if (!Opt) Opt=&ToRef->Options;
    if (!Opt) Opt=&GeoRef_Options;
 
@@ -2739,8 +2746,8 @@ int32_t GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,T
       GeoRef_LL2XY(ToRef,Scan->X,Scan->Y,Scan->Y,Scan->X,n,FALSE);
 //EZFIX
       // If we have the data of source and they're float, get it's values right now
-      if (ToDef && ToDef->Type==TD_Float32) {        
-         GeoRef_XYVal(ToRef,Opt,Scan->D,(float*)ToDef->Mode,Scan->X,Scan->Y,n);         
+      if (ToDef && ToDef->Type==TD_Float32) {
+         GeoRef_XYVal(ToRef,Opt,Scan->D,(float*)ToDef->Mode,Scan->X,Scan->Y,n);
       }
 
       // Cast back to double (Start from end since type is double, not to overlap values
@@ -2752,7 +2759,7 @@ int32_t GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,T
             ix = lrint(Scan->X[x]);
             iy = lrint(Scan->Y[x]);
             idx=FIDX2D(ToDef,ix,iy);
-            
+
             if (!FIN2D(ToDef,ix,iy) || (ToDef->Mask && !ToDef->Mask[idx])) {
                // If we're outside, set to nodata
                Scan->D[x]=ToDef->NoData;

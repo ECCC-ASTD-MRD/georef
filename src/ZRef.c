@@ -51,7 +51,7 @@ TZRef* ZRef_New(void) {
    if (!(zref=(TZRef*)calloc(1,sizeof(TZRef)))) {
       Lib_Log(APP_LIBEER,APP_ERROR,"%s: Unable to allocate memory\n",__func__);
    }
-   
+
    zref->VGD=NULL;
    zref->Levels=NULL;
    zref->Style=NEW;
@@ -62,7 +62,7 @@ TZRef* ZRef_New(void) {
    zref->P0=zref->P0LS=zref->PCube=zref->A=zref->B=NULL;
    zref->Version=-1;
    zref->NRef=1;
-   
+
    return(zref);
 }
 
@@ -88,25 +88,25 @@ TZRef* ZRef_New(void) {
 TZRef* ZRef_Define(int32_t Type,int32_t NbLevels,float *Levels) {
 
    TZRef *zref=NULL;
-   
+
    if ((zref=ZRef_New())) {
 
       zref->Type=Type;
       zref->LevelNb=NbLevels;
-      
+
       if (zref->Levels && zref->LevelNb!=NbLevels) {
          zref->Levels=(float*)realloc(zref->Levels,zref->LevelNb*sizeof(float));
       } else {
          zref->Levels=(float*)calloc(zref->LevelNb,sizeof(float));
       }
-      
+
       if (!zref->Levels) {
          Lib_Log(APP_LIBEER,APP_ERROR,"%s: Unable to allocate memory\n",__func__);
       } else if (Levels) {
          memcpy(zref->Levels,Levels,zref->LevelNb*sizeof(float));
       }
    }
-   
+
    return(zref);
 }
 
@@ -170,12 +170,12 @@ int32_t ZRef_Equal(TZRef *ZRef0,TZRef *ZRef1) {
 
    if (!ZRef0 || !ZRef1)
       return(0);
-      
+
 #ifdef HAVE_VGRID
    if (ZRef0->VGD && ZRef1->VGD)
       return(!Cvgd_vgdcmp((vgrid_descriptor*)ZRef0->VGD,(vgrid_descriptor*)ZRef1->VGD));
 #endif
-   
+
    if ((ZRef0->LevelNb!=ZRef1->LevelNb) || (ZRef0->Type!=ZRef1->Type) || (ZRef0->Levels && memcmp(ZRef0->Levels,ZRef1->Levels,ZRef0->LevelNb*sizeof(float))!=0))
       return(0);
 
@@ -201,7 +201,7 @@ int32_t ZRef_Equal(TZRef *ZRef0,TZRef *ZRef1) {
 TZRef* ZRef_Copy(TZRef *ZRef) {
 
    if (ZRef) ZRef_Incr(ZRef);
-   
+
    return(ZRef);
 }
 
@@ -224,13 +224,13 @@ TZRef* ZRef_Copy(TZRef *ZRef) {
 TZRef *ZRef_HardCopy(TZRef *ZRef) {
 
    TZRef *zref=NULL;
-   
+
    if (ZRef && (zref=ZRef_New())) {
-   
+
       zref->LevelNb=ZRef->LevelNb;
       zref->Levels=(float*)malloc(ZRef->LevelNb*sizeof(float));
       memcpy(zref->Levels,ZRef->Levels,ZRef->LevelNb*sizeof(float));
-      
+
       zref->Type=ZRef->Type;
       zref->PTop=ZRef->PTop;
       zref->PRef=ZRef->PRef;
@@ -267,17 +267,17 @@ int32_t ZRef_DecodeRPN(TZRef *ZRef,fst_file* File) {
    fst_record h;
    fst_query *queryt,*queryh,*queryp;
    fst_record record = default_fst_record;
-   int32_t        cd,key=0,skip,j,k,kind,ip;
+   int32_t key=0,skip,j,k,kind,ip;
    double    *dbuf=NULL;
    float     *fbuf=NULL;
 #ifdef HAVE_VGRID
    char       rfls_S[VGD_LEN_RFLS];
 #endif
- 
+
    if (!ZRef) {
       return(0);
    }
-      
+
    if (ZRef->Type==LVL_PRES || ZRef->Type==LVL_UNDEF) {
      return(1);
    }
@@ -285,7 +285,7 @@ int32_t ZRef_DecodeRPN(TZRef *ZRef,fst_file* File) {
    memset(&h,0,sizeof(fst_record));
    ZRef->SLEVE=0;
 
-   // Check for toctoc (field !!)   
+   // Check for toctoc (field !!)
    record.typvar[0]='X';
    record.nomvar[0]='!';record.nomvar[1]='!';
 
@@ -311,7 +311,7 @@ int32_t ZRef_DecodeRPN(TZRef *ZRef,fst_file* File) {
       if (strcmp(rfls_S, VGD_NO_REF_NOMVAR)!=0){
          ZRef->SLEVE=1;
       }
-#endif                  
+#endif
       if (fst24_read_record(&record)) {
          dbuf=(double*)record.data;
 
@@ -323,9 +323,9 @@ int32_t ZRef_DecodeRPN(TZRef *ZRef,fst_file* File) {
             case 1003: ZRef->Type=LVL_ETA;    ZRef->PTop=dbuf[record.ni]*0.01; ZRef->PRef=dbuf[record.ni+1]*0.01; ZRef->RCoef[0]=dbuf[record.ni+2]; break;
             case 5001: ZRef->Type=LVL_HYBRID; ZRef->PTop=dbuf[record.ni]*0.01; ZRef->PRef=dbuf[record.ni+1]*0.01; ZRef->RCoef[0]=dbuf[record.ni+2]; break;
             case 5002:
-            case 5003: 
-            case 5004: 
-            case 5005: 
+            case 5003:
+            case 5004:
+            case 5005:
             case 5100: ZRef->Type=LVL_HYBRID; ZRef->PTop=dbuf[record.ni]*0.01; ZRef->PRef=dbuf[record.ni+1]*0.01; ZRef->RCoef[0]=dbuf[record.ni+2]; ZRef->RCoef[1]=dbuf[record.ni+record.ni]; break;
          }
          skip=dbuf[2];
@@ -471,9 +471,7 @@ int32_t ZRef_AddRestrictLevel(float Level) {
 int32_t ZRef_GetLevels(TZRef *ZRef,const fst_record* restrict const H,int32_t Order) {
 
    fst_record h,record;
-   fst_query  *query;
-   int32_t        l,ip1=0;
-   int32_t        k;
+   int32_t l;
 
    if (Order) {
       /*Get the number of levels*/
@@ -482,14 +480,14 @@ int32_t ZRef_GetLevels(TZRef *ZRef,const fst_record* restrict const H,int32_t Or
       h.ip3=H->grtyp[0]=='#'?1:-1;
       h.ip1=-1;
 
-      query = fst24_new_query(h.file, &h, NULL);
+      fst_query * const query = fst24_new_query(h.file, &h, NULL);
       h.nk=fst24_find_count(query);
       if (!(ZRef->Levels=(float*)malloc(h.nk*sizeof(float)))) {
          return(0);
       }
 
       // Get the levels
-      k=0;
+      int32_t k = 0;
       while(fst24_find_next(query,&record)) {
          ZRef->Levels[k]=ZRef_IP2Level(record.ip1,&l);
          if (k==0) ZRef->Type=l;
@@ -521,7 +519,10 @@ int32_t ZRef_GetLevels(TZRef *ZRef,const fst_record* restrict const H,int32_t Or
    }
 
    ZRef->Style=H->ip1>32768?NEW:OLD;
-   if (ZRef->PCube)  free(ZRef->PCube);  ZRef->PCube=NULL;
+   if (ZRef->PCube) {
+      free(ZRef->PCube);
+      ZRef->PCube=NULL;
+   }
 
    return(ZRef->LevelNb);
 }
@@ -574,7 +575,7 @@ int32_t ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,float *P0LS,int
 
    int32_t   k,idxk=0,ij;
    int32_t   *ips;
-   float pref,ptop,*p0,*p0ls;
+   float pref,ptop,*p0;
 
    if (!P0 && ZRef->Type!=LVL_PRES) {
       Lib_Log(APP_LIBEER,APP_ERROR,"%s: Surface pressure is required\n",__func__);
@@ -616,7 +617,7 @@ int32_t ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,float *P0LS,int
             }
          }
          break;
-         
+
       case LVL_HYBRID:
          if (ZRef->Version<=0) {
             ij=1;
@@ -626,14 +627,14 @@ int32_t ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,float *P0LS,int
             for (k=0;k<ZRef->LevelNb;k++) {
                ips[k]=ZRef_Level2IP(ZRef->Levels[k],ZRef->Type,ZRef->Style);
             }
-            
+
             // Really not optimal but Cvgd needs pascals
             p0=(float*)malloc(NIJ*sizeof(float));
             for (ij=0;ij<NIJ;ij++) {
                p0[ij]=P0[ij]*MB2PA;
             }
-            
-#ifdef HAVE_VGRID	    
+
+#ifdef HAVE_VGRID
             if(ZRef->SLEVE){
                p0ls=(float*)malloc(NIJ*sizeof(float));
                for (ij=0;ij<NIJ;ij++) {
@@ -642,30 +643,30 @@ int32_t ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,float *P0LS,int
                if (Cvgd_levels_2ref((vgrid_descriptor*)ZRef->VGD,NIJ,1,ZRef->LevelNb,ips,Pres,p0,p0ls,0)) {
                   Lib_Log(APP_LIBEER,APP_ERROR,"%s: Problems in Cvgd_levels_2ref\n",__func__);
                   return(0);
-               }	      
+               }
             } else {
                if (Cvgd_levels((vgrid_descriptor*)ZRef->VGD,NIJ,1,ZRef->LevelNb,ips,Pres,p0,0)) {
                   Lib_Log(APP_LIBEER,APP_ERROR,"%s: Problems in Cvgd_levels\n",__func__);
                   return(0);
-               }    
+               }
             }
 #else
             Lib_Log(APP_LIBEER,APP_ERROR,"%s: Library not built with VGRID\n",__func__);
 #endif
             for (ij=0;ij<NIJ*ZRef->LevelNb;ij++) Pres[ij]*=PA2MB;
             free(ips);
-            free(p0);            
+            free(p0);
          }
          break;
-         
+
       default:
          Lib_Log(APP_LIBEER,APP_ERROR,"%s: Invalid level type (%i)\n",__func__,ZRef->Type);
          return(0);
    }
-   
+
    if (ZRef->POff!=0.0) for (ij=0;ij<NIJ*ZRef->LevelNb;ij++) Pres[ij]+=ZRef->POff;
    if (Log)             for (ij=0;ij<NIJ*ZRef->LevelNb;ij++) Pres[ij]=log(Pres[ij]);
-   
+
    return(1);
 }
 
@@ -798,18 +799,18 @@ double ZRef_Level2Pressure(TZRef* restrict const ZRef,double P0,double P0LS,doub
          } else {
             ip=ZRef_Level2IP(Level,ZRef->Type,ZRef->Style);
             P0*=MB2PA;
-#ifdef HAVE_VGRID	    
+#ifdef HAVE_VGRID
 	      if(ZRef->SLEVE){
 	         P0LS*=MB2PA;
 	         if (Cvgd_levels_2ref_8((vgrid_descriptor*)ZRef->VGD,1,1,1,&ip,&pres,&P0,&P0LS,0)) {
 		         Lib_Log(APP_LIBEER,APP_ERROR,"%s: Problems in Cvgd_levels_2ref_8\n",__func__);
 		         return(0);
-	         }	      
+	         }
 	      } else {
 	         if (Cvgd_levels_8((vgrid_descriptor*)ZRef->VGD,1,1,1,&ip,&pres,&P0,0)) {
 		         Lib_Log(APP_LIBEER,APP_ERROR,"%s: Problems in Cvgd_levels_8\n",__func__);
 		         return(0);
-	         }    
+	         }
 	      }
 #else
             Lib_Log(APP_LIBEER,APP_ERROR,"%s: Library not built with VGRID\n",__func__);
@@ -822,7 +823,7 @@ double ZRef_Level2Pressure(TZRef* restrict const ZRef,double P0,double P0LS,doub
          Lib_Log(APP_LIBEER,APP_ERROR,"%s: Invalid level type (%i)\n",__func__,ZRef->Type);
          return(0);
    }
-   
+
    return(pres+ZRef->POff);
 }
 
@@ -929,7 +930,7 @@ double ZRef_Pressure2Level(TZRef* restrict const ZRef,double P0,double Pressure)
 double ZRef_Level2Meter(double Level,int32_t Type) {
 
    double m=0.0;
-   
+
    // Dans le cas d'un niveau 0 et type SIGMA, on force a ETA
    if (Level==0 && Type==LVL_SIGMA) {
       Type=LVL_ETA;
@@ -939,11 +940,11 @@ double ZRef_Level2Meter(double Level,int32_t Type) {
       case LVL_MASL    : m=Level; break;
 
       case LVL_MBSL    : m=-Level; break;
-      
+
       case LVL_ETA     : m=ETA2METER(Level); break;
-      
+
       case LVL_SIGMA   : m=SIGMA2METER(Level); break;
-      
+
       case LVL_PRES    : if (Level>226.3203) {
                             m=44330.8*(1-pow(Level/1013.25,0.190263));
                          } else if (Level>54.749) {
@@ -956,17 +957,17 @@ double ZRef_Level2Meter(double Level,int32_t Type) {
                             m=0;
                          }
                          break;
-                         
+
       case LVL_UNDEF   : m=Level; break;
-      
+
       case LVL_MAGL    : m=Level; break;
-      
+
       case LVL_HYBRID  : m=ETA2METER(Level); break;
-      
+
       case LVL_THETA   : m=0; break;
-      
+
       case LVL_GALCHEN : m=Level; break;
-      
+
       case LVL_ANGLE   : m=Level; break;
    }
 
@@ -1061,7 +1062,7 @@ int32_t ZRef_Level2IP(float Level,int32_t Type,TZRef_IP1Mode Mode) {
       return(Level);
    } else {
       mode=Mode==DEFAULT?ZREF_IP1MODE:Mode;
-         
+
       // ETA -> SIGMA
       if (Type==LVL_ETA) {
          Type=LVL_SIGMA;
@@ -1105,25 +1106,25 @@ int32_t ZRef_IPFormat(char *Buf,int32_t IP,int32_t Interval) {
 
    int32_t   type=-1;
    float lvl;
-   
+
    if (Interval && IP<=32000) {
       sprintf(Buf," %8i %-2s",IP,ZRef_Units[LVL_UNDEF]);
    } else {
       lvl=ZRef_IP2Level(IP,&type);
 
       switch(type) {
-         case LVL_SIGMA : 
+         case LVL_SIGMA :
          case LVL_THETA : sprintf(Buf," %8.4f %-2s",lvl,ZRef_Units[type]); break;
          case LVL_HYBRID: sprintf(Buf," %8.6f %-2s",lvl,ZRef_Units[type]); break;
          case LVL_UNDEF : sprintf(Buf," %8.3f %-2s",lvl,ZRef_Units[type]); break;
-         case LVL_MASL  : 
-         case LVL_MBSL  : 
-         case LVL_MAGL  : 
-         case LVL_PRES  : 
-         case LVL_HOUR  : 
+         case LVL_MASL  :
+         case LVL_MBSL  :
+         case LVL_MAGL  :
+         case LVL_PRES  :
+         case LVL_HOUR  :
          case LVL_MPRES :
          default        : sprintf(Buf," %8.1f %-2s",lvl,ZRef_Units[type]); break;
-      }    
+      }
    }
    return(type);
 }

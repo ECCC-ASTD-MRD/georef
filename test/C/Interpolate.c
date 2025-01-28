@@ -8,7 +8,6 @@
 
 int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket,TRef_InterpR Type) {
 
-   TGeoSet    *gset=NULL;
    TGeoRef    *refin=NULL,*refout=NULL;
    fst_record  crit=default_fst_record,truth,grid=default_fst_record,record=default_fst_record;
    fst_file   *fin,*fout,*fgrid,*ftruth;
@@ -33,7 +32,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    strncpy(crit.nomvar,"GRID",FST_NOMVAR_LEN);
    if (!fst24_read(fgrid,&crit,NULL,&grid)) {
       App_Log(APP_ERROR,"Problems reading grid field\n");
-      return(FALSE);    
+      return(FALSE);
    }
 
    refout=GeoRef_Create(grid.ni,grid.nj,grid.grtyp,grid.ig1,grid.ig2,grid.ig3,grid.ig4,(fst_file*)grid.file);
@@ -51,14 +50,14 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       strncpy(crit.nomvar,"GRID",FST_NOMVAR_LEN);
       if (!fst24_read(ftruth,&crit,NULL,&truth)) {
          App_Log(APP_ERROR,"Problems reading truth field\n");
-         return(FALSE);    
+         return(FALSE);
       }
    }
-  
+
    GeoRef_Options.Interp=Type;
    GeoRef_Options.NoData=0.0;
 
-   GeoRef_Write(refout,NULL,fout);   
+   GeoRef_Write(refout,NULL,fout);
 
    strncpy(crit.nomvar,Vars[0],FST_NOMVAR_LEN);
    fst_query* query = fst24_new_query(fin,&crit,NULL);
@@ -73,8 +72,8 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       if (!GeoRef_Interp(refout,refin,&GeoRef_Options,grid.data,record.data)) {
          App_Log(APP_ERROR,"Interpolation problem");
          return(FALSE);
-      }   
-    
+      }
+
       // Write results
 	   fst24_record_copy_metadata(&grid,&record,FST_META_TIME|FST_META_INFO);
       if (Etiket) strncpy(grid.etiket,Etiket,FST_ETIKET_LEN);
@@ -85,16 +84,17 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    }
 
    // Write index
-   gset=GeoRef_SetGet(refout,refin,NULL);
+//    TGeoSet    *gset=GeoRef_SetGet(refout,refin,NULL);
+   GeoRef_SetGet(refout,refin,NULL);
 /*
    if (GeoRef_SetHasIndex(gset)) {
       App_Log(APP_DEBUG,"Saving index containing %i items\n",gset->IndexSize);
-      
+
       if (!GeoRef_SetWrite(gset,fout)){
          return(0);
       }
    }
-*/    
+*/
    fst24_close(fin);
    fst24_close(fout);
    fst24_close(fgrid);
@@ -122,9 +122,9 @@ int main(int argc, char *argv[]) {
    App_Init(APP_MASTER,APP_NAME,VERSION,APP_DESC,BUILD_TIMESTAMP);
 
    if (!App_ParseArgs(appargs,argc,argv,APP_NOARGSFAIL|APP_ARGSLOG)) {
-      exit(EXIT_FAILURE);      
+      exit(EXIT_FAILURE);
    }
-   
+
    // Error checking
    if (!in) {
       App_Log(APP_ERROR,"No input standard file specified\n");
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
       default:
          App_Log(APP_ERROR,"Invalid interpolation method: %s\n",type);
    }
- 
+
    ok=Interpolate(in,out,truth,grid,vars,etiket,interp);
    code=App_End(ok?0:EXIT_FAILURE);
    App_Free();

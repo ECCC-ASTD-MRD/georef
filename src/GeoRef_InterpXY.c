@@ -3,8 +3,6 @@
 
 int32_t GeoRef_XYInterp(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *X,double *Y,int32_t npts) {
 
-   TGeoSet *gset;
-   int32_t ier;
    float *lzin, *lxzin;
 
    lzin  = NULL;
@@ -26,7 +24,7 @@ int32_t GeoRef_XYInterp(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,dou
       lxzin = lzin;
    }
 
-   ier = GeoRef_InterpFinally(NULL,Ref,Opt,zout,lxzin,X,Y,npts,NULL);
+   GeoRef_InterpFinally(NULL,Ref,Opt,zout,lxzin,X,Y,npts,NULL);
 
    if (lzin && lzin!=zin) {
       free(lzin);
@@ -102,7 +100,7 @@ int32_t GeoRef_XYUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
 
       icode = GeoRef_XYUVVal(yin_gd,Opt,uuyin,vvyin,uuin,vvin,X,tmpy,n);
       icode = GeoRef_XYUVVal(yan_gd,Opt,uuyan,vvyan,&uuin[ni*nj],&vvin[ni*nj],X,tmpy,n);
- 
+
       for (j=0; j < n; j++) {
          if (Y[j] > yin_gd->NY) {
             uuout[j]=uuyan[j];
@@ -112,7 +110,7 @@ int32_t GeoRef_XYUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
             vvout[j]=vvyin[j];
          }
       }
-      free(tmpy); 
+      free(tmpy);
       free(uuyin);
       return(icode);
    } else {
@@ -131,16 +129,16 @@ int32_t GeoRef_XYUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
 int32_t GeoRef_XYWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *X,double *Y,int32_t n) {
 
    TGeoRef *yin_gd, *yan_gd,*ref;
-   int32_t ier, j, icode, lni, lnj;
+   int32_t j, lni, lnj;
    double *tmplat, *tmplon, *tmpy;
    float *uuyin, *vvyin, *uuyan, *vvyan;
    float *tmpuu, *tmpvv;
-  
+
    tmplat = (double*) malloc(2*n*sizeof(double));
    tmplon = &tmplat[n];
    tmpuu = (float *) malloc(2*n*sizeof(float));
    tmpvv = &tmpuu[n];
-  
+
    if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
    ref=GeoRef_SubGet(Ref);
@@ -162,14 +160,14 @@ int32_t GeoRef_XYWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
             tmpy[j]=Y[j];
          }
       }
-      
-      icode = GeoRef_XYUVVal(yin_gd,Opt,tmpuu,tmpvv,uuin,vvin,X,tmpy,n);
-      icode = GeoRef_XY2LL(yin_gd,tmplat,tmplon,X,tmpy,n,TRUE);
-      icode = GeoRef_UV2WD(yin_gd, uuyin,vvyin,tmpuu,tmpvv,tmplat,tmplon,n);
 
-      icode = GeoRef_XYUVVal(yan_gd,Opt,tmpuu,tmpvv,&uuin[(lni*lnj)],&vvin[(lni*lnj)],X,tmpy,n);
-      icode = GeoRef_XY2LL(yan_gd,tmplat,tmplon,X,tmpy,n,TRUE);
-      icode = GeoRef_UV2WD(yan_gd, uuyan,vvyan,tmpuu,tmpvv,tmplat,tmplon,n);
+      GeoRef_XYUVVal(yin_gd,Opt,tmpuu,tmpvv,uuin,vvin,X,tmpy,n);
+      GeoRef_XY2LL(yin_gd,tmplat,tmplon,X,tmpy,n,TRUE);
+      GeoRef_UV2WD(yin_gd, uuyin,vvyin,tmpuu,tmpvv,tmplat,tmplon,n);
+
+      GeoRef_XYUVVal(yan_gd,Opt,tmpuu,tmpvv,&uuin[(lni*lnj)],&vvin[(lni*lnj)],X,tmpy,n);
+      GeoRef_XY2LL(yan_gd,tmplat,tmplon,X,tmpy,n,TRUE);
+      GeoRef_UV2WD(yan_gd, uuyan,vvyan,tmpuu,tmpvv,tmplat,tmplon,n);
 
       for (j=0; j< n; j++) {
          if (Y[j] > yin_gd->NY) {
@@ -182,9 +180,9 @@ int32_t GeoRef_XYWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
       }
       free(uuyin);
    } else {
-      ier = GeoRef_XYUVVal(ref,Opt,tmpuu,tmpvv,uuin,vvin,X,Y,n);
-      ier = GeoRef_XY2LL(ref,tmplat,tmplon,X,Y,n,TRUE);
-      ier = GeoRef_UV2WD(ref,uuout,vvout,tmpuu,tmpvv,tmplat,tmplon,n);
+      GeoRef_XYUVVal(ref,Opt,tmpuu,tmpvv,uuin,vvin,X,Y,n);
+      GeoRef_XY2LL(ref,tmplat,tmplon,X,Y,n,TRUE);
+      GeoRef_UV2WD(ref,uuout,vvout,tmpuu,tmpvv,tmplat,tmplon,n);
    }
 
    free(tmplat);
