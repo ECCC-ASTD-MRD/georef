@@ -961,8 +961,9 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    // Initialize number of preserved georef in cache
    if (GeoRef_Preserve<0) {
       GeoRef_Preserve=-GeoRef_Preserve;
-      if ((c=getenv("GEOREF_PRESERVE"))) {
-         GeoRef_Preserve=atoi(c);
+      char * georefPreserveValStr = getenv("GEOREF_PRESERVE");
+      if (georefPreserveValStr) {
+         GeoRef_Preserve = atoi(georefPreserveValStr);
       }
    }
 
