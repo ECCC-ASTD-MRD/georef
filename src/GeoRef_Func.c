@@ -12,50 +12,50 @@
  *
  *    @return           Distance in meters
 */
-double GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1) {
+double GeoRef_GridDistance(TGeoRef *Ref, double X0, double Y0, double X1, double Y1) {
+    double i[2], j[2], lat[2], lon[2];
+    double dist2meterFact = 1.0;
+    char geo = 1;
 
-   double i[2],j[2],lat[2],lon[2],u;
-
-   // Check for unit type 
-   char geo=1;
+    // Check for unit type 
 #ifdef HAVE_GDAL
-   if (Ref->Spatial) {
-      u=OSRGetLinearUnits(Ref->Spatial,&unit);
-      geo=(unit[0]!='M' && unit[0]!='m');
-   }
+    if (Ref->Spatial) {
+        char * unit;
+        dist2meterFact = OSRGetLinearUnits(Ref->Spatial, &unit);
+        geo = (unit[0] != 'M' && unit[0] != 'm');
+    }
 #endif
 
-   if (geo) {
-      // Grid is geographic (latlon)
-      i[0]=X0+1.0;
-      j[0]=Y0+1.0;
-      i[1]=X1+1.0;
-      j[1]=Y1+1.0;
+    if (geo) {
+        // Grid is geographic (latlon)
+        i[0] = X0 + 1.0;
+        j[0] = Y0 + 1.0;
+        i[1] = X1 + 1.0;
+        j[1] = Y1 + 1.0;
 
-      GeoRef_XY2LL(Ref,lat,lon,i,j,2,TRUE);
+        GeoRef_XY2LL(Ref, lat, lon, i, j, 2, TRUE);
 
-      X0=DEG2RAD(lon[0]);
-      X1=DEG2RAD(lon[1]);
-      Y0=DEG2RAD(lat[0]);
-      Y1=DEG2RAD(lat[1]);
+        X0 = DEG2RAD(lon[0]);
+        X1 = DEG2RAD(lon[1]);
+        Y0 = DEG2RAD(lat[0]);
+        Y1 = DEG2RAD(lat[1]);
 
-      return(DIST(0.0,Y0,X0,Y1,X1));
-   } else {
-      // Grid is meters (utm)
-      if (Ref->Transform) {
-         i[0]=Ref->Transform[0]+Ref->Transform[1]*X0+Ref->Transform[2]*Y0;
-         j[0]=Ref->Transform[3]+Ref->Transform[4]*X0+Ref->Transform[5]*Y0;
-         i[1]=Ref->Transform[0]+Ref->Transform[1]*X1+Ref->Transform[2]*Y1;
-         j[1]=Ref->Transform[3]+Ref->Transform[4]*X1+Ref->Transform[5]*Y1;
-      } else {
-         i[0]=X0;
-         j[0]=Y0;
-         i[1]=X1;
-         j[1]=Y1;
-      }
-      return(hypot(j[1]-j[0],i[1]-i[0])*u);
-   }
-   return(hypot(X1-X0,Y1-Y0));
+        return(DIST(0.0, Y0, X0, Y1, X1));
+    } else {
+        // Grid is meters (utm)
+        if (Ref->Transform) {
+            i[0] = Ref->Transform[0] + Ref->Transform[1] * X0 + Ref->Transform[2] * Y0;
+            j[0] = Ref->Transform[3] + Ref->Transform[4] * X0 + Ref->Transform[5] * Y0;
+            i[1] = Ref->Transform[0] + Ref->Transform[1] * X1 + Ref->Transform[2] * Y1;
+            j[1] = Ref->Transform[3] + Ref->Transform[4] * X1 + Ref->Transform[5] * Y1;
+        } else {
+            i[0] = X0;
+            j[0] = Y0;
+            i[1] = X1;
+            j[1] = Y1;
+        }
+        return hypot(j[1] - j[0], i[1] - i[0]) * dist2meterFact;
+    }
 }
 
 /**----------------------------------------------------------------------------
@@ -67,16 +67,16 @@ double GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1)
  *
  *    @return              Ratio of distances
 */
-double GeoFunc_RadialPointRatio(TCoord C1,TCoord C2,TCoord C3) {
+double GeoFunc_RadialPointRatio(TCoord C1, TCoord C2, TCoord C3) {
 
    TCoord cr;
-   double d0,d1,d2;
+   double d0, d1, d2;
 
-   GeoFunc_RadialPointOn(C1,C2,C3,&cr);
+   GeoFunc_RadialPointOn(C1, C2, C3, &cr);
 
-   d0=DIST(0,C1.Lat,C1.Lon,C2.Lat,C2.Lon);
-   d1=DIST(0,C1.Lat,C1.Lon,cr.Lat,cr.Lon);
-   d2=DIST(0,C2.Lat,C2.Lon,cr.Lat,cr.Lon);
+   d0=DIST(0, C1.Lat, C1.Lon, C2.Lat, C2.Lon);
+   d1=DIST(0, C1.Lat, C1.Lon, cr.Lat, cr.Lon);
+   d2=DIST(0, C2.Lat, C2.Lon, cr.Lat, cr.Lon);
 
    if(d2>d0) {
       return(-(d2-d0)/d0);
@@ -95,16 +95,16 @@ double GeoFunc_RadialPointRatio(TCoord C1,TCoord C2,TCoord C3) {
  *
  *    @return              Intersection exists (1=Yes, 0=No)
 */
-int32_t GeoFunc_RadialPointOn(TCoord C1,TCoord C2,TCoord C3,TCoord *CR) {
+int32_t GeoFunc_RadialPointOn(TCoord C1, TCoord C2, TCoord C3, TCoord *CR) {
 
-   double crs12,crs13,crs3x;
+   double crs12, crs13, crs3x;
 
    /*Calculates 90 degree course crossing*/
-   crs12=COURSE(C1.Lat,C1.Lon,C2.Lat,C2.Lon);
-   crs13=COURSE(C1.Lat,C1.Lon,C3.Lat,C3.Lon);
+   crs12=COURSE(C1.Lat, C1.Lon, C2.Lat, C2.Lon);
+   crs13=COURSE(C1.Lat, C1.Lon, C3.Lat, C3.Lon);
    crs3x=crs13>crs12?crs12-M_PI2:crs12+M_PI2;
 
-   return(GeoFunc_RadialIntersect(C1,C3,crs12,crs3x,CR));
+   return(GeoFunc_RadialIntersect(C1, C3, crs12, crs3x, CR));
 }
 
 /**----------------------------------------------------------------------------
@@ -118,17 +118,17 @@ int32_t GeoFunc_RadialPointOn(TCoord C1,TCoord C2,TCoord C3,TCoord *CR) {
  *
  *    @return              Intersection exists (1=Yes, 0=No)
 */
-int32_t GeoFunc_RadialIntersect(TCoord C1,TCoord C2,double CRS13,double CRS23,TCoord *C3) {
+int32_t GeoFunc_RadialIntersect(TCoord C1, TCoord C2, double CRS13, double CRS23, TCoord *C3) {
 
-   double dst13,dst12,crs12,crs21,ang1,ang2,ang3;
-   TCoord sinc2,cosc2,sinc1,cosc1;
+   double dst13, dst12, crs12, crs21, ang1, ang2, ang3;
+   TCoord sinc2, cosc2, sinc1, cosc1;
 
    sinc1.Lat=sin(C1.Lat);sinc1.Lon=sin(C1.Lon);
    cosc1.Lat=cos(C1.Lat);cosc1.Lon=cos(C1.Lon);
    sinc2.Lat=sin(C2.Lat);sinc2.Lon=sin(C2.Lon);
    cosc2.Lat=cos(C2.Lat);cosc2.Lon=cos(C2.Lon);
 
-   dst12=2*asin(sqrt(pow((sin((C1.Lat-C2.Lat)/2)),2) + cosc1.Lat*cosc2.Lat*pow(sin((C1.Lon-C2.Lon)/2),2)));
+   dst12=2*asin(sqrt(pow((sin((C1.Lat-C2.Lat)/2)), 2) + cosc1.Lat*cosc2.Lat*pow(sin((C1.Lon-C2.Lon)/2), 2)));
 
    if (sin(C2.Lon-C1.Lon)<0) {
       crs12=acos((sinc2.Lat-sinc1.Lat*cos(dst12))/(sin(dst12)*cosc1.Lat));
@@ -142,8 +142,8 @@ int32_t GeoFunc_RadialIntersect(TCoord C1,TCoord C2,double CRS13,double CRS23,TC
       crs21=M_2PI-acos((sinc1.Lat-sinc2.Lat*cos(dst12))/(sin(dst12)*cosc2.Lat));
    }
 
-   ang1=fmod(CRS13-crs12+M_PI,M_2PI)-M_PI;
-   ang2=fmod(crs21-CRS23+M_PI,M_2PI)-M_PI;
+   ang1=fmod(CRS13-crs12+M_PI, M_2PI)-M_PI;
+   ang2=fmod(crs21-CRS23+M_PI, M_2PI)-M_PI;
 
    if (sin(ang1)*sin(ang2)<=sqrt(10e-15)) {
       /*No intersection*/
@@ -154,7 +154,7 @@ int32_t GeoFunc_RadialIntersect(TCoord C1,TCoord C2,double CRS13,double CRS23,TC
       ang3=acos(-cos(ang1)*cos(ang2)+sin(ang1)*sin(ang2)*cos(dst12));
       dst13=asin(sin(ang2)*sin(dst12)/sin(ang3));
       C3->Lat=asin(sinc1.Lat*cos(dst13)+cosc1.Lat*sin(dst13)*cos(CRS13));
-      C3->Lon=fmod(C1.Lon-asin(sin(CRS13)*sin(dst13)/cos(C3->Lat))+M_PI,M_2PI)-M_PI;
+      C3->Lon=fmod(C1.Lon-asin(sin(CRS13)*sin(dst13)/cos(C3->Lat))+M_PI, M_2PI)-M_PI;
    }
 
    return(1);
@@ -166,7 +166,7 @@ void c_ez_calcdist2(double *distance, float lat1, float lon1, float lat2, float 
    double degre_a_radian;
    double radlat1, radlat2, radlon1, radlon2;
    double earth_radius = 6370997.;
-   double a,c,dlat,dlon,sindlat, sindlon;
+   double a, c, dlat, dlon, sindlat, sindlon;
 
    degre_a_radian = M_PI / 180.0;
 
@@ -180,7 +180,7 @@ void c_ez_calcdist2(double *distance, float lat1, float lon1, float lat2, float 
    sindlat = sin(dlat*0.5);
    sindlon = sin(dlon*0.5);
    a = sindlat*sindlat + cos(radlat1) * cos(radlat2) * sindlon*sindlon;
-   c = 2.0 * atan2(sqrt(a),sqrt(1.0-a));
+   c = 2.0 * atan2(sqrt(a), sqrt(1.0-a));
    c = 2.0 * asin(sqrt(a));
    *distance = (float)(c*earth_radius);
 
@@ -231,7 +231,7 @@ void c_ez_calcarea_rect(float *area, float lat1, float lon1, float lat2, float l
    double degre_a_radian;
    double radlat1, radlat2, radlon1, radlon2;
    double earth_radius = 6370997.;
-   double a,b,c,d,e;
+   double a, b, c, d, e;
    double seg_a, seg_b, seg_c, seg_d, seg_e;
    double area1, area2;
 
@@ -243,11 +243,11 @@ void c_ez_calcarea_rect(float *area, float lat1, float lon1, float lat2, float l
    radlon2 = lon2 * degre_a_radian;
 
    /*
-   seg_a = distance pt(1,1) - pt(2,1)
-   seg_b = distance pt(2,1) - pt(2,2)
-   seg_c = distance pt(1,1) - pt(2,2)
-   seg_d = distance pt(1,2) - pt(2,2)
-   seg_e = distance pt(1,1) - pt(1,2)
+   seg_a = distance pt(1, 1) - pt(2, 1)
+   seg_b = distance pt(2, 1) - pt(2, 2)
+   seg_c = distance pt(1, 1) - pt(2, 2)
+   seg_d = distance pt(1, 2) - pt(2, 2)
+   seg_e = distance pt(1, 1) - pt(1, 2)
    */
 
    /* These computations have not been optimized */
@@ -282,7 +282,7 @@ void c_ez_calcarea(float *area, float lats[], float lons[])
    double degre_a_radian;
    double radlat[4], radlon[4];
    double earth_radius = 6370997.;
-   double a,b,c,d,e;
+   double a, b, c, d, e;
    double seg_a, seg_b, seg_c, seg_d, seg_e;
    double area1, area2;
    int32_t i;
@@ -297,11 +297,11 @@ void c_ez_calcarea(float *area, float lats[], float lons[])
 
 
    /*
-   seg_a = distance pt(1,1) - pt(2,1)
-   seg_b = distance pt(2,1) - pt(2,2)
-   seg_c = distance pt(1,1) - pt(2,2)
-   seg_d = distance pt(1,2) - pt(2,2)
-   seg_e = distance pt(1,1) - pt(1,2)
+   seg_a = distance pt(1, 1) - pt(2, 1)
+   seg_b = distance pt(2, 1) - pt(2, 2)
+   seg_c = distance pt(1, 1) - pt(2, 2)
+   seg_d = distance pt(1, 2) - pt(2, 2)
+   seg_e = distance pt(1, 1) - pt(1, 2)
    */
 
    /* These computations have not been optimized */
@@ -341,11 +341,11 @@ void c_ez_calcarea2(double *area, float lats[], float lons[])
    double s, excess;
 
    /*
-   seg_a = distance pt(1,1) - pt(2,1)
-   seg_b = distance pt(2,1) - pt(2,2)
-   seg_c = distance pt(1,1) - pt(2,2)
-   seg_d = distance pt(1,2) - pt(2,2)
-   seg_e = distance pt(1,1) - pt(1,2)
+   seg_a = distance pt(1, 1) - pt(2, 1)
+   seg_b = distance pt(2, 1) - pt(2, 2)
+   seg_c = distance pt(1, 1) - pt(2, 2)
+   seg_d = distance pt(1, 2) - pt(2, 2)
+   seg_e = distance pt(1, 1) - pt(1, 2)
    */
 
    /* These computations have not been optimized */
