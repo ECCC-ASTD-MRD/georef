@@ -10,7 +10,7 @@
 #include "Triangle.h"
 
 static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
-static uint32_t        GeoRef_Preserve=-10;                                                                                    ///< How many of teh first created georef to keep cached (negative means uninitialized)
+static uint32_t        GeoRef_Preserve = -10;                                                                                    ///< How many of teh first created georef to keep cached (negative means uninitialized)
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
 __thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, IV_FAST, CB_REPLACE, TRUE, FALSE, FALSE, 1, 1, TRUE, FALSE, 10.0, 0.0, 0.0, NULL, NULL, 0, 0, NULL };  ///< Default options
 
@@ -208,22 +208,22 @@ void GeoRef_Clear(TGeoRef *Ref,int32_t New) {
    int32_t n;
 
    if (Ref) {
-      if (Ref->String)       free(Ref->String);       Ref->String=NULL;
-      if (Ref->Transform)    free(Ref->Transform);    Ref->Transform=NULL;
-      if (Ref->InvTransform) free(Ref->InvTransform); Ref->InvTransform=NULL;
-      if (Ref->RotTransform) free(Ref->RotTransform); Ref->RotTransform=NULL;
-      if (Ref->Lat)          free(Ref->Lat);          Ref->Lat=NULL;
-      if (Ref->Lon)          free(Ref->Lon);          Ref->Lon=NULL;
-      if (Ref->Hgt)          free(Ref->Hgt);          Ref->Hgt=NULL;
-      if (Ref->Wght)         free(Ref->Wght);         Ref->Wght=NULL;
-      if (Ref->Idx)          free(Ref->Idx);          Ref->Idx=NULL; Ref->NIdx=0;
-      if (Ref->AX)           free(Ref->AX);           Ref->AX=NULL;
-      if (Ref->AY)           free(Ref->AY);           Ref->AY=NULL;
-      if (Ref->AXY)          free(Ref->AXY);          Ref->AXY=NULL;
-      if (Ref->NCX)          free(Ref->NCX);          Ref->NCX=NULL;
-      if (Ref->NCY)          free(Ref->NCY);          Ref->NCY=NULL;
-      if (Ref->Subs)         free(Ref->Subs);         Ref->Subs=NULL;
-      if (Ref->Name)         free(Ref->Name);         Ref->Name=NULL;
+      if (Ref->String)       { free(Ref->String);       Ref->String=NULL; }
+      if (Ref->Transform)    { free(Ref->Transform);    Ref->Transform=NULL; }
+      if (Ref->InvTransform) { free(Ref->InvTransform); Ref->InvTransform=NULL; }
+      if (Ref->RotTransform) { free(Ref->RotTransform); Ref->RotTransform=NULL; }
+      if (Ref->Lat)          { free(Ref->Lat);          Ref->Lat=NULL; }
+      if (Ref->Lon)          { free(Ref->Lon);          Ref->Lon=NULL; }
+      if (Ref->Hgt)          { free(Ref->Hgt);          Ref->Hgt=NULL; }
+      if (Ref->Wght)         { free(Ref->Wght);         Ref->Wght=NULL; }
+      if (Ref->Idx)          { free(Ref->Idx);          Ref->Idx=NULL; Ref->NIdx=0; }
+      if (Ref->AX)           { free(Ref->AX);           Ref->AX=NULL; }
+      if (Ref->AY)           { free(Ref->AY);           Ref->AY=NULL; }
+      if (Ref->AXY)          { free(Ref->AXY);          Ref->AXY=NULL; }
+      if (Ref->NCX)          { free(Ref->NCX);          Ref->NCX=NULL; }
+      if (Ref->NCY)          { free(Ref->NCY);          Ref->NCY=NULL; }
+      if (Ref->Subs)         { free(Ref->Subs);         Ref->Subs=NULL; }
+      if (Ref->Name)         { free(Ref->Name);         Ref->Name=NULL; }
 
       // Free interpolation sets
       for (n=0;n<Ref->NbSet;n++) {
@@ -601,16 +601,14 @@ TGeoRef *GeoRef_Resize(TGeoRef* __restrict const Ref,int32_t NI,int32_t NJ) {
  *    @return             Pointer to the new head of the list
 */
 TGeoRef* GeoRef_Add(TGeoRef *Ref) {
-
-   TList *head;
-
    GeoRef_Lock();
-   if (head=TList_Add(GeoRef_List,(void*)Ref)) {
-      GeoRef_List=head;
+   TList * const head = TList_Add(GeoRef_List, (void*)Ref);
+   if (head) {
+      GeoRef_List = head;
    }
    GeoRef_Unlock();
 
-   return((TGeoRef*)(head?head->Data:NULL));
+   return (TGeoRef*)(head ? head->Data : NULL) ;
 }
 
 /**----------------------------------------------------------------------------
@@ -959,8 +957,8 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    GeoRef_Add(ref);
 
    // Initialize number of preserved georef in cache
-   if (GeoRef_Preserve<0) {
-      GeoRef_Preserve=-GeoRef_Preserve;
+   if (GeoRef_Preserve < 0) {
+      GeoRef_Preserve = -GeoRef_Preserve;
       char * georefPreserveValStr = getenv("GEOREF_PRESERVE");
       if (georefPreserveValStr) {
          GeoRef_Preserve = atoi(georefPreserveValStr);
@@ -2201,7 +2199,6 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
 
    fst_record record=default_fst_record;
    int32_t i,dbl=FALSE;
-   char *c;
 
    if (!GRef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid georef (NULL)\n",__func__);
@@ -2214,8 +2211,9 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
 
    if (!GRef->Name) GRef->Name=strdup("Undefined");
 
-   if ((c=getenv("GEOREF_DESCRIPTOR_64"))) {
-      dbl=TRUE;
+   {
+      char * const envVar = getenv("GEOREF_DESCRIPTOR_64");
+      if (envVar) dbl = TRUE;
    }
    record.data = (float*)calloc(GRef->NX*GRef->NY,sizeof(float));
    record.ni   = GRef->NX;
