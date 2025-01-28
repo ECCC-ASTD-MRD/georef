@@ -10,7 +10,7 @@
 #include "Triangle.h"
 
 static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
-static uint32_t        GeoRef_Preserve = -10;                                                                                    ///< How many of teh first created georef to keep cached (negative means uninitialized)
+static int32_t        GeoRef_Preserve = -10;                                                                                    ///< How many of teh first created georef to keep cached (negative means uninitialized)
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
 __thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, IV_FAST, CB_REPLACE, TRUE, FALSE, FALSE, 1, 1, TRUE, FALSE, 10.0, 0.0, 0.0, NULL, NULL, 0, 0, NULL };  ///< Default options
 
