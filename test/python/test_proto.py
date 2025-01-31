@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from proto import *
+from ../../python/proto import *
 
 # pytest test/python/test_proto.py -v
 

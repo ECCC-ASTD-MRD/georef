@@ -4,7 +4,7 @@ import ctypes as ct
 import numpy  as np
 import numpy.ctypeslib as npc
 from . import libgeoref
-from .lib_structs import TGeoRef
+from .lib_structs import TGeoRef, TDef, TGeoScan, TGeoOptions, TGeoSet, TZRef, TCoord, OGR_Layer, Vect2d, Vect3d, T3DArray, TZRefInterp, TGridSet   
 
 # int GeoRef_GridGetParams(TGeoRef *Ref,int *NI,int *NJ,char *GRTYP,int *IG1,int *IG2,int *IG3,int *IG4,
 #                           char *GRREF,int *IG1REF,int *IG2REF,int *IG3REF,int *IG4REF);
@@ -46,32 +46,6 @@ libgeoref.GeoRef_GetLL.argtypes = (
     )
 libgeoref.GeoRef_GetLL.restype  = ct.c_int
 GeoRef_GetLL = libgeoref.GeoRef_GetLL
-
-
-# lib/Def.c
-# void T3DArray_Free(T3DArray *Array)
-# void Def_Free(TDef *Def)
-# void Def_Clear(TDef *Def)
-# [static] void Def_GetMod(TDef *Def, int32_t Idx, double Val)
-# TDef* Def_Copy(TDef *Def)
-# TDef* Def_New(int32_t Type)
-# int32_t Def_Resize(TDef *Def,int32_t NI,int32_t NJ,int32_t NK)
-# int32_t Def_Define(TDef *Def,int32_t NI,int32_t NJ,int32_t NK,int32_t NbData)
-# int32_t Def_Get(TDef *Def,int32_t Idx,double *Val)
-# int32_t Def_Set(TDef *Def,int32_t Idx,double Val)
-# int32_t Def_Inc(TDef *Def,int32_t Idx,double Val)
-# int32_t Def_Dec(TDef *Def,int32_t Idx,double Val)
-# int32_t Def_Mul(TDef *Def,int32_t Idx,double Val)
-# int32_t Def_Div(TDef *Def,int32_t Idx,double Val)
-# void Def_GetRange(TDef *Def,double *Min,double *Max)
-# void Def_GetRange(TDef *Def,double *Min,double *Max)
-# void Def_GetLimits(TDef *Def,int32_t Dim,int32_t *Min,int32_t *Max)
-# void Def_SetLimits(TDef *Def,int32_t Dim,int32_t Min,int32_t Max)
-# void GeoScan_Init(TGeoScan *Scan)
-# void GeoScan_Clear(TGeoScan *Scan)
-# int32_t GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_t Dim)
-
-# ... existing code ...
 
 # void Def_Free(TDef *Def)
 libgeoref.Def_Free.argtypes = (ct.POINTER(TDef),)
