@@ -1,6 +1,6 @@
 #include <App.h>
 #include "GeoRef.h"
-#include "Vertex.h"
+#include "georef/Vertex.h"
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon for an O grid
@@ -21,7 +21,7 @@ int32_t GeoRef_XY2LL_O(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
    if (!Ref->AX || !Ref->AY) {
       return(FALSE);
    }
-   
+
    #pragma omp parallel for default(none) private(i) shared(Nb,Ref,X,Y,Lat,Lon)
    for (i=0; i < Nb; i++) {
       Lon[i]=VertexValS(Ref->AX,NULL,Ref->NX,Ref->NY,X[i]-1.0,Y[i]-1.0,TRUE);
@@ -51,7 +51,7 @@ int32_t GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
 
 //TODO: Check for transformation
 //   GeoRef_LL2GREF(Ref,X,Y,Lat,Lon,Nb);
-   
+
    #pragma omp parallel for default(none) private(n,nd,d,dx,dy,x,y,xx,yy,idx,idxs,pt,pts,dists) shared(Nb,Ref,X,Y,Lat,Lon) reduction(+:out)
    for(d=0;d<Nb;d++) {
 
@@ -59,7 +59,7 @@ int32_t GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
       Y[d]=-1.0;
 
       if ((nd=GeoRef_Nearest(Ref,Lon[d],Lat[d],idxs,dists,8,0.0))) {
-     
+
          pt[0]=Lon[d];
          pt[1]=Lat[d];
 
@@ -70,13 +70,13 @@ int32_t GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
             // Find within which quad
             dx=-1;dy=-1;
             if (!GeoRef_WithinCell(Ref,pt,pts,idx-Ref->NX-1,idx-1,idx,idx-Ref->NX)) {
-            
+
                dx=0;dy=-1;
                if (!GeoRef_WithinCell(Ref,pt,pts,idx-Ref->NX,idx,idx+1,idx-Ref->NX+1)) {
-                  
+
                   dx=-1;dy=0;
                   if (!GeoRef_WithinCell(Ref,pt,pts,idx-1,idx+Ref->NX-1,idx+Ref->NX,idx)) {
-               
+
                      dx=0;dy=0;
                      if (!GeoRef_WithinCell(Ref,pt,pts,idx,idx+Ref->NX,idx+Ref->NX+1,idx+1)) {
                         idx=-1;
@@ -84,7 +84,7 @@ int32_t GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
                   }
                }
             }
-            
+
             // If found, exit loop
             if (idx!=-1) {
                break;
@@ -100,7 +100,7 @@ int32_t GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
                y=idx/Ref->NX;
                x=idx-y*Ref->NX;
                Y[d]+=y+dy+1.0;
-               X[d]+=x+dx+1.0; 
+               X[d]+=x+dx+1.0;
             } else {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid coordinate (NAN): ll(%f,%f) xy(%f,%f) %i\n",__func__,Lat[d],Lon[d],X[d],Y[d],idx);
                X[d]=-1.0;
@@ -111,7 +111,7 @@ int32_t GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
             Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Point not found: %f %f\n",__func__,Lat[d],Lon[d]);
             out++;
          }
-      } 
+      }
    }
    Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Points out: %i\n",__func__,out);
 

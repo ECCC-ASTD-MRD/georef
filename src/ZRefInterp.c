@@ -1,6 +1,6 @@
 #include <App.h>
-#include "GeoRef_Utils.h"
-#include "ZRefInterp.h"
+#include "georef/GeoRef_Utils.h"
+#include "georef/ZRefInterp.h"
 
 #if defined(__GNUC__) || defined(SGI)
    #include <fenv.h>

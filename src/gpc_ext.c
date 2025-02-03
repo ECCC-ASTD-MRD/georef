@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "gpc_ext.h"
+#include "georef/gpc_ext.h"
 
 /*----------------------------------------------------------------------------
  * Nom      : <gpce_vect_proj_vect>

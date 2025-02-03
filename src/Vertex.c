@@ -1,4 +1,4 @@
-#include "Vertex.h"
+#include "georef/Vertex.h"
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Vertex_Map>
@@ -8,17 +8,17 @@
  *
  * Parametres    :
  *   <Pt>        : Cell coordinates
- *   <LX>        : Output X grid coordinate 
- *   <LY>        : Output Y grid coordinate 
+ *   <LX>        : Output X grid coordinate
+ *   <LY>        : Output Y grid coordinate
  *   <WX>        : Longitude
  *   <WY>        : Latitude
  *
  * Retour       : Inside (1 si a l'interieur du domaine).
  *
- * Remarques   :  
+ * Remarques   :
  *     The unit cell L(x,y) is oriented as:
  *     L0(x=0,y=0),L1(0,1), L2(1,1), L3(1,0).  The order matters.
- * 
+ *
  *     ref: http://math.stackexchange.com/questions/13404/mapping-irregular-quadrilateral-to-a-rectangle
  *---------------------------------------------------------------------------------------------------------------
 */
@@ -26,10 +26,10 @@ void Vertex_Map(Vect2d P[4],double *LX,double *LY,double WX,double WY) {
 
     double ax,a2x,a3x,ay,a1y,a2y,bx,b2x,b3x,by,b1y,b2y;
     double wydy,y3dy,y2dy,wxdx,x1dx,x2dx,wxy,xy0,xy1,xy2,xy3;
-    
+
     if (P[0][1]==P[1][1]) P[0][1]-=1e-5;
     if (P[0][0]==P[3][0]) P[0][0]-=1e-5;
-        
+
     wydy=(WY      - P[0][1]) / (P[0][1] - P[1][1]);
     y3dy=(P[3][1] - P[0][1]) / (P[0][1] - P[1][1]);
     y2dy=(P[2][1] - P[0][1]) / (P[0][1] - P[1][1]);
@@ -41,7 +41,7 @@ void Vertex_Map(Vect2d P[4],double *LX,double *LY,double WX,double WY) {
     xy1=P[1][0] * P[1][1];
     xy2=P[2][0] * P[2][1];
     xy3=P[3][0] * P[3][1];
-    
+
     ax  = (WX      - P[0][0]) + (P[1][0] - P[0][0]) * wydy;
     a3x = (P[3][0] - P[0][0]) + (P[1][0] - P[0][0]) * y3dy;
     a2x = (P[2][0] - P[0][0]) + (P[1][0] - P[0][0]) * y2dy;
@@ -59,7 +59,7 @@ void Vertex_Map(Vect2d P[4],double *LX,double *LY,double WX,double WY) {
     ay /=a1y;
     a2x/=a3x;
     a2y/=a1y;
-    
+
     *LX = ax + (1 - a2x) * (bx - b3x * ax) / (b2x - b3x * a2x);
     *LY = ay + (1 - a2y) * (by - b1y * ay) / (b2y - b1y * a2y);
 }
@@ -185,7 +185,7 @@ int32_t VertexLoc(Vect3d **Pos,TDef *Def,Vect3d Vr,double X,double Y,double Z,in
       idx1-=Def->NI;
       idx2-=Def->NI;
    }
-      
+
    // 3D Interpolation case
    if (Z>TINY_VALUE) {
 
@@ -241,14 +241,14 @@ int32_t VertexLoc(Vect3d **Pos,TDef *Def,Vect3d Vr,double X,double Y,double Z,in
  *----------------------------------------------------------------------------
 */
 static inline double VertexAvg(TDef *Def,int32_t Idx,int32_t X,int32_t Y,int32_t Z) {
-   
+
    unsigned long n,i,j,idx,k;
    double        v,val;
-   
+
    n=0;
    val=0.0;
    k=Z*Def->NIJ;
-   
+
    for(j=Y-1;j<=Y+1;j++) {
       for(i=X-1;i<=X+1;i++) {
          idx=j*Def->NI+i;
@@ -322,12 +322,12 @@ float VertexVal(TDef *Def,int32_t Idx,double X,double Y,double Z) {
       if (!Def->Mask[idx[2]]) cube[0][2]=VertexAvg(Def,Idx,i+1,j+1,k);
       if (!Def->Mask[idx[3]]) cube[0][3]=VertexAvg(Def,Idx,i,  j+1,k);
    }
-   
+
    // If either value is nodata then interpolation will be nodata as well
    if (!DEFVALID(Def,cube[0][0]) || !DEFVALID(Def,cube[0][1]) || !DEFVALID(Def,cube[0][2]) || !DEFVALID(Def,cube[0][3])) {
       return(Def->NoData);
    }
-     
+
    // 3D Interpolation case
    if (Z>TINY_VALUE) {
 
@@ -336,13 +336,13 @@ float VertexVal(TDef *Def,int32_t Idx,double X,double Y,double Z) {
       idx[3]+=idxk;
       idx[2]+=idxk;
       k++;
-      
+
       if (Idx==-1) {
          Def_GetQuadMod(Def,idx,cube[1]);
       } else {
          Def_GetQuad(Def,Idx,idx,cube[1]);
       }
-      
+
       // Check for masked values
       if (Def->Mask) {
          if (!Def->Mask[idx[0]]) cube[1][0]=VertexAvg(Def,Idx,i,  j,  k);
@@ -350,7 +350,7 @@ float VertexVal(TDef *Def,int32_t Idx,double X,double Y,double Z) {
          if (!Def->Mask[idx[2]]) cube[1][2]=VertexAvg(Def,Idx,i+1,j+1,k);
          if (!Def->Mask[idx[3]]) cube[1][3]=VertexAvg(Def,Idx,i,  j+1,k);
       }
-      
+
       // If either value is nodata then interpolation will be nodata as well
       if (!DEFVALID(Def,cube[1][0]) || !DEFVALID(Def,cube[1][1]) || !DEFVALID(Def,cube[1][2]) || !DEFVALID(Def,cube[1][3])) {
          return(Def->NoData);
@@ -396,16 +396,16 @@ double VertexValV(TDef *Def,double X,double Y,double Z,Vect3d V) {
    idx[1]=idx[0]+1;
    idx[3]=(j==Def->NJ-1)?idx[0]:idx[0]+Def->NI;
    idx[2]=idx[3]+1;
-   
+
    Def_GetQuad(Def,0,idx,cube[0][0]);
    Def_GetQuad(Def,1,idx,cube[1][0]);
    if (Def->Data[2]) Def_GetQuad(Def,2,idx,cube[2][0]);
-   
+
    // If either value is nodata then interpolation will be nodata as well
    if (!DEFVALID(Def,cube[0][0][0]) || !DEFVALID(Def,cube[0][0][1]) || !DEFVALID(Def,cube[0][0][2]) || !DEFVALID(Def,cube[0][0][3])) {
       return(Def->NoData);
    }
-   
+
    // 3D Interpolation case
    if (Z>TINY_VALUE) {
 
@@ -416,7 +416,7 @@ double VertexValV(TDef *Def,double X,double Y,double Z,Vect3d V) {
       Def_GetQuad(Def,0,idx,cube[0][1]);
       Def_GetQuad(Def,1,idx,cube[1][1]);
       if (Def->Data[2]) Def_GetQuad(Def,2,idx,cube[2][1]);
-      
+
       // If either value is nodata then interpolation will be nodata as well
       if (!DEFVALID(Def,cube[0][1][0]) || !DEFVALID(Def,cube[0][1][1]) || !DEFVALID(Def,cube[0][1][2]) || !DEFVALID(Def,cube[0][1][3])) {
          return(Def->NoData);
@@ -437,11 +437,11 @@ double VertexValV(TDef *Def,double X,double Y,double Z,Vect3d V) {
          cube[2][0][3]=ILIN(cube[2][0][3],cube[2][1][3],Z);
       }
    }
-   
+
    V[0]=cube[0][0][0];
    V[1]=cube[1][0][0];
    V[2]=Def->Data[2]?cube[2][0][0]:0.0;
-   
+
    /*Interpolate over X*/
    if (X>TINY_VALUE) {
       V[0]=cube[0][0][0]=ILIN(cube[0][0][0],cube[0][0][1],X);
@@ -462,15 +462,15 @@ double VertexValV(TDef *Def,double X,double Y,double Z,Vect3d V) {
          V[2]=ILIN(cube[2][0][0],cube[2][0][3],Y);
       }
    }
-   
+
    return(0);
 }
 
 static inline float VertexAvgS(double *Data,char *Mask,int32_t NI,int32_t NJ,int32_t X,int32_t Y) {
-   
+
    unsigned long n=0,i,j,idx;
    float         val=0.0;
-   
+
    i=X;j=Y;
    j-=1;i-=1; idx=j*NI+i; if (j>=0 && i>=0 && Mask[idx]) { val+=Data[idx]; n++; }
    i++;       idx++;      if (j>=0         && Mask[idx]) { val+=Data[idx]; n++; }
@@ -480,12 +480,12 @@ static inline float VertexAvgS(double *Data,char *Mask,int32_t NI,int32_t NJ,int
    j++;       idx+=NI;    if (j<NJ && i>=0 && Mask[idx]) { val+=Data[idx]; n++; }
    i++;       idx++;      if (j<NJ         && Mask[idx]) { val+=Data[idx]; n++; }
    i++;       idx++;      if (j<NJ && i<NI && Mask[idx]) { val+=Data[idx]; n++; }
-   
+
    return(n?val/n:0.0);
 }
 
 float VertexValS(double *Data,char *Mask,int32_t NI,int32_t NJ,double X,double Y,char Geo) {
-   
+
    double        cell[4],d;
    unsigned long i,j,idx[4];
 
@@ -511,14 +511,14 @@ float VertexValS(double *Data,char *Mask,int32_t NI,int32_t NJ,double X,double Y
    cell[1]=Data[idx[1]];
    cell[2]=Data[idx[2]];
    cell[3]=Data[idx[3]];
-      
+
    if (Mask) {
       if (!Mask[idx[0]]) cell[0]=VertexAvgS(Data,Mask,NI,NJ,i,  j);
       if (!Mask[idx[1]]) cell[1]=VertexAvgS(Data,Mask,NI,NJ,i+1,j);
       if (!Mask[idx[2]]) cell[2]=VertexAvgS(Data,Mask,NI,NJ,i+1,j+1);
-      if (!Mask[idx[3]]) cell[3]=VertexAvgS(Data,Mask,NI,NJ,i,  j+1);      
+      if (!Mask[idx[3]]) cell[3]=VertexAvgS(Data,Mask,NI,NJ,i,  j+1);
    }
-   
+
    // Interpolate over X
    if (X>TINY_VALUE) {
       if (Geo) {

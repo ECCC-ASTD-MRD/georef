@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "GeoRef_Utils.h"
+#include "georef/GeoRef_Utils.h"
 
 /*----------------------------------------------------------------------------
  * Nom      : <InterpCubic>

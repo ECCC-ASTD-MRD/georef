@@ -37,7 +37,7 @@ Copyright: (C) 1997-2004, Advanced Interfaces Group,
 ===========================================================================
 */
 
-#include "gpc.h"
+#include "georef/gpc.h"
 #include <stdlib.h>
 #include <float.h>
 #include <math.h>

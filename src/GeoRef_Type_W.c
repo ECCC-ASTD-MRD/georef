@@ -1,8 +1,8 @@
 #include <App.h>
 #include <str.h>
 #include "GeoRef.h"
-#include "Def.h"
-#include "Vertex.h"
+#include "georef/Def.h"
+#include "georef/Vertex.h"
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_WKTValue>

@@ -5,8 +5,8 @@
 
 #include <App.h>
 #include "GeoRef.h"
-#include "Def.h"
-#include "Array.h"
+#include "georef/Def.h"
+#include "georef/Array.h"
 
 // Sizes in bytes of the different data types
 // TODO: revisit for architecture dependencies

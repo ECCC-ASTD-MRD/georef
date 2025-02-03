@@ -9,16 +9,16 @@
 #include <rmn/Vector.h>
 #include <rmn/QTree.h>
 
-#include "GeoRef_Utils.h"
-#include "ZRef.h"
+#include "georef/GeoRef_Utils.h"
+#include "georef/ZRef.h"
 
 #ifdef HAVE_GDAL
-   #include "gdal_safe.h"
+   #include "georef/gdal_safe.h"
    #include <gdal_alg.h>
    #include <ogr_api.h>
    #include <ogr_srs_api.h>
 #else
-   #include "ogr_stub.h"
+   #include "georef/ogr_stub.h"
 #endif
 
 // Extended fst_record information

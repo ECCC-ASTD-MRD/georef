@@ -1,7 +1,7 @@
 #include <App.h>
 #include "GeoRef.h"
-#include "Vertex.h"
-#include "Triangle.h"
+#include "georef/Vertex.h"
+#include "georef/Triangle.h"
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon for an M grid (Mesh or TIN)
@@ -16,7 +16,7 @@
  *    @return             Error code (0=ok)
 */
 int32_t GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
- 
+
    TQTree *node;
    Vect3d  b;
    int32_t n,d,idx;
@@ -29,14 +29,14 @@ int32_t GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
       if (Ref->QTree) {
          // If there's an index use it
          if ((node=QTree_Find(Ref->QTree,Lon[d],Lat[d])) && node->NbData) {
-            
+
             // Loop on this nodes data payload
             for(n=0;n<node->NbData;n++) {
                idx=(intptr_t)node->Data[n].Ptr-1; // Remove false pointer increment
 
                if (Bary_Get(b,Ref->Wght?Ref->Wght[idx/3]:0.0,Lon[d],Lat[d],Ref->AX[Ref->Idx[idx]],Ref->AY[Ref->Idx[idx]],
                   Ref->AX[Ref->Idx[idx+1]],Ref->AY[Ref->Idx[idx+1]],Ref->AX[Ref->Idx[idx+2]],Ref->AY[Ref->Idx[idx+2]])) {
-                  
+
                   // Return coordinate as triangle index + barycentric coefficient
                   X[d]=idx+b[0]+1;
                   Y[d]=idx+b[1]+1;
@@ -56,8 +56,8 @@ int32_t GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
                break;
             }
          }
-      }            
-   } 
+      }
+   }
    return(0);
 }
 

@@ -1,6 +1,6 @@
 #include <App.h>
-#include "GeoRef_Utils.h"
-#include "ZRef.h"
+#include "georef/GeoRef_Utils.h"
+#include "georef/ZRef.h"
 
 #ifdef HAVE_VGRID
 #include "vgrid.h"

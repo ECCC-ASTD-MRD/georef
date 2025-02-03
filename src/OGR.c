@@ -1,6 +1,5 @@
 #include <App.h>
-#include "OGR.h"
-//#include "DynArray.h"
+#include "georef/OGR.h"
 
 #ifdef HAVE_GDAL
 
