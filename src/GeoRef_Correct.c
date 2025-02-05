@@ -327,7 +327,7 @@ int32_t GeoRef_CalcPolarWindNorth(TGeoRef *Ref,float *polar_uu_in,float *polar_v
    }
 
    grtypa[0] = 'A';
-   gda = GeoRef_Create(24,12, grtypa, 0,0,0,0,0);
+   gda = GeoRef_Create(24,12,grtypa, 0,0,0,0,0);
    GeoRef_UV2WD(gda, polar_spd, polar_wd,  &uuin[(nj-1)*ni], &vvin[(nj-1)*ni], polar_lat, polar_lon, ni);
 
    pi   = 0.0;

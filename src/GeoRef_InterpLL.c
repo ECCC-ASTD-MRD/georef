@@ -243,6 +243,7 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
                   return(-1);
                   break;
 
+               case 'X':
                case 'L':
                   for (i=0; i < npts; i++) {
                      Ref->Lat[i]=Ref->AY[i];

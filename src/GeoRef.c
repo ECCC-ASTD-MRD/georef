@@ -650,7 +650,7 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
             crit.datev= -1;
             ok=fst24_read(h->file,&crit,NULL,&record);
          }
-      } else if (Grid==0) {
+     } else if (Grid==0) {
          strncpy(crit.etiket,h->etiket,FST_ETIKET_LEN);
          strncpy(crit.typvar,h->typvar,FST_TYPVAR_LEN);
          crit.ip1  = h->ip1;
@@ -752,7 +752,6 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
    if (GRef->GRTYP[0]=='L' || GRef->GRTYP[0]=='A' || GRef->GRTYP[0]=='B' || GRef->GRTYP[0]=='N' || GRef->GRTYP[0]=='S' || GRef->GRTYP[0]=='G') {
       return(TRUE);
    }
-
    if (!GRef->AY || !GRef->AX) {
 
       switch(GRef->GRTYP[0]) {
@@ -1017,6 +1016,24 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
    }
 
    return(GeoRef_Define(ref,NI,NJ,GRTYP,"",IG1,IG2,IG3,IG4,NULL,NULL));
+}
+
+TGeoRef* GeoRef_CreateFromRecord(fst_record *Rec) {
+
+   TGeoRef *ref;
+
+   ref=GeoRef_New();
+   ref->RPNHead.file=Rec->file;
+   ref->RPNHead.ip1=Rec->ip1;
+   ref->RPNHead.ip2=Rec->ip2;
+   ref->RPNHead.ip3=Rec->ip3;
+   ref->RPNHead.datev=Rec->datev;
+
+   if (Rec->grtyp[0]=='#') {
+      //TODO: CHECK For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
+   }
+
+   return(GeoRef_Define(ref,Rec->ni,Rec->nj,Rec->grtyp,"",Rec->ig1,Rec->ig2,Rec->ig3,Rec->ig4,NULL,NULL));
 }
 
 /**----------------------------------------------------------------------------

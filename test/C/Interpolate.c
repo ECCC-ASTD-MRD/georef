@@ -35,7 +35,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       return(FALSE);
    }
 
-   refout=GeoRef_Create(grid.ni,grid.nj,grid.grtyp,grid.ig1,grid.ig2,grid.ig3,grid.ig4,(fst_file*)grid.file);
+   refout=GeoRef_CreateFromRecord(&grid);
    if(refout == NULL){
        App_Log(APP_ERROR, "Problem creating TGeoRef object\n");
        return(FALSE);
@@ -65,7 +65,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 //      App_Log(APP_INFO,"Processing %s %i\n",Vars[0],record->file_index);
 
       if (!refin) {
-         refin=GeoRef_Create(record.ni,record.nj,record.grtyp,record.ig1,record.ig2,record.ig3,record.ig4,(fst_file*)record.file);
+         refin=GeoRef_CreateFromRecord(&record);
       }
 
       // Proceed with interpolation

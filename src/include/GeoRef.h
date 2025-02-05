@@ -351,6 +351,7 @@ int32_t  GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File);
 int32_t  GeoRef_Read(struct TGeoRef *GRef);
 int32_t  GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec);
   
+TGeoRef* GeoRef_CreateFromRecord(fst_record *Rec);
 TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,fst_file *File);
 TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *GRTYP,char *grref,int32_t VerCode,int32_t NbSub,TGeoRef **Subs);
 TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int32_t R,double ResR,double ResA);
