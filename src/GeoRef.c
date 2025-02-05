@@ -1152,8 +1152,8 @@ TGeoRef *GeoRef_SubSelect(TGeoRef *Ref,int N) {
 TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
 
    uint32_t  n,x,y,t;
-   double        dx,dy,lat0,lon0,lat1,lon1;
-   Vect2d        tr[3],pt;
+   double    dx,dy,lat0,lon0,lat1,lon1;
+   Vect2d    tr[3],pt;
 
    if (!Ref->AX || !Ref->AY) {
       return(NULL);
@@ -1203,7 +1203,7 @@ TQTree* GeoRef_BuildIndex(TGeoRef* __restrict const Ref) {
             return(NULL);
          }
       }
-   } else  if (Ref->GRTYP[0]=='Y' || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='O' || Ref->GRTYP[1]=='Y' || Ref->GRTYP[1]=='X') {
+   } else if (Ref->GRTYP[0]=='Y' || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='O') {
 
       // Useless for less than a few thousand points
       if ((Ref->NX*Ref->NY)<500) {
@@ -1329,7 +1329,6 @@ int32_t GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *
                            Dists[nr]=Dists[nr-1];
                            Idxs[nr]=Idxs[nr-1];
                         }
-
                         // Assign found nearest
                         Dists[nn]=l;
                         Idxs[nn]=(intptr_t)node->Data[n].Ptr-1; // Remove false pointer increment

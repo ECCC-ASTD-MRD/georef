@@ -83,14 +83,16 @@ int32_t GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
 */
 int32_t GeoRef_LL2XY_Y(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
-   int32_t idx,nb=0;
+   int32_t idx,n,nb=0;
    double  dists[8];
 
-   for (idx=0;idx<Nb;idx++) {
-      if (GeoRef_Nearest(Ref,Lon[idx],Lat[idx],&idx,dists,1,Ref->Options.DistTreshold)) {
+   for (n=0;n<Nb;n++) {
+      if (GeoRef_Nearest(Ref,Lon[n],Lat[n],&idx,dists,1,Ref->Options.DistTreshold)) {
          if (dists[0]<1.0) {
-            Y[idx]=(int)(idx/Ref->NX);
-            X[idx]=idx-(*Y)*Ref->NX;
+            Y[n]=(int)(idx/Ref->NX);
+            X[n]=idx-Y[n]*Ref->NX;
+            Y[n]+=1;
+            X[n]+=1;
             nb++;
          }
       }
