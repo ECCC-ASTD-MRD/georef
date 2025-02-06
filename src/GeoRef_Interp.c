@@ -50,10 +50,10 @@ int32_t gd_interpm(TGeoRef *Ref,TGeoOptions *Opt,float *Out,float *In,double *X,
    #pragma omp parallel for default(none) private(d,b,idx,n,v) shared(Nb,Ref,Opt,X,Y,Out,In)
    for(d=0;d<Nb;d++) {
       if (X[d]>=0 && Y[d]>=0) {
-         b[0]=X[d]-(int)X[d]-1.0;
-         b[1]=Y[d]-(int)Y[d]-1.0;
+         b[0]=X[d]-(int)X[d];
+         b[1]=Y[d]-(int)Y[d];
          b[2]=1.0-b[0]-b[1];
-         idx=(int)X[d];
+         idx=(int)X[d]-1;
 
          if(idx>Ref->NIdx) {
             Out[d]=Opt->NoData;
@@ -74,7 +74,7 @@ int32_t gd_interpm(TGeoRef *Ref,TGeoOptions *Opt,float *Out,float *In,double *X,
    }
    return(Nb);
 }
-
+         
 int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *X,double *Y,int32_t npts,TGeoSet *GSet) {
 
    int32_t ier, un, j;
