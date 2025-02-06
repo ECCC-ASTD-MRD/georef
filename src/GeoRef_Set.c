@@ -261,7 +261,7 @@ int32_t GeoRef_SetCalcXY(TGeoSet *GSet) {
          GSet->Y = &GSet->X[size];
 
          GeoRef_LL2XY(GSet->RefFrom,GSet->X,GSet->Y,GSet->RefTo->Lat,GSet->RefTo->Lon,size,TRUE);
-      }
+     }
 
       GeoRef_SetIndexInit(GSet);
    }

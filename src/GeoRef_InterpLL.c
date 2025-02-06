@@ -372,6 +372,8 @@ int32_t GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
       n=GeoRef_GetLL(ref->Subs[0],Lat,Lon);           // Yin
       n+=GeoRef_GetLL(ref->Subs[1],&Lat[i],&Lon[i]);  // Yang
    } else {
+      n=GeoRef_CalcLL(ref);
+      
       if (ref->Lat) {
          if (Lon) memcpy(Lon,ref->Lon,n*sizeof(double));
          if (Lat) memcpy(Lat,ref->Lat,n*sizeof(double));
