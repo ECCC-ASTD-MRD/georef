@@ -969,7 +969,6 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
       GeoRef_Incr(ref);
    }
 
-
    // Read grid descriptors
    if (AX && AY) {
       GeoRef_AxisDefine(ref,AX,AY);
@@ -1031,6 +1030,16 @@ TGeoRef* GeoRef_CreateFromRecord(fst_record *Rec) {
 
    if (Rec->grtyp[0]=='#') {
       //TODO: CHECK For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
+   }
+
+   // Radar grids are treated differently
+   if (Rec->grtyp[0]=='R') {
+      float xg1,xg2,xg3,xg4;
+      char  type;
+
+      type='L';
+      f77name(cigaxg)(&type,&xg1,&xg2,&xg3,&xg4,&Rec->ig1,&Rec->ig2,&Rec->ig3,&Rec->ig4,1);
+      return(GeoRef_CreateR(xg1,xg2,0.0,Rec->nj,xg3,xg4));
    }
 
    return(GeoRef_Define(ref,Rec->ni,Rec->nj,Rec->grtyp,"",Rec->ig1,Rec->ig2,Rec->ig3,Rec->ig4,NULL,NULL));

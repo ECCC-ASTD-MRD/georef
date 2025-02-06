@@ -35,7 +35,7 @@ double GeoRef_RDRHeight(TGeoRef *Ref,TZRef *ZRef,double Azimuth,double Bin,doubl
 */
 TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int32_t R,double ResR,double ResA) {
 
-   TGeoRef *ref;
+   TGeoRef *ref,*fref;
 
    ref=GeoRef_New();
 
@@ -46,11 +46,20 @@ TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int32_t R,double Res
    ref->R=R;
    ref->ResR=ResR;
    ref->ResA=ResA;
+   ref->Height=GeoRef_RDRHeight;
 
    GeoRef_Size(ref,0,0,360/ResA,R-1,0);
-   GeoRef_Qualify(ref);
 
-   ref->Height=GeoRef_RDRHeight;
+    if ((fref=GeoRef_Find(ref))) {
+      // This georef already exists
+      free(ref);
+      GeoRef_Incr(fref);
+      return(fref);
+   }
+
+   // This is a new georef
+   GeoRef_Add(ref);
+   GeoRef_Qualify(ref);
 
    return(ref);
 }
