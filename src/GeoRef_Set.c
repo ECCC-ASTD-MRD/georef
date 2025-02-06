@@ -192,7 +192,10 @@ int32_t GeoRef_SetZoneDefine(TGeoSet *GSet) {
 
    int32_t extrap = FALSE;
    switch (GSet->RefFrom->GRTYP[0]) {
-      case 'N':
+      case 'M':
+         GSet->flags |= SET_ZONES;
+         return(0);      case 'N':
+         break;
       case 'S':
       case '!':
          extrap = TRUE;

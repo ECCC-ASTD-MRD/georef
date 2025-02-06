@@ -20,22 +20,23 @@ int32_t GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
    TQTree *node;
    Vect3d  b;
    int32_t n,d,idx;
+   double lon;
 
-   #pragma omp parallel for default(none) private(d,node,b,n,idx) shared(Nb,Ref,X,Y,Lat,Lon)
+   #pragma omp parallel for default(none) private(d,node,b,n,idx,lon) shared(Nb,Ref,X,Y,Lat,Lon)
    for(d=0;d<Nb;d++) {
       X[d]=-1.0;
       Y[d]=-1.0;
+      lon=CLAMPLON(Lon[d]);
 
       if (Ref->QTree) {
          // If there's an index use it
-         if ((node=QTree_Find(Ref->QTree,Lon[d],Lat[d])) && node->NbData) {
-
+         if ((node=QTree_Find(Ref->QTree,lon,Lat[d])) && node->NbData) {
             // Loop on this nodes data payload
             for(n=0;n<node->NbData;n++) {
                idx=(intptr_t)node->Data[n].Ptr-1; // Remove false pointer increment
 
-               if (Bary_Get(b,Ref->Wght?Ref->Wght[idx/3]:0.0,Lon[d],Lat[d],Ref->AX[Ref->Idx[idx]],Ref->AY[Ref->Idx[idx]],
-                  Ref->AX[Ref->Idx[idx+1]],Ref->AY[Ref->Idx[idx+1]],Ref->AX[Ref->Idx[idx+2]],Ref->AY[Ref->Idx[idx+2]])) {
+               if (Bary_Get(b,Ref->Wght?Ref->Wght[idx/3]:0.0,lon,Lat[d],Ref->Lon[Ref->Idx[idx]],Ref->Lat[Ref->Idx[idx]],
+                  Ref->Lon[Ref->Idx[idx+1]],Ref->Lat[Ref->Idx[idx+1]],Ref->Lon[Ref->Idx[idx+2]],Ref->Lat[Ref->Idx[idx+2]])) {
 
                   // Return coordinate as triangle index + barycentric coefficient
                   X[d]=idx+b[0]+1;

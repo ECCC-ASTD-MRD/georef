@@ -47,9 +47,10 @@ int32_t gd_interpm(TGeoRef *Ref,TGeoOptions *Opt,float *Out,float *In,double *X,
    Vect3d  b,v;
    int32_t d,n,idx;
 
-   #pragma omp parallel for default(none) private(d,b,idx,n,v) shared(Nb,Ref,Opt,X,Y,Out,In)
+   #pragma omp parallel for default(none) private(d,b,idx,n,v) shared(stderr,Nb,Ref,Opt,X,Y,Out,In)
    for(d=0;d<Nb;d++) {
       if (X[d]>=0 && Y[d]>=0) {
+
          b[0]=X[d]-(int)X[d];
          b[1]=Y[d]-(int)Y[d];
          b[2]=1.0-b[0]-b[1];
@@ -245,6 +246,18 @@ int32_t GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,fl
    return(0);
 }
 
+int32_t GeoRef_InterpClear(TGeoRef *Ref,TGeoOptions *Opt,float *Buffer) {
+
+   int64_t i;
+
+   if (Opt->Extrap==ER_VALUE) {
+      for(i=0;i<Ref->NX*Ref->NY;i++) {
+         Buffer[i]=Opt->NoData;
+      }
+   }
+   return(i);
+}
+
 /**----------------------------------------------------------------------------
  * @brief  Interpolates values between 2 georeferences
  *    @param[in]  RefTo      Destination geo-reference
@@ -303,6 +316,8 @@ int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zo
 
       if (GeoRef_CalcLL(RefTo)) {
          GeoRef_SetCalcXY(gset);
+
+//         GeoRef_InterpClear(RefTo,Opt,zout);
          if (GeoRef_InterpFinally(RefTo,RefFrom,Opt,zout,lxzin,gset->X,gset->Y,RefTo->NX*RefTo->NY,gset)==0) {
             if (Opt->PolarCorrect) {
                GeoRef_SetZoneDefine(gset);

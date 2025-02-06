@@ -197,7 +197,7 @@ typedef struct TGeoOptions {
    TRef_InterpV InterpVector;   ///< Vector geometry interpolation method
    TRef_Combine Combine;        ///< Aggregation type
    int32_t      Transform;      ///< Apply transformation or stay within master referential
-   int32_t      CIndex;         ///< C Indexing (starts st 0)
+   int32_t      CIndex;         ///< C Indexing (starts at 0)
    int32_t      Symmetric;      ///< 
    int32_t      Segment;        ///< How much segmentation (Conservatives/Geometric modes)
    int32_t      Sampling;       ///< Sampling interval
@@ -409,7 +409,7 @@ int32_t  GeoRef_SetWrite(TGeoSet *GSet,fst_file *File);
 int32_t  GeoRef_SetZoneDefine(TGeoSet *GSet);
 int32_t  GeoRef_SetCalcXY(TGeoSet *GSet);
 int32_t  GeoRef_SetCalcYYXY(TGeoSet *GSet);
-int32_t GeoRef_SetIndexInit(TGeoSet *GSet);
+int32_t  GeoRef_SetIndexInit(TGeoSet *GSet);
 
 int32_t  GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t npts,TGeoSet *GSet);
 int32_t  GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin);
