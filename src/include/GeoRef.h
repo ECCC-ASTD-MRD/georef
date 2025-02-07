@@ -191,24 +191,24 @@ typedef double  (TGeoRef_Height) (struct TGeoRef *Ref,TZRef *ZRef,double X,doubl
 
 // Geospatial manipulation options
 typedef struct TGeoOptions {
-   TRef_InterpR Interp;         ///< Raster interpolation method
-   TRef_ExtrapR Extrap;         ///< Raster extrapolation method
-   TRef_InterpV InterpVector;   ///< Vector geometry interpolation method
-   TRef_Combine Combine;        ///< Aggregation type
-   int32_t      Transform;      ///< Apply transformation or stay within master referential
-   int32_t      CIndex;         ///< C Indexing (starts at 0)
-   int32_t      Symmetric;      ///< 
-   int32_t      Segment;        ///< How much segmentation (Conservatives/Geometric modes)
-   int32_t      Sampling;       ///< Sampling interval
-   char         PolarCorrect;   ///< Apply polar corrections
-   char         VectorMode;     ///< Process data as vector (ie: wind)
-   float        DistTreshold;   ///< Distance treshold for point clouds
-   float        NoData;         ///< NoData Value (Default: NaN)
-   double      *Table;          ///< Data table to check of values to check for
-   double     **lutDef;         ///< Lookup table
-   int32_t      lutSize;        ///< Number of lookup elements
-   int32_t      lutDim;         ///< Dimension of the lookup elements
-   double      *Ancilliary;     ///< Pre calculated field to be passed to interpolation (ex: variance, average,...)
+   TRef_InterpR Interp;         ///< Raster interpolation method (default: IR_CUBIC)
+   TRef_ExtrapR Extrap;         ///< Raster extrapolation method (default: ER_VALUE)
+   TRef_InterpV InterpVector;   ///< Vector geometry interpolation method (default: IV_FAST)
+   TRef_Combine Combine;        ///< Aggregation type (default: CB_REPLACE)
+   int32_t      Transform;      ///< Apply transformation or stay within master referential (default: TRUE)
+   int32_t      CIndex;         ///< C Indexing (starts at 0) (default: FALSE)
+   int32_t      Symmetric;      ///<  (default: FALSE)
+   int32_t      Segment;        ///< How much segmentation (Conservatives/Geometric modes) (default: 1)
+   int32_t      Sampling;       ///< Sampling interval (default: 1)
+   char         PolarCorrect;   ///< Apply polar corrections (default: TRUE)
+   char         VectorMode;     ///< Process data as vector (ie: wind) (default: FALSE)
+   float        DistTreshold;   ///< Distance treshold for point clouds (default: 10.0)
+   float        NoData;         ///< NoData Value (default: NaN)
+   double      *Table;          ///< Data table to check of values to check for (default: NULL)
+   double     **lutDef;         ///< Lookup table (default: NULL)
+   int32_t      lutSize;        ///< Number of lookup elements (multiple lookup values) (default: 0)
+   int32_t      lutDim;         ///< Dimension of the lookup elements (default: 0)
+   double      *Ancilliary;     ///< Pre calculated field to be passed to interpolation (ex: variance, average,...) (default: NULL)
 } TGeoOptions;
 
 #ifndef GEOREF_BUILD
