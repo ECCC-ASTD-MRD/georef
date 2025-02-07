@@ -292,6 +292,7 @@ int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zo
    }
 
    App_TimerStart(int_timer);
+   GeoRef_InterpClear(RefTo,Opt,zout);
 
    if (RefFrom->NbSub > 0 || RefTo->NbSub > 0) {
       // YY mutli grids involved
@@ -317,7 +318,6 @@ int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zo
       if (GeoRef_CalcLL(RefTo)) {
          GeoRef_SetCalcXY(gset);
 
-//         GeoRef_InterpClear(RefTo,Opt,zout);
          if (GeoRef_InterpFinally(RefTo,RefFrom,Opt,zout,lxzin,gset->X,gset->Y,RefTo->NX*RefTo->NY,gset)==0) {
             if (Opt->PolarCorrect) {
                GeoRef_SetZoneDefine(gset);

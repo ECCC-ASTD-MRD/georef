@@ -55,7 +55,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    }
 
    GeoRef_Options.Interp=Type;
-//   GeoRef_Options.NoData=0.0;
+//   GeoRef_Options.NoData=-999.0;
 
    GeoRef_Write(refout,NULL,fout);
 

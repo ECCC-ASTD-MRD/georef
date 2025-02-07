@@ -749,14 +749,14 @@ static inline void Def_SetValue(TDef *Def,TGeoOptions *Opt,int32_t X, int32_t Y,
 int32_t GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Geom,double Value) {
 
 #ifdef HAVE_GDAL
-   int32_t    i,j,g,ind1,ind2;
-   int32_t    x,y,miny,maxy,minx,maxx;
-   int32_t    ints,n,ns,np;
-   int32_t   *polyInts;
-   double dminy,dmaxy,dx1,dy1,dx2,dy2,dy;
-   double intersect,tmpd;
-   int32_t    horizontal_x1,horizontal_x2;
-   int32_t    dnx,dny,x0,x1,y0,y1,fr,sx,sy;
+   int32_t i,j,g,ind1,ind2;
+   int32_t x,y,miny,maxy,minx,maxx;
+   int32_t ints,n,ns,np;
+   int32_t *polyInts;
+   double  dminy,dmaxy,dx1,dy1,dx2,dy2,dy;
+   double  intersect,tmpd;
+   int32_t horizontal_x1,horizontal_x2;
+   int32_t dnx,dny,x0,x1,y0,y1,fr,sx,sy;
 
    if (!Opt) Opt=&ToRef->Options;
    if (!Opt) Opt=&GeoRef_Options;
@@ -979,6 +979,8 @@ int32_t GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int32_
       return(0);
    }
 
+   if (!Seg) Seg=1;
+
    dn=1.0/Seg;
    df=dn*0.5;
 
@@ -1122,7 +1124,6 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,OGRGeom
                   break;
 
                case 'L':  // Length mode
-//                  inter=OGR_G_Intersection(Geom,Poly);
                   inter=OGM_Clip(Geom,Poly);
                   if (Mode=='C' || Mode=='N') {
                      dp=OGM_Length(inter)/Area;
