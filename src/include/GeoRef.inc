@@ -13,7 +13,7 @@ interface
         import :: C_PTR
         implicit none
 
-        type(C_PTR), intent(in) :: rec
+        type(C_PTR), intent(in), value  :: rec
 
         type(C_PTR) :: out
     end function georef_createfromrecord
@@ -284,9 +284,10 @@ interface
         import :: C_PTR,C_INT32_T, C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
-        real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
+        type(C_PTR), intent(in), value :: ref
+        real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
         real(C_DOUBLE), intent(in), dimension(*) :: x,y
+!        type(c_PTR):: lat,lon,x,y
         integer(C_INT32_T) :: n,extrap
 
         integer(C_INT32_T) :: out
@@ -297,7 +298,7 @@ interface
         import :: C_PTR,C_INT32_T, C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
         real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
         integer(C_INT32_T) :: n,extrap

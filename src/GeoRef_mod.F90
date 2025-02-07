@@ -265,11 +265,9 @@ contains
         class(georef),  intent(inout) :: this  !< georef instance
         type(fst_record), intent(in) :: rec
 
-        integer(C_INT32_T) :: val
         logical :: res
 
         res=.false.;
-
         this%ptr=georef_createfromrecord(rec%get_c_ptr())
         if (c_associated(this%ptr)) then
            res=.true.
@@ -289,13 +287,18 @@ contains
 !   c_gdllfxy
     function georef_xy2ll_f(this,lat,lon,x,y,n,extrap) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
-        real(C_DOUBLE), intent(in), dimension(*) :: x,y
-        integer(C_INT32_T) :: n,extrap
-
+        real(C_DOUBLE), dimension(:), intent(in) :: lat,lon
+        real(C_DOUBLE), dimension(:), intent(in) :: x,y
+        integer(C_INT32_T) :: n,c_extrap
+        logical, optional :: extrap
         integer(C_INT32_T) :: out
 
-        out=georef_xy2ll(this%ptr,lat,lon,x,y,n,extrap)
+        c_extrap=0
+        if (present(extrap) .and. extrap) then
+           c_extrap=1
+        end if
+
+        out=georef_xy2ll(this%ptr,lat,lon,x,y,n,c_extrap)
     end function georef_xy2ll_f
  
 !   c_gdxyfll
@@ -303,11 +306,16 @@ contains
         class(georef),  intent(inout) :: this  !< georef instance
         real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
-        integer(C_INT32_T) :: n,extrap
-
+        integer(C_INT32_T) :: n,c_extrap
+        logical, optional :: extrap
         integer(C_INT32_T) :: out
 
-        out=georef_ll2xy(this%ptr,x,y,lat,lon,n,extrap)
+        c_extrap=0
+        if (present(extrap) .and. extrap) then
+           c_extrap=1
+        end if
+
+        out=georef_ll2xy(this%ptr,x,y,lat,lon,n,c_extrap)
     end function georef_ll2xy_f
  
 !   c_gdxysval

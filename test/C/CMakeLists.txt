@@ -14,13 +14,18 @@ if (EC_INIT_DONE LESS 2)
             add_link_options(-lintlc -lifcore -lifport)
         endif()
 
-        add_executable(Interpolate Interpolate.c)
+        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../src/lib ${CMAKE_CURRENT_SOURCE_DIR}/../../build/src/include)
+
+        add_executable(TestF90 EXCLUDE_FROM_ALL test.F90)
+        add_dependencies(check TestF90)
+        target_link_libraries(TestF90 georef-shared rmn::rmn-ompi m)
+
+        add_test(TestF90 test $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd)
+
+        add_executable(Interpolate EXCLUDE_FROM_ALL Interpolate.c)
         add_dependencies(check Interpolate)
 
-        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../src/lib)
-        link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../src/lib)
-
-        target_link_libraries(Interpolate georef-shared -lm rmn::rmn-ompi)
+        target_link_libraries(Interpolate georef-shared rmn::rmn-ompi m)
         set_target_properties(Interpolate PROPERTIES VERSION ${PROJECT_VERSION})
 
         file(REMOVE libgeoref.fstd)
