@@ -25,7 +25,7 @@ int32_t GeoRef_LL2XY_A(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
       case GRID_SOUTH:  dellat = 90.0 / Ref->NY;  xlat0 = -90.0 + dellat * 0.5; break;
    }        
    
-   GeoRef_LL2GD(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
+   GeoRef_LL2GD(Ref,X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon);
 
    return(0);
 }
@@ -54,7 +54,7 @@ int32_t GeoRef_LL2XY_B(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
       case GRID_SOUTH:  dellat = 90.0 / (Ref->NY-1);  xlat0 = -90.0; break;
    }        
    
-   GeoRef_LL2GD(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
+   GeoRef_LL2GD(Ref,X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon);
 
    return(0);
 }
@@ -82,7 +82,7 @@ int32_t GeoRef_LL2XY_G(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
    switch(Ref->RPNHead.ig1) {
       case GRID_GLOBAL: 
          for(i=0;i<Nb;i++) {
-            X[i] = (CLAMPLONREF(Lon[i],Ref->Options.LonRef) - xlon0)/dellon + 1.0;
+            X[i] = (CLAMPLON(Lon[i]) - xlon0)/dellon + 1.0;
             indy = GeoRef_XFind(Lat[i],Ref->AX,Ref->NX,1);
             if (indy>Ref->NY) indy = Ref->NY - 2;
          
@@ -93,13 +93,13 @@ int32_t GeoRef_LL2XY_G(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
       case GRID_NORTH:
          dellat = 90.0 / Ref->NY;
          xlat0 =  dellat * 0.5;
-         GeoRef_LL2GD(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
+         GeoRef_LL2GD(Ref,X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon);
          break;
 
       case GRID_SOUTH:
          dellat = 90.0 / Ref->NY;
          xlat0 = -90.0 + dellat * 0.5;
-         GeoRef_LL2GD(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
+         GeoRef_LL2GD(Ref,X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon);
          break;
    }
 

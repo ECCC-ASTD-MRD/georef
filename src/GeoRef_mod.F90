@@ -102,7 +102,6 @@ module georef_mod
         integer(C_INT8_T)  :: PolarCorrect = 1       !< Apply polar corrections
         integer(C_INT8_T)  :: VectorMode = 0         !< Process data as vector
         real(C_FLOAT)      :: DistTreshold = 10.0    !< Distance treshold for point32_t clouds
-        real(C_FLOAT)      :: LonRef = 0.0           !< Longitude referential (-180.0,0.0)
         real(C_FLOAT)      :: NoData = 0.0           !< NoData Value (Default: NaN)
         type(C_PTR) :: Table = c_null_ptr            !< Data table to check of values to check for
         type(C_PTR) :: lutDef = c_null_ptr           !< Lookup table

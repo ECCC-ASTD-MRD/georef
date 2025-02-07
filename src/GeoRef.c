@@ -12,7 +12,7 @@
 static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
 static int32_t        GeoRef_Preserve = -10;                                                                                    ///< How many of teh first created georef to keep cached (negative means uninitialized)
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
-__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, IV_FAST, CB_REPLACE, TRUE, FALSE, FALSE, 1, 1, TRUE, FALSE, 10.0, 0.0, NAN, NULL, NULL, 0, 0, NULL };  ///< Default options
+__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, IV_FAST, CB_REPLACE, TRUE, FALSE, FALSE, 1, 1, TRUE, FALSE, 10.0, NAN, NULL, NULL, 0, 0, NULL };  ///< Default options
 
 const char *TRef_InterpVString[] = { "UNDEF","FAST","WITHIN","INTERSECT","CENTROID","ALIASED","CONSERVATIVE","NORMALIZED_CONSERVATIVE","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
 const char *TRef_InterpRString[] = { "UNDEF","NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
@@ -59,7 +59,6 @@ void Georef_PrintOptions(TGeoOptions *Options) {
         "Polar correction    : %i\n"
         "Vector mode         : %i\n"
         "Distance treshold   : %f\n"
-        "Longitude reference : %f\n"
         "No data value       : %f\n"
         "Table               : %p\n"
         "Lookup table        : %p\n"
@@ -68,7 +67,7 @@ void Georef_PrintOptions(TGeoOptions *Options) {
         "Ancilliary buffer   : %p\n",
          Options->Interp,Options->Extrap,Options->InterpVector,Options->Combine,Options->Transform,Options->CIndex,
          Options->Symmetric,Options->Segment,Options->Sampling,Options->PolarCorrect,Options->VectorMode,Options->DistTreshold,
-         Options->LonRef,Options->NoData,Options->Table,Options->lutDef,Options->lutSize,Options->lutDim,Options->Ancilliary);
+         Options->NoData,Options->Table,Options->lutDef,Options->lutSize,Options->lutDim,Options->Ancilliary);
 }
 
 int32_t GeoRef_Project(struct TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int32_t Extrap,int32_t Transform) {

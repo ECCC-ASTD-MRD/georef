@@ -204,7 +204,7 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
          case 'M':
             for (i=0;i<ni;i++) {
                Ref->Lat[i]=Ref->AY[i];
-               Ref->Lon[i]=CLAMPLON(Ref->AX[i]);
+               Ref->Lon[i]=Ref->AX[i];
             }
             break;
 
@@ -343,7 +343,7 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
       }
 
       for (i=0; i < npts; i++) {
-         CLAMPLONREF(Ref->Lon[i],Ref->Options.LonRef);
+         CLAMPLON(Ref->Lon[i]);
       }
    }
 
@@ -373,7 +373,7 @@ int32_t GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
       n+=GeoRef_GetLL(ref->Subs[1],&Lat[i],&Lon[i]);  // Yang
    } else {
       n=GeoRef_CalcLL(ref);
-      
+
       if (ref->Lat) {
          if (Lon) memcpy(Lon,ref->Lon,n*sizeof(double));
          if (Lat) memcpy(Lat,ref->Lat,n*sizeof(double));

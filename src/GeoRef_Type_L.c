@@ -43,7 +43,7 @@ int32_t GeoRef_LL2XY_L(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
    float  dellat,dellon,xlat0,xlon0;   
 
    f77name(cigaxg)(Ref->GRTYP,&xlat0,&xlon0,&dellat,&dellon,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);         
-   GeoRef_LL2GD(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
+   GeoRef_LL2GD(Ref,X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon);
 
    return(0);
 }

@@ -79,7 +79,7 @@ int32_t GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
 
       case 'L':
          f77name(cigaxg)(Ref->RPNHeadExt.grref,&xlat0,&xlon0,&dlat,&dlon,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
-         GeoRef_LL2GD(X,Y,Lat,Lon,Nb,xlat0,xlon0,dlat,dlon,(Ref->AX[0]<0.0)?-180.0:0.0);
+         GeoRef_LL2GD(Ref,X,Y,Lat,Lon,Nb,xlat0,xlon0,dlat,dlon);
          break;
 
       case 'E':
@@ -169,7 +169,7 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
 
       // Adjust for Longitude reference
       for (i=0; i<Nb; i++) {
-         Lon[i]=(CLAMPLONREF(Lon[i],Ref->Options.LonRef));
+         Lon[i]=CLAMPLON(Lon[i]);
       }
 
       icode=Nb;

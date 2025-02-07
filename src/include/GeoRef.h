@@ -52,7 +52,6 @@ typedef struct {
 #define CLAMPLAT(LAT)        (LAT=LAT>90.0?90.0:(LAT<-90.0?-90.0:LAT))                                                    ///< Clamp latitude between -90 and 90
 #define CLAMPLON(LON)        (LON=LON>180?LON-360:(LON<-180?LON+360:LON))                                                 ///< Clamp longitude between -180 and 180
 #define CLAMPLONRAD(LON)     (LON=(LON>M_PI?(fmod(LON+M_PI,M_2PI)-M_PI):(LON<=-M_PI?(fmod(LON-M_PI,M_2PI)+M_PI):LON)))    ///< Clamp longitude in radians -PI and PI
-#define CLAMPLONREF(LON,REF) (LON>(360.0+REF)?(LON-360.0):LON<REF?(LON+360.0):LON)                                        ///< Clamp longitude between -180 and 180
 #define SIDELON(SIDE,L)      (((SIDE)>0 && (L)<0)?L+360.0:((SIDE)>0 && (L)<0)?(L)-360.0:(L))                              ///< Force longitude to be all positive or negative
 #define COORD_CLEAR(C)       (C.Lat=C.Lon=C.Elev=-999.0)                                                                  ///< Clear the coordinates values to -999 (undefined)
 
@@ -204,7 +203,6 @@ typedef struct TGeoOptions {
    char         PolarCorrect;   ///< Apply polar corrections
    char         VectorMode;     ///< Process data as vector (ie: wind)
    float        DistTreshold;   ///< Distance treshold for point clouds
-   float        LonRef;         ///< Longitude referential (-180.0,0.0)
    float        NoData;         ///< NoData Value (Default: NaN)
    double      *Table;          ///< Data table to check of values to check for
    double     **lutDef;         ///< Lookup table
@@ -490,12 +488,17 @@ static inline int32_t GeoRef_XFind(double Value,double *Table,int32_t Nb,int32_t
 }
 
 // LatLon translation and scaling
-static inline void GeoRef_LL2GD(double *X,double *Y,double *Lat,double *Lon,int32_t Nb,float Lat0,float Lon0,float DLat,float DLon,float LonRef) {
+static inline void GeoRef_LL2GD(TGeoRef* __restrict const Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb,float Lat0,float Lon0,float DLat,float DLon) {
 
    int32_t i;
-   
+   double  r;
+
+   #define CLAMPLONREF(LON,REF) (LON>(360.0+REF)?(LON-360.0):LON<REF?(LON+360.0):LON)
+
+   r=(Ref->AX && Ref->AX[0]<0.0)?-180.0:0.0;
+
    for(i=0;i<Nb;i++) {
-      X[i] = (CLAMPLONREF(Lon[i],LonRef)-Lon0)/DLon + 1.0;
+      X[i] = (CLAMPLONREF(Lon[i],r)-Lon0)/DLon + 1.0;
       Y[i] = (Lat[i]-Lat0)/DLat + 1.0;
    }
 }

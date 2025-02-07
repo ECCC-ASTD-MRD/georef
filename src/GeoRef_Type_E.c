@@ -26,7 +26,7 @@ int32_t GeoRef_LL2XY_E(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
    dellat = 180.0 / (Ref->NY);
    xlat0 = -90. + 0.5*dellat;
 
-   GeoRef_LL2GD(X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon,0.0);
+   GeoRef_LL2GD(Ref,X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon);
    return(0);
 }
 
