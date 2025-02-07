@@ -69,7 +69,7 @@ module georef_mod
         procedure, pass   :: boundingbox => georef_boundingbox_f
         procedure, pass   :: griddistance => georef_griddistance_f
         procedure, pass   :: write => georef_write_f
-        procedure, pass   :: read => georef_read_f
+        procedure, pass   :: fromrecord => georef_fromrecord_f
         procedure, pass   :: interp => georef_interp_f
         procedure, pass   :: interpuv => georef_interpuv_f
         procedure, pass   :: interpwd => georef_interpwd_f
@@ -261,19 +261,20 @@ contains
         endif
     end function georef_write_f
 
-    function georef_read_f(this) result(res)
-        class(georef),  intent(in) :: this  !< georef instance
+    function georef_fromrecord_f(this,rec) result(res)
+        class(georef),  intent(inout) :: this  !< georef instance
+        type(fst_record), intent(in) :: rec
 
         integer(C_INT32_T) :: val
         logical :: res
 
         res=.false.;
 
-        val=georef_read(this%ptr)
-        if (val==1) then
+        this%ptr=georef_createfromrecord(rec%get_c_ptr())
+        if (c_associated(this%ptr)) then
            res=.true.
         endif
-    end function georef_read_f
+    end function georef_fromrecord_f
 
 !   c_gdll
     function georef_getll_f(this,lat,lon) result(out)

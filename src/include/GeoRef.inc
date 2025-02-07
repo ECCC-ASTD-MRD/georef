@@ -8,6 +8,16 @@ interface
         type(C_PTR) :: out
     end function georef_new
 
+!   TGeoRef* GeoRef_CreateFromRecord(fst_record *Rec)
+    function georef_createfromrecord(rec) result(out) bind(C, name = 'GeoRef_CreateFromRecord')
+        import :: C_PTR
+        implicit none
+
+        type(C_PTR), intent(in) :: rec
+
+        type(C_PTR) :: out
+    end function georef_createfromrecord
+
 !   TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,fst_file *File);
     function georef_create(ni,nj,grtyp,ig1,ig2,ig3,ig4,file) result(out) bind(C, name = 'GeoRef_Create')
         import :: C_PTR,C_INT32_T,C_CHAR
