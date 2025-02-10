@@ -20,7 +20,7 @@ if (EC_INIT_DONE LESS 2)
         add_dependencies(check TestF90)
         target_link_libraries(TestF90 georef-shared rmn::rmn-ompi m)
 
-        add_test(TestF90 test $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd $ENV{ECCI_DATA_DIR}/georef/grids/PS.fstd)
+        add_test(TestF90 TestF90 $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd $ENV{ECCI_DATA_DIR}/georef/grids/PS.fstd)
 
         add_executable(Interpolate EXCLUDE_FROM_ALL Interpolate.c)
         add_dependencies(check Interpolate)
