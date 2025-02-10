@@ -344,7 +344,6 @@ void     GeoRef_Qualify(TGeoRef* __restrict const Ref);
 int32_t  GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1);
 int32_t  GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,double *I0,double *J0,double *I1,double *J1);
 int32_t  GeoRef_Valid(TGeoRef* __restrict const Ref);
-double   GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1);
 int32_t  GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File);
 int32_t  GeoRef_Read(struct TGeoRef *GRef);
 int32_t  GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec);
@@ -368,6 +367,8 @@ int32_t  GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon);                    
 int32_t  GeoRef_CalcLL(TGeoRef* Ref);                                                                                                         // ez_calclatlon
 int32_t  GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t N,int32_t Extrap);                                     // c_gdllfxy
 int32_t  GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t N,int32_t Extrap);                                     // c_gdxyfll
+double   GeoRef_XYDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1);
+double   GeoRef_LLDistance(TGeoRef *Ref, double Lat0, double Lon0, double Lat1, double Lon1);
 
 int32_t  GeoRef_XYVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t n);                                    // c_gdxysval
 int32_t  GeoRef_XYUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *x,double *y,int32_t n);       // c_gdxyvval

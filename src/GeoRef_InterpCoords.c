@@ -198,7 +198,7 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
  *    @param[in]  Nb      Number of coordinates
  *    @param[in]  Extrap  Enable extrapolation
 
- *    @return             Error code (0=ok)
+ *    @return             Number of valid interpolations
 */
 int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb,int32_t Extrap) {
 

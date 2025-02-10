@@ -1411,16 +1411,16 @@ int32_t GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict cons
    if (!Ref0 || !Ref1) return(0);
 
    // Source grid Y
-   if (Ref1->GRTYP[0]=='Y') {
-      *X0=Ref1->X0; *Y0=Ref1->Y0;
-      *X1=Ref1->X1; *Y1=Ref1->Y1;
+   if (Ref0->GRTYP[0]=='Y') {
+      *X0=Ref0->X0; *Y0=Ref0->Y0;
+      *X1=Ref0->X1; *Y1=Ref0->Y1;
       return(1);
    }
 
    // If destination is global
-   if (Ref0->GRTYP[0]=='Y' || Ref0->Type&GRID_WRAP) {
-      *X0=Ref1->X0; *Y0=Ref1->Y0;
-      *X1=Ref1->X1; *Y1=Ref1->Y1;
+   if (Ref1->GRTYP[0]=='Y' || Ref1->Type&GRID_WRAP) {
+      *X0=Ref0->X0; *Y0=Ref0->Y0;
+      *X1=Ref0->X1; *Y1=Ref0->Y1;
       in=1;
    }
 
@@ -1433,28 +1433,32 @@ int32_t GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict cons
       dx=Ref1->X0; dy=Ref1->Y0;
       GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
       if (GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE)) {
-         x0=Ref1->X0;y0=Ref1->Y0;
+         x0=fmin(x0,di); y0=fmin(y0,dj);
+         x1=fmax(x1,di); y1=fmax(y1,dj);
          x++;
       }
       dx=Ref1->X0; dy=Ref1->Y1;
       GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
       if (GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE)) {
-         x0=Ref1->X0;y1=Ref1->Y1;
+         x0=fmin(x0,di); y0=fmin(y0,dj);
+         x1=fmax(x1,di); y1=fmax(y1,dj);
          x++;
       }
       dx=Ref1->X1; dy=Ref1->Y0;
       GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
       if (GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE)) {
-         x1=Ref1->X1;y0=Ref1->Y0;
+         x0=fmin(x0,di); y0=fmin(y0,dj);
+         x1=fmax(x1,di); y1=fmax(y1,dj);
          x++;
       }
       dx=Ref1->X1; dy=Ref1->Y1;
       GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
       if (GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE)) {
-         x1=Ref1->X1;y1=Ref1->Y1;
+         x0=fmin(x0,di); y0=fmin(y0,dj);
+         x1=fmax(x1,di); y1=fmax(y1,dj);
       }
-      *X0=x0; *Y0=y0;
-      *X1=x1; *Y1=y1;
+      *X0=floor(x0); *Y0=floor(y0);
+      *X1=ceil(x1);  *Y1=ceil(y1);
 
       if (x>=3) {
          in=1;
@@ -1462,32 +1466,31 @@ int32_t GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict cons
    }
 
    if (!in) {
-
       // Project Ref0 within Ref1 and get limits
       for(x=Ref0->X0;x<=Ref0->X1;x++) {
          dx=x;dy=Ref0->Y0;
-         GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
-         GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE);
+         GeoRef_XY2LL(Ref0,&la,&lo,&dx,&dy,1,TRUE);
+         GeoRef_LL2XY(Ref1,&di,&dj,&la,&lo,1,FALSE);
          x0=fmin(x0,di); y0=fmin(y0,dj);
          x1=fmax(x1,di); y1=fmax(y1,dj);
 
          dx=x;dy=Ref0->Y1;
-         GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
-         GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE);
+         GeoRef_XY2LL(Ref0,&la,&lo,&dx,&dy,1,TRUE);
+         GeoRef_LL2XY(Ref1,&di,&dj,&la,&lo,1,FALSE);
          x0=fmin(x0,di); y0=fmin(y0,dj);
          x1=fmax(x1,di); y1=fmax(y1,dj);
       }
 
       for(y=Ref0->Y0;y<=Ref0->Y1;y++) {
          dx=Ref0->X0; dy=y;
-         GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
-         GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE);
+         GeoRef_XY2LL(Ref0,&la,&lo,&dx,&dy,1,TRUE);
+         GeoRef_LL2XY(Ref1,&di,&dj,&la,&lo,1,FALSE);
          x0=fmin(x0,di); y0=fmin(y0,dj);
          x1=fmax(x1,di); y1=fmax(y1,dj);
 
          dx=Ref0->X1; dy=y;
-         GeoRef_XY2LL(Ref1,&la,&lo,&dx,&dy,1,TRUE);
-         GeoRef_LL2XY(Ref0,&di,&dj,&la,&lo,1,FALSE);
+         GeoRef_XY2LL(Ref0,&la,&lo,&dx,&dy,1,TRUE);
+         GeoRef_LL2XY(Ref1,&di,&dj,&la,&lo,1,FALSE);
          x0=fmin(x0,di); y0=fmin(y0,dj);
          x1=fmax(x1,di); y1=fmax(y1,dj);
       }
@@ -1516,9 +1519,9 @@ int32_t GeoRef_Intersect(TGeoRef* __restrict const Ref0,TGeoRef* __restrict cons
 
    // Clamp the coordinates
    if (BD) {
-      REF_CLAMP(Ref1,*X0,*Y0,*X1,*Y1);
+      REF_CLAMP(Ref0,*X0,*Y0,*X1,*Y1);
    } else {
-      REF_CLAMPBD(Ref1,*X0,*Y0,*X1,*Y1);
+      REF_CLAMPBD(Ref0,*X0,*Y0,*X1,*Y1);
    }
 
    return(in);
@@ -1648,7 +1651,7 @@ int32_t GeoRef_Within(TGeoRef* __restrict const Ref0,TGeoRef* __restrict const R
 }
 
 /**----------------------------------------------------------------------------
- * @brief  Check if a geographic range is within a georef
+ * @brief  Check if a georef is within a geographic range
  * @date   February 2009
  *    @param[in]  Ref      Pointeur sur la reference
  *    @param[in]  Lat0     Latitude of first corner
@@ -2214,6 +2217,7 @@ int32_t GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,in
  * @brief  Writes a grid definition's info / records
  * @date   January 2020
  *    @param[in]  GRef      GeoRef pointer
+ *    @param[in]  Name      GeoRef name (etiket)
  *    @param[in]  File      FSTD file pointer
  *
  *    @return             Error code (0=ok)
@@ -2231,7 +2235,6 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid file (NULL)\n",__func__);
       return(FALSE);
    }
-
    if (!GRef->Name) GRef->Name=strdup("Undefined");
 
    {
@@ -2241,24 +2244,25 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
    record.data = (float*)calloc(GRef->NX*GRef->NY,sizeof(float));
    record.ni   = GRef->NX;
    record.nj   = GRef->NY;
+   record.nk   = 1;
    record.dateo = 0;
    record.deet  = 0;
    record.npas  = 0;
    record.ip1  = 0;
    record.ip2  = 0;
    record.ip3  = 0;
-   record.ip3  = 0;
    strncpy(record.typvar,"X",FST_TYPVAR_LEN);
    strncpy(record.nomvar,"GRID",FST_NOMVAR_LEN);
    strncpy(record.grtyp,GRef->RPNHead.grtyp,FST_GTYP_LEN);
-   strncpy(record.etiket,Name?Name:GRef->Name,FST_ETIKET_LEN);
+   strncpy(record.etiket,(Name && strlen(Name))?Name:GRef->Name,FST_ETIKET_LEN);
    record.ig1   = GRef->RPNHead.ig1;
    record.ig2   = GRef->RPNHead.ig2;
    record.ig3   = GRef->RPNHead.ig3;
    record.ig4   = GRef->RPNHead.ig4;
    record.data_type = FST_TYPE_REAL_IEEE;
    record.data_bits = 32;
-   record.pack_bits = 32;
+   record.pack_bits = 8;
+   fst24_record_print(&record);
    if (fst24_write(File,&record,FST_SKIP)<=0) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write grid record field (fst24_write failed)\n",__func__);
    }

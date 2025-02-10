@@ -73,7 +73,7 @@ interface
         integer(C_INT32_T), intent(in) :: ni,nj,ig1,ig2,ig3,ig4
         character(kind = C_CHAR), dimension(*), intent(in) :: grtyp, grref
         real(C_DOUBLE), intent(in), dimension(*) ::ax, ay
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
 
         type(C_PTR) :: out
     end function georef_define
@@ -85,7 +85,7 @@ interface
 
         real(C_DOUBLE), intent(in), dimension(6) :: transform, invtransform
         type(C_PTR)   , intent(in)    :: spatial
-        type(C_PTR)   , intent(inout) :: ref
+        type(C_PTR)   , intent(in), value :: ref
         character(kind = C_CHAR), dimension(*), intent(in) :: string
 
         type(C_PTR) :: out
@@ -98,7 +98,7 @@ interface
 
         integer(C_INT32_T), intent(in) :: ni,nj,maxcfl
         real(C_FLOAT), intent(in) :: dx,dy,latr,lonr,xlat1,xlon1,xlat2,xlon2
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
 
         type(C_PTR) :: out
     end function georef_defineze
@@ -108,7 +108,7 @@ interface
         import :: C_PTR
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
 
         type(C_PTR) :: out
     end function georef_find
@@ -118,7 +118,7 @@ interface
         import :: C_PTR
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
 
         type(C_PTR) :: out
     end function georef_copy
@@ -128,7 +128,7 @@ interface
         import :: C_PTR
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
 
         type(C_PTR) :: out
     end function georef_hardcopy
@@ -138,7 +138,7 @@ interface
         import :: C_PTR
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
 
         type(C_PTR) :: out
     end function georef_reference
@@ -149,7 +149,7 @@ interface
         implicit none
 
         integer(C_INT32_T) :: x0,y0,x1,y1,bd
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
 
     end subroutine georef_size
 
@@ -159,7 +159,7 @@ interface
         implicit none
 
         integer(C_INT32_T) :: ni,nj
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
 
         type(C_PTR) :: out
     end function georef_resize
@@ -169,7 +169,7 @@ interface
         import :: C_PTR,C_INT32_T
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
 
         integer(C_INT32_T) :: out
     end function georef_free
@@ -180,7 +180,7 @@ interface
         implicit none
 
         integer(C_INT32_T) :: new
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
 
     end subroutine georef_clear
 
@@ -189,7 +189,7 @@ interface
         import :: C_PTR
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
 
     end subroutine georef_qualify
 
@@ -199,7 +199,7 @@ interface
         implicit none
 
         real(C_DOUBLE), intent(out) :: lat0,lon0,lat1,lon1
-        type(C_PTR)   , intent(in) :: ref
+        type(C_PTR)   , intent(in), value :: ref
 
         integer(C_INT32_T) :: out
     end function georef_limits
@@ -209,9 +209,9 @@ interface
         import :: C_PTR,C_INT32_T,C_DOUBLE
         implicit none
 
-        real(C_DOUBLE), intent(in) :: lat0,lon0,lat1,lon1
+        real(C_DOUBLE), intent(in), value :: lat0,lon0,lat1,lon1
         real(C_DOUBLE), intent(out) :: i0,j0,i1,j1
-        type(C_PTR)   , intent(in) :: ref
+        type(C_PTR)   , intent(in), value :: ref
 
         integer(C_INT32_T) :: out
     end function georef_boundingbox
@@ -221,21 +221,32 @@ interface
         import :: C_PTR,C_INT32_T
         implicit none
 
-        type(C_PTR), intent(in) :: ref
+        type(C_PTR), intent(in), value :: ref
 
         integer(C_INT32_T) :: out
     end function georef_valid
 
-!   double   GeoRef_GridDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1);
-    function georef_griddistance(ref,x0,y0,x1,y1) result(out) bind(C, name = 'GeoRef_GridDistance')
+!   double   GeoRef_XYDistance(TGeoRef *Ref,double X0,double Y0,double X1,double Y1);
+    function georef_xydistance(ref,x0,y0,x1,y1) result(out) bind(C, name = 'GeoRef_XYDistance')
         import :: C_PTR,C_DOUBLE
         implicit none
 
-        real(C_DOUBLE), intent(out) :: x0,y0,x1,y1
-        type(C_PTR)   , intent(in) :: ref
+        real(C_DOUBLE), intent(in), value :: x0,y0,x1,y1
+        type(C_PTR)   , intent(in), value :: ref
 
         real(C_DOUBLE) :: out
-    end function georef_griddistance
+    end function georef_xydistance
+
+!   double   GeoRef_LLDistance(TGeoRef *Ref,double Lat0,double Lon0,double Lat1,double Lon1);
+    function georef_lldistance(ref,lat0,lon0,lat1,lon1) result(out) bind(C, name = 'GeoRef_LLDistance')
+        import :: C_PTR,C_DOUBLE
+        implicit none
+
+        real(C_DOUBLE), intent(in), value :: lat0,lon0,lat1,lon1
+        type(C_PTR)   , intent(in), value :: ref
+
+        real(C_DOUBLE) :: out
+    end function georef_lldistance
 
 !   int32_t  GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File);
     function georef_write(ref,name,file) result(out) bind(C, name = 'GeoRef_Write')
@@ -243,7 +254,7 @@ interface
         implicit none
 
         character(kind = C_CHAR), dimension(*), intent(in) :: name
-        type(C_PTR), intent(in) :: ref,file
+        type(C_PTR), intent(in), value :: ref,file
 
         integer(C_INT32_T) :: out
     end function georef_write
@@ -253,7 +264,7 @@ interface
         import :: C_PTR,C_INT32_T
         implicit none
 
-        type(C_PTR), intent(in) :: ref
+        type(C_PTR), intent(in), value :: ref
 
         integer(C_INT32_T) :: out
     end function georef_read
@@ -273,8 +284,8 @@ interface
         import :: C_PTR,C_INT32_T, C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
-        real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
+        type(C_PTR), intent(in), value :: ref
+        real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
 
         integer(C_INT32_T) :: out
     end function georef_getll
@@ -285,10 +296,8 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: ref
-        real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
-        real(C_DOUBLE), intent(in), dimension(*) :: x,y
-!        type(c_PTR):: lat,lon,x,y
-        integer(C_INT32_T) :: n,extrap
+        real(C_DOUBLE), intent(in), dimension(*) :: lat,lon,x,y
+        integer(C_INT32_T), value :: n,extrap
 
         integer(C_INT32_T) :: out
     end function georef_xy2ll
@@ -299,9 +308,8 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: ref
-        real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
-        real(C_DOUBLE), intent(out), dimension(*) :: x,y
-        integer(C_INT32_T) :: n,extrap
+        real(C_DOUBLE), intent(in), dimension(*) :: lat,lon,x,y
+        integer(C_INT32_T), value :: n,extrap
 
         integer(C_INT32_T) :: out
     end function georef_ll2xy
@@ -311,12 +319,12 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
-        type(C_PTR), intent(in) :: opt
-        real(C_FLOAT), intent(out), dimension(*) :: zout
+        type(C_PTR), intent(in), value :: ref
+        type(C_PTR), intent(in), value :: opt
+        real(C_FLOAT), intent(in), dimension(*) :: zout
         real(C_FLOAT), intent(in), dimension(*) :: zin
-        real(C_DOUBLE), intent(out), dimension(*) :: x,y
-        integer(C_INT32_T) :: n
+        real(C_DOUBLE), intent(in), dimension(*) :: x,y
+        integer(C_INT32_T),value :: n
 
         integer(C_INT32_T) :: out
     end function georef_xyval
@@ -326,12 +334,12 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
-        type(C_PTR), intent(in) :: opt
+        type(C_PTR), intent(in), value :: ref
+        type(C_PTR), intent(in), value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
-        integer(C_INT32_T) :: n
+        integer(C_INT32_T), value :: n
 
         integer(C_INT32_T) :: out
     end function georef_xyuvval
@@ -341,12 +349,12 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
-        type(C_PTR), intent(in) :: opt
+        type(C_PTR), intent(in), value :: ref
+        type(C_PTR), intent(in), value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
-        integer(C_INT32_T) :: n
+        integer(C_INT32_T), value :: n
 
         integer(C_INT32_T) :: out
     end function georef_xywdval
@@ -356,27 +364,27 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
-        type(C_PTR), intent(in) :: opt
-        real(C_FLOAT), intent(out), dimension(*) :: zout
+        type(C_PTR), intent(in), value :: ref
+        type(C_PTR), intent(in), value :: opt
+        real(C_FLOAT), intent(in), dimension(*) :: zout
         real(C_FLOAT), intent(in), dimension(*) :: zin
-        real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
-        integer(C_INT32_T) :: n
+        real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
+        integer(C_INT32_T), value :: n
 
         integer(C_INT32_T) :: out
     end function georef_llval
-    
+
 !   int32_t      GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t n);            // c_gdllvval
     function georef_lluvval(ref,opt,uuout,vvout,uuin,vvin,lat,lon,n) result(out) bind(C, name = 'GeoRef_LLUVVal')
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
-        type(C_PTR), intent(in) :: opt
+        type(C_PTR), intent(in), value :: ref
+        type(C_PTR), intent(in), value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
-        integer(C_INT32_T) :: n
+        integer(C_INT32_T), value :: n
 
         integer(C_INT32_T) :: out
     end function georef_lluvval
@@ -386,12 +394,12 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
-        type(C_PTR), intent(in) :: opt
+        type(C_PTR), intent(in), value :: ref
+        type(C_PTR), intent(in), value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
-        integer(C_INT32_T) :: n
+        integer(C_INT32_T), value :: n
 
         integer(C_INT32_T) :: out
     end function georef_llwdval
@@ -401,8 +409,8 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: refto,reffrom
-        type(C_PTR), intent(in) :: opt
+        type(C_PTR), intent(in), value :: refto,reffrom
+        type(C_PTR), intent(in), value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: zout
         real(C_FLOAT), intent(in), dimension(*) :: zin
 
@@ -414,8 +422,8 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: refto,reffrom
-        type(C_PTR), intent(in) :: opt
+        type(C_PTR), intent(in), value :: refto,reffrom
+        type(C_PTR), intent(in), value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
 
@@ -427,8 +435,8 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: refto,reffrom
-        type(C_PTR), intent(in) :: opt
+        type(C_PTR), intent(in), value :: refto,reffrom
+        type(C_PTR), intent(in), value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
 
@@ -440,8 +448,8 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: refto,reffrom
-        type(C_PTR), intent(in) :: opt
+        type(C_PTR), intent(in), value :: refto,reffrom
+        type(C_PTR), intent(in), value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: zout
         real(C_FLOAT), intent(in), dimension(*) :: zin
 
@@ -453,8 +461,8 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: refto,reffrom
-        type(C_PTR), intent(in) :: opt
+        type(C_PTR), intent(in), value :: refto,reffrom
+        type(C_PTR), intent(in), value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
 
@@ -466,8 +474,8 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: refto,reffrom
-        type(C_PTR), intent(in) :: opt
+        type(C_PTR), intent(in), value :: refto,reffrom
+        type(C_PTR), intent(in), value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
 
@@ -479,8 +487,8 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: refto,reffrom
-        type(C_PTR), intent(in) :: opt
+        type(C_PTR), intent(in), value :: refto,reffrom
+        type(C_PTR), intent(in), value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: mout
         real(C_FLOAT), intent(in), dimension(*) :: min
 
@@ -492,11 +500,11 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: spdin,dirin
         real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
-        integer(C_INT32_T) :: npts
+        integer(C_INT32_T), value :: npts
 
         integer(C_INT32_T) :: out
     end function georef_wd2uv
@@ -506,11 +514,11 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
         real(C_FLOAT), intent(out), dimension(*) :: spdout,dirout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
-        integer(C_INT32_T) :: npts
+        integer(C_INT32_T), value :: npts
 
         integer(C_INT32_T) :: out
     end function georef_uv2wd
@@ -520,11 +528,11 @@ interface
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
         implicit none
 
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
-        integer(C_INT32_T) :: npts
+        integer(C_INT32_T), value :: npts
 
         integer(C_INT32_T) :: out
     end function georef_uv2uv
@@ -536,7 +544,7 @@ interface
 
         integer(C_INT32_T), intent(out) :: ni,nj,ig1,ig2,ig3,ig4,ig1ref,ig2ref,ig3ref,ig4ref
         character(kind = C_CHAR), dimension(*), intent(out) :: grtyp, grref
-        type(C_PTR), intent(inout) :: ref
+        type(C_PTR), intent(in), value :: ref
 
         type(C_PTR) :: out
     end function georef_gridgetparams
@@ -545,7 +553,7 @@ interface
     function georef_within(gref0,gref1) result(out) bind(C, name = 'GeoRef_Within')
         import :: C_PTR,C_INT32_T
         implicit none
-        type(C_PTR), intent(in) :: gref0,gref1
+        type(C_PTR), intent(in), value :: gref0,gref1
 
         integer(C_INT32_T) :: out
     end function georef_within
@@ -554,9 +562,9 @@ interface
     function georef_withinrange(gref0,lat0,lon0,lat1,lon1,in) result(out) bind(C, name = 'GeoRef_WithinRange')
         import :: C_PTR,C_DOUBLE,C_INT32_T
         implicit none
-        type(C_PTR), intent(in) :: gref0
-        real(C_DOUBLE), intent(in) :: lat0,lon0,lat1,lon1
-        integer(C_INT32_T), intent(in) :: in
+        type(C_PTR), intent(in), value :: gref0
+        real(C_DOUBLE), intent(in), value :: lat0,lon0,lat1,lon1
+        integer(C_INT32_T), intent(in), value :: in
 
         integer(C_INT32_T) :: out
     end function georef_withinrange
@@ -565,8 +573,9 @@ interface
     function georef_intersect(gref0,gref1,x0,y0,x1,y1,bd) result(out) bind(C, name = 'GeoRef_Intersect')
         import :: C_PTR,C_INT32_T
         implicit none
-        type(C_PTR), intent(in) :: gref0,gref1
-        integer(C_INT32_T), intent(in) :: x0,x1,y0,y1,bd
+        type(C_PTR), intent(in), value :: gref0,gref1
+        integer(C_INT32_T), intent(out) :: x0,x1,y0,y1
+        integer(C_INT32_T), intent(in) :: bd
 
         integer(C_INT32_T) :: out
     end function georef_intersect
@@ -575,7 +584,7 @@ interface
     function georef_equal(gref0,gref1) result(out) bind(C, name = 'GeoRef_Equal')
         import :: C_PTR,C_INT32_T
         implicit none
-        type(C_PTR), intent(in) :: gref0,gref1
+        type(C_PTR), intent(in), value :: gref0,gref1
 
         integer(C_INT32_T) :: out
     end function georef_equal
@@ -584,7 +593,7 @@ interface
     function georef_celldims(gref0,invert,dx,dy,da) result(out) bind(C, name = 'GeoRef_CellDims')
         import :: C_PTR,C_INT32_T,C_FLOAT
         implicit none
-        type(C_PTR), intent(in) :: gref0
+        type(C_PTR), intent(in), value :: gref0
         integer(C_INT32_T), intent(in) :: invert
         real(C_FLOAT), intent(out) :: dx,dy,da
 

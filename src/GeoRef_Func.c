@@ -12,7 +12,7 @@
  *
  *    @return           Distance in meters
 */
-double GeoRef_GridDistance(TGeoRef *Ref, double X0, double Y0, double X1, double Y1) {
+double GeoRef_XYDistance(TGeoRef *Ref, double X0, double Y0, double X1, double Y1) {
     double i[2], j[2], lat[2], lon[2];
     double dist2meterFact = 1.0;
     char geo = 1;
@@ -56,6 +56,18 @@ double GeoRef_GridDistance(TGeoRef *Ref, double X0, double Y0, double X1, double
         }
         return hypot(j[1] - j[0], i[1] - i[0]) * dist2meterFact;
     }
+}
+
+double GeoRef_LLDistance(TGeoRef *Ref, double Lat0, double Lon0, double Lat1, double Lon1) {
+
+   double x0,y0,x1,y1;
+
+   x0 = DEG2RAD(Lon0);
+   x1 = DEG2RAD(Lon1);
+   y0 = DEG2RAD(Lat0);
+   y1 = DEG2RAD(Lat1);
+
+   return(DIST(0.0, y0, x0, y1, x1));
 }
 
 /**----------------------------------------------------------------------------
