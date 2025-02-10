@@ -1080,7 +1080,6 @@ TGeoRef* GeoRef_New() {
    ref->QTree=NULL;
    ref->GRTYP[0]='X';
    ref->GRTYP[1]='\0';
-   ref->GRTYP[2]='\0';
    ref->Sets=NULL;
    ref->LastSet=NULL;
    ref->NbSet=0;

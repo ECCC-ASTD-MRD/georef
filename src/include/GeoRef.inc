@@ -320,7 +320,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: ref
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(in), dimension(*) :: zout
         real(C_FLOAT), intent(in), dimension(*) :: zin
         real(C_DOUBLE), intent(in), dimension(*) :: x,y
@@ -335,7 +335,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: ref
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
@@ -350,7 +350,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: ref
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
@@ -365,7 +365,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: ref
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(in), dimension(*) :: zout
         real(C_FLOAT), intent(in), dimension(*) :: zin
         real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
@@ -380,7 +380,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: ref
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
@@ -395,7 +395,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: ref
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
@@ -410,7 +410,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: refto,reffrom
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: zout
         real(C_FLOAT), intent(in), dimension(*) :: zin
 
@@ -423,7 +423,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: refto,reffrom
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
 
@@ -436,7 +436,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: refto,reffrom
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
 
@@ -449,7 +449,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: refto,reffrom
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: zout
         real(C_FLOAT), intent(in), dimension(*) :: zin
 
@@ -462,7 +462,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: refto,reffrom
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
 
@@ -475,7 +475,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: refto,reffrom
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
 
@@ -488,7 +488,7 @@ interface
         implicit none
 
         type(C_PTR), intent(in), value :: refto,reffrom
-        type(C_PTR), intent(in), value :: opt
+        type(C_PTR), intent(in), target, value :: opt
         real(C_FLOAT), intent(out), dimension(*) :: mout
         real(C_FLOAT), intent(in), dimension(*) :: min
 
