@@ -51,7 +51,7 @@ program test
     call App_Log(APP_INFO, app_msg)
 
     ! Test copy
-! compiler error
+!TODO: compiler error
 !    grefout=gref1%copy()
 
     ! Test write to file

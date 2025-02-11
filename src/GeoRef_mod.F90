@@ -159,7 +159,6 @@ contains
     function georef_copy_f(this,hard) result(out)
         implicit none
         class(georef), intent(inout) :: this       !< georef instance
-        class(georef), pointer :: new              !< georef instance
         class(georef), allocatable :: out          !< georef instance
         logical, optional :: hard
 
@@ -292,9 +291,9 @@ contains
 
         res=.false.;
         if (present(name)) then
-           val=georef_write(this%ptr,trim(name)//achar(0),file%get_c_ptr())
+           val=georef_write(this%ptr,trim(name)//C_NULL_CHAR,file%get_c_ptr())
         else 
-           val=georef_write(this%ptr,achar(0),file%get_c_ptr())
+           val=georef_write(this%ptr,C_NULL_CHAR,file%get_c_ptr())
         endif
         if (val==1) then
            res=.true.
@@ -366,9 +365,9 @@ contains
         integer(C_INT32_T) :: out
 
         if (present(opt)) then
-           out=georef_xyval(this%ptr,c_loc(opt),zout,zin,x,y,n)
+           out=georef_xyval(this%ptr,C_LOC(opt),zout,zin,x,y,n)
         else 
-           out=georef_xyval(this%ptr,c_loc(georef_options),zout,zin,x,y,n)
+           out=georef_xyval(this%ptr,C_LOC(georef_options),zout,zin,x,y,n)
         endif
     end function georef_xyval_f
 
@@ -385,7 +384,7 @@ contains
         if (present(opt)) then
            out=georef_xyuvval(this%ptr,C_LOC(opt),uuout,vvout,uuin,vvin,x,y,n)
         else 
-           out=georef_xyuvval(this%ptr,c_loc(georef_options),uuout,vvout,uuin,vvin,x,y,n)
+           out=georef_xyuvval(this%ptr,C_LOC(georef_options),uuout,vvout,uuin,vvin,x,y,n)
         endif
     end function georef_xyuvval_f
 
@@ -402,7 +401,7 @@ contains
         if (present(opt)) then
            out=georef_xywdval(this%ptr,C_LOC(opt),uuout,vvout,uuin,vvin,x,y,n)
         else 
-           out=georef_xywdval(this%ptr,c_loc(georef_options),uuout,vvout,uuin,vvin,x,y,n)
+           out=georef_xywdval(this%ptr,C_LOC(georef_options),uuout,vvout,uuin,vvin,x,y,n)
         endif
     end function georef_xywdval_f
 
@@ -420,7 +419,7 @@ contains
         if (present(opt)) then
            out=georef_llval(this%ptr,C_LOC(opt),zout,zin,lat,lon,n)
         else 
-           out=georef_llval(this%ptr,c_loc(georef_options),zout,zin,lat,lon,n)
+           out=georef_llval(this%ptr,C_LOC(georef_options),zout,zin,lat,lon,n)
         endif
     end function georef_llval_f
 
@@ -437,7 +436,7 @@ contains
         if (present(opt)) then
            out=georef_lluvval(this%ptr,C_LOC(opt),uuout,vvout,uuin,vvin,lat,lon,n)
         else 
-           out=georef_lluvval(this%ptr,c_loc(georef_options),uuout,vvout,uuin,vvin,lat,lon,n)
+           out=georef_lluvval(this%ptr,C_LOC(georef_options),uuout,vvout,uuin,vvin,lat,lon,n)
         endif
    end function georef_lluvval_f
     
@@ -454,7 +453,7 @@ contains
         if (present(opt)) then
            out=georef_llwdval(this%ptr,C_LOC(opt),uuout,vvout,uuin,vvin,lat,lon,n)
         else 
-           out=georef_llwdval(this%ptr,c_loc(georef_options),uuout,vvout,uuin,vvin,lat,lon,n)
+           out=georef_llwdval(this%ptr,C_LOC(georef_options),uuout,vvout,uuin,vvin,lat,lon,n)
         endif
     end function georef_llwdval_f
 
@@ -469,7 +468,7 @@ contains
         if (present(opt)) then
            out=georef_interp(this%ptr,reffrom%ptr,C_LOC(opt),zout,zin)
         else 
-           out=georef_interp(this%ptr,reffrom%ptr,c_loc(georef_options),zout,zin)
+           out=georef_interp(this%ptr,reffrom%ptr,C_LOC(georef_options),zout,zin)
         endif
     end function georef_interp_f
  
@@ -484,7 +483,7 @@ contains
         if (present(opt)) then
            out=georef_interpuv(this%ptr,reffrom%ptr,C_LOC(opt),uuout,vvout,uuin,vvin)
         else 
-           out=georef_interpuv(this%ptr,reffrom%ptr,c_loc(georef_options),uuout,vvout,uuin,vvin)
+           out=georef_interpuv(this%ptr,reffrom%ptr,C_LOC(georef_options),uuout,vvout,uuin,vvin)
         endif
     end function georef_interpuv_f
 
@@ -499,7 +498,7 @@ contains
         if (present(opt)) then
            out=georef_interpwd(this%ptr,reffrom%ptr,C_LOC(opt),uuout,vvout,uuin,vvin)
         else 
-           out=georef_interpwd(this%ptr,reffrom%ptr,c_loc(georef_options),uuout,vvout,uuin,vvin)
+           out=georef_interpwd(this%ptr,reffrom%ptr,C_LOC(georef_options),uuout,vvout,uuin,vvin)
         endif
     end function georef_interpwd_f
 
