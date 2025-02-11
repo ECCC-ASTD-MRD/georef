@@ -112,7 +112,7 @@ module georef_mod
         type(C_PTR) :: Ancilliary = c_null_ptr       !< PPre calculated field (ex: variance, average,...)
     end type geooptions
 
-    type(geooptions) georef_options
+    type(geooptions), target :: georef_options
 
 contains
 
@@ -357,7 +357,7 @@ contains
  
     function georef_xyval_f(this,zout,zin,x,y,n,opt) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        type(geooptions), intent(in), optional :: opt
+        type(geooptions), intent(in), target, optional :: opt
         real(C_FLOAT), intent(in), dimension(*) :: zin
         real(C_FLOAT), intent(in), dimension(*) :: zout
         real(C_DOUBLE), intent(in), dimension(*) :: x,y
@@ -374,7 +374,7 @@ contains
 
     function georef_xyuvval_f(this,uuout,vvout,uuin,vvin,x,y,n,opt) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        type(geooptions),  intent(in), optional :: opt  !< georef instance
+        type(geooptions),  intent(in), target, optional :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
@@ -391,7 +391,7 @@ contains
 
     function georef_xywdval_f(this,uuout,vvout,uuin,vvin,x,y,n,opt) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        type(geooptions),  intent(in), optional :: opt  !< georef instance
+        type(geooptions),  intent(in), target, optional :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: x,y
@@ -408,7 +408,7 @@ contains
 
     function georef_llval_f(this,zout,zin,lat,lon,n,opt,rec) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        type(geooptions), intent(in), optional :: opt
+        type(geooptions), intent(in), target, optional :: opt
         type(fst_record), intent(in), optional :: rec
         real(C_FLOAT), intent(in), dimension(*) :: zin
         real(C_FLOAT), intent(in), dimension(*) :: zout
@@ -426,7 +426,7 @@ contains
 
     function georef_lluvval_f(this,uuout,vvout,uuin,vvin,lat,lon,n,opt) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        type(geooptions),  intent(in), optional :: opt  !< georef instance
+        type(geooptions),  intent(in), target, optional :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
@@ -443,7 +443,7 @@ contains
     
     function georef_llwdval_f(this,uuout,vvout,uuin,vvin,lat,lon,n,opt) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        type(geooptions),  intent(in), optional :: opt  !< georef instance
+        type(geooptions),  intent(in), target, optional :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
         real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
@@ -460,7 +460,7 @@ contains
 
     function georef_interp_f(this,reffrom,zout,zin,opt) result(out)
         class(georef),  intent(inout) :: this,reffrom  !< georef instance
-        type(geooptions),  intent(in), optional :: opt  !< georef instance
+        type(geooptions),  intent(in), target, optional :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: zout
         real(C_FLOAT), intent(in), dimension(*) :: zin
 
@@ -475,7 +475,7 @@ contains
  
     function georef_interpuv_f(this,reffrom,uuout,vvout,uuin,vvin,opt) result(out)
         class(georef),  intent(inout) :: this,reffrom  !< georef instance
-        type(geooptions),  intent(in), optional :: opt  !< georef instance
+        type(geooptions),  intent(in), target, optional :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
 
@@ -490,7 +490,7 @@ contains
 
     function georef_interpwd_f(this,reffrom,uuout,vvout,uuin,vvin,opt) result(out)
         class(georef),  intent(inout) :: this,reffrom  !< georef instance
-        type(geooptions),  intent(in), optional :: opt  !< georef instance
+        type(geooptions),  intent(in), target, optional :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
 
