@@ -22,7 +22,8 @@ int32_t TDef_DTYP[] = { 0,0,2,4,2,4,2,4,2,4,5,5,-1 };
 */
 void Def_Clear(TDef *Def){
 
-   int32_t n,i;
+   int32_t  n;
+   uint64_t i;
 
    for(n=0;n<Def->NC;n++) {
       for(i=0;i<FSIZE3D(Def);i++) {
@@ -546,14 +547,14 @@ TDef *Def_Resize(TDef *Def,int32_t NI,int32_t NJ,int32_t NK){
       Def->Mode=Def->Data[0];
       Def->Dir=NULL;
 
-      if (Def->Buffer)             free(Def->Buffer); Def->Buffer=NULL;
-      if (Def->Aux)                free(Def->Aux);    Def->Aux=NULL;
-      if (Def->Accum)              free(Def->Accum);  Def->Accum=NULL;
-      if (Def->Mask)               free(Def->Mask);   Def->Mask=NULL;
-      if (Def->Sub)                free(Def->Sub);    Def->Sub=NULL;
-      if (Def->Pres>(float*)0x1)   free(Def->Pres);   Def->Pres=NULL;
-      if (Def->PresLS>(float*)0x1) free(Def->PresLS); Def->PresLS=NULL;
-      if (Def->Height>(float*)0x1) free(Def->Height); Def->Height=NULL;
+      if (Def->Buffer)             { free(Def->Buffer); Def->Buffer=NULL; }
+      if (Def->Aux)                { free(Def->Aux);    Def->Aux=NULL; }
+      if (Def->Accum)              { free(Def->Accum);  Def->Accum=NULL; }
+      if (Def->Mask)               { free(Def->Mask);   Def->Mask=NULL; }
+      if (Def->Sub)                { free(Def->Sub);    Def->Sub=NULL; }
+      if (Def->Pres>(float*)0x1)   { free(Def->Pres);   Def->Pres=NULL; }
+      if (Def->PresLS>(float*)0x1) { free(Def->PresLS); Def->PresLS=NULL; }
+      if (Def->Height>(float*)0x1) { free(Def->Height); Def->Height=NULL; }
    }
    return(Def);
 }
@@ -1208,9 +1209,10 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer 
 
 #ifdef HAVE_GDAL
    TGeoSet *gset;
-   long     f,n=0,nt=0,idx2;
+   int64_t  f,nt=0,idx2;
+   uint64_t n=0;
    double   value,val,area,dp,x0,y0;
-   int32_t      fld=-1,pi,pj,error=0,isize=0;
+   int32_t  fld=-1,pi,pj,error=0,isize=0;
    char     mode,type,*c;
    float   *ip=NULL,*lp=NULL,**index=NULL;
    TCoord   co;
@@ -1424,7 +1426,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer 
             }
 
             // In centroid mode, just project the coordinate into field and set value
-            if (Opt->Interp==IV_CENTROID) {
+            if (Opt->InterpVector==IV_CENTROID) {
                OGM_Centroid2D(geom,&vr[0],&vr[1]);
                GeoRef_XY2LL(LayerRef,&co.Lat,&co.Lon,&vr[0],&vr[1],1,TRUE);
                GeoRef_LL2XY(ToRef,&vr[0],&vr[1],&co.Lat,&co.Lon,1,TRUE);
@@ -1440,13 +1442,15 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer 
                OGR_G_GetEnvelope(geom,&env);
                if (!(env.MaxX<(ToRef->X0-0.5) || env.MinX>(ToRef->X1+0.5) || env.MaxY<(ToRef->Y0-0.5) || env.MinY>(ToRef->Y1+0.5))) {
 
-                  if (Opt->Interp==IV_FAST) {
+                  if (Opt->InterpVector==IV_FAST) {
                      GeoRef_Rasterize(ToRef,ToDef,Opt,geom,value);
                   } else {
 
                      // Get value to split on
                      area=-1.0;
-                     switch(Opt->Interp) {
+                     mode='N';
+                     type='A';
+                     switch(Opt->InterpVector) {
                         case IV_FAST                           : break;
                         case IV_WITHIN                         : mode='W'; type='A'; break;
                         case IV_INTERSECT                      : mode='I'; type='A'; break;
@@ -1458,10 +1462,11 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer 
                         case IV_LENGTH_NORMALIZED_CONSERVATIVE : mode='N'; type='L'; area=OGM_Length(geom); break;
                         case IV_LENGTH_ALIASED                 : mode='A'; type='L'; area=OGM_Length(geom); break;
                         case IV_POINT_CONSERVATIVE             : mode='C'; type='P'; area=1.0; break;
+                        default: break;
                      }
 
                      // If it's nil then nothing to distribute on
-                     if (area>0.0 || Opt->Interp<=IV_CENTROID) {
+                     if (area>0.0 || Opt->InterpVector<=IV_CENTROID) {
 
                         env.MaxX+=0.5;env.MaxY+=0.5;
                         env.MinX=env.MinX<0?0:env.MinX;
@@ -1642,7 +1647,8 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
 
 #ifdef HAVE_GDAL
    TGeoSet    *gset=NULL;
-   int32_t          i,j,n,na,nt=0,p=0,pi,pj,idx2,idx3,wrap,k=0,isize,nidx,error=0;
+   int32_t     i,j,na,nt=0,p=0,pi,pj,idx2,idx3,wrap,k=0,isize,nidx,error=0;
+   uint64_t    n;
    char        *c;
    double       val0,val1,area,x,y,z,dp;
    float       *ip=NULL,*lp=NULL,**index=NULL;
@@ -1683,7 +1689,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
    for (k=0;k<ToDef->NK;k++) {
 
       if (ToDef->Buffer)
-         for(i=0;i<FSIZE2D(ToDef);i++) ToDef->Buffer[i]=0.0;
+         for(n=0;n<FSIZE2D(ToDef);n++) ToDef->Buffer[n]=0.0;
 
       // Do we have and index
       if (gset->Index && gset->Index[0]!=REF_INDEX_EMPTY) {
@@ -1947,8 +1953,8 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
    int32_t      *acc=NULL,x0,x1,y,y0,y1;
    unsigned long idxt,idxk,idxj,n,nijk,nij;
    uint32_t      n2,ndi,ndj,k,t,s,x,dx,dy;
+//   TGeoSet      *gset;
    TGeoScan      gscan;
-   TGeoSet      *gset=NULL;
    TRef_InterpR  interp;
 
    if (!Opt) Opt=&ToRef->Options;
@@ -1971,7 +1977,7 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *F
    val=vx=0.0;
    interp=Opt->Interp;
 
-   gset=GeoRef_SetGet(ToRef,FromRef,Opt);
+//   gset=GeoRef_SetGet(ToRef,FromRef,Opt);
 //TODO: create an index
 //   GeoRef_SetIndexInit(gset);
 
@@ -2341,6 +2347,8 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
    }
 
    switch(Opt->Interp) {
+      case IR_UNDEF:
+         break;
       case IR_NEAREST:
       case IR_LINEAR:
       case IR_CUBIC:
@@ -2395,7 +2403,7 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromD
       case IR_ACCUM:
       case IR_BUFFER:
          code=GeoRef_InterpAverage(ToRef,ToDef,FromRef,FromDef,Opt,Final);
-     break;
+         break;
 
       case IR_SUBNEAREST:
       case IR_SUBLINEAR:
