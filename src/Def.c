@@ -515,12 +515,12 @@ TDef * Def_Resize(
         // Allocate a single buffer and set component pointer to right address
         Def->Data[1] = Def->Data[2] = Def->Data[3] = NULL;
         int32_t nijk = FSIZE3D(Def);
-        if (!(Def->Data[0] = (char*)realloc(Def->Data[0], nijk*Def->NC*TDef_Size[Def->Type]))) {
+        if (!(Def->Data[0] = (char*)realloc(Def->Data[0], nijk * Def->NC * TDef_Size[Def->Type]))) {
             Def_Free(Def);
             return NULL;
         }
         for(int32_t n = 1; n < Def->NC; n++) {
-            Def->Data[n] = &Def->Data[0][nijk*n*TDef_Size[Def->Type]];
+            Def->Data[n] = &Def->Data[0][nijk * n * TDef_Size[Def->Type]];
         }
         Def->Mode = Def->Data[0];
         Def->Dir = NULL;
@@ -2345,6 +2345,8 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
    }
 
    switch(Opt->Interp) {
+      case IR_UNDEF:
+         break;
       case IR_NEAREST:
       case IR_LINEAR:
       case IR_CUBIC:
@@ -2399,7 +2401,7 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
       case IR_ACCUM:
       case IR_BUFFER:
          code = GeoRef_InterpAverage(ToRef, ToDef, FromRef, FromDef, Opt, Final);
-     break;
+         break;
 
       case IR_SUBNEAREST:
       case IR_SUBLINEAR:

@@ -14,9 +14,9 @@ program test
     character(len=4096) :: argument
     real(C_DOUBLE), dimension(5) :: lat,lon,x,y
     real(C_FLOAT), dimension(5) :: vals
-    real(C_FLOAT), dimension(:), pointer :: data_array1, data_array2
+    real(kind = real32), dimension(:), pointer :: data_array1, data_array2
     real(C_DOUBLE) :: lat0,lon0,lat1,lon1,x0,y0,x1,y1,val
-    real(C_DOUBLE), dimension(265372) :: lats,lons
+    real(C_DOUBLE), dimension(2700000) :: lats,lons
     integer(C_INT32_T) :: ix0,ix1,iy0,iy1
 
     ! Read first file
@@ -51,7 +51,7 @@ program test
     call App_Log(APP_INFO, app_msg)
 
     ! Test copy
-! compiler error
+!TODO: compiler error
 !    grefout=gref1%copy()
 
     ! Test write to file
@@ -81,7 +81,7 @@ program test
     success=gref1%intersect(gref2,ix0,iy0,ix1,iy1)
     write(app_msg,*) 'gref1%intersect = ',ix0,',',iy0,' - ',ix1,',',iy1
     call App_Log(APP_INFO, app_msg)
- 
+
     ! Test if on georeference is within another one
     success=gref1%within(gref2)
     write(app_msg,*) 'gref1%within (in=.FALSE.)= ',success

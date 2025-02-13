@@ -13,17 +13,17 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    fst_file   *fin,*fout,*fgrid,*ftruth;
    int         n=0;
 
-  if ((fin=fst24_open(In,"R/O"))<0) {
+  if (!(fin=fst24_open(In,"R/O"))) {
       App_Log(APP_ERROR,"Problems opening input file %s\n",In);
       return(FALSE);
    }
 
-   if ((fout=fst24_open(Out,"R/W"))<0) {
+   if (!(fout=fst24_open(Out,"R/W"))) {
       App_Log(APP_ERROR,"Problems opening output file %s\n",Out);
       return(FALSE);
    }
 
-   if ((fgrid=fst24_open(Grid,"R/O"))<0) {
+   if (!(fgrid=fst24_open(Grid,"R/O"))) {
       App_Log(APP_ERROR,"Problems opening grid file %s\n",Grid);
       return(FALSE);
    }
@@ -42,7 +42,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    }
 
    if (Truth) {
-      if ((ftruth=fst24_open(Truth,"R/O"))<0) {
+      if (!(ftruth=fst24_open(Truth,"R/O"))) {
          App_Log(APP_ERROR,"Problems opening truth file %s\n",Truth);
          return(FALSE);
       }

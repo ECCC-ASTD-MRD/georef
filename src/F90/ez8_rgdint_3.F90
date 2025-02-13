@@ -155,7 +155,7 @@
             
             integer       npts,ni,j1,j2,i,j,n,iplus1,jplus1,imoins1,jmoins1,iplus2,jplus2
             real          zo(npts)
-            real(kind=4)  index(npts,6)
+            real(kind=4)  index(npts,10)
             real          z(ni,j1:j2),nodata
             real(kind=8)  y1,y2,y3,y4
       
