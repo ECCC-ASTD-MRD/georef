@@ -23,7 +23,7 @@ void Def_Clear(
     TDef * const def
 ) {
     for(int32_t n = 0; n < def->NC; n++) {
-        for(int32_t i = 0; i < FSIZE3D(def); i++) {
+        for(uint64_t i = 0; i < FSIZE3D(def); i++) {
             Def_Set(def, n, i, def->NoData);
         }
     }
@@ -663,7 +663,7 @@ int32_t Def_GetValue(
         y -= Ref->Y0;
         int32_t ix = lrint(x);
         int32_t iy = lrint(y);
-        uint32_t idx = iy * Def->NI + ix;
+        uint32_t idx = (Ref->GRTYP[0] == 'M') ? ix : iy * Def->NI + ix;
 
         // Check for mask
         if (Def->Mask && !Def->Mask[idx]) {
@@ -1212,9 +1212,10 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Lay
 
 #ifdef HAVE_GDAL
    TGeoSet *gset;
-   long     f, n = 0, nt = 0, idx2;
+   int64_t f, n = 0, idx2;
+   uint64_t nt = 0;
    double   value, val, area, dp, x0, y0;
-   int32_t      fld = -1, pi, pj, error = 0, isize = 0;
+   int32_t  fld = -1, pi, pj, error = 0, isize = 0;
    char     mode, type, *c;
    float   *ip = NULL, *lp = NULL, **index = NULL;
    TCoord   co;
@@ -1428,7 +1429,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Lay
             }
 
             // In centroid mode, just project the coordinate into field and set value
-            if (Opt->Interp == IV_CENTROID) {
+            if (Opt->InterpVector == IV_CENTROID) {
                OGM_Centroid2D(geom, &vr[0], &vr[1]);
                GeoRef_XY2LL(LayerRef, &co.Lat, &co.Lon, &vr[0], &vr[1], 1, TRUE);
                GeoRef_LL2XY(ToRef, &vr[0], &vr[1], &co.Lat, &co.Lon, 1, TRUE);
@@ -1444,12 +1445,14 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Lay
                OGR_G_GetEnvelope(geom, &env);
                if (!(env.MaxX < (ToRef->X0-0.5) || env.MinX > (ToRef->X1+0.5) || env.MaxY < (ToRef->Y0-0.5) || env.MinY > (ToRef->Y1+0.5))) {
 
-                  if (Opt->Interp == IV_FAST) {
+                  if (Opt->InterpVector == IV_FAST) {
                      GeoRef_Rasterize(ToRef, ToDef, Opt, geom, value);
                   } else {
 
                      // Get value to split on
                      area = -1.0;
+                     mode = 'N';
+                     type = 'A';
                      switch(Opt->Interp) {
                         case IV_FAST                           : break;
                         case IV_WITHIN                         : mode = 'W'; type = 'A'; break;
@@ -1462,10 +1465,11 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Lay
                         case IV_LENGTH_NORMALIZED_CONSERVATIVE : mode = 'N'; type = 'L'; area = OGM_Length(geom); break;
                         case IV_LENGTH_ALIASED                 : mode = 'A'; type = 'L'; area = OGM_Length(geom); break;
                         case IV_POINT_CONSERVATIVE             : mode = 'C'; type = 'P'; area = 1.0; break;
+                        default: break;
                      }
 
                      // If it's nil then nothing to distribute on
-                     if (area > 0.0 || Opt->Interp <= IV_CENTROID) {
+                     if (area > 0.0 || Opt->InterpVector <= IV_CENTROID) {
 
                         env.MaxX += 0.5; env.MaxY += 0.5;
                         env.MinX = env.MinX < 0 ? 0 : env.MinX;
@@ -1474,7 +1478,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Lay
                         env.MaxY = env.MaxY > (ToRef->Y1+0.5) ? (ToRef->Y1+0.5) : env.MaxY;
                         area = area < 0 ? 0.0 : area;
 
-                        // Append feature into index
+                        // AppEnd feature into index
                         lp = NULL;
                         if (ip) {
                            if (!(index[f] = (float*)malloc(isize*sizeof(float)))) {
@@ -1646,7 +1650,8 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
 
 #ifdef HAVE_GDAL
    TGeoSet    *gset = NULL;
-   int32_t          i, j, n, na, nt = 0, p = 0, pi, pj, idx2, idx3, wrap, k = 0, isize, nidx, error = 0;
+   int32_t     i, j, na, nt = 0, p = 0, pi, pj, idx2, idx3, wrap, k = 0, isize, nidx, error = 0;
+   uint64_t n;
    char        *c;
    double       val0, val1, area, x, y, z, dp;
    float       *ip = NULL, *lp = NULL, **index = NULL;
@@ -1687,7 +1692,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
    for (k = 0; k < ToDef->NK; k++) {
 
       if (ToDef->Buffer)
-         for(i = 0; i < FSIZE2D(ToDef); i++) ToDef->Buffer[i] = 0.0;
+         for(n = 0; n < FSIZE2D(ToDef); n++) ToDef->Buffer[n] = 0.0;
 
       // Do we have and index
       if (gset->Index && gset->Index[0] != REF_INDEX_EMPTY) {
@@ -1952,7 +1957,7 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
    unsigned long idxt, idxk, idxj, n, nijk, nij;
    uint32_t      n2, ndi, ndj, k, t, s, x, dx, dy;
    TGeoScan      gscan;
-   TGeoSet      *gset = NULL;
+   // TGeoSet      *gset;
    TRef_InterpR  interp;
 
    if (!Opt) Opt = &ToRef->Options;
@@ -1975,9 +1980,9 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
    val = vx = 0.0;
    interp = Opt->Interp;
 
-   gset = GeoRef_SetGet(ToRef, FromRef, Opt);
-//TODO: create an index
-//   GeoRef_SetIndexInit(gset);
+   // gset = GeoRef_SetGet(ToRef, FromRef, Opt);
+   //! \todo create an index
+   //   GeoRef_SetIndexInit(gset);
 
    if (Opt->Interp != IR_NOP && Opt->Interp != IR_ACCUM && Opt->Interp != IR_BUFFER) {
       if (!GeoRef_Intersect(ToRef, FromRef, &x0, &y0, &x1, &y1, 0)) {
