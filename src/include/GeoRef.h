@@ -106,9 +106,9 @@ typedef struct {
 #define GeoRef_ScanX(X)         (((float*)GeoScanX)[X]-1.0)
 #define GeoRef_ScanY(X)         (((float*)GeoScanY)[X]-1.0)
 #define GeoRef_Lon(R,L)         (((L)>180 && R->Type&GRID_NEGLON)?(L)-360.0:((L)<0 && !(R->Type&GRID_NEGLON))?(L)+360.0:(L))
-#define GeoRef_SubGet(REF)      ((REF->Sub<REF->NbSub && REF->Sub>=0)?REF->Subs[REF->Sub]:REF)
-#define GeoRef_SetHasIndex(G)   (G && G->Index && G->Index[0]!=REF_INDEX_EMPTY)
-#define GeoRef_SetEmptyIndex(G) (G && G->Index && G->Index[0]==REF_INDEX_EMPTY)
+#define GeoRef_SubGet(REF)      ( (REF->Sub < REF->NbSub && REF->Sub >= 0) ? REF->Subs[REF->Sub] : REF)
+#define GeoRef_SetHasIndex(G)   (G && G->Index && G->Index[0] != REF_INDEX_EMPTY)
+#define GeoRef_SetEmptyIndex(G) (G && G->Index && G->Index[0] == REF_INDEX_EMPTY)
 
 // Raster interpolation modes
 typedef enum {
