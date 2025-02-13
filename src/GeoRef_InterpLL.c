@@ -202,7 +202,7 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
             break;
 
          case 'M':
-            for (i=0;i<ni;i++) {
+            for (i=0;i<npts;i++) {
                Ref->Lat[i]=Ref->AY[i];
                Ref->Lon[i]=Ref->AX[i];
             }

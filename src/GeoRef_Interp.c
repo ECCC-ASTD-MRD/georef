@@ -49,7 +49,7 @@ int32_t gd_interpm(TGeoRef *Ref,TGeoOptions *Opt,float *Out,float *In,double *X,
 
    #pragma omp parallel for default(none) private(d,b,idx,n,v) shared(stderr,Nb,Ref,Opt,X,Y,Out,In)
    for(d=0;d<Nb;d++) {
-      if (X[d]>=0 && Y[d]>=0) {
+     if (X[d]>=0 && Y[d]>=0) {
 
          b[0]=X[d]-(int)X[d];
          b[1]=Y[d]-(int)Y[d];
@@ -68,7 +68,6 @@ int32_t gd_interpm(TGeoRef *Ref,TGeoOptions *Opt,float *Out,float *In,double *X,
             v[0]=In[Ref->Idx[idx]];
             v[1]=In[Ref->Idx[idx+1]];
             v[2]=In[Ref->Idx[idx+2]];
-
             Out[d]=Bary_InterpV(b,v);
           }
       }
