@@ -660,11 +660,11 @@ int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,
       y-=Ref->Y0;
       ix=lrint(x);
       iy=lrint(y);
-      idx=iy*Def->NI+ix;
+      idx=(Ref->GRTYP[0]=='M')?ix:iy*Def->NI+ix;
 
       // Check for mask
       if (Def->Mask && !Def->Mask[idx]) {
-          if (!Def->Mask[idx]) {
+         if (!Def->Mask[idx]) {
             return(FALSE);
          }
       }
