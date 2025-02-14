@@ -159,14 +159,13 @@ contains
     function georef_copy_f(this,hard) result(out)
         implicit none
         class(georef), intent(inout) :: this       !< georef instance
-        class(georef), allocatable :: out          !< georef instance
+        type(georef) :: out          !< georef instance
         logical, optional :: hard
 
-        out=this
-        if (present(hard)) then
-           out%ptr=georef_copy(this%ptr)
-        else
+        if (present(hard) .and. hard) then
            out%ptr=georef_hardcopy(this%ptr)
+        else
+           out%ptr=georef_copy(this%ptr)
         endif
     end function georef_copy_f
 

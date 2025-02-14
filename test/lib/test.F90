@@ -51,8 +51,9 @@ program test
     call App_Log(APP_INFO, app_msg)
 
     ! Test copy
-!TODO: compiler error
-!    grefout=gref1%copy()
+    grefout=gref1%copy(hard=.true.)
+    write(app_msg,*) 'grefout%valid = ',grefout%valid()
+    call App_Log(APP_INFO, app_msg)
 
     ! Test write to file
     success = fileout%open('TestF90.fst','R/W')

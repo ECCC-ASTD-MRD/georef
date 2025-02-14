@@ -539,6 +539,32 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       ref->Type=Ref->Type;
       ref->NbSub=Ref->NbSub;
       ref->QTree=NULL;
+      ref->Hemi=Ref->Hemi;                                    
+      ref->RefFrom=Ref->RefFrom;                                    
+      ref->Extension=Ref->Extension;  
+      ref->Height=Ref->Height;  
+      ref->RPNHead=Ref->RPNHead;  
+      ref->RPNHeadExt=Ref->RPNHeadExt;  
+      ref->i1=Ref->i1;
+      ref->i2=Ref->i2;
+      ref->j1=Ref->j1;
+      ref->j2=Ref->j2;
+
+      if (Ref->Lat) { 
+         ref->Lat=malloc(((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NY)*sizeof(double)); 
+         memcpy(ref->Lat,Ref->Lat,((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NY)*sizeof(double));
+      }
+      if (Ref->Lon) {
+         ref->Lon=malloc(((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NX)*sizeof(double)); 
+         memcpy(ref->Lon,Ref->Lon,((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NX)*sizeof(double));
+      }
+
+   // double       *AXY;                            
+   //struct TGeoRef *mymaskgrid;
+   //int32_t mymaskgridi0,mymaskgridi1;
+   //int32_t mymaskgridj0,mymaskgridj1;
+
+      if (Ref->AX && Ref->AY) GeoRef_AxisDefine(ref,Ref->AX,Ref->AY);
 
       if (Ref->Subs) {
          ref->Subs=(TGeoRef**)malloc(Ref->NbSub*sizeof(TGeoRef*));
@@ -558,12 +584,20 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
             ref->R=Ref->R;
             ref->ResR=Ref->ResR;
             ref->ResA=Ref->ResA;
+            break;
          case 'W' :
             GeoRef_DefineW(ref,Ref->String,Ref->Transform,Ref->InvTransform,Ref->Spatial);
             if (Ref->RotTransform) {
                ref->RotTransform=(TRotationTransform*)malloc(sizeof(TRotationTransform));
                memcpy(ref->RotTransform,Ref->RotTransform,sizeof(TRotationTransform));
             }
+            break;
+         case 'X' :
+         case 'Y' :
+         case 'O' :
+         case 'M' :
+            GeoRef_BuildIndex(ref);
+            break;
       }
    }
    return(ref);
@@ -1843,7 +1877,7 @@ int32_t GeoRef_Valid(TGeoRef* __restrict const Ref) {
    x[1]=Ref->X1;y[1]=Ref->Y1;
    GeoRef_XY2LL(Ref,lat,lon,x,y,2,TRUE);
 
-   if (lat[0]<-91 || lat[0]>91.0 || lat[1]<-91 || lat[1]>91.0) {
+   if (!Ref->XY2LL || lat[0]<-91 || lat[0]>91.0 || lat[1]<-91 || lat[1]>91.0) {
       return(0);
    }
    return(1);
@@ -2258,7 +2292,7 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
    record.ig2   = GRef->RPNHead.ig2;
    record.ig3   = GRef->RPNHead.ig3;
    record.ig4   = GRef->RPNHead.ig4;
-   record.data_type = FST_TYPE_REAL_IEEE;
+   record.data_type = FST_TYPE_REAL_IEEE | FST_TYPE_TURBOPACK;
    record.data_bits = 32;
    record.pack_bits = 8;
    fst24_record_print(&record);
