@@ -12,7 +12,7 @@ this_dir = os.path.dirname(__file__)
 # - ${PACKAGE}/lib/python/georef
 #   -> libgeoref.so is in ${this_dir}/../../
 
-georef_build_lib = os.path.normpath(os.path.join(this_dir, "..", "..", "lib", "libgeoref.so"))
+georef_build_lib = os.path.normpath(os.path.join(this_dir, "..", "..", "src", "libgeoref.so"))
 georef_package_lib = os.path.normpath(os.path.join(this_dir, "..", "..", "libgeoref.so"))
 if os.path.isfile(georef_build_lib):
     libgeoref = ctypes.cdll.LoadLibrary(georef_build_lib)
