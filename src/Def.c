@@ -655,7 +655,7 @@ int32_t Def_GetValue(
         (X >= (Ref->X0-d) && Y >= (Ref->Y0-d) && Z >= 0 && X <= (Ref->X1+d) && Y <= (Ref->Y1+d) && Z <= Def->NK-1)) {
 
         // Index memoire du niveau desire
-        int32_t mem = Def->NIJ*(int)Z;
+        int32_t mem = Def->NIJ * (int)Z;
 
         double x = X;
         double y = Y;
@@ -1453,7 +1453,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Lay
                      area = -1.0;
                      mode = 'N';
                      type = 'A';
-                     switch(Opt->Interp) {
+                     switch(Opt->InterpVector) {
                         case IV_FAST                           : break;
                         case IV_WITHIN                         : mode = 'W'; type = 'A'; break;
                         case IV_INTERSECT                      : mode = 'I'; type = 'A'; break;
@@ -1478,7 +1478,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Lay
                         env.MaxY = env.MaxY > (ToRef->Y1+0.5) ? (ToRef->Y1+0.5) : env.MaxY;
                         area = area < 0 ? 0.0 : area;
 
-                        // AppEnd feature into index
+                        // Append feature into index
                         lp = NULL;
                         if (ip) {
                            if (!(index[f] = (float*)malloc(isize*sizeof(float)))) {

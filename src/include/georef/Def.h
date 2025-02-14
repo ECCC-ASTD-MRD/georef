@@ -274,7 +274,17 @@ int32_t Def_Paste(
 
 struct TGeoRef;
 
-int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY);
+int32_t Def_GetValue(
+    const TGeoRef * const Ref,
+    const TDef * const Def,
+    const TGeoOptions * const Opt,
+    const int32_t C,
+    double X,
+    double Y,
+    double Z,
+    double * const Length,
+    double * const ThetaXY
+);
 
 int32_t GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int32_t I,int32_t J,int32_t Seg);
 int32_t GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Geom,double Value);

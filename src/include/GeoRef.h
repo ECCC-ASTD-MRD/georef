@@ -391,7 +391,12 @@ int32_t  GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int32_t *MaskOut,int32
 int32_t  GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int32_t ni,int32_t nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int32_t *yyincount,double *yanlat,double *yanlon,int32_t *yyancount);
 int32_t  GeoRef_MaskYYDefine(TGeoRef *Ref);
 
-void     GeoRef_GridGetExpanded(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin);                                                         // gdxpngd
+void GeoRef_GridGetExpanded(
+    const TGeoRef * const Ref,
+    const TGeoOptions * const Opt,
+    float * const zout, 
+    const float * const zin
+); // gdxpngd
 int32_t  GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,int32_t *IG1,int32_t *IG2,int32_t *IG3,int32_t *IG4,char *grref,int32_t *IG1REF,int32_t *IG2REF,int32_t *IG3REF,int32_t *IG4REF);  //c_ezgxprm
 void     GeoRef_AxisDefine(TGeoRef * const Ref, double * const AX, double * const AY);                                                         // gdaxes
 int32_t  GeoRef_AxisGetExpanded(const TGeoRef * const Ref, double * const AX, double * const AY);                                              // gdgxpndaxes
