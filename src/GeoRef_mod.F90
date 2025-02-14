@@ -162,7 +162,10 @@ contains
         type(georef) :: out          !< georef instance
         logical, optional :: hard
 
-        if (present(hard) .and. hard) then
+        if (.not. present(hard)) then
+           hard=.FALSE.
+        endif
+        if (hard) then
            out%ptr=georef_hardcopy(this%ptr)
         else
            out%ptr=georef_copy(this%ptr)
@@ -205,8 +208,10 @@ contains
 
         res=.false.;
         cin=0;
-        if (present(in) .and. in) then
-           cin=1
+        if (present(in)) then
+           if (in) then
+              cin=1
+            endif
         endif
         val = georef_withinrange(this%ptr,lat0,lon0,lat1,lon1,cin)
         if (val==1) then
@@ -223,8 +228,10 @@ contains
         logical :: res                             !< Whether the georef are intersecting
 
         val=0
-        if (present(bd) .and. bd) then
-           val=1
+        if (present(bd)) then
+           if (bd) then
+              val=1
+            endif
         endif
         val=georef_intersect(this%ptr,ref%ptr,x0,y0,x1,y1,val)
         res=.false.
@@ -331,8 +338,10 @@ contains
         integer(C_INT32_T) :: out
 
         c_extrap=0
-        if (present(extrap) .and. extrap) then
-           c_extrap=1
+        if (present(extrap)) then
+            if (extrap) then
+                c_extrap=1
+            endif
         end if
 
         out=georef_xy2ll(this%ptr,lat,lon,x,y,n,c_extrap)
@@ -347,8 +356,10 @@ contains
         integer(C_INT32_T) :: out
 
         c_extrap=0
-        if (present(extrap) .and. extrap) then
-           c_extrap=1
+        if (present(extrap)) then
+            if (extrap) then
+                c_extrap=1
+            endif
         end if
 
         out=georef_ll2xy(this%ptr,x,y,lat,lon,n,c_extrap)

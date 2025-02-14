@@ -2269,7 +2269,6 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       return(FALSE);
    }
    if (!GRef->Name) GRef->Name=strdup("Undefined");
-
    {
       char * const envVar = getenv("GEOREF_DESCRIPTOR_64");
       if (envVar) dbl = TRUE;
