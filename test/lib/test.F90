@@ -51,7 +51,7 @@ program test
     call App_Log(APP_INFO, app_msg)
 
     ! Test copy
-    grefout=gref1%copy(hard=.true.)
+    grefout=gref1%copy(hard=.TRUE.)
     write(app_msg,*) 'grefout%valid = ',grefout%valid()
     call App_Log(APP_INFO, app_msg)
 

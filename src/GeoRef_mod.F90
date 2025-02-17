@@ -160,12 +160,17 @@ contains
         implicit none
         class(georef), intent(inout) :: this       !< georef instance
         type(georef) :: out          !< georef instance
-        logical, optional :: hard
+        logical, optional, intent(in) :: hard
+        logical :: lhard
 
-        if (.not. present(hard)) then
-           hard=.FALSE.
+        lhard=.FALSE.
+        if (present(hard)) then
+            if (hard) then
+                lhard=.TRUE.
+            endif
         endif
-        if (hard) then
+
+        if (lhard) then
            out%ptr=georef_hardcopy(this%ptr)
         else
            out%ptr=georef_copy(this%ptr)
