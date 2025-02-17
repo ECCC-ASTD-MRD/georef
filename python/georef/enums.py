@@ -23,3 +23,31 @@ class RefInterpR(enum.IntEnum):
    IR_BUFFER                         = 17
    IR_SUBNEAREST                     = 18
    IR_SUBLINEAR                      = 19
+
+class RefExtrapR(enum.IntEnum):
+    ER_UNDEF   = 0
+    ER_MAXIMUM = 1
+    ER_MINIMUM = 2
+    ER_VALUE   = 3
+    ER_ABORT   = 4
+
+class RefInterpVR(enum.IntEnum):
+    IV_UNDEF                          = 0
+    IV_FAST                           = 1
+    IV_WITHIN                         = 2
+    IV_INTERSECT                      = 3
+    IV_CENTROID                       = 4
+    IV_ALIASED                        = 5
+    IV_CONSERVATIVE                   = 6
+    IV_NORMALIZED_CONSERVATIVE        = 7
+    IV_POINT_CONSERVATIVE            = 8
+    IV_LENGTH_CONSERVATIVE           = 9
+    IV_LENGTH_NORMALIZED_CONSERVATIVE = 10
+    IV_LENGTH_ALIASED                = 11
+
+class RefCombineR(enum.IntEnum):
+    CB_REPLACE   = 0
+    CB_MIN       = 1
+    CB_MAX       = 2
+    CB_SUM       = 3
+    CB_AVERAGE   = 4
