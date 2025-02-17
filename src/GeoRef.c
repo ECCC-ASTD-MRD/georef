@@ -526,12 +526,15 @@ TGeoRef *GeoRef_Reference(TGeoRef* __restrict const Ref) {
 TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
 
    TGeoRef *ref;
-   int32_t      i;
+   int32_t  i;
 
-   ref=GeoRef_New();
-   GeoRef_Size(ref,Ref->X0,Ref->Y0,Ref->X1,Ref->Y1,Ref->BD);
+   if (!Ref) {
+      return(NULL);
+   }
 
-   if (Ref) {
+   if (ref=GeoRef_New()) {
+      GeoRef_Size(ref,Ref->X0,Ref->Y0,Ref->X1,Ref->Y1,Ref->BD);
+
       ref->GRTYP[0]=Ref->GRTYP[0];
       ref->GRTYP[1]=Ref->GRTYP[1];
       ref->XY2LL=Ref->XY2LL;
@@ -545,6 +548,7 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       ref->Height=Ref->Height;  
       ref->RPNHead=Ref->RPNHead;  
       ref->RPNHeadExt=Ref->RPNHeadExt;  
+      ref->Options=Ref->Options;
       ref->i1=Ref->i1;
       ref->i2=Ref->i2;
       ref->j1=Ref->j1;
@@ -572,9 +576,6 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
          for(i=0;i<ref->NbSub;i++)
             GeoRef_Incr(ref->Subs[i]);
       }
-
-      memcpy(&ref->RPNHead,&Ref->RPNHead,sizeof(fst_record_ext));
-      memcpy(&ref->Options,&Ref->Options,sizeof(TGeoOptions));
 
       switch(ref->GRTYP[0]) {
          case 'R' :
