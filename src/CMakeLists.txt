@@ -76,7 +76,7 @@ install(TARGETS ${static_targets} EXPORT ${PROJECT_NAME}-static-targets
 
 install(DIRECTORY include/georef DESTINATION include)
 install(FILES include/GeoRef.inc TYPE INCLUDE)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/georef_mod.mod TYPE INCLUDE)
+install(FILES ${MODULE_DIR}/georef_mod.mod TYPE INCLUDE)
 
 # Symbolic link for archive numbered version
 add_custom_command(TARGET ${PROJECT_NAME}-static POST_BUILD
