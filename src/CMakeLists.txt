@@ -27,18 +27,18 @@ foreach(LINK_TYPE static shared)
             OUTPUT_NAME georef${OMPI}
             POSITION_INDEPENDENT_CODE ON)
 
-        target_include_directories(georef${OMPI}-${LINK_TYPE} PUBLIC 
+        target_include_directories(georef${OMPI}-${LINK_TYPE} PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/georef>)
-        target_include_directories(georef${OMPI}-${LINK_TYPE} INTERFACE 
+        target_include_directories(georef${OMPI}-${LINK_TYPE} INTERFACE
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
             $<INSTALL_INTERFACE:include/georef>)
-                
+
         target_compile_definitions(georef${OMPI}-${LINK_TYPE} PRIVATE HAVE_GPC)
         add_dependencies(georef${OMPI}-${LINK_TYPE} ${PROJECT_NAME}_build_info)
         add_library(georef::georef${OMPI}-${LINK_TYPE} ALIAS georef${OMPI}-${LINK_TYPE})
-            
+
         if("${OMPI}" STREQUAL "-ompi")
             if(OpenMP_FOUND)
                 target_link_libraries(georef${OMPI}-${LINK_TYPE} PUBLIC OpenMP::OpenMP_C OpenMP::OpenMP_Fortran)
@@ -76,7 +76,7 @@ install(TARGETS ${static_targets} EXPORT ${PROJECT_NAME}-static-targets
 
 install(DIRECTORY include/georef DESTINATION include)
 install(FILES include/GeoRef.inc TYPE INCLUDE)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/georef_mod.mod TYPE INCLUDE)
+install(FILES ${MODULE_DIR}/georef_mod.mod TYPE INCLUDE)
 
 # Symbolic link for archive numbered version
 add_custom_command(TARGET ${PROJECT_NAME}-static POST_BUILD

@@ -133,8 +133,20 @@ typedef enum {
    IR_ACCUM                          = 16,   //!< To get the accumulation matrix of the number of source cell intersecting destination cells
    IR_BUFFER                         = 17,   //!< To get the interpolation state of multipl loops before finalization (ie: destionation cell fraction covered in CONSERVATIVE mode)
    IR_SUBNEAREST                     = 18,   //!< Sub grid resolution nearest interpolation
-   IR_SUBLINEAR                      = 19    //!< Sub grid resolution linear intelpolation
-} TRef_InterpR;
+   IR_SUBLINEAR                      = 19,   //!< Sub grid resolution linear intelpolation 
+   IV_FAST                           = 20,   //!< Use a rasterization method (middle of grid cell inclusion)
+   IV_WITHIN                         = 21,   //!< Grid cell has to be totally included in polygon
+   IV_INTERSECT                      = 22,   //!< Grid cell intersects polygon
+   IV_CENTROID                       = 23,   //!< Centroid of geometry is within grid cell
+   IV_ALIASED                        = 24,   //!< Grid cells are assigned the area fraction of the intersection of the polygon value
+   IV_CONSERVATIVE                   = 25,   //!< Distribute polygon value so as to conserve geometry mass in relation to geometry total area and intersecting grid cell area
+   IV_NORMALIZED_CONSERVATIVE        = 26,   //!< Distribute polygon coverage fraction in relation to geometry area and intersecting grid cell area
+   IV_POINT_CONSERVATIVE             = 27,   //!< Distribute polygon value so as to conserve geometry mass
+   IV_LENGTH_CONSERVATIVE            = 28,   //!< Distribute contour value so as to conserve geometry mass in relation to geometry length intersecting grid cell
+   IV_LENGTH_NORMALIZED_CONSERVATIVE = 29,   //!< Distribute contour value fraction in relation to geometry length intersecting grid cell
+   IV_LENGTH_ALIASED                 = 30    //!< Grid cells are assigned the lenght fraction of the intersection of the contour value
+} TRef_Interp;
+
 
 // Raster Extrapolation modes
 typedef enum {
@@ -143,23 +155,7 @@ typedef enum {
   ER_MINIMUM = 2,     //!< Use minimum field value
   ER_VALUE   = 3,     //!< Use a specific value (TGeoOptions->NoData)
   ER_ABORT   = 4      //!< Abort execution
-} TRef_ExtrapR;
-
-// Vector interpolation modes
-typedef enum {
-   IV_UNDEF                          = 0,   //!< Undefined
-   IV_FAST                           = 1,   //!< Use a rasterization method (middle of grid cell inclusion)
-   IV_WITHIN                         = 2,   //!< Grid cell has to be totally included in polygon
-   IV_INTERSECT                      = 3,   //!< Grid cell intersects polygon
-   IV_CENTROID                       = 4,   //!< Centroid of geometry is within grid cell
-   IV_ALIASED                        = 5,   //!< Grid cells are assigned the area fraction of the intersection of the polygon value
-   IV_CONSERVATIVE                   = 6,   //!< Distribute polygon value so as to conserve geometry mass in relation to geometry total area and intersecting grid cell area
-   IV_NORMALIZED_CONSERVATIVE        = 7,   //!< Distribute polygon coverage fraction in relation to geometry area and intersecting grid cell area
-   IV_POINT_CONSERVATIVE             = 8,   //!< Distribute polygon value so as to conserve geometry mass
-   IV_LENGTH_CONSERVATIVE            = 9,   //!< Distribute contour value so as to conserve geometry mass in relation to geometry length intersecting grid cell
-   IV_LENGTH_NORMALIZED_CONSERVATIVE = 10,  //!< Distribute contour value fraction in relation to geometry length intersecting grid cell
-   IV_LENGTH_ALIASED                 = 11   //!< Grid cells are assigned the lenght fraction of the intersection of the contour value
-} TRef_InterpV;
+} TRef_Extrap;
 
 // Interpolation value combination modes (multiple values within a grid cell)
 typedef enum {
@@ -193,9 +189,8 @@ typedef double  (TGeoRef_Height) (struct TGeoRef *Ref, TZRef *ZRef, double X, do
 
 // Geospatial manipulation options
 typedef struct TGeoOptions {
-   TRef_InterpR Interp;         //!< Raster interpolation method (default: IR_CUBIC)
-   TRef_ExtrapR Extrap;         //!< Raster extrapolation method (default: ER_VALUE)
-   TRef_InterpV InterpVector;   //!< Vector geometry interpolation method (default: IV_FAST)
+   TRef_Interp  Interp;         ///< Raster interpolation method (default: IR_CUBIC)
+   TRef_Extrap  Extrap;         ///< Raster extrapolation method (default: ER_VALUE)
    TRef_Combine Combine;        //!< Aggregation type (default: CB_REPLACE)
    int32_t      Transform;      //!< Apply transformation or stay within master referential (default: TRUE)
    int32_t      CIndex;         //!< C Indexing (starts at 0) (default: FALSE)
@@ -234,10 +229,10 @@ typedef struct {
    TGeoZone        zones[SET_NZONES];   //!< Extrapolation zone definitions
    char            G2G[2];              //!< GRTYP of source and destination for index identification
    int32_t         flags;               //!< State flags
-   TRef_InterpR    IndexMethod;         //!< Index interpolation method
+   TRef_Interp    IndexMethod;          //!< Index interpolation method
    int32_t         IndexSize;           //!< Index size
    float          *Index;               //!< Array of index values
-   double         *X, *Y;                //!< Grid coordinates of the destination grid into the source grid
+   double         *X, *Y;               //!< Grid coordinates of the destination grid into the source grid
 
    float *yin_maskout, *yan_maskout;
    double *yinlat, *yinlon, *yanlat, *yanlon;
@@ -316,8 +311,8 @@ typedef struct TGeoScan {
    double   *X, *Y;
    float    *D;
    uint32_t *V;                                           //!< Coordonnees et valeurs
-   uint32_t  N, S;                                         //!< Nombre de coordonnees et dimension
-   int32_t   DX, DY;                                       //!< Longueur en X et Y
+   uint32_t  N, S;                                        //!< Nombre de coordonnees et dimension
+   int32_t   DX, DY;                                      //!< Longueur en X et Y
 } TGeoScan;
 
 void GeoRef_Lock(void);

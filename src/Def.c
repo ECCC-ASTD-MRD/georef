@@ -762,8 +762,7 @@ int32_t GeoRef_Rasterize(TGeoRef *ToRef, TDef *ToDef, TGeoOptions *Opt, OGRGeome
    int32_t horizontal_x1, horizontal_x2;
    int32_t dnx, dny, x0, x1, y0, y1, fr, sx, sy;
 
-   if (!Opt) Opt = &ToRef->Options;
-   if (!Opt) Opt = &GeoRef_Options;
+   if (!Opt) Opt=&GeoRef_Options;
 
    OGRGeometryH geom;
 
@@ -1226,8 +1225,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Lay
    OGRGeometryH                  geom = NULL, utmgeom = NULL, hgeom, pick = NULL, poly = NULL;
    OGREnvelope                   env;
 
-   if (!Opt) Opt = &ToRef->Options;
-   if (!Opt) Opt = &GeoRef_Options;
+   if (!Opt) Opt=&GeoRef_Options;
 
    if (!ToRef || !ToDef) {
       Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid destination\n", __func__);
@@ -1429,7 +1427,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Lay
             }
 
             // In centroid mode, just project the coordinate into field and set value
-            if (Opt->InterpVector == IV_CENTROID) {
+            if (Opt->Interp == IV_CENTROID) {
                OGM_Centroid2D(geom, &vr[0], &vr[1]);
                GeoRef_XY2LL(LayerRef, &co.Lat, &co.Lon, &vr[0], &vr[1], 1, TRUE);
                GeoRef_LL2XY(ToRef, &vr[0], &vr[1], &co.Lat, &co.Lon, 1, TRUE);
@@ -1445,7 +1443,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Lay
                OGR_G_GetEnvelope(geom, &env);
                if (!(env.MaxX < (ToRef->X0-0.5) || env.MinX > (ToRef->X1+0.5) || env.MaxY < (ToRef->Y0-0.5) || env.MinY > (ToRef->Y1+0.5))) {
 
-                  if (Opt->InterpVector == IV_FAST) {
+                  if (Opt->Interp == IV_FAST) {
                      GeoRef_Rasterize(ToRef, ToDef, Opt, geom, value);
                   } else {
 
@@ -1453,7 +1451,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Lay
                      area = -1.0;
                      mode = 'N';
                      type = 'A';
-                     switch(Opt->InterpVector) {
+                     switch(Opt->Interp) {
                         case IV_FAST                           : break;
                         case IV_WITHIN                         : mode = 'W'; type = 'A'; break;
                         case IV_INTERSECT                      : mode = 'I'; type = 'A'; break;
@@ -1469,7 +1467,7 @@ int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Lay
                      }
 
                      // If it's nil then nothing to distribute on
-                     if (area > 0.0 || Opt->InterpVector <= IV_CENTROID) {
+                     if (area > 0.0 || Opt->Interp <= IV_CENTROID) {
 
                         env.MaxX += 0.5; env.MaxY += 0.5;
                         env.MinX = env.MinX < 0 ? 0 : env.MinX;
@@ -1573,8 +1571,7 @@ int32_t GeoRef_InterpSub(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
    int32_t  idx, i, j, x, y, x0, x1, y0, y1, s;
    double val, val1, di, dj, d, la, lo;
 
-   if (!Opt) Opt = &ToRef->Options;
-   if (!Opt) Opt = &GeoRef_Options;
+   if (!Opt) Opt=&GeoRef_Options;
 
    if (!ToRef || !ToDef) {
       Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid destination\n", __func__);
@@ -1658,8 +1655,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
    OGRGeometryH cell = NULL, ring = NULL, *pick = NULL, *poly = NULL;
    OGREnvelope  env;
 
-   if (!Opt) Opt = &ToRef->Options;
-   if (!Opt) Opt = &GeoRef_Options;
+   if (!Opt) Opt=&GeoRef_Options;
 
    Opt->Combine = CB_SUM;
    if (!ToRef || !ToDef) {
@@ -1957,11 +1953,9 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
    unsigned long idxt, idxk, idxj, n, nijk, nij;
    uint32_t      n2, ndi, ndj, k, t, s, x, dx, dy;
    TGeoScan      gscan;
-   // TGeoSet      *gset;
-   TRef_InterpR  interp;
+   TRef_Interp  interp;
 
-   if (!Opt) Opt = &ToRef->Options;
-   if (!Opt) Opt = &GeoRef_Options;
+   if (!Opt) Opt=&GeoRef_Options;
 
    if (!ToRef || !ToDef) {
       Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid destination\n", __func__);
@@ -2331,8 +2325,7 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
    void *pf0, *pt0, *pf1, *pt1;
    int32_t   k, code = FALSE;
 
-   if (!Opt) Opt = &ToRef->Options;
-   if (!Opt) Opt = &GeoRef_Options;
+   if (!Opt) Opt=&GeoRef_Options;
 
    if (!ToRef || !ToDef) {
       Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid destination\n", __func__);
@@ -2485,8 +2478,7 @@ int32_t _GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromR
    int32_t          d = 0, sz, dd;
    double       x0, y0, v;
 
-   if (!Opt) Opt = &ToRef->Options;
-   if (!Opt) Opt = &GeoRef_Options;
+   if (!Opt) Opt=&GeoRef_Options;
 
    if (!Scan || !ToRef || !FromRef) {
       return 0;
@@ -2627,8 +2619,7 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
 #ifdef HAVE_GDAL
    double           x0, y0, v;
 #endif
-   if (!Opt) Opt = &ToRef->Options;
-   if (!Opt) Opt = &GeoRef_Options;
+   if (!Opt) Opt=&GeoRef_Options;
 
    if (!Scan || !ToRef || !FromRef) {
       return 0;

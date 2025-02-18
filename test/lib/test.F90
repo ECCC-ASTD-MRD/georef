@@ -7,7 +7,7 @@ program test
 
     type(fst_file)   :: file1, file2, fileout
     type(fst_record) :: record1, record2
-    type(georef)     :: gref1, gref2
+    type(georef)     :: gref1, gref2, grefout
 
     logical :: success
     integer :: len, status
@@ -51,8 +51,9 @@ program test
     call App_Log(APP_INFO, app_msg)
 
     ! Test copy
-!TODO: compiler error
-!    grefout=gref1%copy()
+    grefout=gref1%copy(hard=.TRUE.)
+    write(app_msg,*) 'grefout%valid = ',grefout%valid()
+    call App_Log(APP_INFO, app_msg)
 
     ! Test write to file
     success = fileout%open('TestF90.fst','R/W')
@@ -67,7 +68,7 @@ program test
     success=gref1%limits(lat0,lon0,lat1,lon1)
     write(app_msg,*) 'gref1%limit = ',lat0,',',lon0,' - ',lat1,',',lon1
     call App_Log(APP_INFO, app_msg)
-    
+
     ! Test ij coordinate of latlon bounding box
     lat0=36.0
     lon0=-116.0
@@ -124,6 +125,9 @@ program test
     call record1%get_data_array(data_array1)
     call record2%get_data_array(data_array2)
 
+    x(1)=75.5
+    y(1)=30.5
+
     ! Test nearest grid point value interpolation
     georef_options%Interp=IR_NEAREST
     len=gref1%xyval(vals,data_array1,x,y,1,opt=georef_options)
@@ -157,11 +161,11 @@ program test
     success = file2%close()
     success = fileout%close()
 
-    if (.not. success) then 
+    if (.not. success) then
        call App_Log(APP_INFO, 'Test failed');
        call exit(-1)
     end if
 
     call App_Log(APP_INFO, 'Test successful');
-    
+
 end program test

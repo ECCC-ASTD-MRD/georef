@@ -28,27 +28,25 @@ module georef_mod
             IR_ACCUM                          = 16, &
             IR_BUFFER                         = 17, &
             IR_SUBNEAREST                     = 18, &
-            IR_SUBLINEAR                      = 19
+            IR_SUBLINEAR                      = 19, &
+            IV_FAST                           = 20, &
+            IV_WITHIN                         = 21, &
+            IV_INTERSECT                      = 22, &
+            IV_CENTROID                       = 23, &
+            IV_ALIASED                        = 24, &
+            IV_CONSERVATIVE                   = 25, &
+            IV_NORMALIZED_CONSERVATIVE        = 26, &
+            IV_POINT_CONSERVATIVE             = 27, &
+            IV_LENGTH_CONSERVATIVE            = 28, &
+            IV_LENGTH_NORMALIZED_CONSERVATIVE = 39, &
+            IV_LENGTH_ALIASED                 = 30
         enumerator :: &
             ER_UNDEF   = 0, &
             ER_MAXIMUM = 1, &
             ER_MINIMUM = 2, &
             ER_VALUE   = 3, &
             ER_ABORT   = 4
-        enumerator :: &
-            IV_UNDEF                          = 0, &
-            IV_FAST                           = 1, &
-            IV_WITHIN                         = 2, &
-            IV_INTERSECT                      = 3, &
-            IV_CENTROID                       = 4, &
-            IV_ALIASED                        = 5, &
-            IV_CONSERVATIVE                   = 6, &
-            IV_NORMALIZED_CONSERVATIVE        = 7, &
-            IV_POINT_CONSERVATIVE             = 8, &
-            IV_LENGTH_CONSERVATIVE            = 9, &
-            IV_LENGTH_NORMALIZED_CONSERVATIVE = 10, &
-            IV_LENGTH_ALIASED                 = 11
-        enumerator :: &
+         enumerator :: &
             CB_REPLACE   = 0, &
             CB_MIN       = 1, &
             CB_MAX       = 2, &
@@ -94,7 +92,6 @@ module georef_mod
     type, bind(C) :: geooptions
         integer(C_INT32_T) :: Interp = IR_CUBIC      !< Interpolation degree
         integer(C_INT32_T) :: Extrap = ER_MAXIMUM    !< Extrapolation method
-        integer(C_INT32_T) :: InterpVector = IV_FAST !< Vector interpolation method
         integer(C_INT32_T) :: Combine = CB_REPLACE   !< Aggregation type
         integer(C_INT32_T) :: Transform = 1          !< Apply transformation or stay within master referential
         integer(C_INT32_T) :: CIndex = 0             !< C Indexing (starts st 0)
@@ -159,14 +156,21 @@ contains
     function georef_copy_f(this,hard) result(out)
         implicit none
         class(georef), intent(inout) :: this       !< georef instance
-        class(georef), allocatable :: out          !< georef instance
-        logical, optional :: hard
+        type(georef) :: out          !< georef instance
+        logical, optional, intent(in) :: hard
+        logical :: lhard
 
-        out=this
+        lhard=.FALSE.
         if (present(hard)) then
-           out%ptr=georef_copy(this%ptr)
-        else
+            if (hard) then
+                lhard=.TRUE.
+            endif
+        endif
+
+        if (lhard) then
            out%ptr=georef_hardcopy(this%ptr)
+        else
+           out%ptr=georef_copy(this%ptr)
         endif
     end function georef_copy_f
 
@@ -206,8 +210,10 @@ contains
 
         res=.false.;
         cin=0;
-        if (present(in) .and. in) then
-           cin=1
+        if (present(in)) then
+           if (in) then
+              cin=1
+            endif
         endif
         val = georef_withinrange(this%ptr,lat0,lon0,lat1,lon1,cin)
         if (val==1) then
@@ -224,8 +230,10 @@ contains
         logical :: res                             !< Whether the georef are intersecting
 
         val=0
-        if (present(bd) .and. bd) then
-           val=1
+        if (present(bd)) then
+           if (bd) then
+              val=1
+            endif
         endif
         val=georef_intersect(this%ptr,ref%ptr,x0,y0,x1,y1,val)
         res=.false.
@@ -332,8 +340,10 @@ contains
         integer(C_INT32_T) :: out
 
         c_extrap=0
-        if (present(extrap) .and. extrap) then
-           c_extrap=1
+        if (present(extrap)) then
+            if (extrap) then
+                c_extrap=1
+            endif
         end if
 
         out=georef_xy2ll(this%ptr,lat,lon,x,y,n,c_extrap)
@@ -348,8 +358,10 @@ contains
         integer(C_INT32_T) :: out
 
         c_extrap=0
-        if (present(extrap) .and. extrap) then
-           c_extrap=1
+        if (present(extrap)) then
+            if (extrap) then
+                c_extrap=1
+            endif
         end if
 
         out=georef_ll2xy(this%ptr,x,y,lat,lon,n,c_extrap)

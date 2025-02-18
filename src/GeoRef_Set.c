@@ -447,7 +447,7 @@ TGeoSet* GeoRef_SetRead(
             Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset index field (fst24_read failed)\n", __func__);
             return NULL;
         }
-        gset->IndexMethod = (TRef_InterpR)InterpType;
+        gset->IndexMethod = (TRef_Interp)InterpType;
         gset->Index = (float*)record.data;
         record.data = NULL;
 

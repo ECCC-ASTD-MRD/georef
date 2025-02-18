@@ -6,7 +6,7 @@
 #define APP_NAME "Interpolate"
 #define APP_DESC "ECCC/CMC RPN fstd interpolation tool."
 
-int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket,TRef_InterpR Type) {
+int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket,TRef_Interp Type) {
 
    TGeoRef    *refin=NULL,*refout=NULL;
    fst_record  crit=default_fst_record,truth,grid=default_fst_record,record=default_fst_record;
@@ -104,9 +104,9 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 
 int main(int argc, char *argv[]) {
 
-   TRef_InterpR interp=IR_LINEAR;
-   int          ok=0,code=EXIT_FAILURE;
-   char         *etiket=NULL,*in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
+   TRef_Interp interp=IR_LINEAR;
+   int         ok=0,code=EXIT_FAILURE;
+   char        *etiket=NULL,*in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
 
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,    1,             "i", "input",  "Input file" },

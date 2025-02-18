@@ -88,7 +88,7 @@ int32_t GeoRef_XYUVVal(
     double * const Y,
     const int32_t n
 ) {
-    const TGeoOptions * const opt = Opt ? Opt : (&Ref->Options ? &Ref->Options : &GeoRef_Options);
+    const TGeoOptions * const opt = Opt ? Opt : &GeoRef_Options;
     const TGeoRef * const ref = GeoRef_SubGet(Ref);
 
     if (ref->NbSub > 0) {
