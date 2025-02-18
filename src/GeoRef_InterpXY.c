@@ -43,7 +43,6 @@ int32_t GeoRef_XYVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double
    int32_t  j,icode,sz;
    double   tmpy;
 
-   if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
    ref=GeoRef_SubGet(Ref);
 
@@ -75,7 +74,6 @@ int32_t GeoRef_XYUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
    float *uuyin, *vvyin, *uuyan, *vvyan;
    double *tmpy;
 
-   if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
    ref=GeoRef_SubGet(Ref);
 
@@ -139,7 +137,6 @@ int32_t GeoRef_XYWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
    tmpuu = (float *) malloc(2*n*sizeof(float));
    tmpvv = &tmpuu[n];
 
-   if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
    ref=GeoRef_SubGet(Ref);
 

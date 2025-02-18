@@ -27,7 +27,7 @@
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-// int32_t GeoRef_WKTValue(TGeoRef *Ref,TDef *Def,TRef_InterpR Interp,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY){
+// int32_t GeoRef_WKTValue(TGeoRef *Ref,TDef *Def,TRef_Interp Interp,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY){
 
 //    double       x,y,d,ddir=0.0;
 //    int32_t          valid=0,mem,ix,iy;

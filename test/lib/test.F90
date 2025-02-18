@@ -125,6 +125,9 @@ program test
     call record1%get_data_array(data_array1)
     call record2%get_data_array(data_array2)
 
+    x(1)=75.5
+    y(1)=30.5
+    
     ! Test nearest grid point value interpolation
     georef_options%Interp=IR_NEAREST
     len=gref1%xyval(vals,data_array1,x,y,1,opt=georef_options)

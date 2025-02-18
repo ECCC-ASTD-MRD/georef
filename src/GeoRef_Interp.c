@@ -277,7 +277,6 @@ int32_t GeoRef_Interp(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zo
    lzin  = NULL;
    lxzin = NULL;
 
-   if (!Opt) Opt=&RefTo->Options;
    if (!Opt) Opt=&GeoRef_Options;
 
    if (!RefFrom || !RefTo) {
@@ -353,7 +352,6 @@ int32_t GeoRef_InterpYY(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,float 
 
    yyin=0; yyout=0;
 
-   if (!Opt) Opt=&RefTo->Options;
    if (!Opt) Opt=&GeoRef_Options;
 
    // Setup for input grid
