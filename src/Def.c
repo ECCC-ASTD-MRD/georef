@@ -290,29 +290,29 @@ TDef *Def_CopyData(
 //! Free a data from a data definition
 void Def_Free(
     //! [in] Data definition to free
-    TDef * const def
+    TDef * const Def
 ) {
-    if (def) {
-        if (!def->Alias && !def->Idx) {
-            if (def->Mode && def->Mode != def->Data[0]) free(def->Mode);
-            if (def->Data[0]) free(def->Data[0]);
-            if (def->Mask) free(def->Mask);
+    if (Def) {
+        if (!Def->Alias && !Def->Idx) {
+            if (Def->Mode && Def->Mode != Def->Data[0]) free(Def->Mode);
+            if (Def->Data[0]) free(Def->Data[0]);
+            if (Def->Mask) free(Def->Mask);
         }
 
-        if (def->Buffer) free(def->Buffer);
-        if (def->Aux) free(def->Aux);
-        if (def->Accum) free(def->Accum);
-        if (def->Sub) free(def->Sub);
-        if (def->Pres > (float*)0x1) free(def->Pres);
-        if (def->PresLS > (float*)0x1) free(def->PresLS);
-        if (def->Height > (float*)0x1) free(def->Height);
+        if (Def->Buffer) free(Def->Buffer);
+        if (Def->Aux) free(Def->Aux);
+        if (Def->Accum) free(Def->Accum);
+        if (Def->Sub) free(Def->Sub);
+        if (Def->Pres > (float*)0x1) free(Def->Pres);
+        if (Def->PresLS > (float*)0x1) free(Def->PresLS);
+        if (Def->Height > (float*)0x1) free(Def->Height);
 #ifdef HAVE_GDAL
         if (Def->Poly) OGR_G_DestroyGeometry(Def->Poly);
         //Freed by Def->Poly      if (Def->Pick)       OGR_G_DestroyGeometry(Def->Pick);
 #endif
-        if (def->Segments) TList_Clear(def->Segments, (int(*)(void*))T3DArray_Free);
+        if (Def->Segments) TList_Clear(Def->Segments, (int(*)(void*))T3DArray_Free);
 
-        free(def);
+        free(Def);
     }
 }
 
@@ -782,7 +782,7 @@ int32_t GeoRef_Rasterize(TGeoRef *ToRef, TDef *ToDef, TGeoOptions *Opt, OGRGeome
    for (i = 0; i < OGR_G_GetGeometryCount(Geom); i++) {
       geom = OGR_G_GetGeometryRef(Geom, i);
       if (EQUAL(OGR_G_GetGeometryName(geom), "LINEARRING")) {
-         n+ = ns = OGR_G_GetPointCount(geom);
+         n += ns = OGR_G_GetPointCount(geom);
          for (j = 0; j < ns; j++) {
             dy = OGR_G_GetY(geom, j);
             if (dy < dminy)
@@ -835,8 +835,8 @@ int32_t GeoRef_Rasterize(TGeoRef *ToRef, TDef *ToDef, TGeoOptions *Opt, OGRGeome
             } else {
                sx = 1;
             }
-            dny << =1;
-            dnx << =1;
+            dny <<= 1;
+            dnx <<= 1;
 
             if (FIN2D(ToDef, x0, y0))
                Def_Set(ToDef, 0, FIDX2D(ToDef, x0, y0), Value);
