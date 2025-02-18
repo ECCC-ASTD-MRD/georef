@@ -59,54 +59,54 @@ void Def_Clear(
 //! Check dimensions compatibility betweed 2 data definition and adjust if needed
 int32_t Def_Compat(
     //! [in, out] Data definition to be adjusted
-    TDef * const dst,
+    TDef * const dstDef,
     //! [in] Data definition
-    const TDef * const src
+    const TDef * const srcDef
 ) {
     //! \return Compatible, FALSE or TRUE
     int32_t compatible = TRUE;
 
-    if (src->Idx) {
+    if (srcDef->Idx) {
         return FALSE;
     }
 
-    if (dst->Mode && dst->Mode != dst->Data[0]) {
-        free(dst->Mode);
+    if (dstDef->Mode && dstDef->Mode != dstDef->Data[0]) {
+        free(dstDef->Mode);
     }
-    dst->Mode = NULL;
-    dst->Dir = NULL;
+    dstDef->Mode = NULL;
+    dstDef->Dir = NULL;
 
     // Verifier la dimension verticale
-    if (dst->NK != src->NK || dst->NC != src->NC) {
-        if (dst->Idx) {
+    if (dstDef->NK != srcDef->NK || dstDef->NC != srcDef->NC) {
+        if (dstDef->Idx) {
             Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: Cannot change the data size for a sub 'U' grid\n", __func__);
             return FALSE;
         }
-        if (dst->Data[0]) free(dst->Data[0]);
-        dst->Data[0] = dst->Data[1] = dst->Data[2] = dst->Data[3] = NULL;
+        if (dstDef->Data[0]) free(dstDef->Data[0]);
+        dstDef->Data[0] = dstDef->Data[1] = dstDef->Data[2] = dstDef->Data[3] = NULL;
 
-        dst->NK = src->NK;
-        dst->NC = src->NC;
-        int32_t nijk = FSIZE3D(dst);
-        if (!(dst->Data[0] = (char*)calloc(nijk*dst->NC, TDef_Size[dst->Type]))) {
+        dstDef->NK = srcDef->NK;
+        dstDef->NC = srcDef->NC;
+        int32_t nijk = FSIZE3D(dstDef);
+        if (!(dstDef->Data[0] = (char*)calloc(nijk*dstDef->NC, TDef_Size[dstDef->Type]))) {
             return FALSE;
         }
-        for(int32_t n = 1; n < dst->NC; n++) {
-            dst->Data[n] = &dst->Data[0][nijk*n*TDef_Size[dst->Type]];
+        for(int32_t n = 1; n < dstDef->NC; n++) {
+            dstDef->Data[n] = &dstDef->Data[0][nijk*n*TDef_Size[dstDef->Type]];
         }
         compatible = FALSE;
     }
 
     // Verifier le masque
-    if (src->Mask) {
-        if (!dst->Mask || compatible == 0) {
-            if (!(dst->Mask = (char*)realloc(dst->Mask, FSIZE3D(dst)))) {
+    if (srcDef->Mask) {
+        if (!dstDef->Mask || compatible == 0) {
+            if (!(dstDef->Mask = (char*)realloc(dstDef->Mask, FSIZE3D(dstDef)))) {
                 return FALSE;
             }
         }
-    } else if (dst->Mask) {
-        free(dst->Mask);
-        dst->Mask = NULL;
+    } else if (dstDef->Mask) {
+        free(dstDef->Mask);
+        dstDef->Mask = NULL;
     }
 
     return compatible;
@@ -116,23 +116,23 @@ int32_t Def_Compat(
 //! Copy a data definition
 TDef * Def_Copy(
     //! [in] Data definition to copy
-    const TDef * const src
+    const TDef * const srcDef
 ){
     //! \return New data definition or NULL on error
-    if (!src->Idx) {
+    if (!srcDef->Idx) {
         TDef * newDef = (TDef*)malloc(sizeof(TDef));
-        if (src && newDef) {
-            newDef->Alias = src->Alias;
-            newDef->CellDim = src->CellDim;
-            newDef->NI = src->NI;
-            newDef->NJ = src->NJ;
-            newDef->NK = src->NK;
-            newDef->NC = src->NC;
-            newDef->NIJ = src->NI*src->NJ;
-            newDef->NoData = src->NoData;
-            newDef->Type = src->Type;
-            newDef->Level = src->Level;
-            newDef->Idx = src->Idx;
+        if (srcDef && newDef) {
+            newDef->Alias = srcDef->Alias;
+            newDef->CellDim = srcDef->CellDim;
+            newDef->NI = srcDef->NI;
+            newDef->NJ = srcDef->NJ;
+            newDef->NK = srcDef->NK;
+            newDef->NC = srcDef->NC;
+            newDef->NIJ = srcDef->NI*srcDef->NJ;
+            newDef->NoData = srcDef->NoData;
+            newDef->Type = srcDef->Type;
+            newDef->Level = srcDef->Level;
+            newDef->Idx = srcDef->Idx;
             newDef->Buffer = NULL;
             newDef->Aux = NULL;
             newDef->Segments = NULL;
@@ -144,37 +144,37 @@ TDef * Def_Copy(
             newDef->Height = NULL;
             newDef->Pick = NULL;
             newDef->Poly = NULL;
-            newDef->Sample = src->Sample;
-            newDef->SubSample = src->SubSample;
+            newDef->Sample = srcDef->Sample;
+            newDef->SubSample = srcDef->SubSample;
 
-            memcpy(newDef->Limits, src->Limits, 6 * sizeof(int));
-            newDef->CoordLimits[0][0] = src->CoordLimits[0][0];
-            newDef->CoordLimits[0][1] = src->CoordLimits[0][1];
-            newDef->CoordLimits[1][0] = src->CoordLimits[1][0];
-            newDef->CoordLimits[1][1] = src->CoordLimits[1][1];
+            memcpy(newDef->Limits, srcDef->Limits, 6 * sizeof(int));
+            newDef->CoordLimits[0][0] = srcDef->CoordLimits[0][0];
+            newDef->CoordLimits[0][1] = srcDef->CoordLimits[0][1];
+            newDef->CoordLimits[1][0] = srcDef->CoordLimits[1][0];
+            newDef->CoordLimits[1][1] = srcDef->CoordLimits[1][1];
 
-            int32_t nijk = FSIZE3D(src);
+            int32_t nijk = FSIZE3D(srcDef);
             newDef->Data[0] = newDef->Data[1] = newDef->Data[2] = newDef->Data[3] = NULL;
             if (newDef->Alias) {
-                for(int32_t n = 0; n < newDef->NC; n++) newDef->Data[n] = src->Data[n];
+                for(int32_t n = 0; n < newDef->NC; n++) newDef->Data[n] = srcDef->Data[n];
             } else {
                 if (!(newDef->Data[0] = (char*)malloc(nijk * newDef->NC * TDef_Size[newDef->Type]))) {
                     Def_Free(newDef);
                     return NULL;
                 }
-                memcpy(newDef->Data[0], src->Data[0], nijk * newDef->NC * TDef_Size[src->Type]);
+                memcpy(newDef->Data[0], srcDef->Data[0], nijk * newDef->NC * TDef_Size[srcDef->Type]);
                 for(int32_t n = 1; n < newDef->NC; n++) {
-                    newDef->Data[n] = &newDef->Data[0][nijk * n * TDef_Size[src->Type]];
+                    newDef->Data[n] = &newDef->Data[0][nijk * n * TDef_Size[srcDef->Type]];
                 }
             }
             newDef->Mode = newDef->Data[0];
             newDef->Dir = NULL;
 
-            if (src->Mask) {
+            if (srcDef->Mask) {
                 if (!(newDef->Mask = (char*)malloc(nijk))) {
                     return NULL;
                 }
-                memcpy(newDef->Mask, src->Mask, nijk);
+                memcpy(newDef->Mask, srcDef->Mask, nijk);
             }
         }
         return newDef;
@@ -185,24 +185,24 @@ TDef * Def_Copy(
 //! Copy a data definition but change the internal data type
 TDef *Def_CopyPromote(
     //! [in] Data definition to copy
-    const TDef * const src,
+    const TDef * const srcDef,
     //! [in] New data type
     const TDef_Type type
 ) {
-    if (src) {
+    if (srcDef) {
         TDef * const newDef = (TDef*)malloc(sizeof(TDef));
-        if (!src->Idx && newDef) {
+        if (!srcDef->Idx && newDef) {
             newDef->Alias = 0;
-            newDef->CellDim = src->CellDim;
-            newDef->NI = src->NI;
-            newDef->NJ = src->NJ;
-            newDef->NK = src->NK;
-            newDef->NC = src->NC;
-            newDef->NIJ = src->NI*src->NJ;
-            newDef->NoData = src->NoData;
+            newDef->CellDim = srcDef->CellDim;
+            newDef->NI = srcDef->NI;
+            newDef->NJ = srcDef->NJ;
+            newDef->NK = srcDef->NK;
+            newDef->NC = srcDef->NC;
+            newDef->NIJ = srcDef->NI*srcDef->NJ;
+            newDef->NoData = srcDef->NoData;
             newDef->Type = type;
-            newDef->Level = src->Level;
-            newDef->Idx = src->Idx;
+            newDef->Level = srcDef->Level;
+            newDef->Idx = srcDef->Idx;
             newDef->Buffer = NULL;
             newDef->Aux = NULL;
             newDef->Segments = NULL;
@@ -213,16 +213,16 @@ TDef *Def_CopyPromote(
             newDef->PresLS = NULL;
             newDef->Height = NULL;
             newDef->Pick = newDef->Poly = NULL;
-            newDef->Sample = src->Sample;
-            newDef->SubSample = src->SubSample;
+            newDef->Sample = srcDef->Sample;
+            newDef->SubSample = srcDef->SubSample;
 
-            memcpy(newDef->Limits, src->Limits, 6*sizeof(int));
-            newDef->CoordLimits[0][0] = src->CoordLimits[0][0];
-            newDef->CoordLimits[0][1] = src->CoordLimits[0][1];
-            newDef->CoordLimits[1][0] = src->CoordLimits[1][0];
-            newDef->CoordLimits[1][1] = src->CoordLimits[1][1];
+            memcpy(newDef->Limits, srcDef->Limits, 6*sizeof(int));
+            newDef->CoordLimits[0][0] = srcDef->CoordLimits[0][0];
+            newDef->CoordLimits[0][1] = srcDef->CoordLimits[0][1];
+            newDef->CoordLimits[1][0] = srcDef->CoordLimits[1][0];
+            newDef->CoordLimits[1][1] = srcDef->CoordLimits[1][1];
 
-            int32_t nijk = FSIZE3D(src);
+            int32_t nijk = FSIZE3D(srcDef);
             newDef->Data[0] = newDef->Data[1] = newDef->Data[2] = newDef->Data[3] = NULL;
             if (!(newDef->Data[0] = (char*)calloc(nijk*newDef->NC, TDef_Size[newDef->Type]))) {
                 Def_Free(newDef);
@@ -235,11 +235,11 @@ TDef *Def_CopyPromote(
             newDef->Mode = newDef->Data[0];
             newDef->Dir = NULL;
 
-            if (src->Mask) {
+            if (srcDef->Mask) {
                 if (!(newDef->Mask = (char*)malloc(nijk))) {
                     return NULL;
                 }
-                memcpy(newDef->Mask, src->Mask, nijk);
+                memcpy(newDef->Mask, srcDef->Mask, nijk);
             }
             return newDef;
         }
@@ -251,17 +251,17 @@ TDef *Def_CopyPromote(
 //! Copy a data from a data definition to another data definition
 TDef *Def_CopyData(
     //! [out] Destination data definition
-    TDef * const dst,
+    TDef * const dstDef,
     //! [in] Source data definition
-    const TDef * const src
+    const TDef * const srcDef
 ) {
     //! \return New data definition
-    TDef *def = dst;
+    TDef *def = dstDef;
     if (!def) {
-        def = Def_Copy(src);
+        def = Def_Copy(srcDef);
     }
 
-    if (!src) {
+    if (!srcDef) {
         Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid data source\n", __func__);
         return NULL;
     }
@@ -269,20 +269,20 @@ TDef *Def_CopyData(
 
     int32_t alias = FALSE;
     //! \todo define Alias
-    for(int32_t n = 0; n < src->NC; n++) {
-        if (src->Data[n]) {
+    for(int32_t n = 0; n < srcDef->NC; n++) {
+        if (srcDef->Data[n]) {
             if (alias) {
-                def->Data[n] = src->Data[n];
+                def->Data[n] = srcDef->Data[n];
             } else {
-                memcpy(def->Data[n], src->Data[n], FSIZE3D(src)*TDef_Size[src->Type]);
+                memcpy(def->Data[n], srcDef->Data[n], FSIZE3D(srcDef)*TDef_Size[srcDef->Type]);
             }
         }
     }
-    if (alias) def->Mode = src->Mode;
+    if (alias) def->Mode = srcDef->Mode;
 
-    if (src->Mask) {
-        def->Mask = (char*)malloc(src->NIJ);
-        memcpy(def->Mask, src->Mask, src->NIJ);
+    if (srcDef->Mask) {
+        def->Mask = (char*)malloc(srcDef->NIJ);
+        memcpy(def->Mask, srcDef->Mask, srcDef->NIJ);
     }
     return def;
 }
@@ -565,9 +565,9 @@ TDef * Def_Resize(
 //! Copy data from a data definition to another one
 int32_t Def_Paste(
     //! [in, out] Destination data definition
-    TDef * const dst,
+    TDef * const dstDef,
     //! [in] Source data definition
-    const TDef * const src,
+    const TDef * const srcDef,
     //! [in] X start coordinate
     int32_t X0,
     //! [in] Y start Coordinate
@@ -579,37 +579,37 @@ int32_t Def_Paste(
     int32_t x0 = X0 < 0 ? -X0 : 0;
     int32_t y0 = Y0 < 0 ? -Y0 : 0;
 
-    int32_t x1 = src->NI + X0 > dst->NI ? dst->NI : src->NI;
-    int32_t y1 = src->NJ + Y0 > dst->NJ ? dst->NJ : src->NJ;
+    int32_t x1 = srcDef->NI + X0 > dstDef->NI ? dstDef->NI : srcDef->NI;
+    int32_t y1 = srcDef->NJ + Y0 > dstDef->NJ ? dstDef->NJ : srcDef->NJ;
 
     // If paste is out of destination
-    if (x0 > dst->NI || x1 < 0 || y0 > dst->NJ || y1 < 0) {
+    if (x0 > dstDef->NI || x1 < 0 || y0 > dstDef->NJ || y1 < 0) {
         return FALSE;
     }
 
     // Maximum number of band to paste
-    int32_t nc = fmin(dst->NC, src->NC);
+    int32_t nc = fmin(dstDef->NC, srcDef->NC);
 
     int32_t dy = Y0;
     double a = 1.0, srcVal, dstVal;
     for (int32_t y = y0; y < y1; y++) {
         int32_t dx = X0;
         for (int32_t x = x0; x < x1; x++) {
-            unsigned long idxs = FIDX2D(src, x, y);
-            unsigned long idxd = FIDX2D(dst, dx, dy);
+            unsigned long idxs = FIDX2D(srcDef, x, y);
+            unsigned long idxd = FIDX2D(dstDef, dx, dy);
 
-            if (src->NC == 4) {
-                Def_Get(src, 3, idxs, a);
+            if (srcDef->NC == 4) {
+                Def_Get(srcDef, 3, idxs, a);
             }
 
             for(int32_t c = 0; c < nc; c++) {
-                Def_Get(src, c, idxs, srcVal);
+                Def_Get(srcDef, c, idxs, srcVal);
 
-                if (src->NC == 4) {
-                    Def_Get(dst, c, idxd, dstVal);
+                if (srcDef->NC == 4) {
+                    Def_Get(dstDef, c, idxd, dstVal);
                     srcVal = srcVal * a + dstVal * (1.0 - a);
                 }
-                Def_Set(dst, c, idxd, srcVal);
+                Def_Set(dstDef, c, idxd, srcVal);
             }
             dx++;
         }
@@ -641,7 +641,7 @@ int32_t Def_GetValue(
     double * const ThetaXY
 ) {
     //! \return FALSE if out of grid, TRUE otherwise
-    const TGeoOptions * const lOpt = Opt ? Opt : (&Ref->Options ? &Ref->Options : &GeoRef_Options);
+    const TGeoOptions * const opt = Opt ? Opt : &GeoRef_Options;
 
     *Length = Def->NoData;
     double d = Ref->GRTYP[0] == 'W' ? 1.0 : 0.5;
@@ -675,12 +675,12 @@ int32_t Def_GetValue(
         if (Def->Data[1] && !C) {
             Def_Pointer(Def, 0, mem, p0);
             Def_Pointer(Def, 1, mem, p1);
-            GeoRef_XYWDVal(Ref, lOpt, &valf, &valdf, p0, p1, &X, &Y, 1);
+            GeoRef_XYWDVal(Ref, opt, &valf, &valdf, p0, p1, &X, &Y, 1);
             *Length = valf;
 
             // If it's 3D, use the mode for speed since GeoRef_XYWDVal only uses 2D
             if (Def->Data[2]) {
-                GeoRef_XYVal(Ref, lOpt, &valf, (float*)&Def->Mode[mem], &X, &Y, 1);
+                GeoRef_XYVal(Ref, opt, &valf, (float*)&Def->Mode[mem], &X, &Y, 1);
                 *Length = valf;
             }
             if (ThetaXY) *ThetaXY = valdf;
@@ -689,7 +689,7 @@ int32_t Def_GetValue(
                 Def_Get(Def, C, mem + idx, valf);
             } else {
                 Def_Pointer(Def, C, mem, p0);
-                GeoRef_XYVal(Ref, lOpt, &valf, p0, &X, &Y, 1);
+                GeoRef_XYVal(Ref, opt, &valf, p0, &X, &Y, 1);
             }
             *Length = valf;
         }

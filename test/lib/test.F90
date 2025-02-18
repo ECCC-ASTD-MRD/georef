@@ -5,9 +5,9 @@ program test
     use georef_mod
     implicit none
 
-    type(fst_file)   :: file1,file2,fileout
-    type(fst_record) :: record1,record2
-    type(georef)     :: gref1,gref2,grefout
+    type(fst_file)   :: file1, file2, fileout
+    type(fst_record) :: record1, record2
+    type(georef)     :: gref1, gref2
 
     logical :: success
     integer :: len, status
