@@ -1,18 +1,12 @@
 """C function bindings for GeoRef library."""
 import ctypes
 import numpy
-from .constants import GEOREF_SUCCESS
 
 # Load the shared library
-libgeoref = ctypes.CDLL("libgeoref.so")
+# libgeoref = ctypes.CDLL("libgeoref.so")
+from .shared_lib import libgeoref
+from .structs import GeoOptions, _TGeoRef, GeoRefError
 
-# Define the GeoRef structure type
-class _TGeoRef(ctypes.Structure):
-    pass
-
-# Define GeoOptions structure if needed
-class GeoOptions(ctypes.Structure):
-    pass
 
 _new = libgeoref.GeoRef_New
 _new.argtypes = []
@@ -53,19 +47,6 @@ _free = libgeoref.GeoRef_Free
 _free.argtypes = [ctypes.POINTER(_TGeoRef)]
 _free.restype = None
 
-_grid_value = libgeoref.GeoRef_GridValue
-_grid_value.argtypes = [ctypes.POINTER(_TGeoRef), ctypes.c_double, ctypes.c_double]
-_grid_value.restype = ctypes.c_double
-
-_ll_value = libgeoref.GeoRef_LLValue
-_ll_value.argtypes = [ctypes.POINTER(_TGeoRef), ctypes.c_double, ctypes.c_double]
-_ll_value.restype = ctypes.c_double
-
-_xy_to_ll = libgeoref.GeoRef_XYToLL
-_xy_to_ll.argtypes = [ctypes.POINTER(_TGeoRef), ctypes.c_double, ctypes.c_double, 
-                      ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
-_xy_to_ll.restype = ctypes.c_int
-
 _copy = libgeoref.GeoRef_Copy
 _copy.argtypes = [ctypes.POINTER(_TGeoRef)]
 _copy.restype = ctypes.POINTER(_TGeoRef)
@@ -104,17 +85,17 @@ _boundingbox.argtypes = [ctypes.POINTER(_TGeoRef),
                         ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
 _boundingbox.restype = ctypes.c_int32
 
-_xydistance = libgeoref.GeoRef_XYDistance
-_xydistance.argtypes = [ctypes.POINTER(_TGeoRef),
-                        ctypes.c_double, ctypes.c_double,
-                        ctypes.c_double, ctypes.c_double]
-_xydistance.restype = ctypes.c_double
+_write = libgeoref.GeoRef_Write
+_write.argtypes = [
+    ctypes.POINTER(_TGeoRef),
+    ctypes.c_char_p,
+    ctypes.c_void_p
+]
+_write.restype = ctypes.c_int32
 
-_lldistance = libgeoref.GeoRef_LLDistance
-_lldistance.argtypes = [ctypes.POINTER(_TGeoRef),
-                        ctypes.c_double, ctypes.c_double,
-                        ctypes.c_double, ctypes.c_double]
-_lldistance.restype = ctypes.c_double
+_createfromrecord = libgeoref.GeoRef_CreateFromRecord
+_createfromrecord.argtypes = [ctypes.c_void_p]
+_createfromrecord.restype = ctypes.POINTER(_TGeoRef)
 
 _interpuv = libgeoref.GeoRef_InterpUV
 _interpuv.argtypes = (
@@ -235,12 +216,6 @@ _xyval.argtypes = [ctypes.POINTER(_TGeoRef), ctypes.POINTER(GeoOptions),
                    ctypes.c_int32]
 _xyval.restype = ctypes.c_int32
 
-_getll = libgeoref.GeoRef_GetLL
-_getll.argtypes = [ctypes.POINTER(_TGeoRef),
-                   numpy.ctypeslib.ndpointer(dtype=numpy.float64),
-                   numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
-_getll.restype = ctypes.c_int32
-
 _ll2xy = libgeoref.GeoRef_LL2XY
 _ll2xy.argtypes = [ctypes.POINTER(_TGeoRef),
                    ctypes.c_double, ctypes.c_double,
@@ -252,3 +227,38 @@ _xy2ll.argtypes = [ctypes.POINTER(_TGeoRef),
                    ctypes.c_double, ctypes.c_double,
                    ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
 _xy2ll.restype = ctypes.c_int32
+
+_xydistance = libgeoref.GeoRef_XYDistance
+_xydistance.argtypes = [ctypes.POINTER(_TGeoRef),
+                        ctypes.c_double, ctypes.c_double,
+                        ctypes.c_double, ctypes.c_double]
+_xydistance.restype = ctypes.c_double
+
+_lldistance = libgeoref.GeoRef_LLDistance
+_lldistance.argtypes = [ctypes.POINTER(_TGeoRef),
+                        ctypes.c_double, ctypes.c_double,
+                        ctypes.c_double, ctypes.c_double]
+_lldistance.restype = ctypes.c_double
+
+_getll = libgeoref.GeoRef_GetLL
+_getll.argtypes = [ctypes.POINTER(_TGeoRef),
+                   numpy.ctypeslib.ndpointer(dtype=numpy.float64),
+                   numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
+_getll.restype = ctypes.c_int32
+
+
+# _grid_value = libgeoref.GeoRef_GridValue
+# _grid_value.argtypes = [ctypes.POINTER(_TGeoRef), ctypes.c_double, ctypes.c_double]
+# _grid_value.restype = ctypes.c_double
+
+# _ll_value = libgeoref.GeoRef_LLValue
+# _ll_value.argtypes = [ctypes.POINTER(_TGeoRef), ctypes.c_double, ctypes.c_double]
+# _ll_value.restype = ctypes.c_double
+
+# _xy_to_ll = libgeoref.GeoRef_XYToLL
+# _xy_to_ll.argtypes = [ctypes.POINTER(_TGeoRef), ctypes.c_double, ctypes.c_double, 
+#                       ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+# _xy_to_ll.restype = ctypes.c_int
+
+
+
