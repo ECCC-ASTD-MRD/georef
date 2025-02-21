@@ -200,7 +200,6 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
  * @date   June 2014
  *    @param[in]     NI           Number of gridpoints in X
  *    @param[in]     NJ           Number of gridpoints in Y
- *    @param[in]     grtyp        Grid type
  *    @param[in]     IG1          Grid descriptor information
  *    @param[in]     IG2          Grid descriptor information
  *    @param[in]     IG3          Grid descriptor information
@@ -212,7 +211,7 @@ TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvT
 
  *    @return        GeoRef object (NULL=Error)
 */
-TGeoRef *GeoRef_CreateW(int32_t NI,int32_t NJ,char *grtyp,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
+TGeoRef *GeoRef_CreateW(int32_t NI,int32_t NJ,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
 
    TGeoRef *ref,*fref;
 
@@ -222,19 +221,10 @@ TGeoRef *GeoRef_CreateW(int32_t NI,int32_t NJ,char *grtyp,int32_t IG1,int32_t IG
       return(NULL);
    }
    
-   if (grtyp) {
-      ref->GRTYP[0]=grtyp[0];
-      ref->GRTYP[1]=grtyp[1];
-   } else {
-      ref->GRTYP[0]='W';
-      ref->GRTYP[1]='\0';
-   }
-   ref->RPNHead.ig1=IG1;
-   ref->RPNHead.ig2=IG2;
-   ref->RPNHead.ig3=IG3;
-   ref->RPNHead.ig4=IG4;
+   ref->GRTYP[0]='W';
+   ref->GRTYP[1]='\0';
 
-    if ((fref=GeoRef_Find(ref))) {
+   if ((fref=GeoRef_Find(ref))) {
       // This georef already exists
       free(ref);
       GeoRef_Incr(fref);

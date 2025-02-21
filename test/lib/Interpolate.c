@@ -57,7 +57,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    GeoRef_Options.Interp=Type;
 //   GeoRef_Options.NoData=-999.0;
 
-   GeoRef_Write(refout,NULL,fout);
+   GeoRef_WriteFST(refout,NULL,-1,-1,-1,-1,fout);
 
    strncpy(crit.nomvar,Vars[0],FST_NOMVAR_LEN);
    fst_query* query = fst24_new_query(fin,&crit,NULL);
@@ -84,17 +84,15 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    }
 
    // Write index
-//    TGeoSet    *gset=GeoRef_SetGet(refout,refin,NULL);
-   GeoRef_SetGet(refout,refin,NULL);
-/*
+   TGeoSet    *gset=GeoRef_SetGet(refout,refin,NULL);
+//   GeoRef_SetGet(refout,refin,NULL);
    if (GeoRef_SetHasIndex(gset)) {
       App_Log(APP_DEBUG,"Saving index containing %i items\n",gset->IndexSize);
 
-      if (!GeoRef_SetWrite(gset,fout)){
+      if (!GeoRef_SetWriteFST(gset,fout)){
          return(0);
       }
    }
-*/
    fst24_close(fin);
    fst24_close(fout);
    fst24_close(fgrid);

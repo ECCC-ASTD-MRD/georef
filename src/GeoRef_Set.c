@@ -401,7 +401,7 @@ int32_t GeoRef_SetCalcYYXY(TGeoSet *GSet) {
  *    @param[in]  GSet      Gridset pointer
  *
 */
-void GeoRef_SetFree(TGeoSet* GSet) {
+int32_t GeoRef_SetFree(TGeoSet* GSet) {
 
 //TODO: Check to free
    if (GSet->RefFrom) {
@@ -429,6 +429,7 @@ void GeoRef_SetFree(TGeoSet* GSet) {
  // float *yin2yan_lat,*yin2yan_lon,*yan2yan_lat,*yan2yan_lon;
  // float *yin2yin_x,*yin2yin_y,*yan2yin_x,*yan2yin_y;
  // float *yin2yan_x,*yin2yan_y,*yan2yan_x,*yan2yan_y;
+   return(TRUE);
 }
 
 /*----------------------------------------------------------------------------
@@ -441,10 +442,10 @@ void GeoRef_SetFree(TGeoSet* GSet) {
  *
  *    @return             Error code (0=ok)
 */
-TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_file *File) {
+TGeoSet* GeoRef_SetReadFST(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_file *File) {
 
-   TGeoSet  *gset=NULL;
-   fst_record record,crit=default_fst_record;
+   TGeoSet   *gset=NULL;
+   fst_record record=default_fst_record,crit=default_fst_record;
    char       typvar[2];
 
    if (!(gset=GeoRef_SetGet(RefTo,RefFrom,NULL))) {
@@ -460,6 +461,7 @@ TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_f
       strncpy(crit.etiket,"GRIDSET",FST_ETIKET_LEN);
       strncpy(crit.nomvar,"####",FST_NOMVAR_LEN);
       strncpy(crit.typvar,typvar,FST_TYPVAR_LEN);
+      strncpy(crit.grtyp,"X",FST_GTYP_LEN);
       crit.ip3=InterpType;
       if (fst24_read(File,&crit,NULL,&record)!=TRUE) {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not find gridset index field (fst24_read failed)\n",__func__);
@@ -496,7 +498,7 @@ TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_f
  *
  *    @return             Error code (0=ok)
 */
-int32_t GeoRef_SetWrite(TGeoSet *GSet,fst_file *File){
+int32_t GeoRef_SetWriteFST(TGeoSet *GSet,fst_file *File){
 
    int32_t size=0;
    fst_record record=default_fst_record;
@@ -514,8 +516,9 @@ int32_t GeoRef_SetWrite(TGeoSet *GSet,fst_file *File){
       record.npas = 0;
       record.ip1  = 0;
       record.ip2  = 0;
-      record.ip3  = 0;
-      strncpy(record.typvar,GSet->G2G,FST_TYPVAR_LEN);
+      record.ip3  = GSet->IndexMethod;
+      record.typvar[0] = GSet->RefTo->GRTYP[0];
+      record.typvar[1] = GSet->RefFrom->GRTYP[0];
       strncpy(record.nomvar,"#>>#",FST_NOMVAR_LEN);
       strncpy(record.grtyp,"X",FST_GTYP_LEN);
       strncpy(record.etiket,"GRIDSET",FST_ETIKET_LEN);
@@ -526,14 +529,14 @@ int32_t GeoRef_SetWrite(TGeoSet *GSet,fst_file *File){
       record.data_type = FST_TYPE_REAL_IEEE;
       record.data_bits = 64;
       if (fst24_write(File,&record,FST_SKIP)<=0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (fst24_write failed)\n",__func__);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset horizontal stream (fst24_write failed)\n",__func__);
          return(FALSE);
       }
 
       record.data = GSet->Y;
       strncpy(record.nomvar,"#^^#",FST_NOMVAR_LEN);
       if (fst24_write(File,&record,FST_SKIP)<=0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset index field (fst24_write failed)\n",__func__);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write gridset vertical stream (fst24_write failed)\n",__func__);
          return(FALSE);
       }
 
@@ -581,6 +584,7 @@ TGeoSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGeoOptions *Opt) {
       return(RefTo->LastSet);
    }
 
+//TODO:Revise cleanup
    if (RefTo->NbSet>=SET_MAX) {
       for (i=0; i<RefTo->NbSet; i++) {
          if (RefTo->Sets[i].RefFrom!=NULL) {
@@ -607,8 +611,7 @@ TGeoSet* GeoRef_SetGet(TGeoRef* RefTo,TGeoRef* RefFrom,TGeoOptions *Opt) {
    // If we get here, we have'nt found any sets, create a new one
    RefTo->Sets[i].RefFrom = RefFrom;
    RefTo->Sets[i].RefTo = RefTo;
-   RefTo->Sets[i].G2G[0]=RefFrom->GRTYP[0];
-   RefTo->Sets[i].G2G[1]=RefTo->GRTYP[0];
+
    if (Opt) RefTo->Sets[i].Opt=*Opt;
 
    Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: RefFrom : %p RefTo: %p\n",__func__,RefFrom,RefTo);

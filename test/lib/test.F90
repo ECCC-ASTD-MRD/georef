@@ -8,6 +8,7 @@ program test
     type(fst_file)   :: file1,file2,fileout
     type(fst_record) :: record1,record2
     type(georef)     :: gref1,gref2,grefout
+    type(geoset)     :: set1, set2
 
     logical :: success
     integer :: len, status
@@ -61,8 +62,12 @@ program test
         call App_log(APP_ERROR, 'Unable to open FST file')
         call exit(-1)
     end if
-!TODO: No sure why this fails
-    success=gref1%write(fileout)
+
+    success=gref1%writefst(fileout)
+    if (.not. success) then
+        call App_log(APP_ERROR, 'Unable to write georef to FST file')
+        call exit(-1)
+    end if
 
     ! Test latlon limits
     success=gref1%limits(lat0,lon0,lat1,lon1)
@@ -102,7 +107,7 @@ program test
     val=gref1%lldistance(lat0,lon0,lat1,lon1)
     write(app_msg,*) 'gref1%lldistance = ',val
     call App_Log(APP_INFO, app_msg)
-
+    
     ! Test transformation from gridpoint to latlon
     x(1)=75.0
     y(1)=30.0
@@ -127,7 +132,7 @@ program test
 
     x(1)=75.5
     y(1)=30.5
-    
+
     ! Test nearest grid point value interpolation
     georef_options%Interp=IR_NEAREST
     len=gref1%xyval(vals,data_array1,x,y,1,opt=georef_options)
@@ -155,7 +160,22 @@ program test
     len=gref1%interp(gref2,data_array1,data_array2)
     write(app_msg,*) 'gref1%llval = ll=',lat(1),',',lon(1),' => val=',vals(1)
     call App_Log(APP_INFO, app_msg)
+    record1%nomvar='data'
     success=fileout%write(record1)
+
+    ! Test set
+    set1=gref1%getset(gref2)
+    success=set1%writefst(fileout)
+    if (.not. success) then
+        call App_log(APP_ERROR, 'Unable to write geoset to FST file')
+        call exit(-1)
+    end if
+
+    success=set1%readfst(gref1,gref2,IR_CUBIC,fileout)
+    if (.not. success) then
+        call App_log(APP_ERROR, 'Unable to read geoset to FST file')
+        call exit(-1)
+    end if
 
     success = file1%close()
     success = file2%close()

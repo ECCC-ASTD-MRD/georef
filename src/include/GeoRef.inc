@@ -30,14 +30,14 @@ interface
         type(C_PTR) :: out
     end function georef_create
 
-!   TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *GRTYP,char *grref,int32_t VerCode,int32_t NbSub,TGeoRef **Subs);
-    function georef_createu(ni,nj,grtyp,ig1,ig2,ig3,ig4,file) result(out) bind(C, name = 'GeoRef_Create')
+!   TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *grref,int32_t VerCode,int32_t NbSub,TGeoRef **Subs);
+    function georef_createu(ni,nj,grref,vercode,nbsub,subs) result(out) bind(C, name = 'GeoRef_CreateU')
         import :: C_PTR,C_INT32_T,C_CHAR
         implicit none
 
-        integer(C_INT32_T), intent(in) :: ni,nj,ig1,ig2,ig3,ig4
-        character(kind = C_CHAR), dimension(*), intent(in) :: grtyp
-        type(C_PTR) :: file
+        integer(C_INT32_T), intent(in) :: ni,nj,nbsub,vercode
+        character(kind = C_CHAR), dimension(*), intent(in) :: grref
+        type(C_PTR) :: subs
 
         type(C_PTR) :: out
     end function georef_createu
@@ -52,15 +52,15 @@ interface
         type(C_PTR) :: out
     end function georef_creater
 
-!   TGeoRef* GeoRef_CreateW(int32_t ni,int32_t nj,char *grtyp,int32_t ig1,int32_t ig2,int32_t ig3,int32_t ig4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
-    function georef_createw(ni,nj,grtyp,ig1,ig2,ig3,ig4,string,transform,invtransform,spatial) result(out) bind(C, name = 'GeoRef_CreateW')
+!   TGeoRef* GeoRef_CreateW(int32_t ni,int32_t nj,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
+    function georef_createw(ni,nj,string,transform,invtransform,spatial) result(out) bind(C, name = 'GeoRef_CreateW')
         import :: C_PTR,C_INT32_T,C_CHAR,C_DOUBLE
         implicit none
 
-        integer(C_INT32_T), intent(in) :: ni,nj,ig1,ig2,ig3,ig4
+        integer(C_INT32_T), intent(in) :: ni,nj
         real(C_DOUBLE)    , intent(in), dimension(6) :: transform, invtransform
         type(C_PTR)       , intent(in) :: spatial
-        character(kind = C_CHAR), dimension(*), intent(in) :: grtyp, string
+        character(kind = C_CHAR), dimension(*), intent(in) :: string
 
         type(C_PTR) :: out
     end function georef_createw
@@ -216,6 +216,20 @@ interface
         integer(C_INT32_T) :: out
     end function georef_boundingbox
 
+!   int32_t GeoRef_Nearest(TGeoRef* __restrict const Ref,double X,double Y,int32_t *Idxs,double *Dists,int32_t NbNear,double MaxDist);
+    function georef_nearest(ref,x,y,idxs,dists,nbnear,maxdist) result(out) bind(C, name = 'GeoRef_Nearest')
+        import :: C_PTR,C_INT32_T,C_DOUBLE
+        implicit none
+
+        real(C_DOUBLE), intent(in), value :: x,y,maxdist
+        integer(C_INT32_T), intent(in), dimension(*) :: idxs
+        integer(C_INT32_T), intent(in), value :: nbnear
+        real(C_DOUBLE), intent(in), dimension(*) :: dists
+        type(C_PTR)   , intent(in), value :: ref
+
+        integer(C_INT32_T) :: out
+    end function georef_nearest
+
 !   int32_t  GeoRef_Valid(TGeoRef* __restrict const Ref);
     function georef_valid(ref) result(out) bind(C, name = 'GeoRef_Valid')
         import :: C_PTR,C_INT32_T
@@ -248,16 +262,17 @@ interface
         real(C_DOUBLE) :: out
     end function georef_lldistance
 
-!   int32_t  GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File);
-    function georef_write(ref,name,file) result(out) bind(C, name = 'GeoRef_Write')
+!   int32_t  GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4,fst_file *File);
+    function georef_writefst(ref,name,ig1,ig2,ig3,ig4,file) result(out) bind(C, name = 'GeoRef_WriteFST')
         import :: C_PTR,C_CHAR,C_INT32_T
         implicit none
 
         character(kind = C_CHAR), dimension(*), intent(in) :: name
         type(C_PTR), intent(in), value :: ref,file
-
+        integer(C_INT32_T), intent(in), value :: ig1,ig2,ig3,ig4
         integer(C_INT32_T) :: out
-    end function georef_write
+
+    end function georef_writefst
 
 !   int32_t  GeoRef_Read(struct TGeoRef *GRef);
     function georef_read(ref) result(out) bind(C, name = 'GeoRef_Read')
@@ -289,6 +304,17 @@ interface
 
         integer(C_INT32_T) :: out
     end function georef_getll
+
+!   int32_t  GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* DA);
+    function georef_celldims(ref,invert,dx,dy,da) result(out) bind(C, name = 'GeoRef_CellDims')
+        import :: C_PTR,C_INT32_T,C_FLOAT
+        implicit none
+        type(C_PTR), intent(in), value :: ref
+        integer(C_INT32_T), intent(in) :: invert
+        real(C_FLOAT), intent(in), dimension(*) :: dx,dy,da
+
+        integer(C_INT32_T) :: out
+    end function georef_celldims
 
 !   int32_t      GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t N,int32_t Extrap);                                 // c_gdllfxy
     function georef_xy2ll(ref,lat,lon,x,y,n,extrap) result(out) bind(C, name = 'GeoRef_XY2LL')
@@ -589,15 +615,42 @@ interface
         integer(C_INT32_T) :: out
     end function georef_equal
 
-!   int32_t  GeoRef_CellDims(TGeoRef *Ref,int32_t Invert,float* DX,float* DY,float* DA);
-    function georef_celldims(gref0,invert,dx,dy,da) result(out) bind(C, name = 'GeoRef_CellDims')
-        import :: C_PTR,C_INT32_T,C_FLOAT
+!   int32_t  GeoSet_Free(TGeoSet *Set);
+    function geoset_free(set) result(out) bind(C, name = 'GeoSet_Free')
+        import :: C_PTR,C_INT32_T
         implicit none
-        type(C_PTR), intent(in), value :: gref0
-        integer(C_INT32_T), intent(in) :: invert
-        real(C_FLOAT), intent(out) :: dx,dy,da
+
+        type(C_PTR), intent(in), value :: set
 
         integer(C_INT32_T) :: out
-    end function georef_celldims
+    end function geoset_free
+
+!   TGeoSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom,TGeoOptions *Opt)
+    function georef_setget(refto,reffrom,opt) result(out) bind(C, name = 'GeoRef_SetGet')
+        import :: C_PTR
+        implicit none
+        type(C_PTR), intent(in), value :: refto,reffrom,opt
+
+        type(C_PTR) :: out
+    end function georef_setget
+
+!   TGeoSet* GeoRef_SetReadFST(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_file *File)
+    function georef_setreadfst(refto,reffrom,interp,file) result(out) bind(C, name = 'GeoRef_SetReadFST')
+        import :: C_PTR, C_INT32_T
+        implicit none
+        type(C_PTR), intent(in), value :: refto,reffrom,file
+        integer(C_INT32_T), value :: interp
+
+        type(C_PTR) :: out
+    end function georef_setreadfst
+
+!   int32_t GeoRef_SetWriteFST(TGeoSet *GSet,fst_file *File){
+    function geoset_writefst(gset,file) result(out) bind(C, name = 'GeoRef_SetWriteFST')
+        import :: C_PTR,C_INT32_T
+        implicit none
+        type(C_PTR), intent(in), value :: gset,file
+
+        integer(C_INT32_T) :: out
+    end function geoset_writefst
 
 end interface

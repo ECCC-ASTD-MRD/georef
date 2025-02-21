@@ -224,9 +224,8 @@ typedef struct {
    struct TGeoRef *RefFrom;             ///< Source geo reference
    struct TGeoRef *RefTo;               ///< Destination geo reference
    TGeoZone        zones[SET_NZONES];   ///< Extrapolation zone definitions
-   char            G2G[2];              ///< GRTYP of source and destination for index identification
    int32_t         flags;               ///< State flags
-   TRef_Interp    IndexMethod;         ///< Index interpolation method
+   TRef_Interp     IndexMethod;         ///< Index interpolation method
    int32_t         IndexSize;           ///< Index size
    float          *Index;               ///< Array of index values
    double         *X,*Y;                ///< Grid coordinates of the destination grid into the source grid
@@ -330,23 +329,23 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref);
 TGeoRef* GeoRef_Copy(TGeoRef* __restrict const Ref);
 TGeoRef* GeoRef_HardCopy(TGeoRef* __restrict const Ref);
 TGeoRef* GeoRef_Reference(TGeoRef* __restrict const Ref);
-void     GeoRef_Size(TGeoRef *Ref,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_t BD);
+   void     GeoRef_Size(TGeoRef *Ref,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_t BD);
 TGeoRef* GeoRef_Resize(TGeoRef* __restrict const Ref,int32_t NI,int32_t NJ);
 int32_t  GeoRef_Free(TGeoRef *Ref);
 void     GeoRef_Clear(TGeoRef *Ref,int32_t New);
-void     GeoRef_Qualify(TGeoRef* __restrict const Ref);
+   void     GeoRef_Qualify(TGeoRef* __restrict const Ref);
 int32_t  GeoRef_Limits(TGeoRef* __restrict const Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1);
 int32_t  GeoRef_BoundingBox(TGeoRef* __restrict const Ref,double Lat0,double Lon0,double Lat1,double Lon1,double *I0,double *J0,double *I1,double *J1);
 int32_t  GeoRef_Valid(TGeoRef* __restrict const Ref);
-int32_t  GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File);
-int32_t  GeoRef_Read(struct TGeoRef *GRef);
+int32_t  GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1, int IG2, int IG3, int IG4,fst_file *File);
+   int32_t  GeoRef_Read(struct TGeoRef *GRef);
 int32_t  GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec);
   
 TGeoRef* GeoRef_CreateFromRecord(fst_record *Rec);
 TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,fst_file *File);
-TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *GRTYP,char *grref,int32_t VerCode,int32_t NbSub,TGeoRef **Subs);
+TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *grref,int32_t VerCode,int32_t NbSub,TGeoRef **Subs);
 TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int32_t R,double ResR,double ResA);
-TGeoRef* GeoRef_CreateW(int32_t ni,int32_t nj,char *grtyp,int32_t ig1,int32_t ig2,int32_t ig3,int32_t ig4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
+TGeoRef* GeoRef_CreateW(int32_t NI,int32_t NJ,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
 TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grref,int32_t IG1,int32_t IG2,int32_t IG3,int32_t IG4,double* AX,double* AY);
 TGeoRef* GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
 TGeoRef* GeoRef_DefineZE(TGeoRef *Ref,int32_t NI,int32_t NJ,float DX,float DY,float LatR,float LonR,int32_t MaxCFL,float XLat1,float XLon1,float XLat2,float XLon2);
@@ -381,34 +380,34 @@ int32_t  GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,f
 int32_t  GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int32_t npts);                // c_gdwdfuv
 int32_t  GeoRef_UV2UV(TGeoRef *Ref,float *uullout,float *vvllout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb);                 // c_gdlluvfuv
 
-int32_t  GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int32_t *MaskOut,int32_t *MaskIn);
-int32_t  GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int32_t ni,int32_t nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int32_t *yyincount,double *yanlat,double *yanlon,int32_t *yyancount);
-int32_t  GeoRef_MaskYYDefine(TGeoRef *Ref);
+   int32_t  GeoRef_MaskZones(TGeoRef *RefTo,TGeoRef *RefFrom,int32_t *MaskOut,int32_t *MaskIn);
+   int32_t  GeoRef_MaskYYApply(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,int32_t ni,int32_t nj,float *maskout,double *dlat,double *dlon,double *yinlat,double *yinlon,int32_t *yyincount,double *yanlat,double *yanlon,int32_t *yyancount);
+   int32_t  GeoRef_MaskYYDefine(TGeoRef *Ref);
 
-void     GeoRef_GridGetExpanded(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin);                                                         // gdxpngd
-int32_t  GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,int32_t *IG1,int32_t *IG2,int32_t *IG3,int32_t *IG4,char *grref,int32_t *IG1REF,int32_t *IG2REF,int32_t *IG3REF,int32_t *IG4REF);  //c_ezgxprm
-void     GeoRef_AxisDefine(TGeoRef * const Ref, double * const AX, double * const AY);                                                         // gdaxes
-int32_t  GeoRef_AxisGetExpanded(const TGeoRef * const Ref, double * const AX, double * const AY);                                              // gdgxpndaxes
-void     GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY);
-void     GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref);
-void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
+   void     GeoRef_GridGetExpanded(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin);                                                         // gdxpngd
+   int32_t  GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,int32_t *IG1,int32_t *IG2,int32_t *IG3,int32_t *IG4,char *grref,int32_t *IG1REF,int32_t *IG2REF,int32_t *IG3REF,int32_t *IG4REF);  //c_ezgxprm
+   void     GeoRef_AxisDefine(TGeoRef * const Ref, double * const AX, double * const AY);                                                         // gdaxes
+   int32_t  GeoRef_AxisGetExpanded(const TGeoRef * const Ref, double * const AX, double * const AY);                                              // gdgxpndaxes
+   void     GeoRef_AxisDefine(TGeoRef* Ref,double *AX,double *AY);
+   void     GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref);
+   void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
 
 // Internal functions
 TGeoRef* GeoRef_Add(TGeoRef *Ref);
 TGeoSet* GeoRef_SetGet(TGeoRef* RefTo, TGeoRef* RefFrom,TGeoOptions *Opt);
-void     GeoRef_SetFree(TGeoSet *GSet);
-TGeoSet* GeoRef_SetRead(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_file *File);
-int32_t  GeoRef_SetWrite(TGeoSet *GSet,fst_file *File);
-int32_t  GeoRef_SetZoneDefine(TGeoSet *GSet);
-int32_t  GeoRef_SetCalcXY(TGeoSet *GSet);
-int32_t  GeoRef_SetCalcYYXY(TGeoSet *GSet);
+int32_t  GeoRef_SetFree(TGeoSet *GSet);
 int32_t  GeoRef_SetIndexInit(TGeoSet *GSet);
+TGeoSet* GeoRef_SetReadFST(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_file *File);
+int32_t  GeoRef_SetWriteFST(TGeoSet *GSet,fst_file *File);
+   int32_t  GeoRef_SetZoneDefine(TGeoSet *GSet);
+   int32_t  GeoRef_SetCalcXY(TGeoSet *GSet);
+   int32_t  GeoRef_SetCalcYYXY(TGeoSet *GSet);
 
-int32_t  GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t npts,TGeoSet *GSet);
-int32_t  GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin);
-int32_t  GeoRef_CorrectVector(TGeoSet *Set,float *uuout, float *vvout, float *uuin, float *vvin);
-void     GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2);
-void     GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2);
+   int32_t  GeoRef_InterpFinally(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *zout,float *zin,double *x,double *y,int32_t npts,TGeoSet *GSet);
+   int32_t  GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin);
+   int32_t  GeoRef_CorrectVector(TGeoSet *Set,float *uuout, float *vvout, float *uuin, float *vvin);
+   void     GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2);
+   void     GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2);
 
 // Per grid type transformations
 int32_t  GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb);

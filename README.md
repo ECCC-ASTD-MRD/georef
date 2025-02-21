@@ -22,7 +22,7 @@ Georef builds on the ezscint package by adding:
 
 ## Data structures
 
-* TGeoOptions : Defines various intepolation parameters
+* TGeoOptions : Defines various intepolation parameters. There is a global instance to TGeoOption *GeoRef_Options that should only be used in non threaded environment. Use a per thread instance of this type as parametre to functions needing them for threaded environment.
 * TGeoRef     : Geo-Reference definition
 * TGeoSet     : Links 2 Geo-Reference for interpolation. Contains cached values and index/weights to be reused on each intepolation between the 2 geo-reference
 
@@ -58,7 +58,7 @@ Georef builds on the ezscint package by adding:
    while(fst24_read_next(query,&record)>0 && n++<10) {
 
       // Create record georeference 
-      refin=GeoRef_Create(record.ni,record.nj,record.grtyp,record.ig1,record.ig2,record.ig3,record.ig4,(fst_file*)record.file);
+      refin=GeoRef_CreateFromRecord(&record);
 
       // Proceed with interpolation
       if (!GeoRef_Interp(refout,refin,&GeoRef_Options,grid.data,record.data)) {
@@ -87,6 +87,58 @@ Georef builds on the ezscint package by adding:
    }
 
    ...    
+```
+
+```fortran
+
+   type(fst_file)   :: file1,file2,fileout
+   type(fst_record) :: record1,record2
+   type(georef)     :: gref1,gref2
+
+   logical :: success
+   integer :: len, status
+   character(len=4096) :: argument
+   real(kind = real32), dimension(:), pointer :: data_array1, data_array2
+
+   ! Define interpolation options
+   georef_options%interp=IR_LINEAR;    ! Linear interpolation
+   georef_options%nodata=-999.0;       ! No data value
+   georef_options%extrap=ER_VALUE;     ! Use nodata value when extrapolating
+
+   ! Read record from first file
+   call get_command_argument(1,argument,len,status)
+   success = file1%open(trim(argument))
+   if (.not. success) then
+      call App_log(APP_ERROR, 'Unable to open FST file')
+      call exit(-1)
+   end if
+
+   ! Read record from second file
+   call get_command_argument(2,argument,len,status)
+   success = file2%open(trim(argument))
+   if (.not. success) then
+      call App_log(APP_ERROR, 'Unable to open FST file')
+      call exit(-1)
+   end if
+
+   ! Create geo-references
+   success=file1%read(record1,NOMVAR="GRID")
+   success=gref1%fromrecord(record1)
+
+   success=file2%read(record2,NOMVAR="GRID")
+   success=gref2%fromrecord(record2)
+
+   ! Interpolation from gref2 to gref1
+   call record1%get_data_array(data_array1)
+   call record2%get_data_array(data_array2)
+
+   len=gref1%interp(gref2,data_array1,data_array2)
+   success=fileout%write(record1)
+
+   success = file1%close()
+   success = file2%close()
+   success = fileout%close()
+
 ```
 
 # Compilation

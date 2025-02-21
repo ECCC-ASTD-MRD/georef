@@ -2255,7 +2255,7 @@ int32_t GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,in
  *
  *    @return             Error code (0=ok)
 */
-int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
+int32_t GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4,fst_file *File){
 
    fst_record record=default_fst_record;
    int32_t i,dbl=FALSE;
@@ -2273,6 +2273,12 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       char * const envVar = getenv("GEOREF_DESCRIPTOR_64");
       if (envVar) dbl = TRUE;
    }
+
+   if (IG1<=0) IG1=GRef->RPNHead.ig1;
+   if (IG2<=0) IG2=GRef->RPNHead.ig2;
+   if (IG3<=0) IG3=GRef->RPNHead.ig3;
+   if (IG4<=0) IG4=GRef->RPNHead.ig4;
+
    record.data = (float*)calloc(GRef->NX*GRef->NY,sizeof(float));
    record.ni   = GRef->NX;
    record.nj   = GRef->NY;
@@ -2287,14 +2293,13 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
    strncpy(record.nomvar,"GRID",FST_NOMVAR_LEN);
    strncpy(record.grtyp,GRef->RPNHead.grtyp,FST_GTYP_LEN);
    strncpy(record.etiket,(Name && strlen(Name))?Name:GRef->Name,FST_ETIKET_LEN);
-   record.ig1   = GRef->RPNHead.ig1;
-   record.ig2   = GRef->RPNHead.ig2;
-   record.ig3   = GRef->RPNHead.ig3;
-   record.ig4   = GRef->RPNHead.ig4;
+   record.ig1   = IG1;
+   record.ig2   = IG2;
+   record.ig3   = IG3;
+   record.ig4   = IG4;
    record.data_type = FST_TYPE_REAL_IEEE | FST_TYPE_TURBOPACK;
    record.data_bits = 32;
-   record.pack_bits = 8;
-   fst24_record_print(&record);
+   record.pack_bits = 16;
    if (fst24_write(File,&record,FST_SKIP)<=0) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write grid record field (fst24_write failed)\n",__func__);
    }
@@ -2307,9 +2312,9 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       record.ni   = GRef->NX*GRef->NbSub+GRef->NY+25;
       record.nj   = 1;
       record.nk   = 1;
-      record.ip1  = GRef->RPNHead.ig1;
-      record.ip2  = GRef->RPNHead.ig2;
-      record.ip3  = GRef->RPNHead.ig3;
+      record.ip1  = IG1;
+      record.ip2  = IG2;
+      record.ip3  = IG3;
       strncpy(record.nomvar,"^>",FST_NOMVAR_LEN);
       strncpy(record.grtyp,GRef->RPNHeadExt.grref,FST_GTYP_LEN);
       record.ig1   = GRef->RPNHeadExt.igref1;
@@ -2334,9 +2339,9 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       record.ni   = GRef->NX;
       record.nj   = GRef->Type&GRID_AXY2D?GRef->NY:1;
       record.nk   = 1;
-      record.ip1  = GRef->RPNHead.ig1;
-      record.ip2  = GRef->RPNHead.ig2;
-      record.ip3  = GRef->RPNHead.ig3;
+      record.ip1  = IG1;
+      record.ip2  = IG2;
+      record.ip3  = IG3;
       strncpy(record.nomvar,">>",FST_NOMVAR_LEN);
       strncpy(record.grtyp,GRef->RPNHeadExt.grref,FST_GTYP_LEN);
       record.ig1   = GRef->RPNHeadExt.igref1;
@@ -2379,9 +2384,9 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       record.ni   = GRef->NIdx;
       record.nj   = 1;
       record.nk   = 1;
-      record.ip1  = GRef->RPNHead.ig1;
-      record.ip2  = GRef->RPNHead.ig2;
-      record.ip3  = GRef->RPNHead.ig3;
+      record.ip1  = IG1;
+      record.ip2  = IG2;
+      record.ip3  = IG3;
       strncpy(record.nomvar,"##",FST_NOMVAR_LEN);
       strncpy(record.grtyp,"X",FST_GTYP_LEN);
       record.ig1   = GRef->RPNHeadExt.igref1;
@@ -2399,9 +2404,9 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       record.ni   = 6;
       record.nj   = 1;
       record.nk   = 1;
-      record.ip1  = GRef->RPNHead.ig1;
-      record.ip2  = GRef->RPNHead.ig2;
-      record.ip3  = GRef->RPNHead.ig3;
+      record.ip1  = IG1;
+      record.ip2  = IG2;
+      record.ip3  = IG3;
       strncpy(record.nomvar,"MTRX",FST_NOMVAR_LEN);
       strncpy(record.grtyp,"X",FST_GTYP_LEN);
       record.ig1   = GRef->RPNHeadExt.igref1;
@@ -2433,9 +2438,9 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       record.ni   = strlen(GRef->String);
       record.nj   = 1;
       record.nk   = 1;
-      record.ip1  = GRef->RPNHead.ig1;
-      record.ip2  = GRef->RPNHead.ig2;
-      record.ip3  = GRef->RPNHead.ig3;
+      record.ip1  = IG1;
+      record.ip2  = IG2;
+      record.ip3  = IG3;
       strncpy(record.nomvar,"PROJ",FST_NOMVAR_LEN);
       strncpy(record.grtyp,"X",FST_GTYP_LEN);
       record.ig1   = GRef->RPNHeadExt.igref1;

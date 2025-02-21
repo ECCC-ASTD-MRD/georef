@@ -40,6 +40,7 @@ TGeoRef* GeoRef_CreateR(double Lat,double Lon,double Height,int32_t R,double Res
    ref=GeoRef_New();
 
    ref->GRTYP[0]='R';
+   ref->GRTYP[1]='\0';
    ref->Loc.Lat=Lat;
    ref->Loc.Lon=Lon;
    ref->Loc.Elev=Height;
