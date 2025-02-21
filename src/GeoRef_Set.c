@@ -3,6 +3,8 @@
 #include <App.h>
 #include "GeoRef.h"
 
+static int32_t GeoRef_SetMax = -64;    ///< How many set to kepp in memory
+
 //! Free gridset zone definitions
 void GeoRef_SetZoneFree(
     //! [in, out] Grid set pointer
@@ -20,7 +22,6 @@ void GeoRef_SetZoneFree(
         }
     }
 }
-
 
 //! Finds the points at a pole
 int32_t GeoRef_SetZoneDefinePole(
@@ -549,8 +550,17 @@ TGeoSet* GeoRef_SetGet(
     }
 
     pthread_mutex_lock(&RefTo->Mutex);
+   // Initialize number of preserved georef in cache
+   if (GeoRef_SetMax < 0) {
+      GeoRef_SetMax = -GeoRef_SetMax;
+      char * georefSetMaxStr = getenv("GEOREF_MAXSET");
+      if (georefSetMaxStr) {
+         GeoRef_SetMax = atoi(georefSetMaxStr);
+      }
+   }
+
     if (!RefTo->Sets) {
-        RefTo->Sets = (TGeoSet*)calloc(SET_MAX, sizeof(TGeoSet));
+        RefTo->Sets = (TGeoSet*)calloc(GeoRef_SetMax, sizeof(TGeoSet));
     }
 
     // Check for last set (most cases)
@@ -559,14 +569,14 @@ TGeoSet* GeoRef_SetGet(
         return(RefTo->LastSet);
     }
 
-//TODO:Revise cleanup
-    if (RefTo->NbSet >= SET_MAX) {
+    if (RefTo->NbSet >= GeoRef_SetMax) {
         for (int32_t i = 0; i < RefTo->NbSet; i++) {
             if (RefTo->Sets[i].RefFrom != NULL) {
                 GeoRef_SetFree(&RefTo->Sets[i]);
             }
         }
         RefTo->NbSet = 0;
+        RefTo->LastSet = NULL;
     }
 
     // Otherwise loop on sets

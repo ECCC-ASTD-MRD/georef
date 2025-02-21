@@ -65,7 +65,6 @@ typedef struct {
 #define SET_ZONES   0x1          //!< Flag for set zone definitions
 #define SET_YYXY    0x4          //!< Flag for set YinYang calculations
 #define SET_NZONES  5            //!< Number of zone per set
-#define SET_MAX     256          //!< Maximum number of sets
 
 #define GRID_GLOBAL     0
 #define GRID_OUTSIDE    0

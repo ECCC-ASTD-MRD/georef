@@ -17,6 +17,7 @@ Georef builds on the ezscint package by adding:
 ## Environment variables
 
 * GEOREF_PRESERVE       : How many of the first georef created will be kept preserved in cache (default: 10)
+* GEOREF_MAXSET         : Maximum number of interpolation geoset to keep in cache (default: 64)
 * GEOREF_DESCRIPTOR_64  : Use 64 bit precision when writing of grid descriptors, (default: 32 bit)
 * GEOREF_INDEX_SIZE_HINT: Hint for size of interpolation weight index (default: 1024)
 
