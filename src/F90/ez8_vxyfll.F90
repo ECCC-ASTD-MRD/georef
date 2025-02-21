@@ -1,82 +1,59 @@
-!**s/r ez8_vxyfll - computes the grid co-ordinates of a point
-!
-      subroutine ez8_vxyfll(x,y,dlat,dlon,npts,d60,dgrw,pi,pj,nhem)
-      implicit none
+!> Compute the grid co-ordinates measured from the pole of a point, given the latitude and longitude in degrees
+subroutine ez8_vxyfll(x, y, dlat, dlon, npts, d60, dgrw, pi, pj, nhem)
+    use iso_fortran_env
+    implicit none
 
-!author   - j.d. henderson  -  feb 75
-!        
-!revision 001   c. thibeault  -  nov 79  documentation
-!revision 002   y. chartier   -  feb 91  vectorization
-!                                                     
-!language - fortran
-!                  
-!object(vxyfll)
-!     - computes the grid co-ordinates measured from the pole of a
-!       point, given the latitude and longitude in degrees.
-!
-!libraries
-!         - source  rmnsourcelib,id=rmnp     deck=vxyfll
-!         - object  rmnlib,id=rmnp
-!
-!usage    - call vxyfll(x,y,dlat,dlon,npts,d60,dgrw,pi,pj,nhem)
-!
-!arguments
-!   out   - x    - x-co-ordinate of the point32_t as measured with pole
-!                  as origin
-!         - y    - y-co-ordinate of the point32_t as measured with pole
-!                  as origin
-!   in    - dlat - latitude in degrees (-90 to +90, positive n)
-!         - dlon - longitude in degrees (-180 to +180, positive e)
-!         - d60  - grid length (in metres) of the polar stereographic
-!                  grid at 60 degrees
-!         - dgrw - orientation of greenwich meridian with respect to
-!                  the grid (in degrees)
-!         - nhem - 1 for northern hemisphere
-!                  2 for southern hemisphere
-!                                                                      
+    !> Number of elements in the x, y, dlat, dlon arrays
+    integer, intent(in) :: npts
+    !> Hemisphere : 1 for north, 2 for south
+    integer, intent(in) :: nhem
+    !> x-coordinate of the point32_t as measured with pole as origin
+    real(kind = real64), intent(out) :: x(npts)
+    !> y-coordinate of the point32_t as measured with pole as origin
+    real(kind = real64), intent(out) :: y(npts)
+    !> Latitude in degrees (-90 to +90, positive n)
+    real(kind = real64), intent(in) :: dlat(npts)
+    !> Longitude in degrees (-180 to +180, positive e)
+    real(kind = real64), intent(in) :: dlon(npts)
+    !> Grid length (in metres) of the polar stereographic grid at 60 degrees
+    real, intent(in) :: d60
+    !> Orientation of greenwich meridian with respect to the grid (in degrees)
+    real, intent(in) :: dgrw
+    !> 
+    real, intent(in) :: pi
+    !> 
+    real, intent(in) :: pj
 
-!notes    - the companion routine llfxy, which computes the latitude
-!         - and longitude given the grid-coordinates, 
-!         - is also available.
-!*--------------------------------------------------------------------
-#include "pi.cdk"
-#include "qqqpar.cdk"
+    !> \note The companion routine llfxy, which computes the latitude and longitude given the grid-coordinates, is also available
 
-      integer npts, nhem
-      real(kind=8) x(npts), y(npts), dlat(npts), dlon(npts)
-      real d60, dgrw, pi, pj
-      real(kind=8) re,rlon,rlat,sinlat,r
-      integer i
-      
-      re=1.866025d0*6.371d+6/d60
-!     
-      if (nhem.eq.NORD) then
-         !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i,rlat,rlon,sinlat,r) SHARED(npts,x,y,dgtord,re,dlat,dlon,pi,pj,dgrw)
-         do 10 i=1,npts
-            rlon=dgtord*(dlon(i)+dgrw)
-            rlat=dgtord*dlat(i)
-            sinlat=sin(rlat)
-            r=re*sqrt((1.d0-sinlat)/(1.d0+sinlat))
-            x(i)=r*cos(rlon) + pi
-            y(i)=r*sin(rlon) + pj
- 10      continue
-         return
-      endif
+#include "pi.inc"
+#include "qqqpar.inc"
 
-      if (nhem.eq.SUD) then
-         !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i,rlat,rlon,sinlat,r) SHARED(npts,x,y,dgtord,re,dlat,dlon,pi,pj,dgrw)
-         do 20 i=1,npts
+    real(kind = real64) :: re, rlon, rlat, sinlat, r
+    integer :: i
+
+    re = 1.866025d0 * 6.371d+6 / d60
+    if (nhem == NORD) then
+        !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, rlat, rlon, sinlat, r) SHARED(npts, x, y, dgtord, re, dlat, dlon, pi, pj, dgrw)
+        do i = 1, npts
+            rlon = dgtord * (dlon(i) + dgrw)
+            rlat = dgtord * dlat(i)
+            sinlat = sin(rlat)
+            r = re * sqrt((1.d0 - sinlat) / (1.d0 + sinlat))
+            x(i) = r * cos(rlon) + pi
+            y(i) = r * sin(rlon) + pj
+        enddo
+    elseif (nhem == SUD) then
+        !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, rlat, rlon, sinlat, r) SHARED(npts, x, y, dgtord, re, dlat, dlon, pi, pj, dgrw)
+        do i = 1, npts
             rlon = dlon(i)
-            if (rlon.gt.180.0d0) rlon = rlon - 360.0d0
-            rlon=dgtord*(-rlon+dgrw)
-            rlat=dgtord*(-dlat(i))
-            sinlat=sin(rlat)
-            r=re*sqrt((1.d0-sinlat)/(1.d0+sinlat))
-            x(i)=r*cos(rlon)+pi
-            y(i)=r*sin(rlon)+pj
- 20      continue
-      endif
-      
-      return
-      end
-!-----------------------------------------------------------------
+            if (rlon > 180.0d0) rlon = rlon - 360.0d0
+            rlon = dgtord * (-rlon + dgrw)
+            rlat = dgtord * (-dlat(i))
+            sinlat = sin(rlat)
+            r = re * sqrt((1.d0 - sinlat) / (1.d0 + sinlat))
+            x(i) = r * cos(rlon) + pi
+            y(i) = r * sin(rlon) + pj
+         enddo
+    endif
+end

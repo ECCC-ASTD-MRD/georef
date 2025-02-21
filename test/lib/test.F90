@@ -5,9 +5,9 @@ program test
     use georef_mod
     implicit none
 
-    type(fst_file)   :: file1,file2,fileout
-    type(fst_record) :: record1,record2
-    type(georef)     :: gref1,gref2,grefout
+    type(fst_file)   :: file1, file2, fileout
+    type(fst_record) :: record1, record2
+    type(georef)     :: gref1, gref2, grefout
     type(geoset)     :: set1, set2
 
     logical :: success
@@ -73,7 +73,7 @@ program test
     success=gref1%limits(lat0,lon0,lat1,lon1)
     write(app_msg,*) 'gref1%limit = ',lat0,',',lon0,' - ',lat1,',',lon1
     call App_Log(APP_INFO, app_msg)
-    
+
     ! Test ij coordinate of latlon bounding box
     lat0=36.0
     lon0=-116.0
@@ -181,11 +181,11 @@ program test
     success = file2%close()
     success = fileout%close()
 
-    if (.not. success) then 
+    if (.not. success) then
        call App_Log(APP_INFO, 'Test failed');
        call exit(-1)
     end if
 
     call App_Log(APP_INFO, 'Test successful');
-    
+
 end program test

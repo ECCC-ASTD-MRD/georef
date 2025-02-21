@@ -1,6 +1,0 @@
-      integer global, nord, sud
-      
-      parameter (global = 0)
-      parameter (nord   = 1)
-      parameter (sud    = 2)
-      

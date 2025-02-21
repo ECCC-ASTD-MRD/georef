@@ -3,7 +3,12 @@
 #include "GeoRef.h"
 
 
-void GeoRef_GridGetExpanded(TGeoRef *Ref, TGeoOptions *Opt, float *zout, float *zin) {
+void GeoRef_GridGetExpanded(
+    const TGeoRef * const Ref,
+    const TGeoOptions * const Opt,
+    float * const zout, 
+    const float * const zin
+) {
     switch (Ref->GRTYP[0]) {
         case 'A':
         case 'G':

@@ -27,18 +27,18 @@ foreach(LINK_TYPE static shared)
             OUTPUT_NAME georef${OMPI}
             POSITION_INDEPENDENT_CODE ON)
 
-        target_include_directories(georef${OMPI}-${LINK_TYPE} PUBLIC 
+        target_include_directories(georef${OMPI}-${LINK_TYPE} PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/georef>)
-        target_include_directories(georef${OMPI}-${LINK_TYPE} INTERFACE 
+        target_include_directories(georef${OMPI}-${LINK_TYPE} INTERFACE
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
             $<INSTALL_INTERFACE:include/georef>)
-                
+
         target_compile_definitions(georef${OMPI}-${LINK_TYPE} PRIVATE HAVE_GPC)
         add_dependencies(georef${OMPI}-${LINK_TYPE} ${PROJECT_NAME}_build_info)
         add_library(georef::georef${OMPI}-${LINK_TYPE} ALIAS georef${OMPI}-${LINK_TYPE})
-            
+
         if("${OMPI}" STREQUAL "-ompi")
             if(OpenMP_FOUND)
                 target_link_libraries(georef${OMPI}-${LINK_TYPE} PUBLIC OpenMP::OpenMP_C OpenMP::OpenMP_Fortran)

@@ -252,18 +252,39 @@ typedef struct TDef {
 } TDef;
 
 void    Def_Clear(TDef *Def);
-int32_t Def_Compat(TDef *ToDef,TDef *FromDef);
-TDef   *Def_Copy(TDef *Def);
-TDef   *Def_CopyPromote(TDef *Def,TDef_Type Type);
+int32_t Def_Compat(
+    TDef * const dst,
+    const TDef * const src
+);
+TDef * Def_Copy(const TDef * const Def);
+TDef * Def_CopyPromote(
+    const TDef * const src,
+    const TDef_Type type
+);
 void    Def_Free(TDef *Def);
 TDef   *Def_New(int32_t NI,int32_t NJ,int32_t NK,int32_t Dim,TDef_Type Type,int32_t Alias);
 TDef   *Def_Create(int32_t NI,int32_t NJ,int32_t NK,TDef_Type Type,char* Comp0,char* Comp1,char* Mask);
 TDef   *Def_Resize(TDef *Def,int32_t NI,int32_t NJ,int32_t NK);
-int32_t Def_Paste(TDef *ToDef,TDef *DefPaste,int32_t X0,int32_t Y0);
+int32_t Def_Paste(
+    TDef * const dst,
+    const TDef * const src,
+    int32_t X0,
+    int32_t Y0
+);
 
 struct TGeoRef;
 
-int32_t Def_GetValue(TGeoRef *Ref,TDef *Def,TGeoOptions *Opt,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY);
+int32_t Def_GetValue(
+    const TGeoRef * const Ref,
+    const TDef * const Def,
+    const TGeoOptions * const Opt,
+    const int32_t C,
+    double X,
+    double Y,
+    double Z,
+    double * const Length,
+    double * const ThetaXY
+);
 
 int32_t GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int32_t I,int32_t J,int32_t Seg);
 int32_t GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Geom,double Value);

@@ -541,28 +541,28 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       ref->Type=Ref->Type;
       ref->NbSub=Ref->NbSub;
       ref->QTree=NULL;
-      ref->Hemi=Ref->Hemi;                                    
-      ref->RefFrom=Ref->RefFrom;                                    
-      ref->Extension=Ref->Extension;  
-      ref->Height=Ref->Height;  
-      ref->RPNHead=Ref->RPNHead;  
-      ref->RPNHeadExt=Ref->RPNHeadExt;  
+      ref->Hemi=Ref->Hemi;
+      ref->RefFrom=Ref->RefFrom;
+      ref->Extension=Ref->Extension;
+      ref->Height=Ref->Height;
+      ref->RPNHead=Ref->RPNHead;
+      ref->RPNHeadExt=Ref->RPNHeadExt;
       ref->Options=Ref->Options;
       ref->i1=Ref->i1;
       ref->i2=Ref->i2;
       ref->j1=Ref->j1;
       ref->j2=Ref->j2;
 
-      if (Ref->Lat) { 
-         ref->Lat=malloc(((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NY)*sizeof(double)); 
+      if (Ref->Lat) {
+         ref->Lat=malloc(((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NY)*sizeof(double));
          memcpy(ref->Lat,Ref->Lat,((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NY)*sizeof(double));
       }
       if (Ref->Lon) {
-         ref->Lon=malloc(((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NX)*sizeof(double)); 
+         ref->Lon=malloc(((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NX)*sizeof(double));
          memcpy(ref->Lon,Ref->Lon,((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NX)*sizeof(double));
       }
 
-   // double       *AXY;                            
+   // double       *AXY;
    //struct TGeoRef *mymaskgrid;
    //int32_t mymaskgridi0,mymaskgridi1;
    //int32_t mymaskgridj0,mymaskgridj1;
