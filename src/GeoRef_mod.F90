@@ -9,6 +9,19 @@ module georef_mod
 
     enum, bind(C)
         enumerator :: &
+            TD_Unknown = 0,  &
+            TD_Binary  = 1,  &
+            TD_UByte   = 2,  &
+            TD_Byte    = 3,  &
+            TD_UInt16  = 4,  &
+            TD_Int16   = 5,  &
+            TD_UInt32  = 6,  &
+            TD_Int32   = 7,  &
+            TD_UInt64  = 8,  &
+            TD_Int64   = 9,  &
+            TD_Float32 = 10, &
+            TD_Float64 = 11
+        enumerator :: &
             IR_UNDEF                          = 0, &
             IR_NEAREST                        = 1, &
             IR_LINEAR                         = 2, &
@@ -54,6 +67,13 @@ module georef_mod
             CB_AVERAGE   = 4
     end enum
 
+    type :: geodef
+        private
+        type(C_PTR) :: ptr = c_null_ptr ! Pointer to C control structure
+    contains
+        procedure, pass   :: init => geodef_init_f
+    end type geodef
+
     type :: geoset
         private
         type(C_PTR) :: ptr = c_null_ptr ! Pointer to C control structure
@@ -84,6 +104,7 @@ module georef_mod
         procedure, pass   :: getcelldims => georef_celldims_f
         procedure, pass   :: writefst => georef_writefst_f
         procedure, pass   :: interp => georef_interp_f
+        procedure, pass   :: interpdef => georef_interpdef_f
         procedure, pass   :: interpuv => georef_interpuv_f
         procedure, pass   :: interpwd => georef_interpwd_f
         procedure, pass   :: ud2wd => georef_uv2wd_f
@@ -128,6 +149,7 @@ module georef_mod
 
 contains
 
+!!! GeoRef functions
     function georef_init_f(this) result(res)
         implicit none
         class(georef), intent(inout) :: this       !< georef instance
@@ -607,6 +629,27 @@ contains
         endif
     end function georef_interp_f
  
+    function georef_interpdef_f(this,reffrom,defout,defin,opt,final) result(out)
+        class(georef),  intent(inout) :: this,reffrom  !< georef instance
+        type(geodef),  intent(in) :: defout, defin
+        type(geooptions),  intent(in), target, optional :: opt  !< georef instance
+        logical :: final
+
+        integer(C_INT32_T) :: out, ifinal
+
+        if (final) then
+           ifinal=1
+        else
+           ifinal=0
+        endif
+
+        if (present(opt)) then
+           out=georef_interpdef(this%ptr,reffrom%ptr,defout%ptr,defin%ptr,C_LOC(opt),ifinal)
+        else 
+           out=georef_interpdef(this%ptr,reffrom%ptr,defout%ptr,defin%ptr,C_LOC(georef_options),ifinal)
+        endif
+    end function georef_interpdef_f
+
     function georef_interpuv_f(this,reffrom,uuout,vvout,uuin,vvin,opt) result(out)
         class(georef),  intent(inout) :: this,reffrom  !< georef instance
         type(geooptions),  intent(in), target, optional :: opt  !< georef instance
@@ -673,6 +716,7 @@ contains
         out=georef_uv2uv(this%ptr,uuout,vvout,uuin,vvin,lat,lon,npts)
     end function georef_uv2uv_f
     
+!!! GeoSet functions
     function georef_setget_f(this,reffrom) result(set)
         class(georef),  intent(inout) :: this    !< georef instance
         type(georef), intent(in) :: reffrom
@@ -712,4 +756,21 @@ contains
         endif
     end function geoset_writefst_f
     
+!!! GeoDef functions
+
+    function geodef_init_f(this,ni,nj,nk,type,comp0,comp1,mask) result(res)
+        class(geodef), intent(inout) :: this  !< geodef instance
+        type(C_PTR), intent(in),target :: comp0,comp1,mask
+        type(C_PTR) :: def 
+        integer(C_INT32_T), value :: ni,nj,nk,type
+
+        logical :: res
+        res=.false.
+        this%ptr=def_create(ni,nj,nk,type,c_loc(comp0),c_loc(comp1),c_loc(mask))
+        if (c_associated(this%ptr)) then
+           res=.true.
+        endif
+
+    end function geodef_init_f
+
 end module georef_mod

@@ -550,7 +550,7 @@ TGeoSet* GeoRef_SetGet(
     }
 
     pthread_mutex_lock(&RefTo->Mutex);
-   // Initialize number of preserved georef in cache
+   // Initialize number of geoset in cache
    if (GeoRef_SetMax < 0) {
       GeoRef_SetMax = -GeoRef_SetMax;
       char * georefSetMaxStr = getenv("GEOREF_MAXSET");

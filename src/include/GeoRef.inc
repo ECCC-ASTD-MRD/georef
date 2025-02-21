@@ -443,6 +443,19 @@ interface
         integer(C_INT32_T) :: out
     end function georef_interp
 
+!   int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t Final);
+    function georef_interpdef(refto,reffrom,defto,deffrom,opt,final) result(out) bind(C, name = 'GeoRef_InterpDef')
+        import :: C_PTR,C_INT32_T,C_DOUBLE
+        implicit none
+
+        type(C_PTR), intent(in), value :: refto,reffrom
+        type(C_PTR), intent(in), value :: defto,deffrom
+        type(C_PTR), intent(in), value :: opt
+        integer(C_INT32_T), value :: final
+
+        integer(C_INT32_T) :: out
+    end function georef_interpdef
+
 !   int32_t  GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *uuout,float *vvout,float *uuin,float *vvin);                      // c_ezuvint
     function georef_interpuv(refto,reffrom,opt,uuout,vvout,uuin,vvin) result(out) bind(C, name = 'GeoRef_InterpUV')
         import :: C_PTR,C_INT32_T, C_FLOAT,C_DOUBLE
@@ -652,5 +665,15 @@ interface
 
         integer(C_INT32_T) :: out
     end function geoset_writefst
+
+!   TDef *Def_Create(int32_t NI,int32_t NJ,int32_t NK,TDef_Type Type,char* Comp0,char* Comp1,char* Mask);
+    function def_create(ni,nj,nk,type,comp0,comp1,mask) result(def) bind(C, name = 'Def_Create')
+       import :: C_PTR,C_INT32_T
+       implicit none
+       type(C_PTR), intent(in), value :: comp0,comp1,mask
+       integer(C_INT32_T), value :: ni,nj,nk,type
+
+       type(C_PTR) :: def 
+    end function def_create
 
 end interface

@@ -1076,7 +1076,7 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref, TDef *Def, TGeoOptions *Opt, OGRG
 
 #ifdef HAVE_GDAL
    double        dx, dy, dp = 1.0, val = 0.0;
-   int32_t       x, y, n = 0, idx2, na;
+   int32_t       x, y, n = 0, idx2, idx3, na;
    OGRGeometryH  inter = NULL, pick;
    OGREnvelope   envg, envp;
 
@@ -1152,7 +1152,8 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref, TDef *Def, TGeoOptions *Opt, OGRG
                Def_SetValue(Def, Opt, X0, Y0, Z, val);
 
                if (Mode == 'N' && Def->Buffer) {
-                  Def->Buffer[idx2] += dp;
+                  idx3 = FIDX3D(Def, X0, Y0, Z);
+                  Def->Buffer[idx3] += dp;
                }
             }
 
@@ -1203,11 +1204,10 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref, TDef *Def, TGeoOptions *Opt, OGRG
     //! [in]     Layer      Source layer data
     //! [in]     Field      Layer fiel to use
     //! [in]     Value      Value o be assigned
-    //! [in]     Final      Is this the final step (for incremental interpolation)
  *
  *    @return        FALSE on error, TRUE otherwise
 */
-int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Layer *Layer, TGeoOptions *Opt, char *Field, double Value, int32_t Final) {
+int32_t GeoRef_InterpOGR(TGeoRef *ToRef, TDef *ToDef, TGeoRef *LayerRef, OGR_Layer *Layer, TGeoOptions *Opt, char *Field, double Value) {
 
 #ifdef HAVE_GDAL
    TGeoSet *gset;
@@ -1639,16 +1639,15 @@ int32_t GeoRef_InterpSub(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
     //! [in]     FromRef      Source GeoRef pointer
     //! [in]     FromDef      Source data definition
     //! [in]     Opt          Interpolation options
-    //! [in]     Final        Is this the final step (for incremental interpolation)
  *
  *    @return        FALSE on error, TRUE otherwise
 */
-int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t Final) {
+int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt) {
 
 #ifdef HAVE_GDAL
    TGeoSet    *gset = NULL;
    int32_t     i, j, na, nt = 0, p = 0, pi, pj, idx2, idx3, wrap, k = 0, isize, nidx, error = 0;
-   uint64_t n;
+   uint64_t    n;
    char        *c;
    double       val0, val1, area, x, y, z, dp;
    float       *ip = NULL, *lp = NULL, **index = NULL;
@@ -1669,11 +1668,12 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
 
    // Allocate area buffer if needed
    if (Opt->Interp == IR_NORMALIZED_CONSERVATIVE && !ToDef->Buffer) {
-      ToDef->Buffer = (double*)malloc(FSIZE2D(ToDef)*sizeof(double));
+      ToDef->Buffer = (double*)malloc(FSIZE3D(ToDef)*sizeof(double));
       if (!ToDef->Buffer) {
          Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Unable to allocate area buffer\n", __func__);
          return FALSE;
       }
+      for(n = 0; n < FSIZE3D(ToDef); n++) ToDef->Buffer[n] = 0.0;
    }
    gset = GeoRef_SetGet(ToRef, FromRef, Opt);
    GeoRef_SetIndexInit(gset);
@@ -1686,9 +1686,6 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
 
    // Process one level at a time
    for (k = 0; k < ToDef->NK; k++) {
-
-      if (ToDef->Buffer)
-         for(n = 0; n < FSIZE2D(ToDef); n++) ToDef->Buffer[n] = 0.0;
 
       // Do we have and index
       if (gset->Index && gset->Index[0] != REF_INDEX_EMPTY) {
@@ -1728,7 +1725,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                Def_Set(ToDef, 0, idx3, val0);
 
                if (Opt->Interp == IR_NORMALIZED_CONSERVATIVE) {
-                  ToDef->Buffer[idx2] += dp;
+                  ToDef->Buffer[idx3] += dp;
                }
             }
             // Skip separator
@@ -1906,19 +1903,6 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
          }
          Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: %i total hits\n", __func__, nt);
       }
-
-      // Finalize and reassign
-      idx3 = FSIZE2D(ToDef)*k;
-      if (Final && Opt->Interp == IR_NORMALIZED_CONSERVATIVE) {
-         for(n = 0; n < FSIZE2D(ToDef); n++) {
-            if (ToDef->Buffer[n] != 0.0) {
-               Def_Get(ToDef, 0, idx3+n, val0);
-               val0 /= ToDef->Buffer[n];
-               Def_Set(ToDef, 0, idx3+n, val0);
-               ToDef->Buffer[n] = 0.0;
-            }
-         }
-      }
    }
 
    OGR_G_DestroyGeometry(ring);
@@ -1942,11 +1926,10 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
     //! [in]     FromRef      Source GeoRef pointer
     //! [in]     FromDef      Source data definition
     //! [in]     Opt          Interpolation options
-    //! [in]     Final        Is this the final step (for incremental interpolation)
  *
  *    @return        FALSE on error, TRUE otherwise
 */
-int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t Final){
+int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt){
 
    double        val, vx, di[4], dj[4], *fld, *aux, di0, di1, dj0, dj1;
    int32_t      *acc = NULL, x0, x1, y, y0, y1;
@@ -2003,7 +1986,7 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
          }
          for(n = 0; n < nijk; n++) fld[n] = ToDef->NoData;
 
-        if (Opt->Interp == IR_VECTOR_AVERAGE) {
+         if (Opt->Interp == IR_VECTOR_AVERAGE) {
             aux = ToDef->Aux = malloc(nijk*sizeof(double));
             if (!ToDef->Aux) {
                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Unable to allocate auxiliary buffer\n", __func__);
@@ -2255,58 +2238,97 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
          if (rpnClass) free(rpnClass);
       }
    }
-   // Finalize and reassign
-   if (Final || Opt->Interp == IR_ACCUM || Opt->Interp == IR_BUFFER) {
-      idxk = 0;
-      for(k = 0; k < ToDef->NK; k++) {
-         for(x = 0; x < nij; x++, idxk++) {
-            vx = ToDef->NoData;
 
-            switch(Opt->Interp) {
-               case IR_ACCUM:
-                  if (acc) vx = acc[x];
-                  break;
+   return TRUE;
+}
 
-               case IR_BUFFER:
-                  if (fld) vx = fld[idxk];
-                  break;
+/*----------------------------------------------------------------------------
+ * @brief  Finalize multi-step interpolations
+ * @date   May 2006
+    //! [in]     ToRef        Destination GeoRef pointer
+    //! [in]     ToDef        Destination data definition
+    //! [in]     Opt          Interpolation options
+ *
+ *    @return                 Number of grid points involved
+*/
+int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt) {
 
-               default:
-                  if (fld) {
-                     if (DEFVALID(ToDef, fld[idxk])) {
-                        if (aux) {
-                           if (acc && acc[x] != 0) {
-                              fld[idxk] /= acc[x];
-                              aux[idxk] /= acc[x];
-                           }
-                           vx = RAD2DEG(atan2(aux[idxk], fld[idxk]));
-                           if (vx < 0) vx += 360;
-                        } else {
-                           vx = fld[idxk];
-                           if (acc && acc[x] != 0) {
-                              vx = fld[idxk]/acc[x];
+   int64_t k,n,nij,idx;
+   double  val;
+
+   nij=FSIZE2D(ToDef);
+   idx=0;
+
+   switch(Opt->Interp) {
+
+      case IR_NORMALIZED_CONSERVATIVE:
+         for (k = 0; k < ToDef->NK; k++) {
+            for(n = 0; n < nij; n++, idx++) {
+               if (ToDef->Buffer[idx] != 0.0) {
+                  Def_Get(ToDef, 0, idx, val);
+                  val /= ToDef->Buffer[idx];
+                  Def_Set(ToDef, 0, idx, val);
+                  ToDef->Buffer[idx] = 0.0;
+               }
+            }
+         }
+         break;
+
+      case IR_ACCUM:
+      case IR_BUFFER:
+         for(k = 0; k < ToDef->NK; k++) {
+            for(n = 0; n < nij; n++, idx++) {
+               val = ToDef->NoData;
+
+               switch(Opt->Interp) {
+                  case IR_ACCUM:
+                     if (ToDef->Accum) val = ToDef->Accum[n];
+                     break;
+
+                  case IR_BUFFER:
+                     if (ToDef->Buffer) val = ToDef->Buffer[idx];
+                     break;
+
+                  default:
+                     if (ToDef->Buffer) {
+                        if (DEFVALID(ToDef, ToDef->Buffer[idx])) {
+                           if (ToDef->Aux) {
+                              if (ToDef->Accum && ToDef->Accum[n] != 0.0) {
+                                 ToDef->Buffer[idx] /= ToDef->Accum[n];
+                                 ToDef->Aux[idx] /= ToDef->Accum[n];
+                              }
+                              val = RAD2DEG(atan2(ToDef->Aux[idx], ToDef->Buffer[idx]));
+                              if (val < 0.0) val += 360.0;
                            } else {
-                              vx = fld[idxk];
+                              val = ToDef->Buffer[idx];
+                              if (ToDef->Accum && ToDef->Accum[n] != 0.0) {
+                                 val = ToDef->Buffer[idx]/ToDef->Accum[n];
+                              } else {
+                                 val = ToDef->Buffer[idx];
+                              }
                            }
                         }
                      }
-                  }
-            }
+               }
 
-            Def_Set(ToDef, 0, idxk, vx);
+               Def_Set(ToDef, 0, idx, val);
+            }
          }
+         break;
+   }
 
-         // Copy first column to last if it's repeated
-         if (ToRef->Type&GRID_REPEAT) {
-            idxt = k*nij;
-            for(y = ToRef->Y0; y <= ToRef->Y1; y++, idxt += ToDef->NI) {
-               Def_Get(ToDef, 0, idxt, vx);
-               Def_Set(ToDef, 0, idxt+ToDef->NI-1, vx);
-            }
+   // Copy first column to last if it's repeated
+   if (ToRef->Type&GRID_REPEAT) {
+      for(k = 0; k < ToDef->NK; k++) {
+         idx = k*nij;
+         for(n = ToRef->Y0; n <= ToRef->Y1; n++, idx += ToDef->NI) {
+            Def_Get(ToDef, 0, idx, val);
+            Def_Set(ToDef, 0, idx+ToDef->NI-1, val);
          }
       }
    }
-   return TRUE;
+
+   return(idx);
 }
 
 /*----------------------------------------------------------------------------
@@ -2316,14 +2338,13 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
     //! [in]     ToDef        Destination data definition
     //! [in]     FromRef      Source GeoRef pointer
     //! [in]     FromDef      Source data definition
-    //! [in]     Final        Is this the final step (for incremental interpolation)
  *
  *    @return        FALSE on error, TRUE otherwise
 */
 int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t Final) {
 
    void *pf0, *pt0, *pf1, *pt1;
-   int32_t   k, code = FALSE;
+   int64_t   k, code = FALSE;
 
    if (!Opt) Opt=&GeoRef_Options;
 
@@ -2383,7 +2404,7 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
 //         if (!Def_Compat(field0->Def, field1->Def)) {
 //            field0->GRef = GeoRef_Find(GeoRef_Resize(field0->GRef, field0->Def->NI, field0->Def->NJ));
 //         }
-         code = GeoRef_InterpConservative(ToRef, ToDef, FromRef, FromDef, Opt, Final);
+         code = GeoRef_InterpConservative(ToRef, ToDef, FromRef, FromDef, Opt);
          break;
 
       case IR_MAXIMUM:
@@ -2398,7 +2419,7 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
       case IR_NOP:
       case IR_ACCUM:
       case IR_BUFFER:
-         code = GeoRef_InterpAverage(ToRef, ToDef, FromRef, FromDef, Opt, Final);
+         code = GeoRef_InterpAverage(ToRef, ToDef, FromRef, FromDef, Opt);
          break;
 
       case IR_SUBNEAREST:
@@ -2412,6 +2433,9 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
          break;
    }
 
+   if (Final) {
+      code = GeoRef_InterpFinalize(ToRef,ToDef, Opt);
+   }
    return code;
 }
 
