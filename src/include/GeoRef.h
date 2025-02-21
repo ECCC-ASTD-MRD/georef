@@ -346,9 +346,9 @@ int32_t  GeoRef_CopyDesc(fst_file *FileTo, fst_record* Rec);
 
 TGeoRef* GeoRef_CreateFromRecord(fst_record *Rec);
 TGeoRef* GeoRef_Create(int32_t NI, int32_t NJ, char *GRTYP, int32_t IG1, int32_t IG2, int32_t IG3, int32_t IG4, fst_file *File);
-TGeoRef* GeoRef_CreateU(int32_t NI, int32_t NJ, char *GRTYP, char *grref, int32_t VerCode, int32_t NbSub, TGeoRef **Subs);
+TGeoRef* GeoRef_CreateU(int32_t NI, int32_t NJ, char *grref, int32_t VerCode, int32_t NbSub, TGeoRef **Subs);
 TGeoRef* GeoRef_CreateR(double Lat, double Lon, double Height, int32_t R, double ResR, double ResA);
-TGeoRef* GeoRef_CreateW(int32_t ni, int32_t nj, char *grtyp, int32_t ig1, int32_t ig2, int32_t ig3, int32_t ig4, char *String, double *Transform, double *InvTransform, OGRSpatialReferenceH Spatial);
+TGeoRef* GeoRef_CreateW(int32_t ni, int32_t nj, char *String, double *Transform, double *InvTransform, OGRSpatialReferenceH Spatial);
 TGeoRef* GeoRef_Define(TGeoRef *Ref, int32_t NI, int32_t NJ, char* GRTYP, char* grref, int32_t IG1, int32_t IG2, int32_t IG3, int32_t IG4, double* AX, double* AY);
 TGeoRef* GeoRef_DefineW(TGeoRef *Ref, char *String, double *Transform, double *InvTransform, OGRSpatialReferenceH Spatial);
 TGeoRef* GeoRef_DefineZE(TGeoRef *Ref, int32_t NI, int32_t NJ, float DX, float DY, float LatR, float LonR, int32_t MaxCFL, float XLat1, float XLon1, float XLat2, float XLon2);
