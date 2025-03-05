@@ -208,6 +208,11 @@ void GeoRef_AxisDefine(
             GeoRef_AxisCalcNewtonCoeff(Ref);
             break;
 
+        case 'C':
+            Ref->AX = AX;
+            Ref->AY = AY;
+            break;
+
         default:
             GeoRef_AxisCalcExpandCoeff(Ref);
             break;

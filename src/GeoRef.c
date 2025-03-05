@@ -303,6 +303,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
       switch(Ref->GRTYP[0]) {
          case 'A': Ref->LL2XY=GeoRef_LL2XY_A; Ref->XY2LL=GeoRef_XY2LL_L; break;
          case 'B': Ref->LL2XY=GeoRef_LL2XY_B; Ref->XY2LL=GeoRef_XY2LL_L; break;
+         case 'C': Ref->LL2XY=GeoRef_LL2XY_C; Ref->XY2LL=GeoRef_XY2LL_C; break;
          case 'E': Ref->LL2XY=GeoRef_LL2XY_E; Ref->XY2LL=GeoRef_XY2LL_E; break;
          case 'L': Ref->LL2XY=GeoRef_LL2XY_L; Ref->XY2LL=GeoRef_XY2LL_L; break;
          case 'N':
@@ -531,7 +532,7 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       return(NULL);
    }
 
-   if (ref=GeoRef_New()) {
+   if ((ref=GeoRef_New()) != NULL) {
       GeoRef_Size(ref,Ref->X0,Ref->Y0,Ref->X1,Ref->Y1,Ref->BD);
 
       ref->GRTYP[0]=Ref->GRTYP[0];
@@ -717,7 +718,6 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
                      return(0);
                   }
                   for(i=0;i<sz;i++) ((double*)*Ptr)[i]=((float*)record.data)[i];
-                  fst24_record_free(&record);
                }
                break;
 
@@ -730,7 +730,6 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
                      return(0);
                   }
                   for(i=0;i<sz;i++) ((unsigned int*)*Ptr)[i]=((int*)record.data)[i];
-                  fst24_record_free(&record);
                }
                break;
 
@@ -743,7 +742,6 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
                      return(0);
                   }
                   for(i=0;i<sz;i++) ((int*)*Ptr)[i]=((int*)record.data)[i];
-                  fst24_record_free(&record);
                }
                break;
 
@@ -759,6 +757,8 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
       GRef->RPNHeadExt.igref2=record.ig2;
       GRef->RPNHeadExt.igref3=record.ig3;
       GRef->RPNHeadExt.igref4=record.ig4;
+
+      fst24_record_free(&record);
    }
 
    return(sz);
@@ -823,6 +823,7 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
          case 'Z':
             if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
+         case 'C':
             if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
             break;
 
@@ -914,6 +915,9 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
       return(FALSE);
 #endif
    }
+   else if (GRef->GRTYP[0] == 'C') {
+      GeoRef_DefineC(GRef);
+   }
 
    return(TRUE);
 }
@@ -974,6 +978,10 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    ref->RPNHead.ig4 = IG4;
    ref->Extension=0;
    ref->Type=GRID_NONE;
+
+   if (GRTYP[0] == 'C') {
+      GeoRef_DefineC(ref);
+   }
 
    GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
 
@@ -1123,6 +1131,8 @@ TGeoRef* GeoRef_New() {
 
    // RPN Specific
    memset(&ref->RPNHead,0x0,sizeof(fst_record));
+   ref->RPNHead = default_fst_record;
+   memset(&ref->RPNHeadExt, 0x0, sizeof(fst_record_ext));
 
    // WKT Specific
    ref->String=NULL;
@@ -2302,6 +2312,7 @@ int32_t GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4
    record.pack_bits = 16;
    if (fst24_write(File,&record,FST_SKIP)<=0) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write grid record field (fst24_write failed)\n",__func__);
+      return(FALSE);
    }
 
    if (dbl)
@@ -2371,7 +2382,7 @@ int32_t GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4
          for(i=0;i<(GRef->Type&GRID_AXY2D?record.ni*record.nj:record.nj);i++) ((float*)record.data)[i]=GRef->AY[i];
       }
       if (fst24_write(File,&record,FST_SKIP)<=0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write ^^ field (fst24_write failed)\n",__func__);
          return(FALSE);
       }
    }

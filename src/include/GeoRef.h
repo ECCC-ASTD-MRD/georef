@@ -13,6 +13,7 @@
 
 #include "georef/GeoRef_Utils.h"
 #include "georef/ZRef.h"
+#include "georef/GeoRef_Type_C.h"
 
 #ifdef HAVE_GDAL
    #include "georef/gdal_safe.h"
@@ -255,7 +256,7 @@ typedef struct TGeoRef {
    int32_t      BD;                                       //!< Bordure
    int32_t      NX, NY, X0, Y0, X1, Y1;                        //!< Grid size and limits
    int32_t      Extension;                                //!< related to the newtonian coefficient
-   char         GRTYP[2];                                 //!< Type de grille
+   char         GRTYP[2 + 1];                             //!< Type de grille
    int32_t      Hemi;                                     //!< Hemisphere side (0=GRID_GLOBAL, 1=NORTH, 2=SOUTH)
    int32_t      NbSet;                                    //!< Nombre de set d'interpolation
    TGeoSet      *Sets, *LastSet;                           //!< Tableau de set d'interpolation et du dernier utilise
@@ -265,6 +266,11 @@ typedef struct TGeoRef {
    double       *AX, *AY, *AXY;                             //!< Axes de positionnement / deformation
    float        *NCX, *NCY, *Hgt;
    double       *Wght;                                    //!< Barycentric weight array for TIN  (M grids)
+
+   //! Grid-specific data
+   union {
+      CubedSphereParams* CGrid;
+   };
 
    char                         *String;                  //!< OpenGIS WKT String description
    double                       *Transform, *InvTransform; //!< Transformation functions
@@ -349,6 +355,7 @@ TGeoRef* GeoRef_CreateU(int32_t NI, int32_t NJ, char *grref, int32_t VerCode, in
 TGeoRef* GeoRef_CreateR(double Lat, double Lon, double Height, int32_t R, double ResR, double ResA);
 TGeoRef* GeoRef_CreateW(int32_t ni, int32_t nj, char *String, double *Transform, double *InvTransform, OGRSpatialReferenceH Spatial);
 TGeoRef* GeoRef_Define(TGeoRef *Ref, int32_t NI, int32_t NJ, char* GRTYP, char* grref, int32_t IG1, int32_t IG2, int32_t IG3, int32_t IG4, double* AX, double* AY);
+TGeoRef* GeoRef_DefineC(TGeoRef *Ref);
 TGeoRef* GeoRef_DefineW(TGeoRef *Ref, char *String, double *Transform, double *InvTransform, OGRSpatialReferenceH Spatial);
 TGeoRef* GeoRef_DefineZE(TGeoRef *Ref, int32_t NI, int32_t NJ, float DX, float DY, float LatR, float LonR, int32_t MaxCFL, float XLat1, float XLon1, float XLat2, float XLon2);
 int32_t  GeoRef_Positional(TGeoRef *Ref, struct TDef *XDef, struct TDef *YDef);
@@ -485,6 +492,8 @@ int32_t  GeoRef_LL2GREF(TGeoRef *Ref, double *X, double *Y, double *Lat, double 
 int32_t  GeoRef_LL2XY_A(TGeoRef *Ref, double *X, double *Y, double *Lat, double *Lon, int32_t Nb);
 int32_t  GeoRef_XY2LL_L(TGeoRef *Ref, double *Lat, double *Lon, double *X, double *Y, int32_t Nb);
 int32_t  GeoRef_LL2XY_B(TGeoRef *Ref, double *X, double *Y, double *Lat, double *Lon, int32_t Nb);
+int32_t  GeoRef_LL2XY_C(TGeoRef *Ref, double *X, double *Y, double *Lat, double *Lon, int32_t Nb);
+int32_t  GeoRef_XY2LL_C(TGeoRef *Ref, double *Lat, double *Lon, double *X, double *Y, int32_t Nb);
 int32_t  GeoRef_LL2XY_E(TGeoRef *Ref, double *X, double *Y, double *Lat, double *Lon, int32_t Nb);
 int32_t  GeoRef_XY2LL_E(TGeoRef *Ref, double *Lat, double *Lon, double *X, double *Y, int32_t Nb);
 int32_t  GeoRef_LL2XY_L(TGeoRef *Ref, double *X, double *Y, double *Lat, double *Lon, int32_t Nb);
