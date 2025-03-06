@@ -1,6 +1,7 @@
 import ctypes
 import numpy
 import numpy.ctypeslib
+from rmn import fst24_file
 from typing import Tuple
 from .constants import *
 from .structs import GeoOptions, GeoRefError
@@ -68,6 +69,11 @@ class GeoRef:
         
         Returns:
             tuple: (lat0, lon0, lat1, lon1) geographical limits
+        
+        Note:
+            The underlying C function returns:
+            - 0 for failure (NULL reference or error)
+            - 1 for success
         """
         lat0 = ctypes.c_double(0.0)
         lon0 = ctypes.c_double(0.0)
@@ -80,10 +86,9 @@ class GeoRef:
             ctypes.byref(lat1),
             ctypes.byref(lon1)
         )
-        if result != 0:
-            raise GeoRefError(f"Failure in C function GeoRef_Limits :{result}")
-        return (float(lat0.value), float(lon0.value), 
-                float(lat1.value), float(lon1.value))
+        if result == 0:
+            raise GeoRefError(f"Failure in C function GeoRef_Limits: {result}")
+        return (lat0.value, lon0.value, lat1.value, lon1.value)
 
     # INT32_T GeoRef_Valid(TGeoRef *Ref)
     def valid(self) -> bool:
@@ -94,8 +99,13 @@ class GeoRef:
 
         Returns:
             bool: True if the georef is valid and initialized, False otherwise
+
+        Note:
+            The underlying C function returns:
+            - 0 for invalid/uninitialized reference
+            - 1 for valid reference
         """
-        return bool(_valid(self.ptr))
+        return bool(_valid(self._ptr))
 
     def __del__(self):
         if hasattr(self, '_ptr'):
@@ -117,8 +127,10 @@ class GeoRef:
         Returns:
             bool: True if interpolation succeeded, False otherwise
 
-        Raises:
-            TypeError: If input/output arrays are not float32 numpy arrays
+        Note:
+            The underlying C function returns:
+            - GEOREF_SUCCESS (0) for successful interpolation
+            - Non-zero value for failure
         """
         if not isinstance(zin, numpy.ndarray) or not isinstance(zout, numpy.ndarray):
             raise TypeError("Input and output must be numpy arrays")
@@ -128,9 +140,9 @@ class GeoRef:
 
         opt_ptr = ctypes.c_void_p(None)
         if options is not None:
-            opt_ptr = options.ptr
+            opt_ptr = ctypes.byref(options)
 
-        return bool(_interp(self.ptr, reffrom.ptr, opt_ptr, zout, zin) == GEOREF_SUCCESS)
+        return _interp(self._ptr, reffrom._ptr, opt_ptr, zout, zin) == GEOREF_SUCCESS
 
     def copy(self, hard=False):
         """Create a copy of the current georef object.
@@ -151,14 +163,18 @@ class GeoRef:
             - GeoRef_Copy() for hard=True
             - GeoRef_HardCopy() for hard=False
         """
-        out = GeoRef(self._ptr.contents.ni, self._ptr.contents.nj, self._ptr.contents.grtyp,
-                     self._ptr.contents.ig1, self._ptr.contents.ig2, self._ptr.contents.ig3,
-                     self._ptr.contents.ig4, self._ptr.contents.fst_file)
+        # out = GeoRef(self._ptr.contents.ni, self._ptr.contents.nj, self._ptr.contents.grtyp,
+        #              self._ptr.contents.ig1, self._ptr.contents.ig2, self._ptr.contents.ig3,
+        #              self._ptr.contents.ig4, self._ptr.contents.fst_file)
+    
         if hard:
-            out._ptr = _copy(self._ptr)
+            return self
         else:
+            out = GeoRef.__new__() # WITHOUT CALLING INIT
             out._ptr = _hardcopy(self._ptr)
-        return out
+            if not out._ptr or out._ptr.contents is None:
+                raise GeoRefError("Failure in C function GeoRef_HardCopy: NULL pointer returned")
+            return out
 
     # int32_t georef_equal(const georef_t *ref1, const georef_t *ref2)
     def equal(self, other):
@@ -174,10 +190,11 @@ class GeoRef:
             bool: True if the georef objects are equal, False otherwise.
 
         Note:
-            The underlying C function returns an int32_t where 1 indicates equality
-            and 0 indicates inequality.
+            The underlying C function returns:
+            - 0 for inequality or error (NULL references)
+            - 1 for equality
         """
-        val = _equal(self.ptr, other.ptr)
+        val = _equal(self._ptr, other._ptr)
         return val == 1
 
     # INT32_T GeoRef_Within(const GeoRef_t *ref1, const GeoRef_t *ref2)
@@ -195,10 +212,11 @@ class GeoRef:
                   False otherwise.
 
         Note:
-            The underlying C function returns an INT32_T where 1 indicates containment
-            and 0 indicates non-containment.
+            The underlying C function returns:
+            - 0 for non-containment or error (NULL references)
+            - 1 for containment
         """
-        val = _within(self.ptr, other.ptr)
+        val = _within(self._ptr, other._ptr)
         return val == 1
     
     # INT32_T GeoRef_WithinRange(const GeoRef_t *ref, double lat0, double lon0, double lat1, double lon1, INT32_T in)
@@ -220,15 +238,16 @@ class GeoRef:
                   False otherwise.
 
         Note:
-            The underlying C function returns an INT32_T where 1 indicates within range
-            and 0 indicates outside range.
+            The underlying C function returns:
+            - 0 for outside range or error (NULL reference)
+            - 1 for within range
         """
         cin = 1 if inside else 0
-        val = _withinrange(self.ptr, lat0, lon0, lat1, lon1, cin)
+        val = _withinrange(self._ptr, lat0, lon0, lat1, lon1, cin)
         return val == 1
 
     # INT32_T GeoRef_Intersect(const GeoRef_t *ref1, const GeoRef_t *ref2, INT32_T *x0, INT32_T *y0, INT32_T *x1, INT32_T *y1, INT32_T bd)
-    def intersect(self, other, boundary=False):
+    def intersect(self, other, boundary=False) -> Tuple[bool, Tuple[int, int, int, int]]:
         """Check if two georef objects intersect and get intersection coordinates.
 
         This method wraps the libgeoref function GeoRef_Intersect() found in src/GeoRef.C
@@ -246,8 +265,9 @@ class GeoRef:
                                             Returns (0, 0, 0, 0) if no intersection.
 
         Note:
-            The underlying C function returns an INT32_T where 1 indicates intersection
-            and 0 indicates no intersection.
+            The underlying C function returns:
+            - 0 for no intersection or error (NULL references)
+            - 1 for intersection found
         """
         x0 = ctypes.c_int32()
         y0 = ctypes.c_int32()
@@ -255,8 +275,8 @@ class GeoRef:
         y1 = ctypes.c_int32()
         bd_val = 1 if boundary else 0
         
-        val = _intersect(self.ptr, 
-                         other.ptr, 
+        val = _intersect(self._ptr, 
+                         other._ptr, 
                          ctypes.byref(x0), 
                          ctypes.byref(y0), 
                          ctypes.byref(x1), 
@@ -286,16 +306,18 @@ class GeoRef:
                                                     Returns (0.0, 0.0, 0.0, 0.0) if calculation fails.
 
         Note:
-            The underlying C function returns an INT32_T where 1 indicates success
-            and 0 indicates failure.
+            The underlying C function returns:
+            - 0 for failure (NULL reference or calculation error)
+            - 1 for successful calculation
         """
         i0 = ctypes.c_double()
         j0 = ctypes.c_double()
         i1 = ctypes.c_double()
         j1 = ctypes.c_double()
         
-        val = _boundingbox(self.ptr, lat0, lon0, lat1, lon1,
-                           ctypes.byref(i0), ctypes.byref(j0), ctypes.byref(i1), ctypes.byref(j1))
+        val = _boundingbox(self._ptr, lat0, lon0, lat1, lon1,
+                           ctypes.byref(i0), ctypes.byref(j0), 
+                           ctypes.byref(i1), ctypes.byref(j1))
         
         return (val == 1, (i0.value, j0.value, i1.value, j1.value))
 
@@ -315,11 +337,12 @@ class GeoRef:
             bool: True if writing succeeded, False otherwise.
 
         Note:
-            The underlying C function returns an INT32_T where 1 indicates success
-            and 0 indicates failure.
+            The underlying C function returns:
+            - 0 for failure (NULL references or write error)
+            - 1 for successful write operation
         """
         name_str = (name + '\0').encode('utf-8') if name else b'\0'
-        val = _write(self.ptr, name_str, file.get_c_ptr())
+        val = _write(self._ptr, name_str, file)
         return val == 1
 
     # TGeoRef* GeoRef_CreateFromRecord(fst_record_t *Rec)
@@ -336,11 +359,12 @@ class GeoRef:
             bool: True if creation succeeded, False otherwise.
 
         Note:
-            This method modifies the current georef instance by updating its internal pointer.
-            The underlying C function returns a GeoRef_t* pointer, which is NULL on failure.
+            The underlying C function returns:
+            - NULL pointer (0) for failure
+            - Valid GeoRef pointer (non-zero) for success
         """
-        self.ptr = _createfromrecord(record.get_c_ptr())
-        return bool(ctypes.cast(self.ptr, ctypes.c_void_p).value is not None)
+        self._ptr = _createfromrecord(ctypes.byref(record))
+        return bool(ctypes.cast(self._ptr, ctypes.c_void_p).value is not None)
 
     # INT32_T GeoRef_InterpUV(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt,
     #                         float *uuout, float *vvout, const float *uuin, const float *vvin)
@@ -362,15 +386,16 @@ class GeoRef:
                                                       Arrays are float32 type.
 
         Note:
-            The underlying C function returns an INT32_T where 1 indicates success
-            and 0 indicates failure.
+            The underlying C function returns:
+            - 0 for failure (NULL references or interpolation error)
+            - 1 for successful interpolation
         """
         uu_out = numpy.empty_like(uu_in, dtype=numpy.float32)
         vv_out = numpy.empty_like(vv_in, dtype=numpy.float32)
         
-        opt_ptr = options.ptr if options is not None else GeoOptions
+        opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
         
-        val = _interpuv(self.ptr, ref_from.ptr, opt_ptr,
+        val = _interpuv(self._ptr, ref_from._ptr, opt_ptr,
                                  uu_out, vv_out, uu_in, vv_in)
         
         return (val == 1, (uu_out, vv_out))
@@ -397,15 +422,16 @@ class GeoRef:
                                                       Arrays are float32 type.
 
         Note:
-            The underlying C function returns an INT32_T where 1 indicates success
-            and 0 indicates failure.
+            The underlying C function returns:
+            - 0 for failure (NULL references or interpolation error)
+            - 1 for successful interpolation
         """
         uu_out = numpy.empty_like(uu_in, dtype=numpy.float32)
         vv_out = numpy.empty_like(vv_in, dtype=numpy.float32)
         
-        opt_ptr = options.ptr if options is not None else GeoOptions
+        opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
         
-        val = _interpwd(self.ptr, ref_from.ptr, opt_ptr,
+        val = _interpwd(self._ptr, ctypes.c_void_p, opt_ptr,
                                  uu_out, vv_out, uu_in, vv_in)
         
         return (val == 1, (uu_out, vv_out))
@@ -429,15 +455,20 @@ class GeoRef:
                 - bool: True if conversion succeeded, False otherwise
                 - tuple[numpy.ndarray, numpy.ndarray]: The converted (speed, direction) arrays.
                                                       Arrays are float32 type.
+
+        Note:
+            The underlying C function returns:
+            - 0 for success
+            - Non-zero for failure (NULL references or conversion error)
         """
         npts = len(uu_in)
         spd_out = numpy.empty_like(uu_in, dtype=numpy.float32)
         wd_out = numpy.empty_like(vv_in, dtype=numpy.float32)
         
-        val = _ud2wd(self.ptr, spd_out, wd_out, uu_in, vv_in, 
+        val = _ud2wd(self._ptr, spd_out, wd_out, uu_in, vv_in, 
                               lat, lon, ctypes.c_int32(npts))
         
-        return (val == 0, (spd_out, wd_out))  # Note: C function returns 0 for success
+        return (val == 0, (spd_out, wd_out))
 
     # INT32_T GeoRef_WD2UV(TGeoRef *Ref, float *uugdout, float *vvgdout, 
     #                      const float *uullin, const float *vvllin,
@@ -460,13 +491,15 @@ class GeoRef:
                                                       Arrays are float32 type.
 
         Note:
-            The underlying C function returns 0 for success and -1 for failure.
+            The underlying C function returns:
+            - 0 for success
+            - Non-zero for failure (NULL references or conversion error)
         """
         npts = len(spd_in)
         uu_out = numpy.empty_like(spd_in, dtype=numpy.float32)
         vv_out = numpy.empty_like(dir_in, dtype=numpy.float32)
         
-        val = _wd2uv(self.ptr, uu_out, vv_out, spd_in, dir_in,
+        val = _wd2uv(self._ptr, uu_out, vv_out, spd_in, dir_in,
                               lat, lon, ctypes.c_int32(npts))
         
         return (val == 0, (uu_out, vv_out))
@@ -492,15 +525,20 @@ class GeoRef:
                 - bool: True if conversion succeeded, False otherwise
                 - tuple[numpy.ndarray, numpy.ndarray]: The converted (U, V) component arrays.
                                                     Arrays are float32 type.
+
+        Note:
+            The underlying C function returns:
+            - 0 for failure (NULL references or conversion error)
+            - 1 for successful conversion
         """
         npts = len(uu_in)
         uu_out = numpy.empty_like(uu_in, dtype=numpy.float32)
         vv_out = numpy.empty_like(vv_in, dtype=numpy.float32)
         
-        val = _uv2uv(self.ptr, uu_out, vv_out, uu_in, vv_in,
+        val = _uv2uv(self._ptr, uu_out, vv_out, uu_in, vv_in,
                             lat, lon, ctypes.c_int32(npts))
         
-        return (val == 1, (uu_out, vv_out))  # Note: C function returns TRUE (1) for success
+        return (val == 1, (uu_out, vv_out))
 
     # INT32_T GeoRef_LLWDVal(TGeoRef *Ref, TGeoOptions *Opt, float *uuout, float *vvout,
     #                        const float *uuin, const float *vvin,
@@ -523,17 +561,22 @@ class GeoRef:
                 - bool: True if interpolation succeeded, False otherwise
                 - tuple[numpy.ndarray, numpy.ndarray]: The interpolated (speed, direction) arrays.
                                                       Arrays are float32 type.
+
+        Note:
+            The underlying C function returns:
+            - 0 for success
+            - Non-zero for failure (NULL references or interpolation error)
         """
         npts = len(lat)
         spd_out = numpy.empty_like(uu_in, dtype=numpy.float32)
         dir_out = numpy.empty_like(vv_in, dtype=numpy.float32)
         
-        opt_ptr = options.ptr if options is not None else GeoOptions
+        opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
         
-        val = _llwdval(self.ptr, opt_ptr, spd_out, dir_out, 
+        val = _llwdval(self._ptr, opt_ptr, spd_out, dir_out, 
                                 uu_in, vv_in, lat, lon, ctypes.c_int32(npts))
         
-        return (val == 0, (spd_out, dir_out))  # Note: C function returns 0 for success
+        return (val == 0, (spd_out, dir_out))
 
     # INT32_T GeoRef_LLUVVal(TGeoRef *Ref, TGeoOptions *Opt, float *uuout, float *vvout,
     #                        const float *uuin, const float *vvin,
@@ -556,17 +599,22 @@ class GeoRef:
                 - bool: True if interpolation succeeded, False otherwise
                 - tuple[numpy.ndarray, numpy.ndarray]: The interpolated (U, V) arrays.
                                                       Arrays are float32 type.
+
+        Note:
+            The underlying C function returns:
+            - 0 for success
+            - Non-zero for failure (NULL references or interpolation error)
         """
         npts = len(lat)
         uu_out = numpy.empty_like(uu_in, dtype=numpy.float32)
         vv_out = numpy.empty_like(vv_in, dtype=numpy.float32)
         
-        opt_ptr = options.ptr if options is not None else GeoOptions
+        opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
         
-        val = _lluvval(self.ptr, opt_ptr, uu_out, vv_out,
+        val = _lluvval(self._ptr, opt_ptr, uu_out, vv_out,
                                 uu_in, vv_in, lat, lon, ctypes.c_int32(npts))
         
-        return (val == 0, (uu_out, vv_out))  # Note: C function returns 0 for success
+        return (val == 0, (uu_out, vv_out))
 
     # INT32_T GeoRef_LLVal(TGeoRef *Ref, TGeoOptions *Opt, float *zout, float *zin,
     #                      const double *Lat, const double *Lon, INT32_T Nb)
@@ -586,16 +634,21 @@ class GeoRef:
             tuple[bool, numpy.ndarray]: A tuple containing:
                 - bool: True if interpolation succeeded, False otherwise
                 - numpy.ndarray: The interpolated values array (float32)
+
+        Note:
+            The underlying C function returns:
+            - 0 for success
+            - Non-zero for failure (NULL references or interpolation error)
         """
         npts = len(lat)
         z_out = numpy.empty_like(z_in, dtype=numpy.float32)
         
-        opt_ptr = options.ptr if options is not None else GeoOptions
+        opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
         
-        val = _llval(self.ptr, opt_ptr, z_out, z_in,
+        val = _llval(self._ptr, opt_ptr, z_out, z_in,
                               lat, lon, ctypes.c_int32(npts))
         
-        return (val == 0, z_out)  # Note: C function returns 0 for success
+        return (val == 0, z_out)
 
     # INT32_T GeoRef_XYWDVal(TGeoRef *Ref, TGeoOptions *Opt, float *uuout, float *vvout,
     #                        const float *uuin, const float *vvin,
@@ -623,9 +676,9 @@ class GeoRef:
         spd_out = numpy.empty_like(uu_in, dtype=numpy.float32)
         dir_out = numpy.empty_like(vv_in, dtype=numpy.float32)
         
-        opt_ptr = options.ptr if options is not None else GeoOptions
+        opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
         
-        val = _xywdval(self.ptr, opt_ptr, spd_out, dir_out,
+        val = _xywdval(self._ptr, opt_ptr, spd_out, dir_out,
                                 uu_in, vv_in, x, y, ctypes.c_int32(npts))
         
         return (val == 0, (spd_out, dir_out))  # Note: C function returns 0 for success
@@ -656,9 +709,9 @@ class GeoRef:
         uu_out = numpy.empty_like(uu_in, dtype=numpy.float32)
         vv_out = numpy.empty_like(vv_in, dtype=numpy.float32)
         
-        opt_ptr = options.ptr if options is not None else GeoOptions
+        opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
         
-        val = _xyuvval(self.ptr, opt_ptr, uu_out, vv_out,
+        val = _xyuvval(self._ptr, opt_ptr, uu_out, vv_out,
                                 uu_in, vv_in, x, y, ctypes.c_int32(npts))
         
         return (val == 0, (uu_out, vv_out))  # Note: C function returns 0 for success
@@ -685,9 +738,9 @@ class GeoRef:
         npts = len(x)
         z_out = numpy.empty_like(z_in, dtype=numpy.float32)
         
-        opt_ptr = options.ptr if options is not None else GeoOptions
+        opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
         
-        val = _xyval(self.ptr, opt_ptr, z_out, z_in,
+        val = _xyval(self._ptr, opt_ptr, z_out, z_in,
                               x, y, ctypes.c_int32(npts))
         
         return (val == 0, z_out)  # Note: C function returns 0 for success
@@ -711,15 +764,21 @@ class GeoRef:
                 - bool: True if all points were converted successfully, False otherwise
                 - tuple[numpy.ndarray, numpy.ndarray]: The converted (X, Y) coordinate arrays.
                                                       Arrays are float64 type.
+
+        Note:
+            The underlying C function returns:
+            - The number of successfully converted points (should equal input size for full success)
+            - Less than input size indicates partial failure
+            - 0 or negative value indicates complete failure
         """
         npts = len(lat)
         x_out = numpy.empty_like(lat, dtype=numpy.float64)
         y_out = numpy.empty_like(lon, dtype=numpy.float64)
         
-        val = _ll2xy(self.ptr, x_out, y_out, lat, lon,
+        val = _ll2xy(self._ptr, x_out, y_out, lat, lon,
                               ctypes.c_int32(npts), ctypes.c_int32(extrapolate))
         
-        return (val == npts, (x_out, y_out))  # Note: Returns count of valid conversions
+        return (val == npts, (x_out, y_out))
 
     # INT32_T GeoRef_XY2LL(TGeoRef *Ref, double *Lat, double *Lon, double *X, double *Y,
     #                      INT32_T Nb, INT32_T Extrap)
@@ -741,15 +800,21 @@ class GeoRef:
                 - tuple[numpy.ndarray, numpy.ndarray]: The converted (lat, lon) arrays.
                                                       Arrays are float64 type.
                                                       Invalid points set to -999.0 if not extrapolating.
+
+        Note:
+            The underlying C function returns:
+            - The number of successfully converted points (should equal input size for full success)
+            - Less than input size indicates partial failure
+            - 0 or negative value indicates complete failure
         """
         npts = len(x)
         lat_out = numpy.empty_like(x, dtype=numpy.float64)
         lon_out = numpy.empty_like(y, dtype=numpy.float64)
         
-        val = _xy2ll(self.ptr, lat_out, lon_out, x, y,
+        val = _xy2ll(self._ptr, lat_out, lon_out, x, y,
                               ctypes.c_int32(npts), ctypes.c_int32(extrapolate))
         
-        return (val == npts, (lat_out, lon_out))  # Note: Returns count of valid conversions
+        return (val == npts, (lat_out, lon_out))
 
     # double GeoRef_XYDistance(TGeoRef *Ref, double X0, double Y0, double X1, double Y1)
     def xydistance(self, x0, y0, x1, y1) -> float:
@@ -767,7 +832,7 @@ class GeoRef:
         Returns:
             float: Distance in meters between the two points
         """
-        return _xydistance(self.ptr, 
+        return _xydistance(self._ptr, 
                                     ctypes.c_double(x0), ctypes.c_double(y0),
                                     ctypes.c_double(x1), ctypes.c_double(y1))
 
@@ -788,9 +853,9 @@ class GeoRef:
         Returns:
             float: Great circle distance in meters
         """
-        return float(_lldistance(self.ptr,
-                                    ctypes.c_double(lat0), ctypes.c_double(lon0),
-                                    ctypes.c_double(lat1), ctypes.c_double(lon1)))
+        return _lldistance(self._ptr,
+                                ctypes.c_double(lat0), ctypes.c_double(lon0),
+                                ctypes.c_double(lat1), ctypes.c_double(lon1))
 
     # INT32_T GeoRef_GetLL(TGeoRef *Ref, double *Lat, double *Lon)
     def getll(self):
@@ -810,8 +875,165 @@ class GeoRef:
         lat = numpy.empty(npts, dtype=numpy.float64)
         lon = numpy.empty(npts, dtype=numpy.float64)
         
-        val = _getll(self.ptr, lat, lon)
+        val = _getll(self._ptr, lat, lon)
         
         return (val >= 0, (lat, lon))  # Note: Returns -1 on error, number of points otherwise
-
     
+    def __repr__(self):
+        # Ideally we can implement a __repr__ that will be used by the IPython shell like the cartopy.CRS.__repr__
+        # get_crs dans https://github.com/neishm/fstd2nc/blob/master/fstd2nc/extra.py
+        # _repr_html_ dans https://github.com/SciTools/cartopy/blob/main/lib/cartopy/crs.py
+        params = [
+            f"ni={self._ptr.contents.ni}",
+            f"nj={self._ptr.contents.nj}",
+            f"grtyp='{self._ptr.contents.grtyp.decode()}'",
+            f"ig1={self._ptr.contents.ig1}",
+            f"ig2={self._ptr.contents.ig2}", 
+            f"ig3={self._ptr.contents.ig3}",
+            f"ig4={self._ptr.contents.ig4}",
+            f"fst_file={self._ptr.contents.fst_file}"
+        ]
+        return "GeoRef(\n    " + ",\n    ".join(params) + "\n)"
+    
+    def to_crs(self):
+        """Generate a cartopy CRS object for the GeoRef grid.
+        
+        Returns:
+            cartopy.crs.Projection: The corresponding cartopy projection,
+                                or None if the grid type is not supported.
+                                
+        Raises:
+            ImportError: If cartopy is not installed
+        """
+        try:
+            import cartopy.crs as ccrs
+            from math import asin, pi
+        except ImportError:
+            raise ImportError(
+                "The cartopy package is required for CRS conversion. "
+                "Please install it using:\n"
+                "    pip install cartopy\n"
+                "or:\n"
+                "    conda install cartopy"
+            )
+        
+        # Get grid type
+        grtyp = self._ptr.contents.grtyp.decode()
+        
+        # Define the spherical globe (RPN standard radius)
+        radius = 6.371e6  # meters
+        globe = ccrs.Globe(ellipse="sphere", 
+                        semimajor_axis=radius,
+                        semiminor_axis=radius)
+
+        if grtyp == 'L':  # lat-lon grid
+            return ccrs.PlateCarree(globe=globe)
+            
+        elif grtyp == 'N':  # Global lat-lon grid
+            return ccrs.PlateCarree(globe=globe)
+            
+        elif grtyp == 'S':  # Polar stereographic
+            # Extract parameters
+            xlat1 = self._ptr.contents.ig1 / 100.0  # Reference latitude
+            xlon1 = self._ptr.contents.ig2 / 100.0  # Reference longitude
+            xlat2 = self._ptr.contents.ig3 / 100.0  # Second reference latitude
+            
+            return ccrs.Stereographic(
+                central_latitude=xlat1,
+                central_longitude=xlon1,
+                true_scale_latitude=xlat2,
+                globe=globe
+            )
+            
+        elif grtyp == 'U':  # Universal Polar Stereographic
+            hemisphere = 'north' if self._ptr.contents.ig1 == 1 else 'south'
+            return ccrs.NorthPolarStereo(globe=globe) if hemisphere == 'north' \
+                else ccrs.SouthPolarStereo(globe=globe)
+                
+        elif grtyp == 'E':  # Rotated lat-lon
+            # Extract parameters
+            xlat1 = self._ptr.contents.ig1 / 100.0  # Rotation pole latitude
+            xlon1 = self._ptr.contents.ig2 / 100.0  # Rotation pole longitude
+            angle = self._ptr.contents.ig3 / 100.0   # Rotation angle
+            
+            return ccrs.RotatedPole(
+                pole_latitude=xlat1,
+                pole_longitude=xlon1,
+                central_rotated_longitude=angle,
+                globe=globe
+            )
+            
+        # Add other grid types as needed
+        
+        return None
+
+    # class or static method ?
+    def from_crs(self, crs, ni, nj, fst_file=None):
+        """Create a GeoRef from a cartopy CRS object.
+        
+        Args:
+            crs: cartopy.crs.Projection object
+            ni (int): Number of points in x direction
+            nj (int): Number of points in y direction
+            fst_file: Optional FST file reference. Defaults to None.
+            
+        Returns:
+            GeoRef: A new GeoRef instance configured to match the CRS
+            
+        Raises:
+            ImportError: If cartopy is not installed
+            ValueError: If the CRS type is not supported
+        """
+        try:
+            import cartopy.crs as ccrs
+        except ImportError:
+            raise ImportError(
+                "The cartopy package is required for CRS conversion. "
+                "Please install it using:\n"
+                "    pip install cartopy\n"
+                "or:\n"
+                "    conda install cartopy"
+            )
+
+        # Helper function to convert float to RPN integer encoding
+        def to_rpn_int(value):
+            return int(value * 100)
+
+        if isinstance(crs, ccrs.PlateCarree):
+            # Regular lat-lon grid
+            return cls(ni=ni, nj=nj, grtyp='L', 
+                    ig1=0, ig2=0, ig3=0, ig4=0,
+                    fst_file=fst_file)
+
+        elif isinstance(crs, ccrs.Stereographic):
+            # Polar stereographic
+            return cls(ni=ni, nj=nj, grtyp='S',
+                    ig1=to_rpn_int(crs.central_latitude),
+                    ig2=to_rpn_int(crs.central_longitude),
+                    ig3=to_rpn_int(crs.true_scale_latitude),
+                    ig4=0,
+                    fst_file=fst_file)
+
+        elif isinstance(crs, (ccrs.NorthPolarStereo, ccrs.SouthPolarStereo)):
+            # Universal Polar Stereographic
+            is_north = isinstance(crs, ccrs.NorthPolarStereo)
+            return cls(ni=ni, nj=nj, grtyp='U',
+                    ig1=1 if is_north else 2,  # 1 for North, 2 for South
+                    ig2=0, ig3=0, ig4=0,
+                    fst_file=fst_file)
+
+        elif isinstance(crs, ccrs.RotatedPole):
+            # Rotated lat-lon grid
+            return cls(ni=ni, nj=nj, grtyp='E',
+                    ig1=to_rpn_int(crs.pole_latitude),
+                    ig2=to_rpn_int(crs.pole_longitude),
+                    ig3=to_rpn_int(crs.central_rotated_longitude),
+                    ig4=0,
+                    fst_file=fst_file)
+
+        else:
+            raise ValueError(
+                f"Unsupported CRS type: {type(crs)}. "
+                "Supported types are: PlateCarree, Stereographic, "
+                "NorthPolarStereo, SouthPolarStereo, and RotatedPole"
+            )
