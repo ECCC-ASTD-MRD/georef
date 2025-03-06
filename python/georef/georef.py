@@ -40,6 +40,7 @@ from ._georef_c_bindings import (
     _def_create,
     _geoset_writefst,
     _geoset_readfst,
+    _new
 )
 
 class GeoDef:
@@ -248,18 +249,17 @@ class GeoRef:
             - GeoRef_Copy() for hard=True
             - GeoRef_HardCopy() for hard=False
         """
-        # out = GeoRef(self._ptr.contents.ni, self._ptr.contents.nj, self._ptr.contents.grtyp,
-        #              self._ptr.contents.ig1, self._ptr.contents.ig2, self._ptr.contents.ig3,
-        #              self._ptr.contents.ig4, self._ptr.contents.fst_file)
-    
+        out = _new() # Ask Mr. Carphin
+        
         if hard:
-            return self
-        else:
-            out = GeoRef.__new__() # WITHOUT CALLING INIT
             out._ptr = _hardcopy(self._ptr)
-            if not out._ptr or out._ptr.contents is None:
-                raise GeoRefError("Failure in C function GeoRef_HardCopy: NULL pointer returned")
-            return out
+        else:
+            out._ptr = _copy(self._ptr)
+            
+        if not out._ptr or out._ptr.contents is None:
+            raise GeoRefError("Failed to copy GeoRef: NULL pointer returned")
+            
+        return out
 
     # int32_t georef_equal(const georef_t *ref1, const georef_t *ref2)
     def equal(self, other):
