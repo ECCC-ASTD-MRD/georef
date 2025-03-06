@@ -9,6 +9,19 @@ module georef_mod
 
     enum, bind(C)
         enumerator :: &
+            TD_Unknown = 0,  &
+            TD_Binary  = 1,  &
+            TD_UByte   = 2,  &
+            TD_Byte    = 3,  &
+            TD_UInt16  = 4,  &
+            TD_Int16   = 5,  &
+            TD_UInt32  = 6,  &
+            TD_Int32   = 7,  &
+            TD_UInt64  = 8,  &
+            TD_Int64   = 9,  &
+            TD_Float32 = 10, &
+            TD_Float64 = 11
+        enumerator :: &
             IR_UNDEF                          = 0, &
             IR_NEAREST                        = 1, &
             IR_LINEAR                         = 2, &
@@ -28,27 +41,25 @@ module georef_mod
             IR_ACCUM                          = 16, &
             IR_BUFFER                         = 17, &
             IR_SUBNEAREST                     = 18, &
-            IR_SUBLINEAR                      = 19
+            IR_SUBLINEAR                      = 19, &
+            IV_FAST                           = 20, &
+            IV_WITHIN                         = 21, &
+            IV_INTERSECT                      = 22, &
+            IV_CENTROID                       = 23, &
+            IV_ALIASED                        = 24, &
+            IV_CONSERVATIVE                   = 25, &
+            IV_NORMALIZED_CONSERVATIVE        = 26, &
+            IV_POINT_CONSERVATIVE             = 27, &
+            IV_LENGTH_CONSERVATIVE            = 28, &
+            IV_LENGTH_NORMALIZED_CONSERVATIVE = 39, &
+            IV_LENGTH_ALIASED                 = 30
         enumerator :: &
             ER_UNDEF   = 0, &
             ER_MAXIMUM = 1, &
             ER_MINIMUM = 2, &
             ER_VALUE   = 3, &
             ER_ABORT   = 4
-        enumerator :: &
-            IV_UNDEF                          = 0, &
-            IV_FAST                           = 1, &
-            IV_WITHIN                         = 2, &
-            IV_INTERSECT                      = 3, &
-            IV_CENTROID                       = 4, &
-            IV_ALIASED                        = 5, &
-            IV_CONSERVATIVE                   = 6, &
-            IV_NORMALIZED_CONSERVATIVE        = 7, &
-            IV_POINT_CONSERVATIVE             = 8, &
-            IV_LENGTH_CONSERVATIVE            = 9, &
-            IV_LENGTH_NORMALIZED_CONSERVATIVE = 10, &
-            IV_LENGTH_ALIASED                 = 11
-        enumerator :: &
+         enumerator :: &
             CB_REPLACE   = 0, &
             CB_MIN       = 1, &
             CB_MAX       = 2, &
@@ -56,11 +67,31 @@ module georef_mod
             CB_AVERAGE   = 4
     end enum
 
+    type :: geodef
+        private
+        type(C_PTR) :: ptr = c_null_ptr ! Pointer to C control structure
+    contains
+        procedure, pass   :: init => geodef_init_f
+    end type geodef
+
+    type :: geoset
+        private
+        type(C_PTR) :: ptr = c_null_ptr ! Pointer to C control structure
+    contains
+        procedure, pass   :: writefst => geoset_writefst_f
+        procedure, pass   :: readfst => geoset_readfst_f
+    end type geoset
+
     type :: georef
         private
         type(C_PTR) :: ptr = c_null_ptr ! Pointer to C control structure
     contains
         procedure, pass   :: init => georef_init_f
+        procedure, pass   :: fromrecord => georef_fromrecord_f
+        procedure, pass   :: create => georef_create_f
+        procedure, pass   :: createu => georef_createu_f
+        procedure, pass   :: creater => georef_creater_f
+        procedure, pass   :: createw => georef_createw_f
         procedure, pass   :: copy => georef_copy_f
         procedure, pass   :: valid => georef_valid_f
         procedure, pass   :: equal => georef_equal_f
@@ -69,9 +100,11 @@ module georef_mod
         procedure, pass   :: intersect => georef_intersect_f
         procedure, pass   :: limits => georef_limits_f
         procedure, pass   :: boundingbox => georef_boundingbox_f
-        procedure, pass   :: write => georef_write_f
-        procedure, pass   :: fromrecord => georef_fromrecord_f
+        procedure, pass   :: nearest => georef_nearest_f
+        procedure, pass   :: getcelldims => georef_celldims_f
+        procedure, pass   :: writefst => georef_writefst_f
         procedure, pass   :: interp => georef_interp_f
+        procedure, pass   :: interpdef => georef_interpdef_f
         procedure, pass   :: interpuv => georef_interpuv_f
         procedure, pass   :: interpwd => georef_interpwd_f
         procedure, pass   :: ud2wd => georef_uv2wd_f
@@ -88,34 +121,35 @@ module georef_mod
         procedure, pass   :: xydistance => georef_xydistance_f
         procedure, pass   :: lldistance => georef_lldistance_f
         procedure, pass   :: getll => georef_getll_f
+        procedure, pass   :: getset => georef_setget_f
         final :: georef_finalize
     end type georef
 
     type, bind(C) :: geooptions
-        integer(C_INT32_T) :: Interp = IR_CUBIC      !< Interpolation degree
-        integer(C_INT32_T) :: Extrap = ER_MAXIMUM    !< Extrapolation method
-        integer(C_INT32_T) :: InterpVector = IV_FAST !< Vector interpolation method
-        integer(C_INT32_T) :: Combine = CB_REPLACE   !< Aggregation type
-        integer(C_INT32_T) :: Transform = 1          !< Apply transformation or stay within master referential
-        integer(C_INT32_T) :: CIndex = 0             !< C Indexing (starts st 0)
-        integer(C_INT32_T) :: Symmetric = 0          !< 
-        integer(C_INT32_T) :: Segment = 1            !< How much segmentation (Conservatives/Geometric modes)
-        integer(C_INT32_T) :: Sampling = 1           !< Sampling interval
-        integer(C_INT8_T)  :: PolarCorrect = 1       !< Apply polar corrections
-        integer(C_INT8_T)  :: VectorMode = 0         !< Process data as vector
-        real(C_FLOAT)      :: DistTreshold = 10.0    !< Distance treshold for point32_t clouds
-        real(C_FLOAT)      :: NoData = 0.0           !< NoData Value (Default: NaN)
-        type(C_PTR) :: Table = c_null_ptr            !< Data table to check of values to check for
-        type(C_PTR) :: lutDef = c_null_ptr           !< Lookup table
-        integer(C_INT32_T) :: lutSize = 0            !< Number of lookup elements
-        integer(C_INT32_T) :: lutDim = 0             !< Dimension of the lookup elements
-        type(C_PTR) :: Ancilliary = c_null_ptr       !< PPre calculated field (ex: variance, average,...)
+        integer(C_INT32_T) :: Interp = IR_CUBIC       !< Interpolation degree
+        integer(C_INT32_T) :: Extrap = ER_MAXIMUM     !< Extrapolation method
+        integer(C_INT32_T) :: Combine = CB_REPLACE    !< Aggregation type
+        integer(C_INT32_T) :: Transform = 1           !< Apply transformation or stay within master referential
+        integer(C_INT32_T) :: CIndex = 0              !< C Indexing (starts st 0)
+        integer(C_INT32_T) :: Symmetric = 0           !< 
+        integer(C_INT32_T) :: Segment = 1             !< How much segmentation (Conservatives/Geometric modes)
+        integer(C_INT32_T) :: Sampling = 1            !< Sampling interval
+        integer(C_INT8_T)  :: PolarCorrect = 1        !< Apply polar corrections
+        integer(C_INT8_T)  :: VectorMode = 0          !< Process data as vector
+        real(C_FLOAT)      :: DistTreshold = 10.0     !< Distance treshold for point32_t clouds
+        real(C_FLOAT)      :: NoData = 0.0            !< NoData Value (Default: NaN)
+        type(C_PTR)        :: Table = c_null_ptr      !< Data table to check of values to check for
+        type(C_PTR)        :: lutDef = c_null_ptr     !< Lookup table
+        integer(C_INT32_T) :: lutSize = 0             !< Number of lookup elements
+        integer(C_INT32_T) :: lutDim = 0              !< Dimension of the lookup elements
+        type(C_PTR)        :: Ancilliary = c_null_ptr !< PPre calculated field (ex: variance, average,...)
     end type geooptions
 
     type(geooptions), target :: georef_options
 
 contains
 
+!!! GeoRef functions
     function georef_init_f(this) result(res)
         implicit none
         class(georef), intent(inout) :: this       !< georef instance
@@ -128,6 +162,64 @@ contains
            res=.true.
         endif
     end function georef_init_f
+
+    function georef_create_f(this,ni,nj,grtyp,ig1,ig2,ig3,ig4,file) result(res)
+        class(georef), intent(inout) :: this       !< georef instance
+        type(fst_file), intent(in) :: file
+        integer(C_INT32_T), intent(in) :: ni,nj,ig1,ig2,ig3,ig4
+        character(len=1), intent(in) :: grtyp
+
+        logical :: res
+
+        res=.false.
+        this%ptr=georef_create(ni,nj,grtyp,ig1,ig2,ig3,ig4,file%get_c_ptr())
+        if (c_associated(this%ptr)) then
+           res=.true.
+        endif
+    end function georef_create_f
+
+    function georef_createu_f(this,ni,nj,grref,vercode,nbsub,subs) result(res)
+        class(georef), intent(inout) :: this       !< georef instance
+        type(georef), dimension(*), intent(in) :: subs
+        integer(C_INT32_T), intent(in) :: ni,nj,vercode,nbsub
+        character(len=1), intent(in) :: grref
+
+        logical :: res
+
+        res=.false.
+!        this%ptr=georef_createu(ni,njni,nj,grref,vercode,nbsub,subs)
+        if (c_associated(this%ptr)) then
+           res=.true.
+        endif
+    end function georef_createu_f
+
+    function georef_creater_f(this,lat,lon,height,r,resr,resa) result(res)
+        class(georef), intent(inout) :: this       !< georef instance
+        real(C_DOUBLE), intent(in) :: lat,lon,height,r,resr,resa
+
+        logical :: res
+
+        res=.false.
+        this%ptr=georef_creater(lat,lon,height,r,resr,resa)
+        if (c_associated(this%ptr)) then
+           res=.true.
+        endif
+    end function georef_creater_f
+
+    function georef_createw_f(this,ni,nj,string,transform,invtransform) result(res)
+        class(georef), intent(inout) :: this       !< georef instance
+        integer(C_INT32_T), intent(in) :: ni,nj
+        real(C_DOUBLE)    , intent(in), dimension(6) :: transform, invtransform
+        character(kind = C_CHAR), dimension(*), intent(in) :: string
+
+        logical :: res
+
+        res=.false.
+        this%ptr=georef_createw(ni,nj,string,transform,invtransform,C_NULL_PTR)
+        if (c_associated(this%ptr)) then
+           res=.true.
+        endif
+    end function georef_createw_f
 
     function georef_valid_f(this) result(res)
         implicit none
@@ -159,14 +251,21 @@ contains
     function georef_copy_f(this,hard) result(out)
         implicit none
         class(georef), intent(inout) :: this       !< georef instance
-        class(georef), allocatable :: out          !< georef instance
-        logical, optional :: hard
+        type(georef) :: out          !< georef instance
+        logical, optional, intent(in) :: hard
+        logical :: lhard
 
-        out=this
+        lhard=.FALSE.
         if (present(hard)) then
-           out%ptr=georef_copy(this%ptr)
-        else
+            if (hard) then
+                lhard=.TRUE.
+            endif
+        endif
+
+        if (lhard) then
            out%ptr=georef_hardcopy(this%ptr)
+        else
+           out%ptr=georef_copy(this%ptr)
         endif
     end function georef_copy_f
 
@@ -206,8 +305,10 @@ contains
 
         res=.false.;
         cin=0;
-        if (present(in) .and. in) then
-           cin=1
+        if (present(in)) then
+           if (in) then
+              cin=1
+            endif
         endif
         val = georef_withinrange(this%ptr,lat0,lon0,lat1,lon1,cin)
         if (val==1) then
@@ -224,8 +325,10 @@ contains
         logical :: res                             !< Whether the georef are intersecting
 
         val=0
-        if (present(bd) .and. bd) then
-           val=1
+        if (present(bd)) then
+           if (bd) then
+              val=1
+            endif
         endif
         val=georef_intersect(this%ptr,ref%ptr,x0,y0,x1,y1,val)
         res=.false.
@@ -263,6 +366,18 @@ contains
         endif
     end function georef_boundingbox_f
 
+    function georef_nearest_f(this,x,y,idxs,dists,nbnear,maxdist) result(out)
+        class(georef),  intent(in) :: this  !< georef instance
+        real(C_DOUBLE), intent(in) :: x,y,maxdist
+        integer(C_INT32_T), intent(in), dimension(:) :: idxs
+        real(C_DOUBLE), intent(in), dimension(:) :: dists
+        integer(C_INT32_T), intent(in), value :: nbnear
+
+        integer(C_INT32_T) :: out
+
+        out=georef_nearest(this%ptr,x,y,idxs,dists,nbnear,maxdist)
+    end function georef_nearest_f
+
     function georef_xydistance_f(this,x0,y0,x1,y1) result(out)
         class(georef),  intent(in) :: this  !< georef instance
         real(C_DOUBLE), intent(in) :: x0,y0,x1,y1
@@ -281,24 +396,43 @@ contains
         out=georef_lldistance(this%ptr,lat0,lon0,lat1,lon1)
     end function georef_lldistance_f
 
-    function georef_write_f(this,file,name) result(res)
+    function georef_writefst_f(this,file,name,ig1,ig2,ig3,ig4) result(res)
         class(georef),  intent(in) :: this  !< georef instance
         character(len=*), intent(in),optional :: name
         type(fst_file), intent(in) :: file
+        integer(C_INT32_T),optional :: ig1,ig2,ig3,ig4
 
-        integer(C_INT32_T) :: val
+        integer(C_INT32_T) :: val,lig1,lig2,lig3,lig4
         logical :: res
+
+        lig1=-1
+        lig2=-1
+        lig3=-1
+        lig4=-1
+        if (present(ig1)) then
+           lig1=ig1
+        endif
+        if (present(ig2)) then
+           lig2=ig2
+        endif
+        if (present(ig3)) then
+           lig3=ig3
+        endif
+        if (present(ig4)) then
+           lig4=ig4
+        endif
 
         res=.false.;
         if (present(name)) then
-           val=georef_write(this%ptr,trim(name)//C_NULL_CHAR,file%get_c_ptr())
+           val=georef_writefst(this%ptr,trim(name)//C_NULL_CHAR,lig1,lig2,lig3,lig4,file%get_c_ptr())
         else 
-           val=georef_write(this%ptr,C_NULL_CHAR,file%get_c_ptr())
+           val=georef_writefst(this%ptr,C_NULL_CHAR,lig1,lig2,lig3,lig4,file%get_c_ptr())
         endif
+        
         if (val==1) then
            res=.true.
         endif
-    end function georef_write_f
+    end function georef_writefst_f
 
     function georef_fromrecord_f(this,rec) result(res)
         class(georef),  intent(inout) :: this  !< georef instance
@@ -322,6 +456,26 @@ contains
         out=georef_getll(this%ptr,lat,lon)
     end function georef_getll_f
 
+    function georef_celldims_f(this,dx,dy,da,invert) result(res)
+        class(georef),  intent(inout) :: this  !< georef instance
+        real(C_FLOAT), intent(in), dimension(:) :: dx,dy,da
+        logical, intent(in), optional :: invert
+
+        integer(C_INT32_T) :: val
+        logical :: res
+
+        res=.false.
+        if (present(invert)) then
+           val=georef_celldims(this%ptr,1,dx,dy,da)
+        else
+           val=georef_celldims(this%ptr,0,dx,dy,da)
+        endif
+
+        if (val==1) then
+           res=.true.
+        endif
+    end function georef_celldims_f
+
     function georef_xy2ll_f(this,lat,lon,x,y,n,extrap) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
         real(C_DOUBLE), dimension(:), intent(in) :: lat,lon
@@ -331,8 +485,10 @@ contains
         integer(C_INT32_T) :: out
 
         c_extrap=0
-        if (present(extrap) .and. extrap) then
-           c_extrap=1
+        if (present(extrap)) then
+            if (extrap) then
+                c_extrap=1
+            endif
         end if
 
         out=georef_xy2ll(this%ptr,lat,lon,x,y,n,c_extrap)
@@ -347,8 +503,10 @@ contains
         integer(C_INT32_T) :: out
 
         c_extrap=0
-        if (present(extrap) .and. extrap) then
-           c_extrap=1
+        if (present(extrap)) then
+            if (extrap) then
+                c_extrap=1
+            endif
         end if
 
         out=georef_ll2xy(this%ptr,x,y,lat,lon,n,c_extrap)
@@ -357,9 +515,9 @@ contains
     function georef_xyval_f(this,zout,zin,x,y,n,opt) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
         type(geooptions), intent(in), target, optional :: opt
-        real(C_FLOAT), intent(in), dimension(*) :: zin
-        real(C_FLOAT), intent(in), dimension(*) :: zout
-        real(C_DOUBLE), intent(in), dimension(*) :: x,y
+        real(C_FLOAT), intent(in), dimension(:) :: zin
+        real(C_FLOAT), intent(in), dimension(:) :: zout
+        real(C_DOUBLE), intent(in), dimension(:) :: x,y
         integer(C_INT32_T) :: n
 
         integer(C_INT32_T) :: out
@@ -374,9 +532,9 @@ contains
     function georef_xyuvval_f(this,uuout,vvout,uuin,vvin,x,y,n,opt) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
         type(geooptions),  intent(in), target, optional :: opt  !< georef instance
-        real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
-        real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
-        real(C_DOUBLE), intent(out), dimension(*) :: x,y
+        real(C_FLOAT), intent(out), dimension(:) :: uuout,vvout
+        real(C_FLOAT), intent(in), dimension(:) :: uuin,vvin
+        real(C_DOUBLE), intent(out), dimension(:) :: x,y
         integer(C_INT32_T) :: n
 
         integer(C_INT32_T) :: out
@@ -391,9 +549,9 @@ contains
     function georef_xywdval_f(this,uuout,vvout,uuin,vvin,x,y,n,opt) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
         type(geooptions),  intent(in), target, optional :: opt  !< georef instance
-        real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
-        real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
-        real(C_DOUBLE), intent(out), dimension(*) :: x,y
+        real(C_FLOAT), intent(out), dimension(:) :: uuout,vvout
+        real(C_FLOAT), intent(in), dimension(:) :: uuin,vvin
+        real(C_DOUBLE), intent(out), dimension(:) :: x,y
         integer(C_INT32_T) :: n
 
         integer(C_INT32_T) :: out
@@ -405,13 +563,12 @@ contains
         endif
     end function georef_xywdval_f
 
-    function georef_llval_f(this,zout,zin,lat,lon,n,opt,rec) result(out)
+    function georef_llval_f(this,zout,zin,lat,lon,n,opt) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
         type(geooptions), intent(in), target, optional :: opt
-        type(fst_record), intent(in), optional :: rec
-        real(C_FLOAT), intent(in), dimension(*) :: zin
-        real(C_FLOAT), intent(in), dimension(*) :: zout
-        real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
+        real(C_FLOAT), intent(in), dimension(:) :: zin
+        real(C_FLOAT), intent(in), dimension(:) :: zout
+        real(C_DOUBLE), intent(in), dimension(:) :: lat,lon
         integer(C_INT32_T) :: n
 
         integer(C_INT32_T) :: out
@@ -426,9 +583,9 @@ contains
     function georef_lluvval_f(this,uuout,vvout,uuin,vvin,lat,lon,n,opt) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
         type(geooptions),  intent(in), target, optional :: opt  !< georef instance
-        real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
-        real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
-        real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
+        real(C_FLOAT), intent(out), dimension(:) :: uuout,vvout
+        real(C_FLOAT), intent(in), dimension(:) :: uuin,vvin
+        real(C_DOUBLE), intent(out), dimension(:) :: lat,lon
         integer(C_INT32_T) :: n
 
         integer(C_INT32_T) :: out
@@ -443,9 +600,9 @@ contains
     function georef_llwdval_f(this,uuout,vvout,uuin,vvin,lat,lon,n,opt) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
         type(geooptions),  intent(in), target, optional :: opt  !< georef instance
-        real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
-        real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
-        real(C_DOUBLE), intent(out), dimension(*) :: lat,lon
+        real(C_FLOAT), intent(out), dimension(:) :: uuout,vvout
+        real(C_FLOAT), intent(in), dimension(:) :: uuin,vvin
+        real(C_DOUBLE), intent(out), dimension(:) :: lat,lon
         integer(C_INT32_T) :: n
 
         integer(C_INT32_T) :: out
@@ -460,8 +617,8 @@ contains
     function georef_interp_f(this,reffrom,zout,zin,opt) result(out)
         class(georef),  intent(inout) :: this,reffrom  !< georef instance
         type(geooptions),  intent(in), target, optional :: opt  !< georef instance
-        real(C_FLOAT), intent(out), dimension(*) :: zout
-        real(C_FLOAT), intent(in), dimension(*) :: zin
+        real(C_FLOAT), intent(out), dimension(:) :: zout
+        real(C_FLOAT), intent(in), dimension(:) :: zin
 
         integer(C_INT32_T) :: out
 
@@ -472,11 +629,32 @@ contains
         endif
     end function georef_interp_f
  
+    function georef_interpdef_f(this,reffrom,defout,defin,opt,final) result(out)
+        class(georef),  intent(inout) :: this,reffrom  !< georef instance
+        type(geodef),  intent(in) :: defout, defin
+        type(geooptions),  intent(in), target, optional :: opt  !< georef instance
+        logical :: final
+
+        integer(C_INT32_T) :: out, ifinal
+
+        if (final) then
+           ifinal=1
+        else
+           ifinal=0
+        endif
+
+        if (present(opt)) then
+           out=georef_interpdef(this%ptr,reffrom%ptr,defout%ptr,defin%ptr,C_LOC(opt),ifinal)
+        else 
+           out=georef_interpdef(this%ptr,reffrom%ptr,defout%ptr,defin%ptr,C_LOC(georef_options),ifinal)
+        endif
+    end function georef_interpdef_f
+
     function georef_interpuv_f(this,reffrom,uuout,vvout,uuin,vvin,opt) result(out)
         class(georef),  intent(inout) :: this,reffrom  !< georef instance
         type(geooptions),  intent(in), target, optional :: opt  !< georef instance
-        real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
-        real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
+        real(C_FLOAT), intent(out), dimension(:) :: uuout,vvout
+        real(C_FLOAT), intent(in), dimension(:) :: uuin,vvin
 
         integer(C_INT32_T) :: out
 
@@ -490,8 +668,8 @@ contains
     function georef_interpwd_f(this,reffrom,uuout,vvout,uuin,vvin,opt) result(out)
         class(georef),  intent(inout) :: this,reffrom  !< georef instance
         type(geooptions),  intent(in), target, optional :: opt  !< georef instance
-        real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
-        real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
+        real(C_FLOAT), intent(out), dimension(:) :: uuout,vvout
+        real(C_FLOAT), intent(in), dimension(:) :: uuin,vvin
 
         integer(C_INT32_T) :: out
 
@@ -504,9 +682,9 @@ contains
 
     function georef_wd2uv_f(this,uuout,vvout,spdin,dirin,lat,lon,npts) result(out)
         class(georef),  intent(inout) :: this !< georef instance
-        real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
-        real(C_FLOAT), intent(in), dimension(*) :: spdin,dirin
-        real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
+        real(C_FLOAT), intent(out), dimension(:) :: uuout,vvout
+        real(C_FLOAT), intent(in), dimension(:) :: spdin,dirin
+        real(C_DOUBLE), intent(in), dimension(:) :: lat,lon
         integer(C_INT32_T) :: npts
 
         integer(C_INT32_T) :: out
@@ -516,9 +694,9 @@ contains
 
     function georef_uv2wd_f(this,spdout,dirout,uuin,vvin,lat,lon,npts) result(out)
         class(georef),  intent(inout) :: this !< georef instance
-        real(C_FLOAT), intent(out), dimension(*) :: spdout,dirout
-        real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
-        real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
+        real(C_FLOAT), intent(out), dimension(:) :: spdout,dirout
+        real(C_FLOAT), intent(in), dimension(:) :: uuin,vvin
+        real(C_DOUBLE), intent(in), dimension(:) :: lat,lon
         integer(C_INT32_T) :: npts
 
         integer(C_INT32_T) :: out
@@ -528,13 +706,71 @@ contains
 
     function georef_uv2uv_f(this,uuout,vvout,uuin,vvin,lat,lon,npts) result(out)
         class(georef),  intent(inout) :: this !< georef instance
-        real(C_FLOAT), intent(out), dimension(*) :: uuout,vvout
-        real(C_FLOAT), intent(in), dimension(*) :: uuin,vvin
-        real(C_DOUBLE), intent(in), dimension(*) :: lat,lon
+        real(C_FLOAT), intent(out), dimension(:) :: uuout,vvout
+        real(C_FLOAT), intent(in), dimension(:) :: uuin,vvin
+        real(C_DOUBLE), intent(in), dimension(:) :: lat,lon
         integer(C_INT32_T) :: npts
 
         integer(C_INT32_T) :: out
 
         out=georef_uv2uv(this%ptr,uuout,vvout,uuin,vvin,lat,lon,npts)
     end function georef_uv2uv_f
+    
+!!! GeoSet functions
+    function georef_setget_f(this,reffrom) result(set)
+        class(georef),  intent(inout) :: this    !< georef instance
+        type(georef), intent(in) :: reffrom
+
+        type(geoset) :: set
+        
+        set%ptr=georef_setget(this%ptr,reffrom%ptr,C_NULL_PTR)
+    end function georef_setget_f
+
+    function geoset_readfst_f(this,refto,reffrom,interp,file) result(res) 
+        class(geoset),  intent(inout) :: this    !< georef instance
+        type(georef), intent(in) :: refto,reffrom
+        type(fst_file), intent(in) :: file
+        integer(C_INT32_T) :: interp
+
+        logical :: res
+
+        res=.false.
+        this%ptr=georef_setreadfst(refto%ptr,reffrom%ptr,interp,file%get_c_ptr())
+        if (c_associated(this%ptr)) then
+           res=.true.
+        endif
+    end function geoset_readfst_f
+
+    function geoset_writefst_f(this,file) result(res)
+        class(geoset),  intent(in) :: this  !< georef instance
+        type(fst_file), intent(in) :: file
+
+        integer(C_INT32_T) :: val
+        logical :: res
+
+        res=.false.
+        val=geoset_writefst(this%ptr,file%get_c_ptr())
+        
+        if (val==1) then
+           res=.true.
+        endif
+    end function geoset_writefst_f
+    
+!!! GeoDef functions
+
+    function geodef_init_f(this,ni,nj,nk,type,comp0,comp1,mask) result(res)
+        class(geodef), intent(inout) :: this  !< geodef instance
+        type(C_PTR), intent(in),target :: comp0,comp1,mask
+        type(C_PTR) :: def 
+        integer(C_INT32_T), value :: ni,nj,nk,type
+
+        logical :: res
+        res=.false.
+        this%ptr=def_create(ni,nj,nk,type,c_loc(comp0),c_loc(comp1),c_loc(mask))
+        if (c_associated(this%ptr)) then
+           res=.true.
+        endif
+
+    end function geodef_init_f
+
 end module georef_mod

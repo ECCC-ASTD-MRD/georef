@@ -6,7 +6,6 @@
  * @date   Avril 2015
  *    @param[in] NI      Dimension en X
  *    @param[in] NJ      Dimension en Y
- *    @param[in] GRTYP   Grid type ('A', 'B', 'E', 'G', 'L', 'N', 'S','Y', 'Z', '#', '!')
  *    @param[in] grref   Reference grid type ('E', 'G', 'L', 'N', 'S')
  *    @param[in] VerCode Version of the grid    
  *    @param[in] NbSub   Number of sub grids
@@ -14,7 +13,7 @@
  *
  *    @return            Georef (NULL=error)
 */
-TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *GRTYP,char *grref,int32_t VerCode,int32_t NbSub,TGeoRef **Subs) {
+TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *grref,int32_t VerCode,int32_t NbSub,TGeoRef **Subs) {
 
    int32_t  i;
    TGeoRef *ref,*fref,*sub_gd;
@@ -33,7 +32,7 @@ TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *GRTYP,char *grref,int32_t Ve
    if (VerCode == 1) {
       sub_gd = Subs[0];
 
-      ref->RPNHead.grtyp[0]=ref->GRTYP[0] = GRTYP[0];
+      ref->RPNHead.grtyp[0]=ref->GRTYP[0] = 'U';
       ref->RPNHeadExt.grref[0] = grref[0];
       ref->NX       = NI;
       ref->NY       = NJ;
@@ -48,6 +47,8 @@ TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *GRTYP,char *grref,int32_t Ve
       ref->RPNHeadExt.igref3=0;
       ref->RPNHeadExt.igref4=0;
       ref->NbSub= NbSub;
+
+      //TODO: Create AXY record
    }
   
    // This georef already exists

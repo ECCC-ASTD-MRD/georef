@@ -6,24 +6,24 @@
 #define APP_NAME "Interpolate"
 #define APP_DESC "ECCC/CMC RPN fstd interpolation tool."
 
-int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket,TRef_InterpR Type) {
+int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket,TRef_Interp Type) {
 
    TGeoRef    *refin=NULL,*refout=NULL;
    fst_record  crit=default_fst_record,truth,grid=default_fst_record,record=default_fst_record;
    fst_file   *fin,*fout,*fgrid,*ftruth;
    int         n=0;
 
-  if ((fin=fst24_open(In,"R/O"))<0) {
+  if (!(fin=fst24_open(In,"R/O"))) {
       App_Log(APP_ERROR,"Problems opening input file %s\n",In);
       return(FALSE);
    }
 
-   if ((fout=fst24_open(Out,"R/W"))<0) {
+   if (!(fout=fst24_open(Out,"R/W"))) {
       App_Log(APP_ERROR,"Problems opening output file %s\n",Out);
       return(FALSE);
    }
 
-   if ((fgrid=fst24_open(Grid,"R/O"))<0) {
+   if (!(fgrid=fst24_open(Grid,"R/O"))) {
       App_Log(APP_ERROR,"Problems opening grid file %s\n",Grid);
       return(FALSE);
    }
@@ -42,7 +42,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    }
 
    if (Truth) {
-      if ((ftruth=fst24_open(Truth,"R/O"))<0) {
+      if (!(ftruth=fst24_open(Truth,"R/O"))) {
          App_Log(APP_ERROR,"Problems opening truth file %s\n",Truth);
          return(FALSE);
       }
@@ -57,7 +57,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    GeoRef_Options.Interp=Type;
 //   GeoRef_Options.NoData=-999.0;
 
-   GeoRef_Write(refout,NULL,fout);
+   GeoRef_WriteFST(refout,NULL,-1,-1,-1,-1,fout);
 
    strncpy(crit.nomvar,Vars[0],FST_NOMVAR_LEN);
    fst_query* query = fst24_new_query(fin,&crit,NULL);
@@ -84,17 +84,15 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    }
 
    // Write index
-//    TGeoSet    *gset=GeoRef_SetGet(refout,refin,NULL);
-   GeoRef_SetGet(refout,refin,NULL);
-/*
+   TGeoSet    *gset=GeoRef_SetGet(refout,refin,NULL);
+//   GeoRef_SetGet(refout,refin,NULL);
    if (GeoRef_SetHasIndex(gset)) {
       App_Log(APP_DEBUG,"Saving index containing %i items\n",gset->IndexSize);
 
-      if (!GeoRef_SetWrite(gset,fout)){
+      if (!GeoRef_SetWriteFST(gset,fout)){
          return(0);
       }
    }
-*/
    fst24_close(fin);
    fst24_close(fout);
    fst24_close(fgrid);
@@ -104,9 +102,9 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 
 int main(int argc, char *argv[]) {
 
-   TRef_InterpR interp=IR_LINEAR;
-   int          ok=0,code=EXIT_FAILURE;
-   char         *etiket=NULL,*in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
+   TRef_Interp interp=IR_LINEAR;
+   int         ok=0,code=EXIT_FAILURE;
+   char        *etiket=NULL,*in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
 
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,    1,             "i", "input",  "Input file" },
