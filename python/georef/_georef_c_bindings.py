@@ -246,6 +246,25 @@ _getll.argtypes = [ctypes.POINTER(_TGeoRef),
                    numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
 _getll.restype = ctypes.c_int32
 
+_def_create = libgeoref.Def_Create
+_def_create.argtypes = [
+    ctypes.c_int32,                  # NI
+    ctypes.c_int32,                  # NJ
+    ctypes.c_int32,                  # NK
+    ctypes.c_int32,                  # Type (TDef_Type)
+    ctypes.POINTER(ctypes.c_char),   # Comp0
+    ctypes.POINTER(ctypes.c_char),   # Comp1
+    ctypes.POINTER(ctypes.c_char)    # Mask
+]
+_def_create.restype = ctypes.POINTER(_TDef) # Ask Mr. Carphin
+
+_geoset_writefst = libgeoref.GeoRef_SetWriteFST
+_geoset_writefst.argtypes = [ctypes.POINTER(_TGeoSet), ctypes.c_void_p] # Ask Mr. Carphin
+_geoset_writefst.restype = ctypes.c_int32
+
+_geoset_readfst = libgeoref.GeoRef_SetReadFST
+_geoset_readfst.argtypes = [ctypes.POINTER(_TGeoRef), ctypes.POINTER(_TGeoRef), ctypes.c_int32, ctypes.c_void_p]
+_geoset_readfst.restype = ctypes.c_int32    
 
 # _grid_value = libgeoref.GeoRef_GridValue
 # _grid_value.argtypes = [ctypes.POINTER(_TGeoRef), ctypes.c_double, ctypes.c_double]

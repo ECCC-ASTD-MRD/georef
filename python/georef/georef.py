@@ -4,7 +4,7 @@ import numpy.ctypeslib
 from rmn import fst24_file
 from typing import Tuple
 from .constants import *
-from .structs import GeoOptions, GeoRefError
+from .structs import GeoOptions, GeoRefError, GeoDef, GeoSet
 
 from ._georef_c_bindings import (
     _valid,
@@ -37,7 +37,92 @@ from ._georef_c_bindings import (
     _xydistance,
     _lldistance,
     _getll,
+    _def_create,
+    _geoset_writefst,
+    _geoset_readfst,
 )
+
+class GeoDef:
+    """Wrapper for the C GeoDef structure providing geographic definition functionality."""
+    # TDef* Def_Create(int32_t NI, int32_t NJ, int32_t NK, int32_t NC, TDef_Type Type, int32_t Alias)
+    def __init__(self, ni: int, nj: int, nk: int, type: int, comp0: str, comp1: str, mask: str):
+        """Initialize a new geographic definition.
+        
+        Args:
+            ni (int): Number of points in x direction
+            nj (int): Number of points in y direction
+            nk (int): Number of points in z direction
+            type (int): Type of definition
+            comp0 (str): First component
+            comp1 (str): Second component
+            mask (str): Mask string
+            
+        Raises:
+            GeoRefError: If initialization fails (NULL pointer returned)
+        """
+        self._ptr = _def_create(ni, nj, nk, type, comp0, comp1, mask)
+        if not self._ptr or self._ptr.contents is None:
+            raise GeoRefError("Failed to create GeoDef: NULL pointer returned")
+
+class GeoSet:
+    """Wrapper for the C GeoSet structure providing geographic set functionality."""
+    
+    def __init__(self):
+        """Initialize a new GeoSet instance with a null pointer."""
+        self._ptr = None
+
+    # int32_t GeoRef_SetReadFST(const TGeoRef * const RefTo, const TGeoRef * const RefFrom, const int32_t InterpType, const fst_file * const File)  
+    def read_fst(self, ref_to: 'GeoRef', ref_from: 'GeoRef', interp: int, file: 'FSTFile') -> bool: # Ask Mr. Carphin   
+        """Read geographic set data from an FST file.
+        
+        This method wraps the libgeoref function GeoRef_SetReadFST found in src/GeoRef_Set.c.
+        
+        Args:
+            ref_to (GeoRef): Target reference
+            ref_from (GeoRef): Source reference
+            interp (int): Interpolation type
+            file (FSTFile): FST file to read from
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            GeoRefError: If reading fails or references are invalid
+            
+        Note:
+            The underlying C function returns:
+            - NULL pointer (0) for failure
+            - Valid pointer for successful read operation
+        """
+        self._ptr = _geoset_readfst(ref_to._ptr, ref_from._ptr, interp, file._ptr) # Ask Mr. Carphin
+        return bool(self._ptr and self._ptr.contents is not None)
+    
+    # int32_t GeoRef_SetWriteFST(const TGeoSet * const GSet, fst_file * const File)
+    def write_fst(self, file: 'FSTFile') -> bool: # Ask Mr. Carphin
+        """Write geographic set data to an FST file.
+        
+        This method wraps the libgeoref function GeoRef_SetWriteFST found in src/GeoRef_Set.c.
+        
+        Args:
+            file (FSTFile): FST file to write to
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            GeoRefError: If writing fails or GeoSet is uninitialized
+            
+        Note:
+            The underlying C function returns:
+            - 0 for failure (NULL references or write error)
+            - 1 for successful write operation
+        """
+        if not self._ptr:
+            raise GeoRefError("Cannot write uninitialized GeoSet")
+            
+        val = _geoset_writefst(self._ptr, file._ptr)
+        return val == 1
+
 
 class GeoRef:
     """Wrapper for the C GeoRef structure providing geographic reference functionality."""
@@ -1037,3 +1122,5 @@ class GeoRef:
                 "Supported types are: PlateCarree, Stereographic, "
                 "NorthPolarStereo, SouthPolarStereo, and RotatedPole"
             )
+
+

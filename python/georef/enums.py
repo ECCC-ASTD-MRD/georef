@@ -23,6 +23,17 @@ class RefInterpR(enum.IntEnum):
    IR_BUFFER                         = 17
    IR_SUBNEAREST                     = 18
    IR_SUBLINEAR                      = 19
+   IV_FAST                           = 20
+   IV_WITHIN                         = 21
+   IV_INTERSECT                      = 22
+   IV_CENTROID                       = 23
+   IV_ALIASED                        = 24
+   IV_CONSERVATIVE                   = 25
+   IV_NORMALIZED_CONSERVATIVE        = 26
+   IV_POINT_CONSERVATIVE             = 27
+   IV_LENGTH_CONSERVATIVE            = 28
+   IV_LENGTH_NORMALIZED_CONSERVATIVE = 29
+   IV_LENGTH_ALIASED                 = 30
 
 class RefExtrapR(enum.IntEnum):
     ER_UNDEF   = 0
