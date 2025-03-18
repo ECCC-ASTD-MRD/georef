@@ -15,8 +15,6 @@ include(GNUInstallDirs)
 set(CMAKE_INSTALL_LIBDIR lib CACHE INTERNAL "Install dir for libs" FORCE)  # Avoid using lib64, cache when in super-project
 option(BUILD_SHARED_LIBS "Build shared libraries instead of static ones." TRUE)
 
-ec_build_info()
-
 enable_language(C)
 enable_language(Fortran)
 enable_testing()
@@ -84,9 +82,11 @@ install(FILES   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
     DESTINATION "${CONFIG_INSTALL_DIR}"
 )
 
+ec_build_config()                                             # Create build configuration script
+ec_build_info()                                               # Generate build information
+
 # Packaging with CPack
 ec_install_prefix(${NAME} ${PROJECT_VERSION} PACKAGE_PREFIX)  # Define package prefix  
-ec_build_config()                                             # Create build configuration script
 ec_prepare_ssm()                                              # Prepare ssm packaging files
 
 set(CPACK_GENERATOR "TGZ")
