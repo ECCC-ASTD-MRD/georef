@@ -1,6 +1,7 @@
 """Structure definitions for the georef package."""
 
 import ctypes
+import numpy as np
 
 class GeoOptions(ctypes.Structure):
     _fields_ = [
@@ -17,24 +18,45 @@ class GeoOptions(ctypes.Structure):
         ("DistTreshold", ctypes.c_float),   # Distance treshold for point clouds
         ("NoData", ctypes.c_float),         # NoData Value (Default: NaN)
         ("Table", ctypes.c_void_p),         # Data table to check of values to check for
-        ("lutDef", ctypes.c_void_p),        # Lookup table
+        ("_lutDef", ctypes.c_void_p),        # Lookup table
         ("lutSize", ctypes.c_int32),        # Number of lookup elements
         ("lutDim", ctypes.c_int32),         # Dimension of the lookup elements
         ("Ancilliary", ctypes.c_void_p),    # Pre calculated field (ex: variance, average,...)
     ]
+    # create getter and setter for c_void_p fields and change their names to lutDef, table, ancilliary 
+    # make sure lutSize Dim not visible to user
+    @property
+    def lutDef(self):
+        return self._lutDef_ndarray
+    @lutDef.setter
+    def lutDef(self, value: np.ndarray):
+        self._lutDef_ndarray = value
+        self._lutDef = value.ctypes.data
+        self.lutSize = value.size # Not sure about this one
+        self.lutDim = value.shape[1] # Not sure about this one
+    
+    @lutDef.deleter
+    def lutDef(self):
+        self._lutDef_ndarray = None
+        self._lutDef = None
+        self.lutSize = 0
+        self.lutDim = 0
 
-class GeoDef(ctypes.Structure):
-    _fields_ = [
-        ("ptr", ctypes.c_void_p),           # Pointer to C control structure
-    ]
 
-class GeoSet(ctypes.Structure):
-    _fields_ = [
-        ("ptr", ctypes.c_void_p),           # Pointer to C control structure
-    ]
+    @property
+    def table(self):
+        return self._table
+    @table.setter
+    def table(self, value):
+        self._table = value
+    @property
+    def ancilliary(self):
+        return self._ancilliary
+    @ancilliary.setter
+    def ancilliary(self, value):
+        self._ancilliary = value
+   
 
-class _TGeoRef(ctypes.Structure):
-    pass
 
 class GeoRefError(Exception):
     """Exception raised for georef-specific errors."""
