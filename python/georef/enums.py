@@ -64,17 +64,16 @@ class RefCombineR(enum.IntEnum):
     CB_AVERAGE   = 4
 
 
-# typedef enum {
-#     TD_Unknown = 0,
-#     TD_Binary  = 1,
-#     TD_UByte   = 2,
-#     TD_Byte    = 3,
-#     TD_UInt16  = 4,
-#     TD_Int16   = 5,
-#     TD_UInt32  = 6,
-#     TD_Int32   = 7,
-#     TD_UInt64  = 8,
-#     TD_Int64   = 9,
-#     TD_Float32 = 10,
-#     TD_Float64 = 11,
-# } TDef_Type;
+class TDefType(enum.IntEnum):
+    TD_UNKNOWN = 0
+    TD_BINARY  = 1
+    TD_UBYTE   = 2
+    TD_BYTE    = 3
+    TD_UINT16  = 4
+    TD_INT16   = 5
+    TD_UINT32  = 6
+    TD_INT32   = 7
+    TD_UINT64  = 8
+    TD_INT64   = 9
+    TD_FLOAT32 = 10
+    TD_FLOAT64 = 11

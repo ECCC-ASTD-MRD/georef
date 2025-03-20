@@ -59,8 +59,9 @@ class GeoRef:
             fst_file: FST file reference
         """
         ptr = _georef_create(ni, nj, grtyp.encode('UTF-8'), ig1, ig2, ig3, ig4, fst_file._c_ref)
-        if ptr.contents == 0:
+        if ptr is None:
             raise GeoRefError("Failure in C function GeoRef_Create")
+        self.shape = (ni, nj)
         self._ptr = ptr
 
     def limits(self) -> Tuple[float, float, float, float]:
@@ -147,7 +148,10 @@ class GeoRef:
         if options is not None:
             opt_ptr = ctypes.byref(options)
 
-        return _interp(self._ptr, reffrom._ptr, opt_ptr, zout, zin) == GEOREF_SUCCESS
+        result = _interp(self._ptr, reffrom._ptr, opt_ptr, zout, zin)
+        if result != GEOREF_SUCCESS:
+            raise GeoRefError("Failed to interpolate")
+        
 
     def copy(self, hard=False):
         """Create a copy of the current georef object.
@@ -168,17 +172,17 @@ class GeoRef:
             - GeoRef_Copy() for hard=True
             - GeoRef_HardCopy() for hard=False
         """
-        out = _new()
         
         if hard:
+            out = GeoRef.__new__()
             out._ptr = _hardcopy(self._ptr)
+            
+            if out._ptr is None:
+                raise GeoRefError("Failed to copy GeoRef: NULL pointer returned")
+            return out
         else:
-            out._ptr = self
-            
-        if not out._ptr or out._ptr.contents is None:
-            raise GeoRefError("Failed to copy GeoRef: NULL pointer returned")
-            
-        return out
+            return self
+
 
     # int32_t georef_equal(const georef_t *ref1, const georef_t *ref2)
     def equal(self, other):
@@ -982,7 +986,7 @@ class GeoRef:
 
 
     # INT32_T GeoRef_GetLL(TGeoRef *Ref, double *Lat, double *Lon)
-    def getll(self, lat: numpy.ndarray, lon: numpy.ndarray) -> int:
+    def getll(self) -> int:
         """Get lat/lon positions for all grid points.
 
         Args:
@@ -995,26 +999,12 @@ class GeoRef:
         Note:
             This wraps GeoRef_GetLL from src/GeoRef_InterpLL.c
         """
+        lat = numpy.empty(self.shape, dtype=numpy.float64) # Awaiting Mr. Gauthier opinion on this
+        lon = numpy.empty(self.shape, dtype=numpy.float64)
         n = _getll(self._ptr, lat, lon)
         if n == -1:
             raise GeoRefError("Failed to get lat/lon coordinates: Missing descriptors")
-        return n
-    
-    def __repr__(self):
-        # Ideally we can implement a __repr__ that will be used by the IPython shell like the cartopy.CRS.__repr__
-        # get_crs dans https://github.com/neishm/fstd2nc/blob/master/fstd2nc/extra.py
-        # _repr_html_ dans https://github.com/SciTools/cartopy/blob/main/lib/cartopy/crs.py
-        params = [
-            f"ni={self._ptr.contents.ni}",
-            f"nj={self._ptr.contents.nj}",
-            f"grtyp='{self._ptr.contents.grtyp.decode()}'",
-            f"ig1={self._ptr.contents.ig1}",
-            f"ig2={self._ptr.contents.ig2}", 
-            f"ig3={self._ptr.contents.ig3}",
-            f"ig4={self._ptr.contents.ig4}",
-            f"fst_file={self._ptr.contents.fst_file}"
-        ]
-        return "GeoRef(\n    " + ",\n    ".join(params) + "\n)"
+        return lat, lon
     
 
 class GeoDef:
@@ -1036,7 +1026,7 @@ class GeoDef:
             GeoRefError: If initialization fails (NULL pointer returned)
         """
         self._ptr = _def_create(ni, nj, nk, type, comp0, comp1, mask)
-        if not self._ptr or self._ptr.contents is None:
+        if not self._ptr or self._ptr is None:
             raise GeoRefError("Failed to create GeoDef: NULL pointer returned")
 
 class GeoSet:
@@ -1072,7 +1062,8 @@ class GeoSet:
         """
         # Add raise error if not valid and return None
         result = _geoset_readfst(ref_to._ptr, ref_from._ptr, interp, file._c_ref)
-        return bool(result and result.contents is not None)
+        if result is None:
+            raise GeoRefError("Failed to read GeoSet from FST file")
     
     # int32_t GeoRef_SetWriteFST(const TGeoSet * const GSet, fst_file * const File)
     def write_fst(self, file: fst24_file) -> bool:
@@ -1101,4 +1092,3 @@ class GeoSet:
         # If not valid,raise error
         if result != 1:
             raise GeoRefError("Failed to write GeoSet to FST file")
-        return bool(result and result.contents is not None)
