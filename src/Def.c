@@ -1742,7 +1742,6 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
             ip = gset->Index;
          }
 
-         // Damn, we dont have the index, do the long run
          #pragma omp parallel for collapse(2) firstprivate(cell, ring, pick, poly) private(i, j, nidx, wrap, intersect, cnt, p, x, y, z, lp, area, val1, env, n, na) shared(k, isize, FromRef, FromDef, ToRef, ToDef, error) reduction(+ : nt)
          for(j = 0; j < FromDef->NJ; j++) {
             for(i = 0; i < FromDef->NI; i++) {

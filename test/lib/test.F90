@@ -178,6 +178,9 @@ program test
         call exit(-1)
     end if
 
+    ! Test geodef
+    data_array1=0.0
+    data_array2=22.0
     success=def1%init(record1%ni,record1%nj,record1%nk,TD_Float32,c_loc(data_array1),C_NULL_PTR,C_NULL_PTR)
     success=def2%init(record2%ni,record2%nj,record2%nk,TD_Float32,c_loc(data_array2),C_NULL_PTR,C_NULL_PTR)
     if (.not. success) then
@@ -185,9 +188,11 @@ program test
         call exit(-1)
     end if
 
-    georef_options%Interp=IR_CONSERVATIVE
+
+    georef_options%interp=IR_CONSERVATIVE
     len=ref1%interpdef(ref2,def1,def2,georef_options,.true.)
     record1%etiket='CONSERV'
+    record1%data=c_loc(data_array1)
     success=fileout%write(record1)
 
     success = file1%close()
