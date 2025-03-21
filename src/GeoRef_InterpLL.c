@@ -202,7 +202,7 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
             break;
 
          case 'M':
-            for (i=0;i<ni;i++) {
+            for (i=0;i<npts;i++) {
                Ref->Lat[i]=Ref->AY[i];
                Ref->Lon[i]=Ref->AX[i];
             }
@@ -401,7 +401,6 @@ int32_t GeoRef_LLVal(TGeoRef *Ref,TGeoOptions *Opt,float *zout,float *zin,double
 
    double *x,*y;
 
-   if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
 
    x = (double*)malloc(2*Nb*sizeof(double));
@@ -438,7 +437,6 @@ int32_t GeoRef_LLUVVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
       return(-1);
    } else {
 
-      if (!Opt) Opt=&Ref->Options;
       if (!Opt) Opt=&GeoRef_Options;
 
       if (!(x=(double*)malloc(2*Nb*sizeof(double)))) {
@@ -477,7 +475,6 @@ int32_t GeoRef_LLWDVal(TGeoRef *Ref,TGeoOptions *Opt,float *uuout,float *vvout,f
    double *x,*y;
    float  *uuyin, *vvyin, *uuyan, *vvyan;
 
-   if (!Opt) Opt=&Ref->Options;
    if (!Opt) Opt=&GeoRef_Options;
    ref=GeoRef_SubGet(Ref);
 

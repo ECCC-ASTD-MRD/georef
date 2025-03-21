@@ -10,12 +10,12 @@
 #include "Triangle.h"
 
 static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
-static int32_t        GeoRef_Preserve = -10;                                                                                    ///< How many of teh first created georef to keep cached (negative means uninitialized)
+static int32_t         GeoRef_Preserve = -10;                                                                                  ///< How many of the first created georef to keep cached (negative means uninitialized)
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
-__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, IV_FAST, CB_REPLACE, TRUE, FALSE, FALSE, 1, 1, TRUE, FALSE, 10.0, NAN, NULL, NULL, 0, 0, NULL };  ///< Default options
+__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, CB_REPLACE, TRUE, FALSE, FALSE, 1, 1, TRUE, FALSE, 10.0, NAN, NULL, NULL, 0, 0, NULL };  ///< Default options
 
 const char *TRef_InterpVString[] = { "UNDEF","FAST","WITHIN","INTERSECT","CENTROID","ALIASED","CONSERVATIVE","NORMALIZED_CONSERVATIVE","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
-const char *TRef_InterpRString[] = { "UNDEF","NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
+const char *TRef_InterpString[] = { "UNDEF","NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
 
 __attribute__ ((constructor)) int32_t GeoRef_Init() {
    App_LibRegister(APP_LIBGEOREF,VERSION);
@@ -49,7 +49,6 @@ void Georef_PrintOptions(TGeoOptions *Options) {
         "\n"
         "Interpolation       : %i\n"
         "Extrapolation       : %i\n"
-        "Vector method       : %i\n"
         "Combine values      : %i\n"
         "Apply transformation: %i\n"
         "CIndexing           : %i\n"
@@ -65,7 +64,7 @@ void Georef_PrintOptions(TGeoOptions *Options) {
         "Lookup table size   : %i\n"
         "Lookup table dim    : %i\n"
         "Ancilliary buffer   : %p\n",
-         Options->Interp,Options->Extrap,Options->InterpVector,Options->Combine,Options->Transform,Options->CIndex,
+         Options->Interp,Options->Extrap,Options->Combine,Options->Transform,Options->CIndex,
          Options->Symmetric,Options->Segment,Options->Sampling,Options->PolarCorrect,Options->VectorMode,Options->DistTreshold,
          Options->NoData,Options->Table,Options->lutDef,Options->lutSize,Options->lutDim,Options->Ancilliary);
 }
@@ -526,12 +525,15 @@ TGeoRef *GeoRef_Reference(TGeoRef* __restrict const Ref) {
 TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
 
    TGeoRef *ref;
-   int32_t      i;
+   int32_t  i;
 
-   ref=GeoRef_New();
-   GeoRef_Size(ref,Ref->X0,Ref->Y0,Ref->X1,Ref->Y1,Ref->BD);
+   if (!Ref) {
+      return(NULL);
+   }
 
-   if (Ref) {
+   if (ref=GeoRef_New()) {
+      GeoRef_Size(ref,Ref->X0,Ref->Y0,Ref->X1,Ref->Y1,Ref->BD);
+
       ref->GRTYP[0]=Ref->GRTYP[0];
       ref->GRTYP[1]=Ref->GRTYP[1];
       ref->XY2LL=Ref->XY2LL;
@@ -539,6 +541,33 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       ref->Type=Ref->Type;
       ref->NbSub=Ref->NbSub;
       ref->QTree=NULL;
+      ref->Hemi=Ref->Hemi;
+      ref->RefFrom=Ref->RefFrom;
+      ref->Extension=Ref->Extension;
+      ref->Height=Ref->Height;
+      ref->RPNHead=Ref->RPNHead;
+      ref->RPNHeadExt=Ref->RPNHeadExt;
+      ref->Options=Ref->Options;
+      ref->i1=Ref->i1;
+      ref->i2=Ref->i2;
+      ref->j1=Ref->j1;
+      ref->j2=Ref->j2;
+
+      if (Ref->Lat) {
+         ref->Lat=malloc(((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NY)*sizeof(double));
+         memcpy(ref->Lat,Ref->Lat,((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NY)*sizeof(double));
+      }
+      if (Ref->Lon) {
+         ref->Lon=malloc(((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NX)*sizeof(double));
+         memcpy(ref->Lon,Ref->Lon,((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NX)*sizeof(double));
+      }
+
+   // double       *AXY;
+   //struct TGeoRef *mymaskgrid;
+   //int32_t mymaskgridi0,mymaskgridi1;
+   //int32_t mymaskgridj0,mymaskgridj1;
+
+      if (Ref->AX && Ref->AY) GeoRef_AxisDefine(ref,Ref->AX,Ref->AY);
 
       if (Ref->Subs) {
          ref->Subs=(TGeoRef**)malloc(Ref->NbSub*sizeof(TGeoRef*));
@@ -546,9 +575,6 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
          for(i=0;i<ref->NbSub;i++)
             GeoRef_Incr(ref->Subs[i]);
       }
-
-      memcpy(&ref->RPNHead,&Ref->RPNHead,sizeof(fst_record_ext));
-      memcpy(&ref->Options,&Ref->Options,sizeof(TGeoOptions));
 
       switch(ref->GRTYP[0]) {
          case 'R' :
@@ -558,12 +584,20 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
             ref->R=Ref->R;
             ref->ResR=Ref->ResR;
             ref->ResA=Ref->ResA;
+            break;
          case 'W' :
             GeoRef_DefineW(ref,Ref->String,Ref->Transform,Ref->InvTransform,Ref->Spatial);
             if (Ref->RotTransform) {
                ref->RotTransform=(TRotationTransform*)malloc(sizeof(TRotationTransform));
                memcpy(ref->RotTransform,Ref->RotTransform,sizeof(TRotationTransform));
             }
+            break;
+         case 'X' :
+         case 'Y' :
+         case 'O' :
+         case 'M' :
+            GeoRef_BuildIndex(ref);
+            break;
       }
    }
    return(ref);
@@ -1085,7 +1119,7 @@ TGeoRef* GeoRef_New() {
    ref->NbSet=0;
 
    // Assign default options
-   memcpy(&ref->Options,&GeoRef_Options,sizeof(TGeoOptions));
+   ref->Options=GeoRef_Options;
 
    // RPN Specific
    memset(&ref->RPNHead,0x0,sizeof(fst_record));
@@ -1843,7 +1877,7 @@ int32_t GeoRef_Valid(TGeoRef* __restrict const Ref) {
    x[1]=Ref->X1;y[1]=Ref->Y1;
    GeoRef_XY2LL(Ref,lat,lon,x,y,2,TRUE);
 
-   if (lat[0]<-91 || lat[0]>91.0 || lat[1]<-91 || lat[1]>91.0) {
+   if (!Ref->XY2LL || lat[0]<-91 || lat[0]>91.0 || lat[1]<-91 || lat[1]>91.0) {
       return(0);
    }
    return(1);
@@ -2221,7 +2255,7 @@ int32_t GeoRef_GridGetParams(TGeoRef *Ref,int32_t *NI,int32_t *NJ,char *GRTYP,in
  *
  *    @return             Error code (0=ok)
 */
-int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
+int32_t GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4,fst_file *File){
 
    fst_record record=default_fst_record;
    int32_t i,dbl=FALSE;
@@ -2235,11 +2269,16 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       return(FALSE);
    }
    if (!GRef->Name) GRef->Name=strdup("Undefined");
-
    {
       char * const envVar = getenv("GEOREF_DESCRIPTOR_64");
       if (envVar) dbl = TRUE;
    }
+
+   if (IG1<=0) IG1=GRef->RPNHead.ig1;
+   if (IG2<=0) IG2=GRef->RPNHead.ig2;
+   if (IG3<=0) IG3=GRef->RPNHead.ig3;
+   if (IG4<=0) IG4=GRef->RPNHead.ig4;
+
    record.data = (float*)calloc(GRef->NX*GRef->NY,sizeof(float));
    record.ni   = GRef->NX;
    record.nj   = GRef->NY;
@@ -2254,14 +2293,13 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
    strncpy(record.nomvar,"GRID",FST_NOMVAR_LEN);
    strncpy(record.grtyp,GRef->RPNHead.grtyp,FST_GTYP_LEN);
    strncpy(record.etiket,(Name && strlen(Name))?Name:GRef->Name,FST_ETIKET_LEN);
-   record.ig1   = GRef->RPNHead.ig1;
-   record.ig2   = GRef->RPNHead.ig2;
-   record.ig3   = GRef->RPNHead.ig3;
-   record.ig4   = GRef->RPNHead.ig4;
-   record.data_type = FST_TYPE_REAL_IEEE;
+   record.ig1   = IG1;
+   record.ig2   = IG2;
+   record.ig3   = IG3;
+   record.ig4   = IG4;
+   record.data_type = FST_TYPE_REAL_IEEE | FST_TYPE_TURBOPACK;
    record.data_bits = 32;
-   record.pack_bits = 8;
-   fst24_record_print(&record);
+   record.pack_bits = 16;
    if (fst24_write(File,&record,FST_SKIP)<=0) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write grid record field (fst24_write failed)\n",__func__);
    }
@@ -2274,9 +2312,9 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       record.ni   = GRef->NX*GRef->NbSub+GRef->NY+25;
       record.nj   = 1;
       record.nk   = 1;
-      record.ip1  = GRef->RPNHead.ig1;
-      record.ip2  = GRef->RPNHead.ig2;
-      record.ip3  = GRef->RPNHead.ig3;
+      record.ip1  = IG1;
+      record.ip2  = IG2;
+      record.ip3  = IG3;
       strncpy(record.nomvar,"^>",FST_NOMVAR_LEN);
       strncpy(record.grtyp,GRef->RPNHeadExt.grref,FST_GTYP_LEN);
       record.ig1   = GRef->RPNHeadExt.igref1;
@@ -2301,9 +2339,9 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       record.ni   = GRef->NX;
       record.nj   = GRef->Type&GRID_AXY2D?GRef->NY:1;
       record.nk   = 1;
-      record.ip1  = GRef->RPNHead.ig1;
-      record.ip2  = GRef->RPNHead.ig2;
-      record.ip3  = GRef->RPNHead.ig3;
+      record.ip1  = IG1;
+      record.ip2  = IG2;
+      record.ip3  = IG3;
       strncpy(record.nomvar,">>",FST_NOMVAR_LEN);
       strncpy(record.grtyp,GRef->RPNHeadExt.grref,FST_GTYP_LEN);
       record.ig1   = GRef->RPNHeadExt.igref1;
@@ -2346,9 +2384,9 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       record.ni   = GRef->NIdx;
       record.nj   = 1;
       record.nk   = 1;
-      record.ip1  = GRef->RPNHead.ig1;
-      record.ip2  = GRef->RPNHead.ig2;
-      record.ip3  = GRef->RPNHead.ig3;
+      record.ip1  = IG1;
+      record.ip2  = IG2;
+      record.ip3  = IG3;
       strncpy(record.nomvar,"##",FST_NOMVAR_LEN);
       strncpy(record.grtyp,"X",FST_GTYP_LEN);
       record.ig1   = GRef->RPNHeadExt.igref1;
@@ -2366,9 +2404,9 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       record.ni   = 6;
       record.nj   = 1;
       record.nk   = 1;
-      record.ip1  = GRef->RPNHead.ig1;
-      record.ip2  = GRef->RPNHead.ig2;
-      record.ip3  = GRef->RPNHead.ig3;
+      record.ip1  = IG1;
+      record.ip2  = IG2;
+      record.ip3  = IG3;
       strncpy(record.nomvar,"MTRX",FST_NOMVAR_LEN);
       strncpy(record.grtyp,"X",FST_GTYP_LEN);
       record.ig1   = GRef->RPNHeadExt.igref1;
@@ -2400,9 +2438,9 @@ int32_t GeoRef_Write(TGeoRef *GRef,char *Name,fst_file *File){
       record.ni   = strlen(GRef->String);
       record.nj   = 1;
       record.nk   = 1;
-      record.ip1  = GRef->RPNHead.ig1;
-      record.ip2  = GRef->RPNHead.ig2;
-      record.ip3  = GRef->RPNHead.ig3;
+      record.ip1  = IG1;
+      record.ip2  = IG2;
+      record.ip3  = IG3;
       strncpy(record.nomvar,"PROJ",FST_NOMVAR_LEN);
       strncpy(record.grtyp,"X",FST_GTYP_LEN);
       record.ig1   = GRef->RPNHeadExt.igref1;

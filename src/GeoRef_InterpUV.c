@@ -25,7 +25,6 @@ int32_t GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *
    TGeoSet   *set;
    TGeoOptions opt;
 
-   if (!Opt) Opt=&RefTo->Options;
    if (!Opt) Opt=&GeoRef_Options;
    set=GeoRef_SetGet(RefTo,RefFrom,Opt);
 
@@ -82,7 +81,6 @@ int32_t GeoRef_InterpWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *
    TGeoSet   *set;
    TGeoOptions opt;
 
-   if (!Opt) Opt=&RefTo->Options;
    if (!Opt) Opt=&GeoRef_Options;
    set=GeoRef_SetGet(RefTo,RefFrom,Opt);
 
@@ -141,7 +139,6 @@ int32_t GeoRef_InterpYYUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float
 
    yyin=0; yyout=0;
 
-   if (!Opt) Opt=&RefTo->Options;
    if (!Opt) Opt=&GeoRef_Options;
    gset=GeoRef_SetGet(RefTo,RefFrom,Opt);
 
@@ -364,7 +361,6 @@ int32_t GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float
 
    yyin=0; yyout=0;
 
-   if (!Opt) Opt=&RefTo->Options;
    if (!Opt) Opt=&GeoRef_Options;
    gset=GeoRef_SetGet(RefTo,RefFrom,Opt);
 

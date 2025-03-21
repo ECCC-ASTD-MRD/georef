@@ -4,12 +4,17 @@
 #include "rmn/Vector.h"
 
 typedef struct T3DArray {
-   Vect3d        *Data;
-   double        Value;
-   unsigned long Size;
+    Vect3d * Data;
+    double Value;
+    unsigned long Size;
 } T3DArray;
 
-T3DArray *T3DArray_Alloc(double Value,unsigned long Size);
-void      T3DArray_Free(T3DArray *Array);
+T3DArray *T3DArray_Alloc(
+    double value,
+    unsigned long size
+);
+void T3DArray_Free(
+    T3DArray * const array
+);
 
 #endif

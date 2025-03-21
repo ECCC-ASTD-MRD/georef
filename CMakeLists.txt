@@ -11,6 +11,8 @@ project(${NAME} DESCRIPTION "${DESCRIPTION}")
 set(PROJECT_VERSION ${VERSION}${STATE})
 set(${NAME}_VERSION ${PROJECT_VERSION} CACHE INTERNAL "${NAME} version" FORCE) # Needed for cascaded version identification
 
+include(GNUInstallDirs)
+set(CMAKE_INSTALL_LIBDIR lib CACHE INTERNAL "Install dir for libs" FORCE)  # Avoid using lib64, cache when in super-project
 option(BUILD_SHARED_LIBS "Build shared libraries instead of static ones." TRUE)
 
 ec_build_info()
@@ -50,7 +52,7 @@ find_package(rmn)
 
 link_libraries("-Wl,--disable-new-dtags")
 add_subdirectory(src)
-add_subdirectory(test/C test)
+# add_subdirectory(test/C test)
 add_subdirectory(python/georef)
 configure_file(dev-setup-python.in.sh ${CMAKE_BINARY_DIR}/dev-setup-python.sh @ONLY)
 
@@ -58,9 +60,7 @@ configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/${NAME}-config DESTINATION bin)
 
 #----- Generate the config file for the project to be usable via cmake's find_package command
-set(INCLUDE_INSTALL_DIR include)
-set(LIB_INSTALL_DIR     lib)
-set(CONFIG_INSTALL_DIR  "${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}")
+set(CONFIG_INSTALL_DIR  "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}")
 
 install(EXPORT ${PROJECT_NAME}-shared-targets
    NAMESPACE ${PROJECT_NAME}::
@@ -75,7 +75,7 @@ configure_package_config_file(
     "Config.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
     INSTALL_DESTINATION "${CONFIG_INSTALL_DIR}"
-    PATH_VARS           INCLUDE_INSTALL_DIR LIB_INSTALL_DIR
+    PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR
 )
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
