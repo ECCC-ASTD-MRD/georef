@@ -19,7 +19,7 @@ from ._georef_c_bindings import (
     _withinrange,
     _intersect,
     _boundingbox,
-    _write,
+    _write_fst,
     _createfromrecord,
     _interpuv,
     _interpwd,
@@ -356,7 +356,7 @@ class GeoRef:
             - 1 for successful write operation
         """
         name_bytes = name.encode('utf-8') if name else None
-        val = _write(self._ptr, name_bytes, ig1, ig2, ig3, ig4, file._c_ref)
+        val = _write_fst(self._ptr, name_bytes, ig1, ig2, ig3, ig4, file._c_ref)
         if val != 1:
             raise GeoRefError("Could not write file")
         return val == 1

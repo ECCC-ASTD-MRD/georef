@@ -85,13 +85,15 @@ _boundingbox.argtypes = [ctypes.c_void_p,
                         ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
 _boundingbox.restype = ctypes.c_int32
 
-_write.argtypes = [
+# int32_t GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4,fst_file *File)
+_write_fst = libgeoref.GeoRef_WriteFST
+_write_fst.argtypes = [
     ctypes.c_void_p, # Self
     ctypes.c_char_p, # Name
     ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, # IG{1-4}
     ctypes.c_void_p, # fst24_file*
 ]
-_write.restype = ctypes.c_int32
+_write_fst.restype = ctypes.c_int32
 
 _createfromrecord = libgeoref.GeoRef_CreateFromRecord
 _createfromrecord.argtypes = [ctypes.c_void_p]
@@ -259,7 +261,7 @@ _def_create.argtypes = [
 _def_create.restype = ctypes.c_void_p
 
 _geoset_writefst = libgeoref.GeoRef_SetWriteFST
-_geoset_writefst.argtypes = [ctypes.c_void_p, ctypes.c_void_p] # Ask Mr. Carphin
+_geoset_writefst.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 _geoset_writefst.restype = ctypes.c_int32
 
 _geoset_readfst = libgeoref.GeoRef_SetReadFST
