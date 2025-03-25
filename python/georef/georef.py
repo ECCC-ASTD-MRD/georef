@@ -451,8 +451,8 @@ class GeoRef:
             - 0 for failure (NULL references or interpolation error)
             - 1 for successful interpolation
         """
-        uu_out = numpy.empty_like(uu_in, dtype=numpy.float32)
-        vv_out = numpy.empty_like(vv_in, dtype=numpy.float32)
+        uu_out = numpy.empty(self.shape, dtype=numpy.float32)
+        vv_out = numpy.empty(self.shape, dtype=numpy.float32)
 
         opt = options if options else GeoOptions()
 
@@ -495,8 +495,8 @@ class GeoRef:
         assert uu_in.shape == vv_in.shape, GeoRefError("uu_in and vv_in must have the same shape")
         assert len(lat) * len(lon) == uu_in.size, GeoRefError("uu_in size must match lat/lon grid size")
         npts = uu_in.size
-        spd_out = numpy.empty_like(uu_in, dtype=numpy.float32)
-        wd_out = numpy.empty_like(vv_in, dtype=numpy.float32)
+        spd_out = numpy.empty(self.shape, dtype=numpy.float32)
+        wd_out = numpy.empty(self.shape, dtype=numpy.float32)
 
         val = _ud2wd(self._ptr,
                      spd_out,
