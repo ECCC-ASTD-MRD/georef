@@ -363,7 +363,7 @@ class GeoRef:
 
     # TGeoRef* GeoRef_CreateFromRecord(fst_record_t *Rec)
     @classmethod
-    def fromrecord(cls, record) -> GeoRef:
+    def fromrecord(cls, record): # -> GeoRef (but it's not defined)
         """Create a georef object from an FST record.
 
         This method wraps the libgeoref function GeoRef_CreateFromRecord() found in src/GeoRef.C
@@ -443,7 +443,7 @@ class GeoRef:
             options (GeoOptions, optional): Interpolation options. Uses default if None.
 
         Returns:
-            tuple[numpy.ndarray, numpy.ndarray]]: The interpolated (speed,
+            tuple[numpy.ndarray, numpy.ndarray]: The interpolated (speed,
             direction) arrays. Arrays are float32 type.
 
         Note:
@@ -471,7 +471,7 @@ class GeoRef:
     # INT32_T GeoRef_UV2WD(TGeoRef *Ref, float *spd_out, float *wd_out,
     #                      const float *uuin, const float *vvin,
     #                      const double *Lat, const double *Lon, INT32_T Nb)
-    def uv2wd(self, uu_in, vv_in, lat, lon) -> tuple[numpy.ndarray, numpy.ndarray]:
+    def uv2wd(self, uu_in, vv_in, lat, lon) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Convert grid winds (UU/VV) to meteorological winds (speed/direction).
 
         This method wraps the libgeoref function GeoRef_UV2WD() found in src/GeoRef_InterpUV.c.
@@ -483,7 +483,7 @@ class GeoRef:
             lon (numpy.ndarray): Longitude values array (float64)
 
         Returns:
-            tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing:
+            tuple[numpy.ndarray, numpy.ndarray]: A tuple containing:
                 The converted (speed, direction) arrays.  Arrays are float32 type.
 
         Note:
@@ -514,7 +514,7 @@ class GeoRef:
     # INT32_T GeoRef_WD2UV(TGeoRef *Ref, float *uugdout, float *vvgdout,
     #                      const float *uullin, const float *vvllin,
     #                      const double *Lat, const double *Lon, INT32_T Nb)
-    def wd2uv(self, spd_in, dir_in, lat, lon) -> tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]:
+    def wd2uv(self, spd_in, dir_in, lat, lon) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Convert meteorological winds (speed/direction) to grid winds (UU/VV).
 
         This method wraps the libgeoref function GeoRef_WD2UV() found in src/GeoRef_InterpUV.c.
@@ -556,7 +556,7 @@ class GeoRef:
     # INT32_T GeoRef_UV2UV(TGeoRef *Ref, float *uullout, float *vvllout,
     #                      const float *uuin, const float *vvin,
     #                      const double *Lat, const double *Lon, INT32_T Nb)
-    def uv2uv(self, uu_in, vv_in, lat, lon) -> tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]:
+    def uv2uv(self, uu_in, vv_in, lat, lon) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Convert grid winds (UU/VV) between coordinate systems.
 
         This method wraps the libgeoref function GeoRef_UV2UV() found in src/GeoRef_InterpUV.c.
@@ -570,10 +570,8 @@ class GeoRef:
             lon (numpy.ndarray): Longitude values array (float64)
 
         Returns:
-            tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing:
-                - bool: True if conversion succeeded, False otherwise
-                - tuple[numpy.ndarray, numpy.ndarray]: The converted (U, V) component arrays.
-                                                    Arrays are float32 type.
+            Tuple[numpy.ndarray, numpy.ndarray]: A tuple containing the
+                 converted (U, V) component arrays. Arrays are float32 type.
 
         Note:
             The underlying C function returns:
@@ -602,7 +600,7 @@ class GeoRef:
     # INT32_T GeoRef_LLWDVal(TGeoRef *Ref, TGeoOptions *Opt, float *uuout, float *vvout,
     #                        const float *uuin, const float *vvin,
     #                        const double *Lat, const double *Lon, INT32_T Nb)
-    def llwdval(self, uu_in, vv_in, lat, lon, options=None) -> tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]:
+    def llwdval(self, uu_in, vv_in, lat, lon, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate vector values as speed and directions at lat/lon positions.
 
         This method wraps the libgeoref function GeoRef_LLWDVal() found in src/GeoRef_InterpLL.c.
@@ -616,10 +614,8 @@ class GeoRef:
             options (GeoOptions, optional): Interpolation options. Uses default if None.
 
         Returns:
-            tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing:
-                - bool: True if interpolation succeeded, False otherwise
-                - tuple[numpy.ndarray, numpy.ndarray]: The interpolated (speed, direction) arrays.
-                                                      Arrays are float32 type.
+            Tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing
+                the interpolated (speed, direction) arrays. Arrays are float32 type.
 
         Note:
             The underlying C function returns:
@@ -651,7 +647,7 @@ class GeoRef:
     # INT32_T GeoRef_LLUVVal(TGeoRef *Ref, TGeoOptions *Opt, float *uuout, float *vvout,
     #                        const float *uuin, const float *vvin,
     #                        const double *Lat, const double *Lon, INT32_T Nb)
-    def lluvval(self, uu_in, vv_in, lat, lon, options=None) -> tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]:
+    def lluvval(self, uu_in, vv_in, lat, lon, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate vector values at lat/lon positions.
 
         This method wraps the libgeoref function GeoRef_LLUVVal() found in src/GeoRef_InterpLL.c.
@@ -665,10 +661,8 @@ class GeoRef:
             options (GeoOptions, optional): Interpolation options. Uses default if None.
 
         Returns:
-            tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing:
-                - bool: True if interpolation succeeded, False otherwise
-                - tuple[numpy.ndarray, numpy.ndarray]: The interpolated (U, V) arrays.
-                                                      Arrays are float32 type.
+            Tuple[numpy.ndarray, numpy.ndarray]: A tuple containing the
+                interpolated (U, V) arrays. Arrays are float32 type.
 
         Note:
             The underlying C function returns:
@@ -699,7 +693,7 @@ class GeoRef:
 
     # INT32_T GeoRef_LLVal(TGeoRef *Ref, TGeoOptions *Opt, float *zout, float *zin,
     #                      const double *Lat, const double *Lon, INT32_T Nb)
-    def llval(self, z_in, lat, lon, options=None) -> tuple[bool, numpy.ndarray]:
+    def llval(self, z_in, lat, lon, options=None) -> numpy.ndarray:
         """Interpolate values at lat/lon positions.
 
         This method wraps the libgeoref function GeoRef_LLVal() found in src/GeoRef_InterpLL.c.
@@ -712,9 +706,8 @@ class GeoRef:
             options (GeoOptions, optional): Interpolation options. Uses default if None.
 
         Returns:
-            tuple[bool, numpy.ndarray]: A tuple containing:
-                - bool: True if interpolation succeeded, False otherwise
-                - numpy.ndarray: The interpolated values array (float32)
+            numpy.ndarray: A tuple containing the interpolated values array
+            (float32)
 
         Note:
             The underlying C function returns:
@@ -742,7 +735,7 @@ class GeoRef:
     # INT32_T GeoRef_XYWDVal(TGeoRef *Ref, TGeoOptions *Opt, float *uuout, float *vvout,
     #                        const float *uuin, const float *vvin,
     #                        const double *X, const double *Y, INT32_T n)
-    def xywdval(self, uu_in, vv_in, x, y, options=None) -> tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]:
+    def xywdval(self, uu_in, vv_in, x, y, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate vector values as speed and direction at X/Y positions.
 
         This method wraps the libgeoref function GeoRef_XYWDVal() found in src/GeoRef_InterpXY.c.
@@ -756,10 +749,9 @@ class GeoRef:
             options (GeoOptions, optional): Interpolation options. Uses default if None.
 
         Returns:
-            tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing:
-                - bool: True if interpolation succeeded, False otherwise
-                - tuple[numpy.ndarray, numpy.ndarray]: The interpolated (speed, direction) arrays.
-                                                      Arrays are float32 type.
+            Tuple[numpy.ndarray, numpy.ndarray]: A tuple containing the
+                interpolated (speed, direction) arrays.  Arrays are float32
+                type.
         """
         assert isinstance(uu_in, numpy.ndarray) and isinstance(vv_in, numpy.ndarray), GeoRefError("uu_in and vv_in must be numpy arrays")
         assert uu_in.shape == vv_in.shape, GeoRefError("uu_in and vv_in must have the same shape")
@@ -786,7 +778,7 @@ class GeoRef:
     # INT32_T GeoRef_XYUVVal(TGeoRef *Ref, TGeoOptions *Opt, float *uuout, float *vvout,
     #                        const float *uuin, const float *vvin,
     #                        const double *X, const double *Y, INT32_T n)
-    def xyuvval(self, uu_in, vv_in, x, y, options=None) -> tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]:
+    def xyuvval(self, uu_in, vv_in, x, y, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate vector values at X/Y positions.
 
         This method wraps the libgeoref function GeoRef_XYUVVal() found in src/GeoRef_InterpXY.c.
@@ -800,10 +792,8 @@ class GeoRef:
             options (GeoOptions, optional): Interpolation options. Uses default if None.
 
         Returns:
-            tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing:
-                - bool: True if interpolation succeeded, False otherwise
-                - tuple[numpy.ndarray, numpy.ndarray]: The interpolated (U, V) arrays.
-                                                      Arrays are float32 type.
+            Tuple[numpy.ndarray, numpy.ndarray]: A tuple containing the
+                interpolated (U, V) arrays. Arrays are float32 type.
         """
         assert isinstance(uu_in, numpy.ndarray) and isinstance(vv_in, numpy.ndarray), GeoRefError("uu_in and vv_in must be numpy arrays")
         assert uu_in.shape == vv_in.shape, GeoRefError("uu_in and vv_in must have the same shape")
@@ -829,7 +819,7 @@ class GeoRef:
 
     # INT32_T GeoRef_XYVal(TGeoRef *Ref, TGeoOptions *Opt, float *zout, float *zin,
     #                      const double *X, const double *Y, INT32_T n)
-    def xyval(self, z_in, x, y, options=None) -> tuple[bool, numpy.ndarray]:
+    def xyval(self, z_in, x, y, options=None) -> numpy.ndarray:
         """Interpolate scalar values at X/Y positions.
 
         This method wraps the libgeoref function GeoRef_XYVal() found in src/GeoRef_InterpXY.c.
@@ -842,9 +832,7 @@ class GeoRef:
             options (GeoOptions, optional): Interpolation options. Uses default if None.
 
         Returns:
-            tuple[bool, numpy.ndarray]: A tuple containing:
-                - bool: True if interpolation succeeded, False otherwise
-                - numpy.ndarray: The interpolated values array (float32)
+            numpy.ndarray: The interpolated values array (float32)
         """
         assert isinstance(z_in, numpy.ndarray), GeoRefError("z_in must be a numpy array")
         npts = z_in.size
@@ -866,7 +854,7 @@ class GeoRef:
 
     # INT32_T GeoRef_LL2XY(TGeoRef *Ref, double *X, double *Y, double *Lat, double *Lon,
     #                      INT32_T Nb, INT32_T Extrap)
-    def ll2xy(self, lat, lon, extrapolate=False) -> tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]:
+    def ll2xy(self, lat, lon, extrapolate=False) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Transform lat/lon coordinates to grid X/Y coordinates.
 
         This method wraps the libgeoref function GeoRef_LL2XY() found in src/GeoRef_InterpCoords.c.
@@ -879,10 +867,8 @@ class GeoRef:
                                         Defaults to False.
 
         Returns:
-            tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing:
-                - bool: True if all points were converted successfully, False otherwise
-                - tuple[numpy.ndarray, numpy.ndarray]: The converted (X, Y) coordinate arrays.
-                                                      Arrays are float64 type.
+            Tuple[numpy.ndarray, numpy.ndarray]: A tuple containing the
+                converted (X, Y) coordinate arrays. Arrays are float64 type.
 
         Note:
             The underlying C function returns:
@@ -909,7 +895,7 @@ class GeoRef:
 
     # INT32_T GeoRef_XY2LL(TGeoRef *Ref, double *Lat, double *Lon, double *X, double *Y,
     #                      INT32_T Nb, INT32_T Extrap)
-    def xy2ll(self, x, y, extrapolate=False) -> tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]:
+    def xy2ll(self, x, y, extrapolate=False) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Transform grid X/Y coordinates to lat/lon coordinates.
 
         This method wraps the libgeoref function GeoRef_XY2LL() found in src/GeoRef_InterpCoords.c.
@@ -922,11 +908,9 @@ class GeoRef:
                                         Defaults to False.
 
         Returns:
-            tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing:
-                - bool: True if all points were converted successfully, False otherwise
-                - tuple[numpy.ndarray, numpy.ndarray]: The converted (lat, lon) arrays.
-                                                      Arrays are float64 type.
-                                                      Invalid points set to -999.0 if not extrapolating.
+            Tuple[numpy.ndarray, numpy.ndarray]: A tuple containing the
+                converted (lat, lon) arrays. Arrays are float64 type.  Invalid
+                points set to -999.0 if not extrapolating.
 
         Note:
             The underlying C function returns:
@@ -1044,7 +1028,7 @@ class GeoSet:
 
     @staticmethod
     # int32_t GeoRef_SetReadFST(const TGeoRef * const RefTo, const TGeoRef * const RefFrom, const int32_t InterpType, const fst_file * const File)
-    def read_fst(cls, ref_to: GeoRef, ref_from: GeoRef, interp: int, file: fst24_file) -> GeoSet:
+    def read_fst(cls, ref_to: GeoRef, ref_from: GeoRef, interp: int, file: fst24_file): # -> GeoSet: (but not defined)
         """ Read a gridset definition and index from a file
 
         This method wraps the libgeoref function GeoRef_SetReadFST found in src/GeoRef_Set.c.
