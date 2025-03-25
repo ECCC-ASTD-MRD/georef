@@ -390,7 +390,7 @@ class GeoRef:
 
     # INT32_T GeoRef_InterpUV(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt,
     #                         float *uuout, float *vvout, const float *uuin, const float *vvin)
-    def interpuv(self, ref_from, uu_in, vv_in, options=None) -> Tuple[bool, Tuple[numpy.ndarray, numpy.ndarray]]:
+    def interpuv(self, ref_from, uu_in, vv_in, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate UV (vector) data from one georef to another.
 
         This method wraps the libgeoref function GeoRef_InterpUV() found in src/GeoRef_InterpUV.c.
