@@ -118,7 +118,7 @@ class GeoRef:
             _free(self._ptr)
 
     # INT32_T GeoRef_Interp(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt, float *zout, float *zin)
-    def interp(self, reffrom, zout, zin, options=None) -> bool:
+    def interp(self, reffrom, zout, zin, options=None):
         """Interpolate values between two georefs.
 
         This method wraps the libgeoref function GeoRef_Interp() found in src/GeoRef_Interp.c.
