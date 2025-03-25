@@ -1038,12 +1038,14 @@ class GeoSet:
 
     def __init__(self):
         """Initialize a new GeoSet instance with a null pointer."""
+        #TODO If the only way to create these is with the read_fst static method
+        #     then this is weird.
         self._ptr = None # Where does the pointer come from ?
 
     @staticmethod
     # int32_t GeoRef_SetReadFST(const TGeoRef * const RefTo, const TGeoRef * const RefFrom, const int32_t InterpType, const fst_file * const File)
-    def read_fst(cls, ref_to: GeoRef, ref_from: GeoRef, interp: int, file: fst24_file) -> None: # For all other functions that raise errors
-        """Read geographic set data from an FST file.
+    def read_fst(cls, ref_to: GeoRef, ref_from: GeoRef, interp: int, file: fst24_file) -> GeoSet:
+        """ Read a gridset definition and index from a file
 
         This method wraps the libgeoref function GeoRef_SetReadFST found in src/GeoRef_Set.c.
 
@@ -1054,7 +1056,7 @@ class GeoSet:
             file (FSTFile): FST file to read from
 
         Returns:
-            bool: True if successful, False otherwise
+            New GeoSet instance
 
         Raises:
             GeoRefError: If reading fails or references are invalid
@@ -1064,10 +1066,12 @@ class GeoSet:
             - NULL pointer (0) for failure
             - Valid pointer for successful read operation
         """
-        # Add raise error if not valid and return None
         result = _geoset_readfst(ref_to._ptr, ref_from._ptr, interp, file._c_ref)
         if result is None:
             raise GeoRefError("Failed to read GeoSet from FST file")
+        new = cls.__new__(cls)
+        new._ptr = result
+        return new
 
     # int32_t GeoRef_SetWriteFST(const TGeoSet * const GSet, fst_file * const File)
     def write_fst(self, file: fst24_file) -> bool:
