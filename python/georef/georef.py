@@ -174,7 +174,7 @@ class GeoRef:
         """
 
         if hard:
-            out = GeoRef.__new__()
+            out = GeoRef.__new__(GeoRef)
             out._ptr = _hardcopy(self._ptr)
 
             if out._ptr is None:
