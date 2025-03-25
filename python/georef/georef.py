@@ -362,25 +362,31 @@ class GeoRef:
         return val == 1
 
     # TGeoRef* GeoRef_CreateFromRecord(fst_record_t *Rec)
-    def fromrecord(self, record) -> bool:
+    @classmethod
+    def fromrecord(cls, record) -> GeoRef:
         """Create a georef object from an FST record.
 
         This method wraps the libgeoref function GeoRef_CreateFromRecord() found in src/GeoRef.C
         and src/GeoRef_mod.F90.
 
         Args:
-            record: FST record object containing the C record pointer.
+            record: rmn.fst_record object.
 
         Returns:
-            bool: True if creation succeeded, False otherwise.
+            GeoRef: New GeoRef instance created from the given record.
 
         Note:
             The underlying C function returns:
             - NULL pointer (0) for failure
             - Valid GeoRef pointer (non-zero) for success
         """
-        self._ptr = _createfromrecord(ctypes.byref(record))
-        return bool(ctypes.cast(self._ptr, ctypes.c_void_p).value is not None)
+        ptr = _createfromrecord(ctypes.byref(record))
+        if ptr is None:
+            raise GeoRefError("Could not create georef instance from record")
+
+        new_ref = GeoRef.__new__(GeoRef)
+        new_ref._ptr = ptr
+        return new_ref
 
     # INT32_T GeoRef_InterpUV(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt,
     #                         float *uuout, float *vvout, const float *uuin, const float *vvin)
