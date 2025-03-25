@@ -4,7 +4,7 @@ import numpy.ctypeslib
 from rmn import fst24_file
 from typing import Tuple
 from .constants import *
-from .structs import GeoOptions, GeoRefError, GeoDef, GeoSet
+from .structs import GeoOptions, GeoRefError
 
 from ._georef_c_bindings import (
     _valid,
