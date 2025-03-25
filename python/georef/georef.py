@@ -458,11 +458,11 @@ class GeoRef:
         uu_out = numpy.empty_like(uu_in, dtype=numpy.float32)
         vv_out = numpy.empty_like(vv_in, dtype=numpy.float32)
 
-        opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
+        opt = options if options else GeoOptions()
 
         val = _interpwd(self._ptr,
                         ctypes.c_void_p,
-                        opt_ptr,
+                        ctypes.byref(opt),
                         uu_out,
                         vv_out,
                         uu_in,
