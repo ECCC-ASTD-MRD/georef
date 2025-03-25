@@ -10,7 +10,7 @@ class GeoOptions(ctypes.Structure):
         ("Combine", ctypes.c_int32),        # Aggregation type
         ("Transform", ctypes.c_int32),      # Apply transformation or stay within master referential
         ("CIndex", ctypes.c_int32),         # C Indexing (starts at 0)
-        ("Symmetric", ctypes.c_int32),      # 
+        ("Symmetric", ctypes.c_int32),      #
         ("Segment", ctypes.c_int32),        # How much segmentation (Conservatives/Geometric modes)
         ("Sampling", ctypes.c_int32),       # Sampling interval
         ("PolarCorrect", ctypes.c_int8),    # Apply polar corrections
@@ -23,7 +23,7 @@ class GeoOptions(ctypes.Structure):
         ("lutDim", ctypes.c_int32),         # Dimension of the lookup elements
         ("Ancilliary", ctypes.c_void_p),    # Pre calculated field (ex: variance, average,...)
     ]
-    # create getter and setter for c_void_p fields and change their names to lutDef, table, ancilliary 
+    # create getter and setter for c_void_p fields and change their names to lutDef, table, ancilliary
     # make sure lutSize Dim not visible to user
     @property
     def lutDef(self):
@@ -34,7 +34,7 @@ class GeoOptions(ctypes.Structure):
         self._lutDef = value.ctypes.data
         self.lutSize = value.size # Not sure about this one
         self.lutDim = value.shape[1] # Not sure about this one
-    
+
     @lutDef.deleter
     def lutDef(self):
         self._lutDef_ndarray = None
@@ -55,9 +55,9 @@ class GeoOptions(ctypes.Structure):
     @ancilliary.setter
     def ancilliary(self, value):
         self._ancilliary = value
-   
+
 
 
 class GeoRefError(Exception):
     """Exception raised for georef-specific errors."""
-    pass 
+    pass

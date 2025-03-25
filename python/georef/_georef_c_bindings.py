@@ -51,7 +51,7 @@ _copy = libgeoref.GeoRef_Copy
 _copy.argtypes = [ctypes.c_void_p]
 _copy.restype = ctypes.c_void_p
 
-_hardcopy = libgeoref.GeoRef_HardCopy 
+_hardcopy = libgeoref.GeoRef_HardCopy
 _hardcopy.argtypes = [ctypes.c_void_p]
 _hardcopy.restype = ctypes.c_void_p
 
@@ -64,7 +64,7 @@ _within.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 _within.restype = ctypes.c_int32
 
 _withinrange = libgeoref.GeoRef_WithinRange
-_withinrange.argtypes = [ctypes.c_void_p, 
+_withinrange.argtypes = [ctypes.c_void_p,
                         ctypes.c_double, ctypes.c_double,
                         ctypes.c_double, ctypes.c_double,
                         ctypes.c_int32]
@@ -264,7 +264,7 @@ _geoset_writefst.restype = ctypes.c_int32
 
 _geoset_readfst = libgeoref.GeoRef_SetReadFST
 _geoset_readfst.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int32, ctypes.c_void_p]
-_geoset_readfst.restype = ctypes.c_int32    
+_geoset_readfst.restype = ctypes.c_int32
 
 # _grid_value = libgeoref.GeoRef_GridValue
 # _grid_value.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double]
@@ -275,7 +275,7 @@ _geoset_readfst.restype = ctypes.c_int32
 # _ll_value.restype = ctypes.c_double
 
 # _xy_to_ll = libgeoref.GeoRef_XYToLL
-# _xy_to_ll.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, 
+# _xy_to_ll.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double,
 #                       ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
 # _xy_to_ll.restype = ctypes.c_int
 
