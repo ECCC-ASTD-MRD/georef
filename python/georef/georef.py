@@ -1030,7 +1030,7 @@ class GeoDef:
             GeoRefError: If initialization fails (NULL pointer returned)
         """
         self._ptr = _def_create(ni, nj, nk, type, comp0, comp1, mask)
-        if not self._ptr or self._ptr is None:
+        if self._ptr is None
             raise GeoRefError("Failed to create GeoDef: NULL pointer returned")
 
 class GeoSet:

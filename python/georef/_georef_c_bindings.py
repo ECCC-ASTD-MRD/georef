@@ -256,7 +256,7 @@ _def_create.argtypes = [
     ctypes.POINTER(ctypes.c_char),   # Comp1
     ctypes.POINTER(ctypes.c_char)    # Mask
 ]
-_def_create.restype = ctypes.POINTER(_TDef) # Ask Mr. Carphin
+_def_create.restype = ctypes.c_void_p
 
 _geoset_writefst = libgeoref.GeoRef_SetWriteFST
 _geoset_writefst.argtypes = [ctypes.c_void_p, ctypes.c_void_p] # Ask Mr. Carphin
