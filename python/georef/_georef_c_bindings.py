@@ -85,11 +85,11 @@ _boundingbox.argtypes = [ctypes.c_void_p,
                         ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
 _boundingbox.restype = ctypes.c_int32
 
-_write = libgeoref.GeoRef_Write
 _write.argtypes = [
-    ctypes.c_void_p,
-    ctypes.c_char_p,
-    ctypes.c_void_p
+    ctypes.c_void_p, # Self
+    ctypes.c_char_p, # Name
+    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, # IG{1-4}
+    ctypes.c_void_p, # fst24_file*
 ]
 _write.restype = ctypes.c_int32
 

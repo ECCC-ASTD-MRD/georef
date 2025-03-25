@@ -333,7 +333,8 @@ class GeoRef:
         return i0.value, j0.value, i1.value, j1.value
 
     # INT32_T GeoRef_Write(const GeoRef_t *ref, const char *name, void *file_ptr)
-    def write(self, file, name=None) -> bool:
+    # int32_t GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4,fst_file *File){
+    def write(self, file, ig1, ig2, ig3, ig4, name=None) -> bool:
         """Write the georef object to a file.
 
         This method wraps the libgeoref function GeoRef_Write() found in src/GeoRef.C
@@ -352,8 +353,10 @@ class GeoRef:
             - 0 for failure (NULL references or write error)
             - 1 for successful write operation
         """
-        name_str = (name + '\0').encode('utf-8') if name else b'\0'
-        val = _write(self._ptr, name_str, file)
+        name_bytes = name.encode('utf-8') if name else None
+        val = _write(self._ptr, name_bytes, ig1, ig2, ig3, ig4, file._c_ref)
+        if val != 1:
+            raise GeoRefError("Could not write file")
         return val == 1
 
     # TGeoRef* GeoRef_CreateFromRecord(fst_record_t *Rec)
