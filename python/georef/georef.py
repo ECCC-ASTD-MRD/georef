@@ -431,7 +431,7 @@ class GeoRef:
 
     # INT32_T GeoRef_InterpWD(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt,
     #                         float *uuout, float *vvout, const float *uuin, const float *vvin)
-    def interpwd(self, ref_from, uu_in, vv_in, options=None) -> Tuple[bool, Tuple[numpy.ndarray, numpy.ndarray]]:
+    def interpwd(self, ref_from, uu_in, vv_in, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate wind speed and direction between 2 georeferences.
 
         This method wraps the libgeoref function GeoRef_InterpWD() found in src/GeoRef_InterpUV.c.
