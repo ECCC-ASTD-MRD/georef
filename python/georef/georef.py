@@ -402,18 +402,16 @@ class GeoRef:
             options (GeoOptions, optional): Interpolation options. Uses default if None.
 
         Returns:
-            tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing:
-                - bool: True if interpolation succeeded, False otherwise
-                - tuple[numpy.ndarray, numpy.ndarray]: The interpolated (uu_out, vv_out) arrays.
-                                                      Arrays are float32 type.
+            tuple[numpy.ndarray, numpy.ndarray]: A tuple containing:
+            The interpolated (uu_out, vv_out) arrays. Arrays are float32 type.
 
         Note:
             The underlying C function returns:
             - 0 for failure (NULL references or interpolation error)
             - 1 for successful interpolation
         """
-        uu_out = numpy.empty_like(uu_in, dtype=numpy.float32)
-        vv_out = numpy.empty_like(vv_in, dtype=numpy.float32)
+        uu_out = numpy.empty(self.shape, dtype=numpy.float32)
+        vv_out = numpy.empty(self.shape, dtype=numpy.float32)
 
         opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
 
@@ -440,15 +438,13 @@ class GeoRef:
 
         Args:
             ref_from (Georef): Source georef instance containing the input data.
-            uu_in (numpy.ndarray): Input speed values (float32).
-            vv_in (numpy.ndarray): Input direction values (float32).
+            uu_in (numpy.ndarray): Input U component array (float32)
+            vv_in (numpy.ndarray): Input V component array (float32)
             options (GeoOptions, optional): Interpolation options. Uses default if None.
 
         Returns:
-            tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing:
-                - bool: True if interpolation succeeded, False otherwise
-                - tuple[numpy.ndarray, numpy.ndarray]: The interpolated (speed, direction) arrays.
-                                                      Arrays are float32 type.
+            tuple[numpy.ndarray, numpy.ndarray]]: The interpolated (speed,
+            direction) arrays. Arrays are float32 type.
 
         Note:
             The underlying C function returns:
@@ -488,8 +484,7 @@ class GeoRef:
 
         Returns:
             tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing:
-                - tuple[numpy.ndarray, numpy.ndarray]: The converted (speed, direction) arrays.
-                                                      Arrays are float32 type.
+                The converted (speed, direction) arrays.  Arrays are float32 type.
 
         Note:
             The underlying C function returns:
@@ -531,9 +526,7 @@ class GeoRef:
             lon (numpy.ndarray): Longitude values array (float64)
 
         Returns:
-            tuple[bool, tuple[numpy.ndarray, numpy.ndarray]]: A tuple containing:
-                - bool: True if conversion succeeded, False otherwise
-                - tuple[numpy.ndarray, numpy.ndarray]: The converted (U, V) component arrays.
+            - tuple[numpy.ndarray, numpy.ndarray]: The converted (U, V) component arrays.
                                                       Arrays are float32 type.
 
         Note:
