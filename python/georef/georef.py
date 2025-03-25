@@ -255,7 +255,7 @@ class GeoRef:
         return val == 1
 
     # INT32_T GeoRef_Intersect(const GeoRef_t *ref1, const GeoRef_t *ref2, INT32_T *x0, INT32_T *y0, INT32_T *x1, INT32_T *y1, INT32_T bd)
-    def intersect(self, other, boundary=False) -> Tuple[bool, Tuple[int, int, int, int]]:
+    def intersect(self, other, boundary=False): # TODO Set proper type hint for 'None or Tuple[int, int, int, int]'
         """Check if two georef objects intersect and get intersection coordinates.
 
         This method wraps the libgeoref function GeoRef_Intersect() found in src/GeoRef.C
@@ -291,8 +291,10 @@ class GeoRef:
                          ctypes.byref(y1),
                          bd_val
                         )
+
         if val != 1:
-            raise GeoRefError("Failed to check intersection")
+            return None
+
         return x0.value, y0.value, x1.value, y1.value
 
     # INT32_T GeoRef_BoundingBox(const GeoRef_t *ref, double lat0, double lon0, double lat1, double lon1, double *i0, double *j0, double *i1, double *j1)
