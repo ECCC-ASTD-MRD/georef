@@ -26,9 +26,10 @@ if (EC_INIT_DONE LESS 2)
         target_link_libraries(Interpolate georef-shared rmn::rmn m)
         set_target_properties(Interpolate PROPERTIES VERSION ${PROJECT_VERSION})
 
-        add_executable(CubedSphere CubedSphere.c)
+        add_executable(CubedSphere EXCLUDE_FROM_ALL CubedSphere.c)
         target_link_libraries(CubedSphere PUBLIC georef::georef rmn::rmn App::App)
         add_dependencies(check CubedSphere)
+        add_test(NAME CubedSphere COMMAND $<TARGET_FILE:CubedSphere>)
 
         file(REMOVE libgeoref.fstd)
 
