@@ -2,7 +2,6 @@
 #include "GeoRef.h"
 #include "Triangle.h"
 
-
 //! Predicate for grid rotation
 int32_t c_gd_isgridrotated(
     const TGeoRef * const gr
@@ -220,6 +219,30 @@ int32_t GeoRef_InterpFinally(
             }
             break;
 
+        case 'C':
+            switch(Opt->Interp) {
+                case IR_NEAREST:
+                    Lib_Log(APP_LIBGEOREF, APP_WARNING,
+                            "%s: Nearest interpolation not implemented for Cubed-sphere grid\n", __func__);
+                    return -1;
+                case IR_LINEAR:
+                    if (GeoRef_SetEmptyIndex(GSet)) {
+                        ComputeLinearInterpIndicesC(RefFrom, x, y, npts, GSet->Index);
+                    }
+                    ApplyLinearInterpC_32(GSet->Index, npts, Opt->NoData, zin, zout);
+                    break;
+                case IR_CUBIC:
+                    Lib_Log(APP_LIBGEOREF, APP_WARNING,
+                            "%s: Cubic interpolation not implemented for Cubed-sphere grid\n", __func__);
+                    return -1;
+                default:
+                    Lib_Log(APP_LIBGEOREF, APP_WARNING,
+                            "%s: Interpolation method %d not implemented for Cubed-sphere grid\n",
+                            __func__, Opt->Interp);
+                    return -1;
+            }
+            break;
+
         default:
             switch (Opt->Interp) {
                 case IR_NEAREST:
@@ -374,6 +397,7 @@ int32_t GeoRef_Interp(
     }
     App_TimerStop(int_timer);
     Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: Interpolation took \033[1; 32m%.3f ms\033[0m\n", __func__, App_TimerTotalTime_ms(int_timer));
+    App_TimerDelete(int_timer);
 
     return ok;
 }

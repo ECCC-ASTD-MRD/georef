@@ -550,14 +550,14 @@ TGeoSet* GeoRef_SetGet(
     }
 
     pthread_mutex_lock(&RefTo->Mutex);
-   // Initialize number of geoset in cache
-   if (GeoRef_SetMax < 0) {
-      GeoRef_SetMax = -GeoRef_SetMax;
-      char * georefSetMaxStr = getenv("GEOREF_MAXSET");
-      if (georefSetMaxStr) {
-         GeoRef_SetMax = atoi(georefSetMaxStr);
-      }
-   }
+    // Initialize number of geoset in cache
+    if (GeoRef_SetMax < 0) {
+        GeoRef_SetMax = -GeoRef_SetMax;
+        char * georefSetMaxStr = getenv("GEOREF_MAXSET");
+        if (georefSetMaxStr) {
+            GeoRef_SetMax = atoi(georefSetMaxStr);
+        }
+    }
 
     if (!RefTo->Sets) {
         RefTo->Sets = (TGeoSet*)calloc(GeoRef_SetMax, sizeof(TGeoSet));

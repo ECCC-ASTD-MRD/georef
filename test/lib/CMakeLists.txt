@@ -63,6 +63,9 @@ if (EC_INIT_DONE LESS 2)
         add_test(GridInterp_U2ZE   Interpolate -g $ENV{ECCI_DATA_DIR}/georef/grids/ZE.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/U.fstd -o ./georef.fstd -n GRID -e U2ZE -v DEBUG)
         add_test(GridInterp_U2O    Interpolate -g $ENV{ECCI_DATA_DIR}/georef/grids/O.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/U.fstd -o ./georef.fstd -n GRID -e U2O -v DEBUG)
 
+        add_test(GridInterp_C2L  Interpolate -g $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/C.fstd -o ./georef.fstd -n h -e C2L -v DEBUG)
+        add_test(GridInterp_L2C  Interpolate -g $ENV{ECCI_DATA_DIR}/georef/grids/C.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -o ./georef.fstd -n GRID -e L2C -v DEBUG)
+
         if(GDAL_FOUND)
             add_test(GridInterp_ZW2L  Interpolate -i $ENV{ECCI_DATA_DIR}/georef/grids/ZW.fstd -g $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -o ./georef.fstd -n GRID -e ZW2L -v DEBUG)
             add_test(GridInterp_L2ZW  Interpolate -g $ENV{ECCI_DATA_DIR}/georef/grids/ZW.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -o ./georef.fstd -n GRID -e L2ZW -v DEBUG)

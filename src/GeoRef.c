@@ -2181,6 +2181,13 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
 	      }
          break;
 
+      case 'C':
+         Ref->RPNHeadExt.xg1 = decode_cs_angle(Ref->RPNHead.ig1);
+         Ref->RPNHeadExt.xg2 = decode_cs_angle(Ref->RPNHead.ig2);
+         Ref->RPNHeadExt.xg3 = decode_cs_angle(Ref->RPNHead.ig3);
+         // TODO What do we do with the 4th one?
+         Ref->RPNHeadExt.xg4 = 0.0;
+
       case 'E':
          f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1,&Ref->RPNHeadExt.xg2,&Ref->RPNHeadExt.xg3,&Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
       /*      Ref->RPNHeadExt.xg3 = 180./Ref->NY;

@@ -470,6 +470,11 @@ int32_t  GeoRef_SetCalcXY(TGeoSet *GSet);
 int32_t  GeoRef_SetCalcYYXY(TGeoSet *GSet);
 int32_t  GeoRef_SetIndexInit(TGeoSet *GSet);
 
+int32_t ComputeLinearInterpIndicesC(TGeoRef *Ref, const double* X, const double* Y, const int32_t NumPoints,
+                                    float indices[][6]);
+void ApplyLinearInterpC_32(const float indices[][6], const int32_t NumPoints, const float NoData,
+                           const float* z_in, float* z_out);
+
 int32_t GeoRef_InterpFinally(
     TGeoRef * const RefTo,
     TGeoRef * const RefFrom,
