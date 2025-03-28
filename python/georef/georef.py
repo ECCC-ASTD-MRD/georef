@@ -336,9 +336,8 @@ class GeoRef:
             raise GeoRefError("Failed to calculate bounding box")
         return i0.value, j0.value, i1.value, j1.value
 
-    # INT32_T GeoRef_Write(const GeoRef_t *ref, const char *name, void *file_ptr)
     # int32_t GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4,fst_file *File){
-    def write(self, file, ig1, ig2, ig3, ig4, name=None) -> bool:
+    def write_fst(self, file, ig1, ig2, ig3, ig4, name=None) -> None:
         """Write the georef object to a file.
 
         This method wraps the libgeoref function GeoRef_Write() found in src/GeoRef.C
@@ -350,7 +349,7 @@ class GeoRef:
                                 If None, an empty string is used. Defaults to None.
 
         Returns:
-            bool: True if writing succeeded, False otherwise.
+            None
 
         Note:
             The underlying C function returns:
@@ -361,7 +360,6 @@ class GeoRef:
         val = _write_fst(self._ptr, name_bytes, ig1, ig2, ig3, ig4, file._c_ref)
         if val != 1:
             raise GeoRefError("Could not write file")
-        return val == 1
 
     # TGeoRef* GeoRef_CreateFromRecord(fst_record_t *Rec)
     @classmethod
