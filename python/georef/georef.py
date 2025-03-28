@@ -118,29 +118,28 @@ class GeoRef:
             _free(self._ptr)
 
     # INT32_T GeoRef_Interp(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt, float *zout, float *zin)
-    def interp(self, reffrom, zout, zin, options=None):
+    def interp(self, reffrom, zin, options=None) -> numpy.ndarray:
         """Interpolate values between two georefs.
 
         This method wraps the libgeoref function GeoRef_Interp() found in src/GeoRef_Interp.c.
         Interpolates data from source grid (reffrom) to destination grid (self).
 
         Args:
-            reffrom (georef): Source georef object
-            zout (numpy.ndarray): Output array for interpolated values (float32)
+            reffrom (GeoRef): Source georef object
             zin (numpy.ndarray): Input array with source values (float32)
-            options (geooptions, optional): Interpolation options. Uses default if None.
+            options (GeoOptions, optional): Interpolation options. Uses default if None.
 
         Returns:
-            bool: True if interpolation succeeded, False otherwise
+            numpy array of values interpolated to this georef's grid
 
         Note:
             The underlying C function returns:
             - GEOREF_SUCCESS (0) for successful interpolation
             - Non-zero value for failure
         """
-        if not isinstance(zin, numpy.ndarray) or not isinstance(zout, numpy.ndarray):
+        if not isinstance(zin, numpy.ndarray):
             raise TypeError("Input and output must be numpy arrays")
-        if zin.dtype != numpy.float32 or zout.dtype != numpy.float32:
+        if zin.dtype != numpy.float32:
             raise TypeError("Arrays must be float32")
         # Add shape validation here
 
@@ -148,9 +147,13 @@ class GeoRef:
         if options is not None:
             opt_ptr = ctypes.byref(options)
 
+        zout = numpy.empty(self.shape, dtype=numpy.float32)
+
         result = _interp(self._ptr, reffrom._ptr, opt_ptr, zout, zin)
         if result != GEOREF_SUCCESS:
             raise GeoRefError("Failed to interpolate")
+
+        return zout
 
 
     def copy(self, hard=False):
