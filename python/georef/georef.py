@@ -300,7 +300,7 @@ class GeoRef:
         return x0.value, y0.value, x1.value, y1.value
 
     # INT32_T GeoRef_BoundingBox(const GeoRef_t *ref, double lat0, double lon0, double lat1, double lon1, double *i0, double *j0, double *i1, double *j1)
-    def boundingbox(self, lat0, lon0, lat1, lon1) -> Tuple[bool, Tuple[float, float, float, float]]:
+    def boundingbox(self, lat0, lon0, lat1, lon1) -> Tuple[float, float, float, float]:
         """Calculate the bounding box coordinates for a given lat/lon range.
 
         This method wraps the libgeoref function GeoRef_BoundingBox() found in src/GeoRef.C
