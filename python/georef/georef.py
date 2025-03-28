@@ -2,7 +2,7 @@ import ctypes
 import numpy
 import numpy.ctypeslib
 from rmn import fst24_file
-from typing import Tuple
+from typing import Tuple, Union
 from .constants import *
 from .structs import GeoOptions, GeoRefError
 
@@ -255,7 +255,7 @@ class GeoRef:
         return val == 1
 
     # INT32_T GeoRef_Intersect(const GeoRef_t *ref1, const GeoRef_t *ref2, INT32_T *x0, INT32_T *y0, INT32_T *x1, INT32_T *y1, INT32_T bd)
-    def intersect(self, other, boundary=False): # TODO Set proper type hint for 'None or Tuple[int, int, int, int]'
+    def intersect(self, other, boundary=False) -> Union[None, Tuple[int, int, int, int]]:
         """Check if two georef objects intersect and get intersection coordinates.
 
         This method wraps the libgeoref function GeoRef_Intersect() found in src/GeoRef.C
@@ -267,10 +267,8 @@ class GeoRef:
                                      Defaults to False.
 
         Returns:
-            tuple[bool, tuple[int, int, int, int]]: A tuple containing:
-                - bool: True if the georefs intersect, False otherwise
-                - tuple[int, int, int, int]: The intersection coordinates (x0, y0, x1, y1).
-                                            Returns (0, 0, 0, 0) if no intersection.
+            - None if there is no intersection
+            - Tuple[int,int, int, int] if there is an intersection
 
         Note:
             The underlying C function returns:
@@ -293,6 +291,7 @@ class GeoRef:
                         )
 
         if val != 1:
+            # It is not an error if there is no intersection
             return None
 
         return x0.value, y0.value, x1.value, y1.value
