@@ -13,5 +13,6 @@ endforeach()
 
 install(FILES ${python_files} DESTINATION lib/python/georef)
 
+configure_file(dev-setup-python.in.sh ${CMAKE_BINARY_DIR}/dev-setup-python.sh @ONLY)
 add_test(NAME run-python-interpolate COMMAND bash -c "source ${CMAKE_BINARY_DIR}/setup-python.sh; ${CMAKE_SOURCE_DIR}/run-python-test.sh")
 

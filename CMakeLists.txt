@@ -52,7 +52,6 @@ link_libraries("-Wl,--disable-new-dtags")
 add_subdirectory(src)
 # add_subdirectory(test/C test)
 add_subdirectory(python/georef)
-configure_file(dev-setup-python.in.sh ${CMAKE_BINARY_DIR}/dev-setup-python.sh @ONLY)
 
 configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/${NAME}-config DESTINATION bin)
