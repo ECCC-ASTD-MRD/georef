@@ -6,9 +6,10 @@
 #----- Editor pattern
 *.sw[po]
 *~
+*.code-workspace
 
-#----- buil directory at the root path
-/build/
+#----- build directory at the root path
+/build*/
 /.vscode/
 
 /doc/
