@@ -52,7 +52,6 @@ find_package(rmn)
 
 link_libraries("-Wl,--disable-new-dtags")
 add_subdirectory(src)
-add_subdirectory(python)
 add_subdirectory(test/lib test)
 
 configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)
