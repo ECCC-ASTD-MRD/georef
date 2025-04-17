@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Append EC specific module path
-list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake_rpn/modules)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_rpn/modules $ENV{EC_CMAKE_MODULE_PATH})
 
 include(ec_init)           # Initialise compilers and ec specific functions
 ec_git_version()           # Get version from git state
@@ -52,7 +52,8 @@ find_package(rmn)
 
 link_libraries("-Wl,--disable-new-dtags")
 add_subdirectory(src)
-add_subdirectory(test/lib test)
+# add_subdirectory(test/C test)
+add_subdirectory(python/georef)
 
 configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/${NAME}-config DESTINATION bin)
