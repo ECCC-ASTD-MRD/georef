@@ -7,7 +7,7 @@
 #include <string.h>
 #include <pthread.h>
 
-#include <rmn.h>
+#include <rmn/base.h>
 #include <rmn/Vector.h>
 #include <rmn/QTree.h>
 
@@ -251,19 +251,19 @@ typedef struct TGeoRef {
    int32_t      NRef;                                     //!< Nombre de reference a la georeference
    struct TGeoRef  *RefFrom;                              //!< Georeference de reference (coupe verticale, ...)
    struct TGeoRef **Subs;                                 //!< Liste des sous grilles (GRTYP=U)
-   int32_t      Sub, NbSub;                                //!< Nombre de sous-grilles
+   int32_t      Sub, NbSub;                               //!< Nombre de sous-grilles
    int32_t      Type;                                     //!< Parametre/Flags de grille
    int32_t      BD;                                       //!< Bordure
-   int32_t      NX, NY, X0, Y0, X1, Y1;                        //!< Grid size and limits
+   int32_t      NX, NY, X0, Y0, X1, Y1;                   //!< Grid size and limits
    int32_t      Extension;                                //!< related to the newtonian coefficient
    char         GRTYP[2 + 1];                             //!< Type de grille
    int32_t      Hemi;                                     //!< Hemisphere side (0=GRID_GLOBAL, 1=NORTH, 2=SOUTH)
    int32_t      NbSet;                                    //!< Nombre de set d'interpolation
-   TGeoSet      *Sets, *LastSet;                           //!< Tableau de set d'interpolation et du dernier utilise
+   TGeoSet      *Sets, *LastSet;                          //!< Tableau de set d'interpolation et du dernier utilise
 
-   uint32_t     NIdx, *Idx;                                //!< Index dans les positions
-   double       *Lat, *Lon;                                //!< Coordonnees des points de grilles (Spherical)
-   double       *AX, *AY, *AXY;                             //!< Axes de positionnement / deformation
+   uint32_t     NIdx, *Idx;                               //!< Index dans les positions
+   double       *Lat, *Lon;                               //!< Coordonnees des points de grilles (Spherical)
+   double       *AX, *AY, *AXY;                           //!< Axes de positionnement / deformation
    float        *NCX, *NCY, *Hgt;
    double       *Wght;                                    //!< Barycentric weight array for TIN  (M grids)
 
@@ -280,12 +280,12 @@ typedef struct TGeoRef {
    void                         *RPCTransform;            //!< GPC Rigorous Projection Model transform
    TQTree                       *QTree;                   //!< Quadtree index
    OGREnvelope                   LLExtent;                //!< LatLon extent
-   OGRCoordinateTransformationH  Function, InvFunction;    //!< Projection functions
+   OGRCoordinateTransformationH  Function, InvFunction;   //!< Projection functions
    OGRSpatialReferenceH          Spatial;                 //!< Spatial reference
 
    TCoord  Loc;                                           //!< (Radar) Localisation du centre de reference
-   double  CTH, STH;                                       //!< (Radar) sin and cos of sweep angle
-   double  ResR, ResA;                                     //!< (Radar) Resolutions en distance et azimuth
+   double  CTH, STH;                                      //!< (Radar) sin and cos of sweep angle
+   double  ResR, ResA;                                    //!< (Radar) Resolutions en distance et azimuth
    int32_t R;                                             //!< (Radar) Rayon autour du centre de reference en bin
 
    TGeoOptions Options;                                   //!< Options for manipulations
