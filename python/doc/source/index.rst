@@ -13,6 +13,7 @@ Welcome to Georef's documentation!
    georef
    geoset
    geodef
+   geooptions
    enums
 
 
