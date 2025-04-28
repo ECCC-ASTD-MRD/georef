@@ -143,7 +143,7 @@ class GeoRef:
             raise TypeError("Arrays must be float32")
         # Add shape validation here
 
-        opt_ptr = ctypes.c_void_p(None)
+        opt_ptr = None
         if options is not None:
             opt_ptr = ctypes.byref(options)
 
