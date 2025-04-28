@@ -7,7 +7,7 @@
 #include <string.h>
 #include <pthread.h>
 
-#include <rmn.h>
+#include <rmn/base.h>
 #include <rmn/Vector.h>
 #include <rmn/QTree.h>
 

@@ -1,5 +1,4 @@
 #include <App.h>
-#include <rmn.h>
 #include <GeoRef.h>
 #include <georef_build_info.h>
 
