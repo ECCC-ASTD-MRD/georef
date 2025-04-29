@@ -313,10 +313,7 @@ class GeoRef:
             lon1 (float): Second longitude point.
 
         Returns:
-            tuple[bool, tuple[float, float, float, float]]: A tuple containing:
-                - bool: True if bounding box calculation succeeded, False otherwise
-                - tuple[float, float, float, float]: The bounding box coordinates (i0, j0, i1, j1).
-                                                    Returns (0.0, 0.0, 0.0, 0.0) if calculation fails.
+            tuple[float, float, float, float]]: The bounding box coordinates (i0, j0, i1, j1).
 
         Note:
             The underlying C function returns:
