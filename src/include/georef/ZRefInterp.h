@@ -1,6 +1,8 @@
 #ifndef _ZRefInterp_h
 #define _ZRefInterp_h
 
+#include <rmn/base.h>
+
 #include "ZRef.h"
 
 //  Interpolation 

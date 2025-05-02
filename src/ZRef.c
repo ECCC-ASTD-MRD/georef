@@ -1,4 +1,7 @@
 #include <App.h>
+#include <rmn/base.h>
+#include <rmn/convert_ip.h>
+
 #include "georef/GeoRef_Utils.h"
 #include "georef/ZRef.h"
 

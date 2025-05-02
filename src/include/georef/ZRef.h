@@ -1,7 +1,7 @@
 #ifndef _ZRef_h
 #define _ZRef_h
 
-#include <rmn.h>
+#include <rmn/fst24_file.h>
 
 // Level related constants and functions
 #define LVL_NIL         -1  //  No conversion
