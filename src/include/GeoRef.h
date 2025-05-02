@@ -111,7 +111,7 @@ typedef struct {
 #define GeoRef_SetHasIndex(G)   (G && G->Index && G->Index[0] != REF_INDEX_EMPTY)
 #define GeoRef_SetEmptyIndex(G) (G && G->Index && G->Index[0] == REF_INDEX_EMPTY)
 
-// Raster interpolation modes
+// Interpolation modes
 typedef enum {
    IR_UNDEF                          = 0,    //!< Undefined
    IR_NEAREST                        = 1,    //!< Nearest point

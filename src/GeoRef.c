@@ -1050,15 +1050,26 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
    return(GeoRef_Define(ref,NI,NJ,GRTYP,"",IG1,IG2,IG3,IG4,NULL,NULL));
 }
 
+int32_t GeoRef_AssignToRecord(fst_record *Rec,TGeoRef *Ref) {
+
+   Rec->ig1=Ref->RPNHead.ip1;
+   Rec->ig2=Ref->RPNHead.ip2;
+   Rec->ig3=Ref->RPNHead.ip3;
+   Rec->ig4=0;
+   Rec->grtyp[0]=Ref->RPNHead.grtyp[0];
+
+   return(TRUE);
+}
+
 TGeoRef* GeoRef_CreateFromRecord(fst_record *Rec) {
 
    TGeoRef *ref;
 
    ref=GeoRef_New();
    ref->RPNHead.file=Rec->file;
-   ref->RPNHead.ip1=Rec->ip1;
-   ref->RPNHead.ip2=Rec->ip2;
-   ref->RPNHead.ip3=Rec->ip3;
+   ref->RPNHead.ip1=Rec->ig1;
+   ref->RPNHead.ip2=Rec->ig2;
+   ref->RPNHead.ip3=Rec->ig3;
    ref->RPNHead.datev=Rec->datev;
 
    if (Rec->grtyp[0]=='#') {
