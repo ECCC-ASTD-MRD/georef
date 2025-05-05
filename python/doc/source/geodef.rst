@@ -1,6 +1,6 @@
 GeoDef
 ======
 
-.. autoclass:: georef.georef.GeoDef
+.. autoclass:: georef.GeoDef
    :members:
    :undoc-members:

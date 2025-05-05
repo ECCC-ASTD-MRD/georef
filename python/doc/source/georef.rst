@@ -1,6 +1,6 @@
 GeoRef
 ======
 
-.. autoclass:: georef.georef.GeoRef
+.. autoclass:: georef.GeoRef
    :members:
    :undoc-members:
