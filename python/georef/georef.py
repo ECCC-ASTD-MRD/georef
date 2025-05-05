@@ -353,7 +353,7 @@ class GeoRef:
         uu_out = numpy.empty(self.shape, dtype=numpy.float32)
         vv_out = numpy.empty(self.shape, dtype=numpy.float32)
 
-        opt = options if options else GeoOptions()
+        opt_ptr = ctypes.byref(options) if options else None
 
         val = _interpwd(self._ptr,
                         ctypes.c_void_p,
