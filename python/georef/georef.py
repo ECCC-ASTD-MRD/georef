@@ -202,9 +202,7 @@ class GeoRef:
             bool: True if the georef object is within the specified range,
                   False otherwise.
         """
-        cin = 1 if inside else 0
-        val = _withinrange(self._ptr, lat0, lon0, lat1, lon1, cin)
-        return val == 1
+        return bool(_withinrange(self._ptr, lat0, lon0, lat1, lon1, inside))
 
     # INT32_T GeoRef_Intersect(const GeoRef_t *ref1, const GeoRef_t *ref2, INT32_T *x0, INT32_T *y0, INT32_T *x1, INT32_T *y1, INT32_T bd)
     def intersect(self, other, boundary=False) -> Union[None, Tuple[int, int, int, int]]:
