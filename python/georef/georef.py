@@ -43,6 +43,8 @@ from ._georef_c_bindings import (
     _new
 )
 
+GEOREF_SUCCESS = 1
+GEOREF_FAILURE = 0
 
 __all__ = ('GeoRef', 'GeoDef', 'GeoSet')
 
@@ -68,20 +70,8 @@ class GeoRef:
 
     def limits(self) -> Tuple[float, float, float, float]:
         """Get the geographical limits of the GeoRef.
-
-        From: georef_limits_f in GeoRef_mod.F90
-        Source: src/GeoRef.c
-        C signature: int32_t georef_limits(GeoRef* ref,
-                                         double* lat0, double* lon0,
-                                         double* lat1, double* lon1)
-
         Returns:
             tuple: (lat0, lon0, lat1, lon1) geographical limits
-
-        Note:
-            The underlying C function returns:
-            - 0 for failure (NULL reference or error)
-            - 1 for success
         """
         lat0 = ctypes.c_double(0.0)
         lon0 = ctypes.c_double(0.0)
@@ -94,24 +84,16 @@ class GeoRef:
             ctypes.byref(lat1),
             ctypes.byref(lon1)
         )
-        if result == 0:
-            raise GeoRefError(f"Failure in C function GeoRef_Limits: {result}")
+        if result == GEOREF_FAILURE:
+            raise GeoRefError(f"Failure in C function GeoRef_Limits")
         return lat0.value, lon0.value, lat1.value, lon1.value
 
     # INT32_T GeoRef_Valid(TGeoRef *Ref)
     def valid(self) -> bool:
         """Check if the georef object is properly initialized.
 
-        This method wraps the libgeoref function GeoRef_Valid() found in src/GeoRef.c.
-        Verifies that the georef object has been properly initialized and contains valid data.
-
         Returns:
             bool: True if the georef is valid and initialized, False otherwise
-
-        Note:
-            The underlying C function returns:
-            - 0 for invalid/uninitialized reference
-            - 1 for valid reference
         """
         return bool(_valid(self._ptr))
 
@@ -121,10 +103,7 @@ class GeoRef:
 
     # INT32_T GeoRef_Interp(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt, float *zout, float *zin)
     def interp(self, reffrom, zin, options=None) -> numpy.ndarray:
-        """Interpolate values between two georefs.
-
-        This method wraps the libgeoref function GeoRef_Interp() found in src/GeoRef_Interp.c.
-        Interpolates data from source grid (reffrom) to destination grid (self).
+        """ Interpolates data from source grid (reffrom) to destination grid (self).
 
         Args:
             reffrom (GeoRef): Source georef object
@@ -133,11 +112,6 @@ class GeoRef:
 
         Returns:
             numpy array of values interpolated to this georef's grid
-
-        Note:
-            The underlying C function returns:
-            - GEOREF_SUCCESS (0) for successful interpolation
-            - Non-zero value for failure
         """
         if not isinstance(zin, numpy.ndarray):
             raise TypeError("Input and output must be numpy arrays")
@@ -161,9 +135,6 @@ class GeoRef:
     def copy(self, hard=False):
         """Create a copy of the current georef object.
 
-        This method wraps the libgeoref functions georef_copy() and georef_hardcopy()
-        found in src/GeoRef.c
-
         Args:
             hard (bool, optional): If True, creates a deep copy using georef_copy().
                                  If False, creates a shallow copy using georef_hardcopy().
@@ -171,11 +142,6 @@ class GeoRef:
 
         Returns:
             Georef: A new georef object that is either a deep or shallow copy of the current instance.
-
-        Note:
-            The underlying C functions being called are:
-            - GeoRef_Copy() for hard=True
-            - GeoRef_HardCopy() for hard=False
         """
 
         if hard:
@@ -193,22 +159,13 @@ class GeoRef:
     def equal(self, other):
         """Check if two georef objects are equal.
 
-        This method wraps the libgeoref function georef_equal() found in src/GeoRef.c
-        and src/GeoRef_mod.F90.
-
         Args:
             other (Georef): Another georef instance to compare with.
 
         Returns:
             bool: True if the georef objects are equal, False otherwise.
-
-        Note:
-            The underlying C function returns:
-            - 0 for inequality or error (NULL references)
-            - 1 for equality
         """
-        val = _equal(self._ptr, other._ptr)
-        return val == 1
+        return bool(_equal(self._ptr, other._ptr))
 
     # INT32_T GeoRef_Within(const GeoRef_t *ref1, const GeoRef_t *ref2)
     def within(self, other):
@@ -223,14 +180,8 @@ class GeoRef:
         Returns:
             bool: True if this georef object is within the other georef object,
                   False otherwise.
-
-        Note:
-            The underlying C function returns:
-            - 0 for non-containment or error (NULL references)
-            - 1 for containment
         """
-        val = _within(self._ptr, other._ptr)
-        return val == 1
+        return bool(_within(self._ptr, other._ptr))
 
     # INT32_T GeoRef_WithinRange(const GeoRef_t *ref, double lat0, double lon0, double lat1, double lon1, INT32_T in)
     def withinrange(self, lat0, lon0, lat1, lon1, inside=False):
@@ -249,11 +200,6 @@ class GeoRef:
         Returns:
             bool: True if the georef object is within the specified range,
                   False otherwise.
-
-        Note:
-            The underlying C function returns:
-            - 0 for outside range or error (NULL reference)
-            - 1 for within range
         """
         cin = 1 if inside else 0
         val = _withinrange(self._ptr, lat0, lon0, lat1, lon1, cin)
@@ -261,10 +207,8 @@ class GeoRef:
 
     # INT32_T GeoRef_Intersect(const GeoRef_t *ref1, const GeoRef_t *ref2, INT32_T *x0, INT32_T *y0, INT32_T *x1, INT32_T *y1, INT32_T bd)
     def intersect(self, other, boundary=False) -> Union[None, Tuple[int, int, int, int]]:
-        """Check if two georef objects intersect and get intersection coordinates.
-
-        This method wraps the libgeoref function GeoRef_Intersect() found in src/GeoRef.C
-        and src/GeoRef_mod.F90.
+        """Check if two georef objects intersect and get intersection
+        coordinates.
 
         Args:
             other (Georef): Another georef instance to check intersection with.
@@ -274,11 +218,6 @@ class GeoRef:
         Returns:
             - None if there is no intersection
             - Tuple[int,int, int, int] if there is an intersection
-
-        Note:
-            The underlying C function returns:
-            - 0 for no intersection or error (NULL references)
-            - 1 for intersection found
         """
         x0 = ctypes.c_int32()
         y0 = ctypes.c_int32()
@@ -295,7 +234,7 @@ class GeoRef:
                          bd_val
                         )
 
-        if val != 1:
+        if val != GEOREF_SUCCESS:
             # It is not an error if there is no intersection
             return None
 
@@ -305,9 +244,6 @@ class GeoRef:
     def boundingbox(self, lat0, lon0, lat1, lon1) -> Tuple[float, float, float, float]:
         """Calculate the bounding box coordinates for a given lat/lon range.
 
-        This method wraps the libgeoref function GeoRef_BoundingBox() found in src/GeoRef.C
-        and src/GeoRef_mod.F90.
-
         Args:
             lat0 (float): First latitude point.
             lon0 (float): First longitude point.
@@ -316,11 +252,6 @@ class GeoRef:
 
         Returns:
             tuple[float, float, float, float]]: The bounding box coordinates (i0, j0, i1, j1).
-
-        Note:
-            The underlying C function returns:
-            - 0 for failure (NULL reference or calculation error)
-            - 1 for successful calculation
         """
         i0 = ctypes.c_double()
         j0 = ctypes.c_double()
@@ -339,9 +270,6 @@ class GeoRef:
     def write_fst(self, file, ig1, ig2, ig3, ig4, name=None) -> None:
         """Write the georef object to a file.
 
-        This method wraps the libgeoref function GeoRef_Write() found in src/GeoRef.C
-        and src/GeoRef_mod.F90.
-
         Args:
             file: FST file object containing the C file pointer.
             name (str, optional): Name identifier for the georef object.
@@ -349,15 +277,12 @@ class GeoRef:
 
         Returns:
             None
-
-        Note:
-            The underlying C function returns:
-            - 0 for failure (NULL references or write error)
-            - 1 for successful write operation
         """
+        # This method wraps the libgeoref function GeoRef_Write() found in src/GeoRef.C
+        # and src/GeoRef_mod.F90.
         name_bytes = name.encode('utf-8') if name else None
         val = _write_fst(self._ptr, name_bytes, ig1, ig2, ig3, ig4, file._c_ref)
-        if val != 1:
+        if val != GEOREF_SUCCESS:
             raise GeoRefError("Could not write file")
 
     # TGeoRef* GeoRef_CreateFromRecord(fst_record_t *Rec)
@@ -365,19 +290,11 @@ class GeoRef:
     def fromrecord(cls, record): # -> GeoRef (but it's not defined)
         """Create a georef object from an FST record.
 
-        This method wraps the libgeoref function GeoRef_CreateFromRecord() found in src/GeoRef.C
-        and src/GeoRef_mod.F90.
-
         Args:
             record: rmn.fst_record object.
 
         Returns:
             GeoRef: New GeoRef instance created from the given record.
-
-        Note:
-            The underlying C function returns:
-            - NULL pointer (0) for failure
-            - Valid GeoRef pointer (non-zero) for success
         """
         ptr = _createfromrecord(ctypes.byref(record))
         if ptr is None:
@@ -392,8 +309,6 @@ class GeoRef:
     def interpuv(self, ref_from, uu_in, vv_in, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate UV (vector) data from one georef to another.
 
-        This method wraps the libgeoref function GeoRef_InterpUV() found in src/GeoRef_InterpUV.c.
-
         Args:
             ref_from (Georef): Source georef instance containing the input data.
             uu_in (numpy.ndarray): Input U component array (float32).
@@ -403,11 +318,6 @@ class GeoRef:
         Returns:
             tuple[numpy.ndarray, numpy.ndarray]: A tuple containing:
             The interpolated (uu_out, vv_out) arrays. Arrays are float32 type.
-
-        Note:
-            The underlying C function returns:
-            - 0 for failure (NULL references or interpolation error)
-            - 1 for successful interpolation
         """
         uu_out = numpy.empty(self.shape, dtype=numpy.float32)
         vv_out = numpy.empty(self.shape, dtype=numpy.float32)
@@ -422,7 +332,7 @@ class GeoRef:
                         uu_in,
                         vv_in)
 
-        if val != 1:
+        if val != GEOREF_SUCCESS:
             raise GeoRefError("Failed to interpolate U/V components")
         return uu_out, vv_out
 
@@ -430,10 +340,6 @@ class GeoRef:
     #                         float *uuout, float *vvout, const float *uuin, const float *vvin)
     def interpwd(self, ref_from, uu_in, vv_in, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate wind speed and direction between 2 georeferences.
-
-        This method wraps the libgeoref function GeoRef_InterpWD() found in src/GeoRef_InterpUV.c.
-        Interpolates vectorial component values between 2 georeferences and outputs rotated
-        speed and directions.
 
         Args:
             ref_from (Georef): Source georef instance containing the input data.
@@ -444,11 +350,6 @@ class GeoRef:
         Returns:
             tuple[numpy.ndarray, numpy.ndarray]: The interpolated (speed,
             direction) arrays. Arrays are float32 type.
-
-        Note:
-            The underlying C function returns:
-            - 0 for failure (NULL references or interpolation error)
-            - 1 for successful interpolation
         """
         uu_out = numpy.empty(self.shape, dtype=numpy.float32)
         vv_out = numpy.empty(self.shape, dtype=numpy.float32)
@@ -463,7 +364,7 @@ class GeoRef:
                         uu_in,
                         vv_in)
 
-        if val != 1:
+        if val != GEOREF_SUCCESS:
             raise GeoRefError("Failed to interpolate U/V components")
         return uu_out, vv_out
 
