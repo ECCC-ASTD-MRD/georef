@@ -185,7 +185,7 @@ class GeoRef:
         return bool(_within(self._ptr, other._ptr))
 
     # INT32_T GeoRef_WithinRange(const GeoRef_t *ref, double lat0, double lon0, double lat1, double lon1, INT32_T in)
-    def withinrange(self, lat0, lon0, lat1, lon1, inside=False):
+    def withinrange(self, lat0: float, lon0: float, lat1: float, lon1: float, inside: bool = False):
         """Check if georef object is within a specified latitude/longitude range.
 
         This method wraps the libgeoref function GeoRef_WithinRange() found in src/GeoRef.C
@@ -242,7 +242,7 @@ class GeoRef:
         return x0.value, y0.value, x1.value, y1.value
 
     # INT32_T GeoRef_BoundingBox(const GeoRef_t *ref, double lat0, double lon0, double lat1, double lon1, double *i0, double *j0, double *i1, double *j1)
-    def boundingbox(self, lat0, lon0, lat1, lon1) -> Tuple[float, float, float, float]:
+    def boundingbox(self, lat0: float, lon0: float, lat1: float, lon1: float) -> Tuple[float, float, float, float]:
         """Calculate the bounding box coordinates for a given lat/lon range.
 
         Args:
