@@ -2255,6 +2255,10 @@ int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt) {
    int64_t k,n,nij,idx;
    double  val;
 
+   if (Opt->Interp < IR_NORMALIZED_CONSERVATIVE) {
+      return(TRUE);
+   }
+
    nij=FSIZE2D(ToDef);
    idx=0;
 
@@ -2343,7 +2347,7 @@ int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt) {
 int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t Final) {
 
    void *pf0, *pt0, *pf1, *pt1;
-   int64_t   k, code = FALSE;
+   int32_t   k, code = FALSE;
 
    if (!Opt) Opt=&GeoRef_Options;
 
@@ -2389,7 +2393,6 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
                // Interpolation scalaire
                code = GeoRef_Interp(ToRef, FromRef, Opt, pt0, pf0);
             }
-
             // Interpolate mask if need be
             if (FromDef->Mask && ToDef->Mask) {
                code = GeoRef_InterpMask(ToRef, FromRef, Opt, &ToDef->Mask[k*FSIZE2D(ToDef)], &FromDef->Mask[k*FSIZE2D(FromDef)]);
