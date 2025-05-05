@@ -44,6 +44,8 @@ from ._georef_c_bindings import (
 )
 
 
+__all__ = ('GeoRef', 'GeoDef', 'GeoSet')
+
 class GeoRef:
     """Wrapper for the C GeoRef structure providing geographic reference functionality."""
 
