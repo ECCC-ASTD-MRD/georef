@@ -145,12 +145,13 @@ class GeoRef:
         """
 
         if hard:
-            out = GeoRef.__new__(GeoRef)
-            out._ptr = _hardcopy(self._ptr)
-
-            if out._ptr is None:
+            copy_ptr = _hardcopy(self._ptr)
+            if copy_ptr is None:
                 raise GeoRefError("Failed to copy GeoRef: NULL pointer returned")
-            return out
+
+            copy = GeoRef.__new__(GeoRef)
+            copy._ptr = copy_ptr
+            return copy
         else:
             return self
 
