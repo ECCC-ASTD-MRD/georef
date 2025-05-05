@@ -4,7 +4,15 @@
 # otherwise we would have to re-run CMake everytime we change them.  At install
 # time of course, we copy the python files.
 #
-file(GLOB python_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
+set(python_files
+    __init__.py
+    _georef_c_bindings.py
+    constants.py
+    enums.py
+    georef.py
+    shared_lib.py
+    structs.py
+)
 message(STATUS "python_files=${python_files}")
 foreach(f IN LISTS python_files)
     message(STATUS "f=${f}")
