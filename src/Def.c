@@ -994,15 +994,15 @@ int32_t GeoRef_Cell2OGR(OGRGeometryH Geom, TGeoRef *ToRef, TGeoRef *FromRef, int
 
    // In case of U grid, we have to select the right subgrid
    if (FromRef->NbSub > 0) {
-      if (J > FromRef->Subs[0]->NY) {
+      if (J > FromRef->Subs[0]->NY-1) {
          J-=FromRef->Subs[0]->NY;
          fromref=FromRef->Subs[1];
       
          x = I; y = J;
          GeoRef_XY2LL(fromref, &la, &lo, &x, &y, 1, TRUE);
          if (GeoRef_LL2XY(ToRef, &x, &y, &la, &lo, 1, FALSE)) {
-            dx=x-1.0;
-            dy=y-1.0;
+            dx=x;
+            dy=y;
             // Check if this point is from yin or yang
             if (!gset->yin_maskout[dy*ToRef->NX+dx])
                return(0);
@@ -1019,7 +1019,7 @@ int32_t GeoRef_Cell2OGR(OGRGeometryH Geom, TGeoRef *ToRef, TGeoRef *FromRef, int
       x1 = fmax(x1, x);
       y0 = fmin(y0, y);
       y1 = fmax(y1, y);
-      OGR_G_SetPoint_2D(Geom, pt++, x-1.0, y-1.0);
+      OGR_G_SetPoint_2D(Geom, pt++, x, y);
    }
 
    // Top right
@@ -1031,7 +1031,7 @@ int32_t GeoRef_Cell2OGR(OGRGeometryH Geom, TGeoRef *ToRef, TGeoRef *FromRef, int
       x1 = fmax(x1, x);
       y0 = fmin(y0, y);
       y1 = fmax(y1, y);
-      OGR_G_SetPoint_2D(Geom, pt++, x-1.0, y-1.0);
+      OGR_G_SetPoint_2D(Geom, pt++, x, y);
    }
 
    // Right bottom
@@ -1043,7 +1043,7 @@ int32_t GeoRef_Cell2OGR(OGRGeometryH Geom, TGeoRef *ToRef, TGeoRef *FromRef, int
       x1 = fmax(x1, x);
       y0 = fmin(y0, y);
       y1 = fmax(y1, y);
-      OGR_G_SetPoint_2D(Geom, pt++, x-1.0, y-1.0);
+      OGR_G_SetPoint_2D(Geom, pt++, x, y);
    }
 
    // Bottom Left
@@ -1055,21 +1055,16 @@ int32_t GeoRef_Cell2OGR(OGRGeometryH Geom, TGeoRef *ToRef, TGeoRef *FromRef, int
       x1 = fmax(x1, x);
       y0 = fmin(y0, y);
       y1 = fmax(y1, y);
-      OGR_G_SetPoint_2D(Geom, pt++, x-1.0, y-1.0);
+      OGR_G_SetPoint_2D(Geom, pt++, x, y);
    }
 
    // Close the polygon
    x = I-0.5; y = J-0.5;
    GeoRef_XY2LL(fromref, &la, &lo, &x, &y, 1, TRUE);
    GeoRef_LL2XY(ToRef, &x, &y, &la, &lo, 1, TRUE);
-   OGR_G_SetPoint_2D(Geom, pt++, x-1.0, y-1.0);
+   OGR_G_SetPoint_2D(Geom, pt++, x, y);
 
-   // If the cell is outside the destination limits
-   x0-=1.0;
-   x1-=1.0;
-   y0-=1.0;
-   y1-=1.0;
-         
+   // If the cell is outside the destination limits         
    t0=ToRef->X0-0.5;
    t1=ToRef->X1+0.5;
    if ((x0 < t0 && x1 < t0) || (x0 > t1 && x1 > t1)) {
@@ -1813,7 +1808,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                }
 
                // Project the source gridcell into the destination
-               wrap = GeoRef_Cell2OGR(ring, ToRef, FromRef, i+1.0, j+1.0, Opt);
+               wrap = GeoRef_Cell2OGR(ring, ToRef, FromRef, i, j, Opt);
                if (!wrap)
                   continue;
 
@@ -2823,8 +2818,8 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
             if (x <= X1 && y <= Y1) {
                Scan->V[Scan->N++] = idx;
             }
-            Scan->X[n] = dd ? x+0.5 : x+1.0;
-            Scan->Y[n] = dd ? y+0.5 : y+1.0;
+            Scan->X[n] = dd ? x-0.5 : x;
+            Scan->Y[n] = dd ? y-0.5 : y;
         }
       }
       GeoRef_XY2LL(FromRef, Scan->Y, Scan->X, Scan->X, Scan->Y, n, TRUE);
@@ -2845,7 +2840,7 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
 
          if (GeoRef_LL2XY(ToRef, &Scan->X[x], &Scan->Y[x], &y0, &x0, 1, FALSE)) {
             if (ToDef) {
-               Def_GetValue(ToRef, ToDef, Opt, 0, Scan->X[x]-1.0, Scan->Y[x]-1.0, 0, &v, NULL);
+               Def_GetValue(ToRef, ToDef, Opt, 0, Scan->X[x], Scan->Y[x], 0, &v, NULL);
                Scan->D[x] = v;
             }
          }
@@ -2874,10 +2869,7 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
       }
 
       for(x = 0; x < n; x++) {
-         Scan->X[x] -= 1.0;
-         Scan->Y[x] -= 1.0;
-
-         if (ToDef) {
+        if (ToDef) {
             ix = lrint(Scan->X[x]);
             iy = lrint(Scan->Y[x]);
             idx = FIDX2D(ToDef, ix, iy);

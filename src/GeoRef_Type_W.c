@@ -327,8 +327,8 @@ int32_t GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
    for(n=0;n<Nb;n++) {
 
       // Transform the point32_t into georeferenced coordinates 
-      x=X[n]-1.0;
-      y=Y[n]-1.0;
+      x=X[n];
+      y=Y[n];
       if (Ref->Options.Transform) {
          if (Ref->Transform) {
             x=Ref->Transform[0]+Ref->Transform[1]*X[n]+Ref->Transform[2]*Y[n];
@@ -416,8 +416,6 @@ int32_t GeoRef_LL2XY_W(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
             GDALRPCTransform(Ref->RPCTransform,TRUE,1,&X[n],&Y[n],&z,&ok);
          }
       }  
-      X[n]+=1.0;
-      Y[n]+=1.0;
 
    }
 #else

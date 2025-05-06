@@ -19,8 +19,8 @@ int32_t GeoRef_XY2LL_L(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
 
    #pragma omp parallel for default(none) private(i) shared(Nb,Ref,X,Y,Lat,Lon)
    for (i=0; i < Nb; i++) {
-      Lat[i] = (Y[i]-1.0)*Ref->RPNHeadExt.xg3+Ref->RPNHeadExt.xg1;
-      Lon[i] = (X[i]-1.0)*Ref->RPNHeadExt.xg4+Ref->RPNHeadExt.xg2;
+      Lat[i] = Y[i]*Ref->RPNHeadExt.xg3+Ref->RPNHeadExt.xg1;
+      Lon[i] = X[i]*Ref->RPNHeadExt.xg4+Ref->RPNHeadExt.xg2;
    }
 
    return(0);

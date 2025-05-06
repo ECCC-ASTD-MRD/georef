@@ -90,8 +90,8 @@ int32_t GeoRef_XY2LL_R(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
    for(n=0;n<Nb;n++) {
 
 
-      x=(X[n]-1.0)*Ref->ResA;
-      y=(Y[n]-1.0)*Ref->ResR;
+      x=X[n]*Ref->ResA;
+      y=Y[n]*Ref->ResR;
 
       x=DEG2RAD(x);
       d=M2RAD(y*Ref->CTH);
@@ -142,8 +142,8 @@ int32_t GeoRef_LL2XY_R(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
       Y[n]=d/Ref->CTH;
 
       if (Ref->Options.Transform) {
-         X[n]=X[n]/Ref->ResA+1.0;
-         Y[n]=Y[n]/Ref->ResR+1.0;
+         X[n]=X[n]/Ref->ResA;
+         Y[n]=Y[n]/Ref->ResR;
       }
    }
 

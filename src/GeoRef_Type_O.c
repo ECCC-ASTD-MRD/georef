@@ -24,8 +24,8 @@ int32_t GeoRef_XY2LL_O(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
 
    #pragma omp parallel for default(none) private(i) shared(Nb,Ref,X,Y,Lat,Lon)
    for (i=0; i < Nb; i++) {
-      Lon[i]=VertexValS(Ref->AX,NULL,Ref->NX,Ref->NY,X[i]-1.0,Y[i]-1.0,TRUE);
-      Lat[i]=VertexValS(Ref->AY,NULL,Ref->NX,Ref->NY,X[i]-1.0,Y[i]-1.0,TRUE);
+      Lon[i]=VertexValS(Ref->AX,NULL,Ref->NX,Ref->NY,X[i],Y[i],TRUE);
+      Lat[i]=VertexValS(Ref->AY,NULL,Ref->NX,Ref->NY,X[i],Y[i],TRUE);
    }
    return(Nb);
 }
@@ -99,8 +99,8 @@ int32_t GeoRef_LL2XY_O(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
             if (!ISNAN(X[d]) && !ISNAN(Y[d])) {
                y=idx/Ref->NX;
                x=idx-y*Ref->NX;
-               Y[d]+=y+dy+1.0;
-               X[d]+=x+dx+1.0;
+               Y[d]+=y+dy;
+               X[d]+=x+dx;
             } else {
                Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid coordinate (NAN): ll(%f,%f) xy(%f,%f) %i\n",__func__,Lat[d],Lon[d],X[d],Y[d],idx);
                X[d]=-1.0;

@@ -12,7 +12,7 @@
 static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
 static int32_t         GeoRef_Preserve = -10;                                                                                  ///< How many of the first created georef to keep cached (negative means uninitialized)
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
-__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, CB_REPLACE, TRUE, FALSE, FALSE, 1, 1, TRUE, FALSE, 10.0, NAN, NULL, NULL, 0, 0, NULL };  ///< Default options
+__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, CB_REPLACE, TRUE, FALSE, 1, 1, TRUE, FALSE, 10.0, NAN, NULL, NULL, 0, 0, NULL };  ///< Default options
 
 const char *TRef_InterpVString[] = { "UNDEF","FAST","WITHIN","INTERSECT","CENTROID","ALIASED","CONSERVATIVE","NORMALIZED_CONSERVATIVE","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
 const char *TRef_InterpString[] = { "UNDEF","NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
@@ -51,7 +51,6 @@ void Georef_PrintOptions(TGeoOptions *Options) {
         "Extrapolation       : %i\n"
         "Combine values      : %i\n"
         "Apply transformation: %i\n"
-        "CIndexing           : %i\n"
         "symmetric           : %i\n"
         "Segmentation        : %i\n"
         "Sampling            : %i\n"
@@ -64,7 +63,7 @@ void Georef_PrintOptions(TGeoOptions *Options) {
         "Lookup table size   : %i\n"
         "Lookup table dim    : %i\n"
         "Ancilliary buffer   : %p\n",
-         Options->Interp,Options->Extrap,Options->Combine,Options->Transform,Options->CIndex,
+         Options->Interp,Options->Extrap,Options->Combine,Options->Transform,
          Options->Symmetric,Options->Segment,Options->Sampling,Options->PolarCorrect,Options->VectorMode,Options->DistTreshold,
          Options->NoData,Options->Table,Options->lutDef,Options->lutSize,Options->lutDim,Options->Ancilliary);
 }

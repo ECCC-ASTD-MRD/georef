@@ -123,17 +123,12 @@ int32_t GeoRef_InterpFinally(
     }
 
     double *x, *y;
-    if (Opt->CIndex) {
-        x = (double*)malloc(npts * sizeof(double) * 2);
-        y = &x[npts];
+    x = (double*)malloc(npts * sizeof(double) * 2);
+    y = &x[npts];
 
-        for(int32_t j = 0; j < npts; j++) {
-            x[j] = X[j] + 1.0;
-            y[j] = Y[j] + 1.0;
-        }
-    } else {
-        x = X;
-        y = Y;
+    for(int32_t j = 0; j < npts; j++) {
+        x[j] = X[j] + 1.0;
+        y[j] = Y[j] + 1.0;
     }
 
     const int32_t old_degre_interp = Opt->Interp;
@@ -156,7 +151,7 @@ int32_t GeoRef_InterpFinally(
 
     switch(RefFrom->GRTYP[0]) {
         case 'M':
-            gd_interpm(RefFrom, Opt, zout, zin, x, y, npts);
+            gd_interpm(RefFrom, Opt, zout, zin, X, Y, npts);
             break;
         case '#':
         case 'Z':
@@ -262,10 +257,10 @@ int32_t GeoRef_InterpFinally(
                 case 5: {
                     double * const gdst_lats = (double*) malloc(sizeof(double) * npts);
                     double tmp;
-                    double one = 1.0;
+                    double zero = 0.0;
                     for (int32_t j = 0; j < RefTo->NY; j++) {
-                        double real_j = 1.0 * (j+1);
-                        GeoRef_XY2LL(RefTo, &gdst_lats[j], &tmp, &one, &real_j, 1, TRUE);
+                        double real_j = j;
+                        GeoRef_XY2LL(RefTo, &gdst_lats[j], &tmp, &zero, &real_j, 1, TRUE);
                     }
                     f77name(ez_avg_sph)(zout, x, y, gdst_lats, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
                     free(gdst_lats);
@@ -275,9 +270,7 @@ int32_t GeoRef_InterpFinally(
             break;
     }
 
-    if (Opt->CIndex) {
-        free(x);
-    }
+    free(x);
     Opt->Interp = old_degre_interp;
     return 0;
 }

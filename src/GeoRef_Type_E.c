@@ -51,8 +51,8 @@ int32_t GeoRef_LL2XY_E(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
       dlon  = 360.0 / (Ref->NX - 1);
       swlat = -90.0 + 0.5 * dlat;
       swlon = 0.0;
-      Lon[i] = (X[i]-1.0)*dlon+swlon;
-      Lat[i] = (Y[i]-1.0)*dlat+swlat;
+      Lon[i] = X[i]*dlon+swlon;
+      Lat[i] = Y[i]*dlat+swlat;
    }
 
    GeoRef_RotateInvertXY(Lat,Lon,Lon,Lat,Nb,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4);

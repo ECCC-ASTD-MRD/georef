@@ -82,7 +82,7 @@ int32_t GeoRef_LL2XY_G(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
    switch(Ref->RPNHead.ig1) {
       case GRID_GLOBAL: 
          for(i=0;i<Nb;i++) {
-            X[i] = (CLAMPLON(Lon[i]) - xlon0)/dellon + 1.0;
+            X[i] = (CLAMPLON(Lon[i]) - xlon0)/dellon;
             indy = GeoRef_XFind(Lat[i],Ref->AX,Ref->NX,1);
             if (indy>Ref->NY) indy = Ref->NY - 2;
          

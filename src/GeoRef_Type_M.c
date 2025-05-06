@@ -24,8 +24,6 @@ int32_t GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
 
    #pragma omp parallel for default(none) private(d,node,b,n,idx,lon) shared(Nb,Ref,X,Y,Lat,Lon)
    for(d=0;d<Nb;d++) {
-      X[d]=-1.0;
-      Y[d]=-1.0;
       lon=CLAMPLON(Lon[d]);
 
       if (Ref->QTree) {
@@ -39,8 +37,8 @@ int32_t GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
                   Ref->Lon[Ref->Idx[idx+1]],Ref->Lat[Ref->Idx[idx+1]],Ref->Lon[Ref->Idx[idx+2]],Ref->Lat[Ref->Idx[idx+2]])) {
 
                   // Return coordinate as triangle index + barycentric coefficient
-                  X[d]=idx+b[0]+1;
-                  Y[d]=idx+b[1]+1;
+                  X[d]=idx+b[0];
+                  Y[d]=idx+b[1];
                   break;
                }
             }
@@ -52,8 +50,8 @@ int32_t GeoRef_LL2XY_M(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
                Ref->AX[Ref->Idx[idx+1]],Ref->AY[Ref->Idx[idx+1]],Ref->AX[Ref->Idx[idx+2]],Ref->AY[Ref->Idx[idx+2]])) {
 
                // Return coordinate as triangle index + barycentric coefficient
-               X[d]=idx+b[0]+1;
-               Y[d]=idx+b[1]+1;
+               X[d]=idx+b[0];
+               Y[d]=idx+b[1];
                break;
             }
          }

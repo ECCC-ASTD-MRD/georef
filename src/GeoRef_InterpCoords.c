@@ -132,7 +132,7 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
       latyan = &tmpy[j+=Nb];
       lonyan = &tmpy[j+=Nb];
       for (j=0; j< Nb; j++) {
-         if (Y[j] > yin_gd->NY-(Ref->Options.CIndex?1:0)) {
+         if (Y[j] > yin_gd->NY-1) {
             tmpy[j]=Y[j]-yin_gd->NY;
          } else {
             tmpy[j]=Y[j];
@@ -141,7 +141,7 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
       icode = GeoRef_XY2LL(yin_gd,latyin,lonyin,X,tmpy,Nb,Extrap);
       icode = GeoRef_XY2LL(yan_gd,latyan,lonyan,X,tmpy,Nb,Extrap);
       for (j=0; j < Nb; j++) {
-         if (Y[j] > yin_gd->NY-(Ref->Options.CIndex?1:0)) {
+         if (Y[j] > yin_gd->NY-1) {
             Lat[j]=latyan[j];
             Lon[j]=lonyan[j];
          } else {
@@ -155,13 +155,6 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
          for(j=0;j<Nb;j++) {
             X[j]+=0.5;
             Y[j]+=0.5;
-         }
-      }
-
-      if (Ref->Options.CIndex) {
-         for(i=0;i<Nb;i++) {
-            X[i]+=1.0;
-            Y[i]+=1.0;
          }
       }
 
@@ -270,15 +263,6 @@ int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
          }
       }
    }
-
-   if (Ref->Options.CIndex) {
-      for(j=0;j<Nb;j++) {
-         if (X[j]!=-1.0) {
-            X[j]-=1.0;
-            Y[j]-=1.0;
-         }
-      }
-   }
-
+   
    return(icode);
 }

@@ -130,7 +130,6 @@ module georef_mod
         integer(C_INT32_T) :: Extrap = ER_MAXIMUM     !< Extrapolation method
         integer(C_INT32_T) :: Combine = CB_REPLACE    !< Aggregation type
         integer(C_INT32_T) :: Transform = 1           !< Apply transformation or stay within master referential
-        integer(C_INT32_T) :: CIndex = 0              !< C Indexing (starts st 0)
         integer(C_INT32_T) :: Symmetric = 0           !< 
         integer(C_INT32_T) :: Segment = 1             !< How much segmentation (Conservatives/Geometric modes)
         integer(C_INT32_T) :: Sampling = 1            !< Sampling interval
@@ -331,6 +330,10 @@ contains
             endif
         endif
         val=georef_intersect(this%ptr,ref%ptr,x0,y0,x1,y1,val)
+        x0=x0+1;
+        y0=y0+1;
+        x1=x1+1;
+        y1=y1+1;
         res=.false.
         if (val==1) then
            res=.true.
@@ -361,6 +364,10 @@ contains
 
         res=.false.;
         val=georef_boundingbox(this%ptr,lat0,lon0,lat1,lon1,i0,j0,i1,j1)
+        i0=i0+1.0;
+        j0=j0+1.0;
+        i1=i1+1.0;
+        j1=j1+1.0;
         if (val==1) then
            res=.true.
         endif
@@ -373,9 +380,12 @@ contains
         real(C_DOUBLE), intent(in), dimension(:) :: dists
         integer(C_INT32_T), intent(in), value :: nbnear
 
+        real(C_DOUBLE) ::lx,ly
         integer(C_INT32_T) :: out
 
-        out=georef_nearest(this%ptr,x,y,idxs,dists,nbnear,maxdist)
+        lx=x-1.0
+        ly=y-1.0
+        out=georef_nearest(this%ptr,lx,ly,idxs,dists,nbnear,maxdist)
     end function georef_nearest_f
 
     function georef_xydistance_f(this,x0,y0,x1,y1) result(out)
@@ -384,7 +394,7 @@ contains
 
         real(C_DOUBLE) :: out
 
-        out=georef_xydistance(this%ptr,x0,y0,x1,y1)
+        out=georef_xydistance(this%ptr,x0-1.0,y0-1.0,x1-1.0,y1-1.0)
     end function georef_xydistance_f
 
     function georef_lldistance_f(this,lat0,lon0,lat1,lon1) result(out)

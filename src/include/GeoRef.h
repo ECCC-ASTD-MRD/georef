@@ -193,7 +193,6 @@ typedef struct TGeoOptions {
    TRef_Extrap  Extrap;         ///< Raster extrapolation method (default: ER_VALUE)
    TRef_Combine Combine;        //!< Aggregation type (default: CB_REPLACE)
    int32_t      Transform;      //!< Apply transformation or stay within master referential (default: TRUE)
-   int32_t      CIndex;         //!< C Indexing (starts at 0) (default: FALSE)
    int32_t      Symmetric;      //!<  (default: FALSE)
    int32_t      Segment;        //!< How much segmentation (Conservatives/Geometric modes) (default: 1)
    int32_t      Sampling;       //!< Sampling interval (default: 1)
@@ -578,8 +577,8 @@ static inline void GeoRef_LL2GD(
     const double r = (Ref->AX && Ref->AX[0] < 0.0) ? -180.0 : 0.0;
 
     for(int32_t i = 0; i < Nb; i++) {
-        X[i] = (CLAMPLONREF(Lon[i], r) - Lon0) / DLon + 1.0;
-        Y[i] = (Lat[i] - Lat0) / DLat + 1.0;
+        X[i] = (CLAMPLONREF(Lon[i], r) - Lon0) / DLon;
+        Y[i] = (Lat[i] - Lat0) / DLat;
     }
 }
 

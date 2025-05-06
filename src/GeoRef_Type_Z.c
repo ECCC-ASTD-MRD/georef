@@ -29,20 +29,20 @@ int32_t GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
 
    #pragma omp parallel for default(none) private(i,indx,indy,delxx,delyy) shared(Nb,Ref,X,Y,Lat,Lon,tmpx,tmpy,ytmp)
    for (i=0; i < Nb; i++) {
-      indx = (int)X[i]-1;
+      indx = (int)X[i];
       ytmp[i] = (Ref->RPNHead.ig2==1)?Ref->NY+1.0 - Y[i]:Y[i];
       
-      indy = (int)ytmp[i]-1;
+      indy = (int)ytmp[i];
       indx = indx < 0 ? 0 : indx;
       indy = indy < 0 ? 0 : indy;
       indx = indx > Ref->NX-2 ? Ref->NX-2 : indx;
       indy = indy > Ref->j2-2 ? Ref->j2-2 : indy;
  
       delxx = Ref->AX[indx+1]-Ref->AX[indx];
-      tmpx[i] = Ref->AX[indx] + ((X[i]-1.0-indx)*delxx);
+      tmpx[i] = Ref->AX[indx] + ((X[i]-indx)*delxx);
 
       delyy = Ref->AY[indy+1]-Ref->AY[indy];
-      tmpy[i] = Ref->AY[indy] + ((ytmp[i]-1.0-indy)*delyy);
+      tmpy[i] = Ref->AY[indy] + ((ytmp[i]-indy)*delyy);
    }
 
    switch (Ref->RPNHeadExt.grref[0]) {
@@ -112,8 +112,8 @@ int32_t GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
       if (indx >= Ref->NX-1) indx = Ref->NX - 2;
       if (indy >= Ref->NY-1) indy = Ref->NY - 2;
 
-      X[i] = indx+(X[i]-Ref->AX[indx])/(Ref->AX[indx+1]-Ref->AX[indx])+1;
-      Y[i] = indy+(Y[i]-Ref->AY[indy*d])/(Ref->AY[(indy+1)*d]-Ref->AY[indy*d])+1;
+      X[i] = indx+(X[i]-Ref->AX[indx])/(Ref->AX[indx+1]-Ref->AX[indx]);
+      Y[i] = indy+(Y[i]-Ref->AY[indy*d])/(Ref->AY[(indy+1)*d]-Ref->AY[indy*d]);
    } 
 
    if (Ref->GRTYP[0] == 'G') {
