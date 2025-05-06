@@ -11,23 +11,23 @@
 #define DEF3DIN(D,I,J,K)    ((I)>=D->Limits[0][0] && (I)<=D->Limits[0][1] && (J)>=D->Limits[1][0] && (J)<=D->Limits[1][1] && (K)>=D->Limits[2][0] && (K)<=D->Limits[2][1])
 #define DEFVALID(Def,val)   (val==val && val!=Def->NoData)
 
-#define Def_Pointer(DEF,COMP,IDX,PTR) PTR=DEF->Data[COMP]+(IDX)*TDef_Size[DEF->Type];
-#define Def_PointerMode(DEF,IDX,PTR) PTR=DEF->Mode+(IDX)*TDef_Size[DEF->Type];
+#define Def_Pointer(DEF,COMP,IDX,PTR) PTR=DEF->Data[COMP]+(IDX+DEF->Idx)*TDef_Size[DEF->Type];
+#define Def_PointerMode(DEF,IDX,PTR) PTR=DEF->Mode+(IDX+DEF->Idx)*TDef_Size[DEF->Type];
 
 #define Def_Set(DEF,COMP,IDX,VAL) {\
 switch(DEF->Type) {\
    case TD_Unknown:break;\
    case TD_Binary: break;\
-   case TD_UByte:  ((unsigned char*)DEF->Data[COMP])[IDX]=VAL;break;\
-   case TD_Byte:   ((char*)DEF->Data[COMP])[IDX]=VAL; break;\
-   case TD_UInt16: ((unsigned short*)DEF->Data[COMP])[IDX]=VAL;break;\
-   case TD_Int16:  ((short*)DEF->Data[COMP])[IDX]=VAL;break;\
-   case TD_UInt32: ((unsigned int*)DEF->Data[COMP])[IDX]=VAL;break;\
-   case TD_Int32:  ((int*)DEF->Data[COMP])[IDX]=VAL;break;\
-   case TD_UInt64: ((unsigned long long*)DEF->Data[COMP])[IDX]=VAL;break;\
-   case TD_Int64:  ((long long*)DEF->Data[COMP])[IDX]=VAL;break;\
-   case TD_Float32:((float*)DEF->Data[COMP])[IDX]=VAL;break;\
-   case TD_Float64:((double*)DEF->Data[COMP])[IDX]=VAL;break;\
+   case TD_UByte:  ((unsigned char*)DEF->Data[COMP])[IDX+DEF->Idx]=VAL;break;\
+   case TD_Byte:   ((char*)DEF->Data[COMP])[IDX+DEF->Idx]=VAL; break;\
+   case TD_UInt16: ((unsigned short*)DEF->Data[COMP])[IDX+DEF->Idx]=VAL;break;\
+   case TD_Int16:  ((short*)DEF->Data[COMP])[IDX+DEF->Idx]=VAL;break;\
+   case TD_UInt32: ((unsigned int*)DEF->Data[COMP])[IDX+DEF->Idx]=VAL;break;\
+   case TD_Int32:  ((int*)DEF->Data[COMP])[IDX+DEF->Idx]=VAL;break;\
+   case TD_UInt64: ((unsigned long long*)DEF->Data[COMP])[IDX+DEF->Idx]=VAL;break;\
+   case TD_Int64:  ((long long*)DEF->Data[COMP])[IDX+DEF->Idx]=VAL;break;\
+   case TD_Float32:((float*)DEF->Data[COMP])[IDX+DEF->Idx]=VAL;break;\
+   case TD_Float64:((double*)DEF->Data[COMP])[IDX+DEF->Idx]=VAL;break;\
    }\
 }
 
@@ -156,16 +156,16 @@ switch(DEF->Type) {\
 
 #define Def_Get(DEF,COMP,IDX,VAL) {\
 switch(DEF->Type) {\
-   case TD_UByte:  VAL=((unsigned char*)DEF->Data[COMP])[IDX];break;\
-   case TD_Byte:   VAL=((char*)DEF->Data[COMP])[IDX]; break;\
-   case TD_UInt16: VAL=((unsigned short*)DEF->Data[COMP])[IDX];break;\
-   case TD_Int16:  VAL=((short*)DEF->Data[COMP])[IDX];break;\
-   case TD_UInt32: VAL=((unsigned int*)DEF->Data[COMP])[IDX];break;\
-   case TD_Int32:  VAL=((int*)DEF->Data[COMP])[IDX];break;\
-   case TD_UInt64: VAL=((unsigned long long*)DEF->Data[COMP])[IDX];break;\
-   case TD_Int64:  VAL=((long long*)DEF->Data[COMP])[IDX];break;\
-   case TD_Float32:VAL=((float*)DEF->Data[COMP])[IDX];break;\
-   case TD_Float64:VAL=((double*)DEF->Data[COMP])[IDX];break;\
+   case TD_UByte:  VAL=((unsigned char*)DEF->Data[COMP])[IDX+DEF->Idx];break;\
+   case TD_Byte:   VAL=((char*)DEF->Data[COMP])[IDX+DEF->Idx]; break;\
+   case TD_UInt16: VAL=((unsigned short*)DEF->Data[COMP])[IDX+DEF->Idx];break;\
+   case TD_Int16:  VAL=((short*)DEF->Data[COMP])[IDX+DEF->Idx];break;\
+   case TD_UInt32: VAL=((unsigned int*)DEF->Data[COMP])[IDX+DEF->Idx];break;\
+   case TD_Int32:  VAL=((int*)DEF->Data[COMP])[IDX+DEF->Idx];break;\
+   case TD_UInt64: VAL=((unsigned long long*)DEF->Data[COMP])[IDX+DEF->Idx];break;\
+   case TD_Int64:  VAL=((long long*)DEF->Data[COMP])[IDX+DEF->Idx];break;\
+   case TD_Float32:VAL=((float*)DEF->Data[COMP])[IDX+DEF->Idx];break;\
+   case TD_Float64:VAL=((double*)DEF->Data[COMP])[IDX+DEF->Idx];break;\
    case TD_Unknown:\
    case TD_Binary:\
    default        :VAL=0.0;\
@@ -174,16 +174,16 @@ switch(DEF->Type) {\
 
 #define Def_GetMod(DEF,IDX,VAL) {\
 switch(DEF->Type) {\
-   case TD_UByte:  VAL=((unsigned char*)DEF->Mode)[IDX];break;\
-   case TD_Byte:   VAL=((char*)DEF->Mode)[IDX]; break;\
-   case TD_UInt16: VAL=((unsigned short*)DEF->Mode)[IDX];break;\
-   case TD_Int16:  VAL=((short*)DEF->Mode)[IDX];break;\
-   case TD_UInt32: VAL=((unsigned int*)DEF->Mode)[IDX];break;\
-   case TD_Int32:  VAL=((int*)DEF->Mode)[IDX];break;\
-   case TD_UInt64: VAL=((unsigned long long*)DEF->Mode)[IDX];break;\
-   case TD_Int64:  VAL=((long long*)DEF->Mode)[IDX];break;\
-   case TD_Float32:VAL=((float*)DEF->Mode)[IDX];break;\
-   case TD_Float64:VAL=((double*)DEF->Mode)[IDX];break;\
+   case TD_UByte:  VAL=((unsigned char*)DEF->Mode)[IDX+DEF->Idx];break;\
+   case TD_Byte:   VAL=((char*)DEF->Mode)[IDX+DEF->Idx]; break;\
+   case TD_UInt16: VAL=((unsigned short*)DEF->Mode)[IDX+DEF->Idx];break;\
+   case TD_Int16:  VAL=((short*)DEF->Mode)[IDX+DEF->Idx];break;\
+   case TD_UInt32: VAL=((unsigned int*)DEF->Mode)[IDX+DEF->Idx];break;\
+   case TD_Int32:  VAL=((int*)DEF->Mode)[IDX+DEF->Idx];break;\
+   case TD_UInt64: VAL=((unsigned long long*)DEF->Mode)[IDX+DEF->Idx];break;\
+   case TD_Int64:  VAL=((long long*)DEF->Mode)[IDX+DEF->Idx];break;\
+   case TD_Float32:VAL=((float*)DEF->Mode)[IDX+DEF->Idx];break;\
+   case TD_Float64:VAL=((double*)DEF->Mode)[IDX+DEF->Idx];break;\
    case TD_Unknown:\
    case TD_Binary:\
    default        :VAL=0.0;\
@@ -194,16 +194,16 @@ switch(DEF->Type) {\
 switch(DEF->Type) {\
    case TD_Unknown:break;\
    case TD_Binary: break;\
-   case TD_UByte:  ((unsigned char*)DEF->Mode)[IDX]=VAL;break;\
-   case TD_Byte:   ((char*)DEF->Mode)[IDX]=VAL; break;\
-   case TD_UInt16: ((unsigned short*)DEF->Mode)[IDX]=VAL;break;\
-   case TD_Int16:  ((short*)DEF->Mode)[IDX]=VAL;break;\
-   case TD_UInt32: ((unsigned int*)DEF->Mode)[IDX]=VAL;break;\
-   case TD_Int32:  ((int*)DEF->Mode)[IDX]=VAL;break;\
-   case TD_UInt64: ((unsigned long long*)DEF->Mode)[IDX]=VAL;break;\
-   case TD_Int64:  ((long long*)DEF->Mode)[IDX]=VAL;break;\
-   case TD_Float32:((float*)DEF->Mode)[IDX]=VAL;break;\
-   case TD_Float64:((double*)DEF->Mode)[IDX]=VAL;break;\
+   case TD_UByte:  ((unsigned char*)DEF->Mode)[IDX+DEF->Idx]=VAL;break;\
+   case TD_Byte:   ((char*)DEF->Mode)[IDX+DEF->Idx]=VAL; break;\
+   case TD_UInt16: ((unsigned short*)DEF->Mode)[IDX+DEF->Idx]=VAL;break;\
+   case TD_Int16:  ((short*)DEF->Mode)[IDX+DEF->Idx]=VAL;break;\
+   case TD_UInt32: ((unsigned int*)DEF->Mode)[IDX+DEF->Idx]=VAL;break;\
+   case TD_Int32:  ((int*)DEF->Mode)[IDX+DEF->Idx]=VAL;break;\
+   case TD_UInt64: ((unsigned long long*)DEF->Mode)[IDX+DEF->Idx]=VAL;break;\
+   case TD_Int64:  ((long long*)DEF->Mode)[IDX+DEF->Idx]=VAL;break;\
+   case TD_Float32:((float*)DEF->Mode)[IDX+DEF->Idx]=VAL;break;\
+   case TD_Float64:((double*)DEF->Mode)[IDX+DEF->Idx]=VAL;break;\
    }\
 }
 
@@ -243,7 +243,7 @@ typedef struct TDef {
    int32_t   NI,NJ,NK,NC,NIJ;     // Dimensions du champs
    int32_t   Idx;                 // Index displacement into supergrid
 
-   int32_t  CellDim;              // Defined grid point32_t coverage, point=1 or area=2
+   int32_t  CellDim;              // Defined grid point coverage, point=1 or area=2
    double   CoordLimits[2][2];    // Limits of processing in latlon
    int32_t  Limits[3][2];         // Limits of processing in grid points
    int32_t  Level;                // Niveau courant
@@ -286,7 +286,7 @@ int32_t Def_GetValue(
     double * const ThetaXY
 );
 
-int32_t GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int32_t I,int32_t J,int32_t Seg);
+int32_t GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int32_t I,int32_t J,TGeoOptions *Opt);
 int32_t GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Geom,double Value);
 int32_t GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int32_t Final);
 int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt);
@@ -294,9 +294,10 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TD
 int32_t GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt);
 int32_t GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer *Layer,TGeoOptions *Opt,char *Field,double Value);
 int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt);
+TGeoRef* GeoRef_SubSelect(TGeoRef *Ref, TDef *Def, int N);
 
 void    GeoScan_Init(TGeoScan *Scan);
 void    GeoScan_Clear(TGeoScan *Scan);
-int32_t GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,struct TDef *ToDef,TGeoRef *FromRef,struct TDef *FromDef,TGeoOptions *Opt,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1,int32_t Dim);
+int32_t GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,struct TDef *ToDef,TGeoRef *FromRef,struct TDef *FromDef,TGeoOptions *Opt,int32_t X0,int32_t Y0,int32_t X1,int32_t Y1);
 
 #endif

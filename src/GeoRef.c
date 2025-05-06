@@ -1052,9 +1052,9 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
 
 int32_t GeoRef_AssignToRecord(fst_record *Rec,TGeoRef *Ref) {
 
-   Rec->ig1=Ref->RPNHead.ip1;
-   Rec->ig2=Ref->RPNHead.ip2;
-   Rec->ig3=Ref->RPNHead.ip3;
+   Rec->ig1=Ref->RPNHead.ig1;
+   Rec->ig2=Ref->RPNHead.ig2;
+   Rec->ig3=Ref->RPNHead.ig3;
    Rec->ig4=0;
    Rec->grtyp[0]=Ref->RPNHead.grtyp[0];
 
@@ -1170,27 +1170,6 @@ TGeoRef* GeoRef_New() {
 
    pthread_mutex_init(&ref->Mutex, NULL);
    return(ref);
-}
-
-TGeoRef *GeoRef_SubSelect(TGeoRef *Ref,int N) {
-
-   int i;
-
-   // If the subgrid index is different from the current
-   if (N!=Ref->Sub && N<Ref->NbSub) {
-
-      for (i=0; i<Ref->NbSet; i++) {
-         if (Ref->Sets[i].Index) {
-            free(Ref->Sets[i].Index);
-            Ref->Sets[i].Index=NULL;
-            Ref->Sets[i].IndexMethod=IR_UNDEF;
-         }
-      }
-
-      Ref->Sub=N;
-      return(N>0?Ref->Subs[N]:Ref);
-   }
-   return(NULL);
 }
 
 /**----------------------------------------------------------------------------

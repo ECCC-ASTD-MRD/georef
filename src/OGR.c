@@ -318,7 +318,7 @@ void OGM_GPCToOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
 #endif
 }
 
-void OGM_GPCNew(gpc_polygon *Poly) {
+static inline void OGM_GPCNew(gpc_polygon *Poly) {
 
 #ifdef HAVE_GPC
    Poly->num_contours=0;

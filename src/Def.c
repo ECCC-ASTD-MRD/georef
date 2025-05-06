@@ -965,79 +965,120 @@ int32_t GeoRef_Rasterize(TGeoRef *ToRef, TDef *ToDef, TGeoOptions *Opt, OGRGeome
     //! [in]     Geom       Geometry to initialize with projected coordinates
     //! [in]     ToRef      Destination GeoRef pointer
     //! [in]     FromRef    Source GeoRef pointer
-    //! [in]     I          X gridpoint32_t coordinate
-    //! [in]     J          Y gridpoint32_t coordinate
-    //! [in]     Seg        Number of segmentation on the cell sides
+    //! [in]     I          X gridpoint coordinate (Fortran index)
+    //! [in]     J          Y gridpoint coordinate (Fortran index)
+    //! [in]     Opt        GeoRef options
  *
  *    @return        Number of points in geometry (negative if wrapped around)
 */
-int32_t GeoRef_Cell2OGR(OGRGeometryH Geom, TGeoRef *ToRef, TGeoRef *FromRef, int32_t I, int32_t J, int32_t Seg) {
+int32_t GeoRef_Cell2OGR(OGRGeometryH Geom, TGeoRef *ToRef, TGeoRef *FromRef, int32_t I, int32_t J, TGeoOptions *Opt) {
 
 #ifdef HAVE_GDAL
-   double n, dn, df;
-   double x0, x1, x, y, la, lo;
-   int32_t    pt = 0;
+   double   n, dn, df;
+   double   x0, x1, y0, y1, t0, t1, x, y, la, lo;
+   int32_t  pt = 0, dx,dy;
+   TGeoRef *fromref=FromRef;
+   TGeoSet *gset;
 
-   if (!Geom || !ToRef || !FromRef) {
+   if (!Geom || !ToRef || !FromRef|| !Opt) {
       return 0;
    }
 
-   if (!Seg) Seg = 1;
+   gset = GeoRef_SetGet(ToRef, FromRef, Opt);
 
-   dn = 1.0 / Seg;
+   dn = Opt->Segment?1.0/Opt->Segment:1.0;
    df = dn * 0.5;
 
-   x0 = 1e32;
-   x1 = -1e32;
+   y0 = x0 = 1e32;
+   y1 = x1 = -1e32;
+
+   // In case of U grid, we have to select the right subgrid
+   if (FromRef->NbSub > 0) {
+      if (J > FromRef->Subs[0]->NY) {
+         J-=FromRef->Subs[0]->NY;
+         fromref=FromRef->Subs[1];
+      
+         x = I; y = J;
+         GeoRef_XY2LL(fromref, &la, &lo, &x, &y, 1, TRUE);
+         if (GeoRef_LL2XY(ToRef, &x, &y, &la, &lo, 1, FALSE)) {
+            dx=x-1.0;
+            dy=y-1.0;
+            // Check if this point is from yin or yang
+            if (!gset->yin_maskout[dy*ToRef->NX+dx])
+               return(0);
+         }
+      }
+   }
 
    // Top Left
    for(n = -0.5; n < (0.5+df); n += dn) {
       x = I-0.5; y = J+n;
-      GeoRef_XY2LL(FromRef, &la, &lo, &x, &y, 1, TRUE);
+      GeoRef_XY2LL(fromref, &la, &lo, &x, &y, 1, TRUE);
       GeoRef_LL2XY(ToRef, &x, &y, &la, &lo, 1, TRUE);
       x0 = fmin(x0, x);
       x1 = fmax(x1, x);
-      OGR_G_SetPoint_2D(Geom, pt++, x, y);
+      y0 = fmin(y0, y);
+      y1 = fmax(y1, y);
+      OGR_G_SetPoint_2D(Geom, pt++, x-1.0, y-1.0);
    }
 
    // Top right
    for(n = -0.5; n < (0.5+df); n += dn) {
       x = I+n; y = J+0.5;
-      GeoRef_XY2LL(FromRef, &la, &lo, &x, &y, 1, TRUE);
+      GeoRef_XY2LL(fromref, &la, &lo, &x, &y, 1, TRUE);
       GeoRef_LL2XY(ToRef, &x, &y, &la, &lo, 1, TRUE);
       x0 = fmin(x0, x);
       x1 = fmax(x1, x);
-      OGR_G_SetPoint_2D(Geom, pt++, x, y);
+      y0 = fmin(y0, y);
+      y1 = fmax(y1, y);
+      OGR_G_SetPoint_2D(Geom, pt++, x-1.0, y-1.0);
    }
 
    // Right bottom
    for(n = 0.5; n > -(0.5+df); n -= dn) {
       x = I+0.5; y = J+n;
-      GeoRef_XY2LL(FromRef, &la, &lo, &x, &y, 1, TRUE);
+      GeoRef_XY2LL(fromref, &la, &lo, &x, &y, 1, TRUE);
       GeoRef_LL2XY(ToRef, &x, &y, &la, &lo, 1, TRUE);
       x0 = fmin(x0, x);
       x1 = fmax(x1, x);
-      OGR_G_SetPoint_2D(Geom, pt++, x, y);
+      y0 = fmin(y0, y);
+      y1 = fmax(y1, y);
+      OGR_G_SetPoint_2D(Geom, pt++, x-1.0, y-1.0);
    }
 
    // Bottom Left
    for(n = 0.5; n > -(0.5+df); n -= dn) {
       x = I+n; y = J-0.5;
-      GeoRef_XY2LL(FromRef, &la, &lo, &x, &y, 1, TRUE);
+      GeoRef_XY2LL(fromref, &la, &lo, &x, &y, 1, TRUE);
       GeoRef_LL2XY(ToRef, &x, &y, &la, &lo, 1, TRUE);
       x0 = fmin(x0, x);
       x1 = fmax(x1, x);
-      OGR_G_SetPoint_2D(Geom, pt++, x, y);
+      y0 = fmin(y0, y);
+      y1 = fmax(y1, y);
+      OGR_G_SetPoint_2D(Geom, pt++, x-1.0, y-1.0);
    }
 
    // Close the polygon
    x = I-0.5; y = J-0.5;
-   GeoRef_XY2LL(FromRef, &la, &lo, &x, &y, 1, TRUE);
+   GeoRef_XY2LL(fromref, &la, &lo, &x, &y, 1, TRUE);
    GeoRef_LL2XY(ToRef, &x, &y, &la, &lo, 1, TRUE);
-   OGR_G_SetPoint_2D(Geom, pt++, x, y);
+   OGR_G_SetPoint_2D(Geom, pt++, x-1.0, y-1.0);
 
    // If the cell is outside the destination limits
-   if ((x0 < ToRef -> X0 && x1 < ToRef->X0) || (x0 > ToRef->X1 && x1 > ToRef->X1)) {
+   x0-=1.0;
+   x1-=1.0;
+   y0-=1.0;
+   y1-=1.0;
+         
+   t0=ToRef->X0-0.5;
+   t1=ToRef->X1+0.5;
+   if ((x0 < t0 && x1 < t0) || (x0 > t1 && x1 > t1)) {
+      return 0;
+   }
+
+   t0=ToRef->Y0-0.5;
+   t1=ToRef->Y1+0.5;
+   if ((y0 < t0 && y1 < t0) || (y0 > t1 && y1 > t1)) {
       return 0;
    }
 
@@ -1054,7 +1095,7 @@ int32_t GeoRef_Cell2OGR(OGRGeometryH Geom, TGeoRef *ToRef, TGeoRef *FromRef, int
 }
 
 /*----------------------------------------------------------------------------
- * @brief  Interpolate within a gridpoint32_t defined quad area
+ * @brief  Interpolate within a gridpoint defined quad area
  * @date   November 2004
     //! [in]     Ref        GeoRef pointer
     //! [in]     Def        Data definition
@@ -1076,7 +1117,7 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref, TDef *Def, TGeoOptions *Opt, OGRG
 
 #ifdef HAVE_GDAL
    double        dx, dy, dp = 1.0, val = 0.0;
-   int32_t       x, y, n = 0, idx2, idx3, na;
+   int32_t       x, y, n = 0, idx, na;
    OGRGeometryH  inter = NULL, pick;
    OGREnvelope   envg, envp;
 
@@ -1102,17 +1143,15 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref, TDef *Def, TGeoOptions *Opt, OGRG
    na = (Mode == 'C' || Mode == 'N' || Mode == 'A');
 
    // Test for intersection
-   if ((Area > 0.0 || !na) && OGM_Intersect(Geom, Poly, &envg, &envp)) {
+   if ((Area > 1e-32 || !na) && OGM_Intersect(Geom, Poly, &envg, &envp)) {
 //   if ((Area > 0.0 || !na) && OGR_G_Intersects(Geom, Poly)) {
 
       // If this is a single pixel
       if (X0 == X1 && Y0 == Y1) {
 
-         idx2 = FIDX2D(Def, X0, Y0);
-
          // If we are computing areas
-         if (Area > 0.0) {
-           switch(Type) {
+         if (Area > 1e-32) {
+            switch(Type) {
                case 'A':  // Area mode
 #ifdef HAVE_GPC
                   inter = OGM_GPCOnOGR(GPC_INT, Geom, Poly);
@@ -1152,12 +1191,16 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref, TDef *Def, TGeoOptions *Opt, OGRG
                Def_SetValue(Def, Opt, X0, Y0, Z, val);
 
                if (Mode == 'N' && Def->Buffer) {
-                  idx3 = FIDX3D(Def, X0, Y0, Z);
-                  Def->Buffer[idx3] += dp;
+                  idx = FIDX3D(Def, X0, Y0, Z);
+                  Def->Buffer[idx] += dp;
                }
             }
 
             if (*Index) {
+               if (*((*Index)+1) == REF_INDEX_NIL) {
+                  Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Overflow in index array (%i,%i)\n",__func__,X0,Y0);
+                  return(0);
+               }
                *((*Index)++) = X0;
                *((*Index)++) = Y0;
                *((*Index)++) = dp;
@@ -1187,7 +1230,7 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref, TDef *Def, TGeoOptions *Opt, OGRG
 
    return n;
 #else
-   Lib_Log(APP_LIBGEOREF, APP_ERROR, "Function %s is not available, needs to be built with GDAL\n", __func__);
+   Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Function not available, needs to be built with GDAL\n", __func__);
    return 0;
 #endif
 }
@@ -1675,14 +1718,16 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
       }
       for(n = 0; n < FSIZE3D(ToDef); n++) ToDef->Buffer[n] = 0.0;
    }
-   gset = GeoRef_SetGet(ToRef, FromRef, Opt);
-   GeoRef_SetIndexInit(gset);
 
    // Define the max size of the indexes
    isize = 256;
    if ((c = getenv("GEOREF_INDEX_SIZE_HINT"))) {
       isize = atoi(c);
    }
+
+   gset = GeoRef_SetGet(ToRef, FromRef, Opt);
+   if (isize>0) 
+      GeoRef_SetIndexInit(gset);
 
    // Process one level at a time
    for (k = 0; k < ToDef->NK; k++) {
@@ -1732,7 +1777,11 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
             ip++;
          }
       } else {
-         int32_t cnt, intersect;
+
+         // U grids need mask to select on 1 grid on overlap zones
+         if (FromRef->NbSub>0) {
+            GeoRef_SetCalcYYXY(gset);
+         }
 
          if (gset->Index && gset->Index[0] == REF_INDEX_EMPTY) {
             if (!(index = (float**)malloc(FSIZE2D(FromDef)*sizeof(float*)))) {
@@ -1742,10 +1791,10 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
             ip = gset->Index;
          }
 
-         #pragma omp parallel for collapse(2) firstprivate(cell, ring, pick, poly) private(i, j, nidx, wrap, intersect, cnt, p, x, y, z, lp, area, val1, env, n, na) shared(k, isize, FromRef, FromDef, ToRef, ToDef, error) reduction(+ : nt)
+         #pragma omp parallel for collapse(2) firstprivate(cell, ring, pick, poly) private(i, j, nidx, wrap, intersect, cnt, p, x, y, z, lp, area, val1, env, n, na) shared(k, isize, FromRef, FromDef, ToRef, ToDef, Opt, error, index, ip) reduction(+ : nt)
          for(j = 0; j < FromDef->NJ; j++) {
             for(i = 0; i < FromDef->NI; i++) {
-
+ 
                nidx = j*FromDef->NI+i;
                if (index) index[nidx] = NULL;
                if (error) continue;
@@ -1764,18 +1813,8 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                }
 
                // Project the source gridcell into the destination
-               wrap = GeoRef_Cell2OGR(ring, ToRef, FromRef, i, j, Opt->Segment);
-               intersect = 0;
-               cnt = OGR_G_GetPointCount(ring);
-               for(p = 0; p < cnt; p++) {
-                  OGR_G_GetPoint(ring, p, &x, &y, &z);
-                  if (x >= (ToRef->X0-0.5) && x <= (ToRef->X1+0.5) && y >= (ToRef->Y0-0.5) && x <= (ToRef->X1+0.5)) {
-                     intersect = 1;
-                     break;
-                  }
-               }
-
-               if (!wrap || !intersect)
+               wrap = GeoRef_Cell2OGR(ring, ToRef, FromRef, i+1.0, j+1.0, Opt);
+               if (!wrap)
                   continue;
 
                // Allocate local index
@@ -1786,6 +1825,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                      error = 1;
                      continue;
                   }
+                  index[nidx][isize-1] = index[nidx][isize-2]  = index[nidx][isize-3] = REF_INDEX_NIL;
                   index[nidx][0] = REF_INDEX_EMPTY;
                   lp = index[nidx];
                }
@@ -1827,7 +1867,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
 
                      nt += na = GeoRef_InterpQuad(ToRef, ToDef, Opt, poly, cell, Opt->Interp == IR_CONSERVATIVE ? 'C' : 'N', 'A', area, val1, env.MinX, env.MinY, env.MaxX, env.MaxY, k, &lp);
 
-                     Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: %i hits on grid point32_t %i %i (%.0f %.0f x %.0f %.0f)\n", __func__, na, i, j, env.MinX, env.MinY, env.MaxX, env.MaxY);
+                     Lib_Log(APP_LIBGEOREF, APP_EXTRA, "%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n", __func__, na, i, j, env.MinX, env.MinY, env.MaxX, env.MaxY);
                   }
 
                   // We have to process the part that was out of the grid limits so translate everything NI points
@@ -1851,7 +1891,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                      }
                   }
 
-                  // Use enveloppe limits to initialize the initial lookup range
+                  // Use envelop limits to initialize the initial lookup range
                   OGR_G_GetEnvelope(ring, &env);
                   if (!(env.MaxX < ToRef->X0 || env.MinX > ToRef->X1 || env.MaxY < ToRef->Y0 || env.MinY > ToRef->Y1)) {
                      env.MaxX += 0.5; env.MaxY += 0.5;
@@ -1860,9 +1900,9 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                      env.MaxX = env.MaxX > ToRef->X1 ? ToRef->X1 : env.MaxX;
                      env.MaxY = env.MaxY > ToRef->Y1 ? ToRef->Y1 : env.MaxY;
 
-                  nt += n = GeoRef_InterpQuad(ToRef, ToDef, Opt, poly, cell, Opt->Interp = IR_CONSERVATIVE ? 'C' : 'N', 'A', area, val1, env.MinX, env.MinY, env.MaxX, env.MaxY, k, &lp);
+                     nt += n = GeoRef_InterpQuad(ToRef, ToDef, Opt, poly, cell, Opt->Interp = IR_CONSERVATIVE ? 'C' : 'N', 'A', area, val1, env.MinX, env.MinY, env.MaxX, env.MaxY, k, &lp);
 
-                     Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: %i hits on grid point32_t %i %i (%.0f %.0f x %.0f %.0f)\n", __func__, n, i, j, env.MinX, env.MinY, env.MaxX, env.MaxY);
+                     Lib_Log(APP_LIBGEOREF, APP_EXTRA, "%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n", __func__, n, i, j, env.MinX, env.MinY, env.MaxX, env.MaxY);
                   }
                }
                if (lp && (n || na)) {
@@ -1871,23 +1911,23 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
             }
          }
 
-        // Merge indexes
+         // Merge indexes
          n = 0;
          if (ip && nt && !error) {
            if (gset->IndexSize < nt*3) {
                gset->IndexSize = nt*3+FSIZE2D(FromDef)*3+1;
                ip = gset->Index = (float*)realloc(gset->Index, gset->IndexSize*sizeof(float));
             }
-           for(j = 0; j < FromDef->NJ; j++) {
+            for(j = 0; j < FromDef->NJ; j++) {
                for(i = 0; i < FromDef->NI; i++) {
                   nidx = j*FromDef->NI+i;
 
                   if ((lp = index[nidx]) && *lp != REF_INDEX_EMPTY) {
-                     // Append gridpoint32_t to the index
+                     // Append gridpoint to the index
                      *(ip++) = i;
                      *(ip++) = j;
 
-                     // This gridpoint32_t wraps around
+                     // This gridpoint wraps around
                      while(*lp != REF_INDEX_SEPARATOR) {
                         *(ip++) = *(lp++);
                      }
@@ -1904,8 +1944,8 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
       }
    }
 
-   OGR_G_DestroyGeometry(ring);
-   OGR_G_DestroyGeometry(cell);
+//   OGR_G_DestroyGeometry(ring);
+//   OGR_G_DestroyGeometry(cell);
 
    // Return size of index or number of hits, or 1 if nothing found
    nt = gset->Index ? gset->IndexSize : nt;
@@ -1964,6 +2004,11 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
       if (!GeoRef_Intersect(ToRef, FromRef, &x0, &y0, &x1, &y1, 0)) {
          return TRUE;
       }
+      // TODO: figure out why GeoRef_Intersect doe not give right limits of U grids
+      x0=FromRef->X0;
+      x1=FromRef->X1;
+      y0=FromRef->Y0;
+      y1=FromRef->Y1;
 
       // In case of average, we need an accumulator
       if (Opt->Interp == IR_AVERAGE || Opt->Interp == IR_VECTOR_AVERAGE || Opt->Interp == IR_VARIANCE ||
@@ -2080,8 +2125,9 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
          // if > 2048x2048, loop by lines otherwise, do it in one shot
          n2 = ToDef->NI >> 1;
          dy = ((y1-y0)*(x1-x0)) > 4194304 ? 0 : (y1-y0);
-         for(y = y0; y <= y1; y += (dy+1)) {
-            if (!(s = GeoScan_Get(&gscan, ToRef, NULL, FromRef, FromDef, Opt, x0, y, x1, y+dy, FromDef->CellDim))) {
+         for(y = y0; y <= y1; y += (dy+1)) {                 
+
+            if (!(s = GeoScan_Get(&gscan, ToRef, NULL, FromRef, FromDef, Opt, x0, y, x1, y+dy))) {
                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Unable to allocate coordinate scanning buffer\n", __func__);
                return FALSE;
             }
@@ -2097,7 +2143,7 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
                }
                dx++;
 
-              // Skip if no mask
+               // Skip if no mask
                if (FromDef->Mask && !FromDef->Mask[gscan.V[x]])
                   continue;
 
@@ -2124,7 +2170,7 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
                   di0 = di1 = ROUND(gscan.X[n]);
                   dj0 = dj1 = ROUND(gscan.Y[n]);
                }
-
+     
                // Are we within the destination field
                if (di0 >= ToDef->NI || dj0 >= ToDef->NJ || di1 < 0 || dj1 < 0)
                   continue;
@@ -2159,7 +2205,7 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
                            fld[idxt] = (Opt->Interp == IR_SUM || Opt->Interp == IR_AVERAGE  || Opt->Interp == IR_VECTOR_AVERAGE || Opt->Interp == IR_VARIANCE || Opt->Interp == IR_SQUARE || Opt->Interp == IR_NORMALIZED_COUNT || Opt->Interp == IR_COUNT) ? 0.0 : (Opt->Interp == IR_MAXIMUM ? -HUGE_VAL : HUGE_VAL);
                            if (aux) aux[idxt] = fld[idxt];
                         }
-
+                                             
                         switch(Opt->Interp) {
                            case IR_MAXIMUM          : if (vx > fld[idxt]) fld[idxt] = vx;
                                                       break;
@@ -2277,12 +2323,17 @@ int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt) {
          }
          break;
 
+      case IR_AVERAGE:
+      case IR_VARIANCE:
+      case IR_SQUARE:
+      case IR_NORMALIZED_COUNT:
+      case IR_COUNT:
+      case IR_VECTOR_AVERAGE:
       case IR_ACCUM:
       case IR_BUFFER:
          for(k = 0; k < ToDef->NK; k++) {
             for(n = 0; n < nij; n++, idx++) {
                val = ToDef->NoData;
-
                switch(Opt->Interp) {
                   case IR_ACCUM:
                      if (ToDef->Accum) val = ToDef->Accum[n];
@@ -2313,7 +2364,6 @@ int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt) {
                         }
                      }
                }
-
                Def_Set(ToDef, 0, idx, val);
             }
          }
@@ -2331,7 +2381,42 @@ int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt) {
       }
    }
 
-   return(idx);
+   return(nij);
+}
+
+TGeoRef *GeoRef_DefSubSelect(TGeoRef *Ref,TDef *Def,int N) {
+
+   int i;
+
+   if (!Ref || !Def) {
+      Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid referential of definition\n", __func__);
+   }
+   if (N<-1 || N>=Ref->NbSub) {
+      Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid sub grid index (%i)\n", __func__,N);
+   }
+
+   // If the subgrid index is different from the current
+   if (N!=Ref->Sub && N<Ref->NbSub) {
+
+      for (i=0; i<Ref->NbSet; i++) {
+         if (Ref->Sets[i].Index) {
+            free(Ref->Sets[i].Index);
+            Ref->Sets[i].Index=NULL;
+            Ref->Sets[i].IndexMethod=IR_UNDEF;
+         }
+      }
+
+      // Define sub index position within Def data arrays
+      Def->Idx=0;
+      if (N>0) {
+         Def->Idx=Ref->Subs[N-1]->NX*Ref->Subs[N-1]->NY;
+      }
+
+      // Return selected georef object
+      Ref->Sub=N;
+      return(N>=0?Ref->Subs[N]:Ref);
+   }
+   return(NULL);
 }
 
 /*----------------------------------------------------------------------------
@@ -2346,8 +2431,8 @@ int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt) {
 */
 int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t Final) {
 
-   void *pf0, *pt0, *pf1, *pt1;
-   int32_t   k, code = FALSE;
+   void    *pf0, *pt0, *pf1, *pt1;
+   int32_t  u, k, code = FALSE;
 
    if (!Opt) Opt=&GeoRef_Options;
 
@@ -2421,7 +2506,16 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
       case IR_NOP:
       case IR_ACCUM:
       case IR_BUFFER:
-         code = GeoRef_InterpAverage(ToRef, ToDef, FromRef, FromDef, Opt);
+         // In case of U grid, we have to select the right subgrid
+         if (FromRef->GRTYP[0] == 'U') {
+            for(u=0;u<FromRef->NbSub;u++) {
+               GeoRef_DefSubSelect(FromRef,FromDef,u);
+               code = GeoRef_InterpAverage(ToRef, ToDef, FromRef->Subs[u], FromDef, Opt);
+            }
+            GeoRef_DefSubSelect(FromRef,FromDef,-1);
+         } else {
+            code = GeoRef_InterpAverage(ToRef, ToDef, FromRef, FromDef, Opt);
+         }
          break;
 
       case IR_SUBNEAREST:
@@ -2637,7 +2731,7 @@ int32_t _GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromR
    return d;
 }
 
-int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t X0, int32_t Y0, int32_t X1, int32_t Y1, int32_t Dim) {
+int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t X0, int32_t Y0, int32_t X1, int32_t Y1) {
 
    register int32_t idx, x, y, n = 0;
    int32_t          d = 0, sz, dd;
@@ -2675,7 +2769,7 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
       Scan->S = sz;
    }
 
-   dd = Dim-1;
+   dd = FromDef->CellDim-1;
    Scan->N = 0;
 
    // WKT grid type
@@ -2720,7 +2814,7 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
          }
       }
       d = 1;
-
+      
    // Other RPN grids
    } else {
       for(y = Y0; y <= Y1+dd; y++) {
@@ -2731,9 +2825,9 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
             }
             Scan->X[n] = dd ? x+0.5 : x+1.0;
             Scan->Y[n] = dd ? y+0.5 : y+1.0;
-         }
+        }
       }
-      GeoRef_XY2LL(FromRef, Scan->Y, Scan->X, Scan->X, Scan->Y, n, FALSE);
+      GeoRef_XY2LL(FromRef, Scan->Y, Scan->X, Scan->X, Scan->Y, n, TRUE);
 
       d = dd ? 2 : 1;
    }
@@ -2741,7 +2835,7 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
    // Project to destination grid
    if (ToRef->GRTYP[0] == 'W' || ToRef->GRTYP[0] == 'M') {
 #ifdef HAVE_GDAL
-      for(x = n-1; x >= 0; x--) {
+      for(x = 0; x < n; x++) {
          x0 = Scan->X[x];
          y0 = Scan->Y[x];
 
@@ -2751,8 +2845,8 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
 
          if (GeoRef_LL2XY(ToRef, &Scan->X[x], &Scan->Y[x], &y0, &x0, 1, FALSE)) {
             if (ToDef) {
-              Def_GetValue(ToRef, ToDef, Opt, 0, Scan->X[x], Scan->Y[x], 0, &v, NULL);
-              Scan->D[x] = v;
+               Def_GetValue(ToRef, ToDef, Opt, 0, Scan->X[x]-1.0, Scan->Y[x]-1.0, 0, &v, NULL);
+               Scan->D[x] = v;
             }
          }
       }
@@ -2773,16 +2867,15 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
 #endif
    } else {
       GeoRef_LL2XY(ToRef, Scan->X, Scan->Y, Scan->Y, Scan->X, n, FALSE);
-//EZFIX
+
       // If we have the data of source and they're float, get it's values right now
       if (ToDef && ToDef->Type == TD_Float32) {
          GeoRef_XYVal(ToRef, Opt, Scan->D, (float*)ToDef->Mode, Scan->X, Scan->Y, n);
       }
 
-      // Cast back to double (Start from end since type is double, not to overlap values
-      for(x = n-1; x >= 0; x--) {
-         Scan->X[x] = Scan->X[x]-1.0;
-         Scan->Y[x] = Scan->Y[x]-1.0;
+      for(x = 0; x < n; x++) {
+         Scan->X[x] -= 1.0;
+         Scan->Y[x] -= 1.0;
 
          if (ToDef) {
             ix = lrint(Scan->X[x]);
