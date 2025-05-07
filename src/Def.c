@@ -472,7 +472,6 @@ static inline float* Def_FromFloat(TDef *Def) {
 }
 */
 
-
 //! Resize the data field of a data definition
 TDef * Def_Resize(
     //! [in, out] Data definition to be resized
@@ -994,6 +993,7 @@ int32_t GeoRef_Cell2OGR(OGRGeometryH Geom, TGeoRef *ToRef, TGeoRef *FromRef, int
 
    // In case of U grid, we have to select the right subgrid
    if (FromRef->NbSub > 0) {
+      fromref=FromRef->Subs[0];
       if (J > FromRef->Subs[0]->NY-1) {
          J-=FromRef->Subs[0]->NY;
          fromref=FromRef->Subs[1];
@@ -1001,8 +1001,8 @@ int32_t GeoRef_Cell2OGR(OGRGeometryH Geom, TGeoRef *ToRef, TGeoRef *FromRef, int
          x = I; y = J;
          GeoRef_XY2LL(fromref, &la, &lo, &x, &y, 1, TRUE);
          if (GeoRef_LL2XY(ToRef, &x, &y, &la, &lo, 1, FALSE)) {
-            dx=x;
-            dy=y;
+            dx=ROUND(x);
+            dy=ROUND(y);
             // Check if this point is from yin or yang
             if (!gset->yin_maskout[dy*ToRef->NX+dx])
                return(0);
@@ -1178,6 +1178,7 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref, TDef *Def, TGeoOptions *Opt, OGRG
          } else {
             val = Value;
          }
+
          // Are we within
          if (Mode != 'W' || OGM_Within(Poly, Geom, &envp, &envg)) {
             //Create thread safe region.
@@ -1684,7 +1685,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
 
 #ifdef HAVE_GDAL
    TGeoSet    *gset = NULL;
-   int32_t     i, j, na, nt = 0, p = 0, pi, pj, idx2, idx3, wrap, k = 0, isize, nidx, error = 0;
+   int32_t     i, j, na, nt = 0, p = 0, pi, pj, idx2, idx3, intersect, k = 0, isize, nidx, error = 0;
    uint64_t    n;
    char        *c;
    double       val0, val1, area, x, y, z, dp;
@@ -1786,7 +1787,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
             ip = gset->Index;
          }
 
-         #pragma omp parallel for collapse(2) firstprivate(cell, ring, pick, poly) private(i, j, nidx, wrap, intersect, cnt, p, x, y, z, lp, area, val1, env, n, na) shared(k, isize, FromRef, FromDef, ToRef, ToDef, Opt, error, index, ip) reduction(+ : nt)
+         #pragma omp parallel for collapse(2) firstprivate(cell, ring, pick, poly) private(i, j, nidx, intersect, cnt, p, x, y, z, lp, area, val1, env, n, na) shared(k, isize, FromRef, FromDef, ToRef, ToDef, Opt, error, index, ip) reduction(+ : nt)
          for(j = 0; j < FromDef->NJ; j++) {
             for(i = 0; i < FromDef->NI; i++) {
  
@@ -1808,8 +1809,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                }
 
                // Project the source gridcell into the destination
-               wrap = GeoRef_Cell2OGR(ring, ToRef, FromRef, i, j, Opt);
-               if (!wrap)
+               if (!(intersect = GeoRef_Cell2OGR(ring, ToRef, FromRef, i, j, Opt)))
                   continue;
 
                // Allocate local index
@@ -1827,9 +1827,9 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                n = na = 0;
 
                // Are we crossing the wrap around
-               if (wrap < 0) {
+               if (intersect < 0) {
                   // If so, move the wrapped points (assumed greater than NI/2) to the other side
-                  for(p = 0; p < -wrap; p++) {
+                  for(p = 0; p < -intersect; p++) {
                      OGR_G_GetPoint(ring, p, &x, &y, &z);
                      if (x > ToDef->NI >> 1) {
                         x -= ToDef->NI;
@@ -1866,7 +1866,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                   }
 
                   // We have to process the part that was out of the grid limits so translate everything NI points
-                  for(p = 0; p < -wrap; p++) {
+                  for(p = 0; p < -intersect; p++) {
                      OGR_G_GetPoint(ring, p, &x, &y, &z);
                      x += ToDef->NI;
                      OGR_G_SetPoint_2D(ring, p, x, y);
