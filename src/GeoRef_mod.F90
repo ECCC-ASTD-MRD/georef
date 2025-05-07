@@ -368,6 +368,7 @@ contains
         j0=j0+1.0;
         i1=i1+1.0;
         j1=j1+1.0;
+
         if (val==1) then
            res=.true.
         endif
@@ -488,12 +489,18 @@ contains
 
     function georef_xy2ll_f(this,lat,lon,x,y,n,extrap) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
-        real(C_DOUBLE), dimension(:), intent(in) :: lat,lon
+        real(C_DOUBLE), dimension(:), intent(inout) :: lat,lon
         real(C_DOUBLE), dimension(:), intent(in) :: x,y
         integer(C_INT32_T) :: n,c_extrap
         logical, optional :: extrap
+
+
+        real(C_DOUBLE), dimension(n) :: lx,ly
         integer(C_INT32_T) :: out
 
+        lx=x-1.0
+        ly=y-1.0
+        
         c_extrap=0
         if (present(extrap)) then
             if (extrap) then
@@ -501,15 +508,17 @@ contains
             endif
         end if
 
-        out=georef_xy2ll(this%ptr,lat,lon,x,y,n,c_extrap)
+        out=georef_xy2ll(this%ptr,lat,lon,lx,ly,n,c_extrap)
     end function georef_xy2ll_f
  
     function georef_ll2xy_f(this,x,y,lat,lon,n,extrap) result(out)
         class(georef),  intent(inout) :: this  !< georef instance
         real(C_DOUBLE), dimension(:), intent(in) :: lat,lon
-        real(C_DOUBLE), dimension(:), intent(in) :: x,y
+        real(C_DOUBLE), dimension(:), intent(inout) :: x,y
         integer(C_INT32_T) :: n,c_extrap
         logical, optional :: extrap
+
+        real(C_DOUBLE), dimension(n) :: lx,ly
         integer(C_INT32_T) :: out
 
         c_extrap=0
@@ -519,7 +528,9 @@ contains
             endif
         end if
 
-        out=georef_ll2xy(this%ptr,x,y,lat,lon,n,c_extrap)
+        out=georef_ll2xy(this%ptr,lx,ly,lat,lon,n,c_extrap)
+        x=lx+1.0
+        y=ly+1.0
     end function georef_ll2xy_f
  
     function georef_xyval_f(this,zout,zin,x,y,n,opt) result(out)
@@ -530,12 +541,16 @@ contains
         real(C_DOUBLE), intent(in), dimension(:) :: x,y
         integer(C_INT32_T) :: n
 
+        real(C_DOUBLE), dimension(n) :: lx,ly
         integer(C_INT32_T) :: out
 
+        lx=x-1.0
+        ly=y-1.0
+
         if (present(opt)) then
-           out=georef_xyval(this%ptr,C_LOC(opt),zout,zin,x,y,n)
+           out=georef_xyval(this%ptr,C_LOC(opt),zout,zin,lx,ly,n)
         else 
-           out=georef_xyval(this%ptr,C_LOC(georef_options),zout,zin,x,y,n)
+           out=georef_xyval(this%ptr,C_LOC(georef_options),zout,zin,lx,ly,n)
         endif
     end function georef_xyval_f
 
@@ -544,15 +559,19 @@ contains
         type(geooptions),  intent(in), target, optional :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(:) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(:) :: uuin,vvin
-        real(C_DOUBLE), intent(out), dimension(:) :: x,y
+        real(C_DOUBLE), intent(in), dimension(:) :: x,y
         integer(C_INT32_T) :: n
 
+        real(C_DOUBLE), dimension(n) :: lx,ly
         integer(C_INT32_T) :: out
 
+        lx=x-1.0
+        ly=y-1.0
+
         if (present(opt)) then
-           out=georef_xyuvval(this%ptr,C_LOC(opt),uuout,vvout,uuin,vvin,x,y,n)
+           out=georef_xyuvval(this%ptr,C_LOC(opt),uuout,vvout,uuin,vvin,lx,ly,n)
         else 
-           out=georef_xyuvval(this%ptr,C_LOC(georef_options),uuout,vvout,uuin,vvin,x,y,n)
+           out=georef_xyuvval(this%ptr,C_LOC(georef_options),uuout,vvout,uuin,vvin,lx,ly,n)
         endif
     end function georef_xyuvval_f
 
@@ -561,15 +580,19 @@ contains
         type(geooptions),  intent(in), target, optional :: opt  !< georef instance
         real(C_FLOAT), intent(out), dimension(:) :: uuout,vvout
         real(C_FLOAT), intent(in), dimension(:) :: uuin,vvin
-        real(C_DOUBLE), intent(out), dimension(:) :: x,y
+        real(C_DOUBLE), intent(in), dimension(:) :: x,y
         integer(C_INT32_T) :: n
 
+        real(C_DOUBLE), dimension(n) :: lx,ly
         integer(C_INT32_T) :: out
 
+        lx=x-1.0
+        ly=y-1.0
+
         if (present(opt)) then
-           out=georef_xywdval(this%ptr,C_LOC(opt),uuout,vvout,uuin,vvin,x,y,n)
+           out=georef_xywdval(this%ptr,C_LOC(opt),uuout,vvout,uuin,vvin,lx,ly,n)
         else 
-           out=georef_xywdval(this%ptr,C_LOC(georef_options),uuout,vvout,uuin,vvin,x,y,n)
+           out=georef_xywdval(this%ptr,C_LOC(georef_options),uuout,vvout,uuin,vvin,lx,ly,n)
         endif
     end function georef_xywdval_f
 
