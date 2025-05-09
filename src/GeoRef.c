@@ -562,12 +562,12 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
          memcpy(ref->Lon,Ref->Lon,((Ref->Type&GRID_AXY2D)?Ref->NX*Ref->NY:Ref->NX)*sizeof(double));
       }
 
-   // double       *AXY;
-   //struct TGeoRef *mymaskgrid;
-   //int32_t mymaskgridi0,mymaskgridi1;
-   //int32_t mymaskgridj0,mymaskgridj1;
-
-      if (Ref->AX && Ref->AY) GeoRef_AxisDefine(ref,Ref->AX,Ref->AY);
+//TODO: check for and finialize allocations
+      if (Ref->AXY) {}
+      if (Ref->AX && Ref->AY) {}
+      if (Ref->NIdx) {}
+      
+      GeoRef_AxisDefine(ref,Ref->AX,Ref->AY);
 
       if (Ref->Subs) {
          ref->Subs=(TGeoRef**)malloc(Ref->NbSub*sizeof(TGeoRef*));

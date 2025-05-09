@@ -89,9 +89,9 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    }
 
    // Write index
-   TGeoSet    *gset=GeoRef_SetGet(refout,refin,NULL);
+   TGeoSet *gset=GeoRef_SetGet(refout,refin,&GeoRef_Options);
    if (GeoRef_SetHasIndex(gset)) {
-      App_Log(APP_DEBUG,"Saving index containing %i items\n",gset->IndexSize);
+      App_Log(APP_INFO,"Saving index containing %i items\n",gset->IndexSize);
 
       if (!GeoRef_SetWriteFST(gset,fout)){
          return(0);
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
         { APP_CHAR,  &truth, 1,             "t", "truth",  "Truth data file to compare with" },
         { APP_CHAR,  &grid,  1,             "g", "grid",   "Grid file" },
         { APP_CHAR,  &method,1,             "m", "method", "Interpolation method (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC,CONSERVATIVE,NORMALIZED_CONSERVATIVE,MAXIMUM,MINIMUM,SUM,AVERAGE,VARIANCE,SQUARE,NORMALIZED_COUNT,COUNT,VECTOR_AVERAGE,SUBNEAREST,SUBLINEAR)" },
-        { APP_CHAR,  &extrap,1,             "x", "extrap", "Extrapolation method (MAXIMUM,MINIMUM,"APP_COLOR_GREEN"VALUE"APP_COLOR_RESET",ABORT)" },
+        { APP_CHAR,  &extrap,1,             "x", "extrap", "Extrapolation method (MAXIMUM,MINIMUM,"APP_COLOR_GREEN"[VALUE]"APP_COLOR_RESET",ABORT)" },
         { APP_CHAR,  &etiket,1,             "e", "etiket", "ETIKET for destination field" },
         { APP_CHAR,  vars,  APP_LISTMAX-1,  "n", "nomvar", "List of variable to process" },
         { APP_NIL } };
