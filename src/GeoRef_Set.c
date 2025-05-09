@@ -485,10 +485,6 @@ int32_t GeoRef_SetWriteFST(
             0, GSet->IndexMethod == IR_CUBIC ? 10 : (GSet->IndexMethod == IR_LINEAR ? 6 : 1));
         fst_record record = default_fst_record;
 
-        record.data = GSet->X;
-        record.pack_bits = 64;
-        record.ni   = GSet->RefTo->NX;
-        record.nj   = GSet->RefTo->NY;
         record.nk   = 1;
         record.dateo= 0;
         record.deet = 0;
@@ -496,39 +492,54 @@ int32_t GeoRef_SetWriteFST(
         record.ip1  = 0;
         record.ip2  = 0;
         record.ip3  = GSet->IndexMethod;
-        record.typvar[0] = GSet->RefTo->GRTYP[0];
-        record.typvar[1] = GSet->RefFrom->GRTYP[0];
-        strncpy(record.nomvar, "#>>#", FST_NOMVAR_LEN);
-        strncpy(record.grtyp, "X", FST_GTYP_LEN);
-        strncpy(record.etiket, "GRIDSET", FST_ETIKET_LEN);
         record.ig1   = 0;
         record.ig2   = 0;
         record.ig3   = 0;
         record.ig4   = 0;
+        record.typvar[0] = GSet->RefTo->GRTYP[0];
+        record.typvar[1] = GSet->RefFrom->GRTYP[0];
+        strncpy(record.etiket, "GRIDSET", FST_ETIKET_LEN);
+        strncpy(record.grtyp, "X", FST_GTYP_LEN);
         record.data_type = FST_TYPE_REAL_IEEE;
-        record.data_bits = 64;
-        if (fst24_write(File, &record, FST_SKIP) <= 0) {
-            Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset index field (fst24_write failed)\n", __func__);
-            return FALSE;
+
+        if (GSet->X) {
+            record.data = GSet->X;
+            record.data_bits = 64;
+            record.pack_bits = 64;
+            record.ni   = GSet->RefTo->NX;
+            record.nj   = GSet->RefTo->NY;
+            strncpy(record.nomvar, "#>>#", FST_NOMVAR_LEN);
+            if (fst24_write(File, &record, FST_SKIP) <= 0) {
+                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset index field (fst24_write failed)\n", __func__);
+                return FALSE;
+            }
         }
 
-        record.data = GSet->Y;
-        strncpy(record.nomvar, "#^^#", FST_NOMVAR_LEN);
-        if (fst24_write(File, &record, FST_SKIP) <= 0) {
-            Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset index field (fst24_write failed)\n", __func__);
-            return FALSE;
+        if (GSet->Y) {
+            record.data = GSet->Y;
+            record.data_bits = 64;
+            record.pack_bits = 64;
+            record.ni   = GSet->RefTo->NX;
+            record.nj   = GSet->RefTo->NY;
+            strncpy(record.nomvar, "#^^#", FST_NOMVAR_LEN);
+            if (fst24_write(File, &record, FST_SKIP) <= 0) {
+                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset index field (fst24_write failed)\n", __func__);
+                return FALSE;
+            }
         }
 
-        record.data = GSet->Index;
-        record.pack_bits = 32;
-        record.ni   = GSet->IndexSize;
-        record.nj   = GSet->IndexMethod == IR_CUBIC ? 10 : (GSet->IndexMethod == IR_LINEAR ? 6 : 1);
-        record.ip3  = GSet->IndexMethod;
-        strncpy(record.nomvar, "####", FST_NOMVAR_LEN);
-        record.data_bits = 32;
-        if (fst24_write(File, &record, FST_SKIP) <= 0) {
-            Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset index field (fst24_write failed)\n", __func__);
-            return FALSE;
+        if (GSet->Index) {
+            record.data = GSet->Index;
+            record.data_bits = 32;
+            record.pack_bits = 32;
+            record.ni   = GSet->IndexSize;
+            record.nj   = GSet->IndexMethod == IR_CUBIC ? 10 : (GSet->IndexMethod == IR_LINEAR ? 6 : 1);
+            record.ip3  = GSet->IndexMethod;
+            strncpy(record.nomvar, "####", FST_NOMVAR_LEN);
+            if (fst24_write(File, &record, FST_SKIP) <= 0) {
+                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset index field (fst24_write failed)\n", __func__);
+                return FALSE;
+            }
         }
     }
     return TRUE;
