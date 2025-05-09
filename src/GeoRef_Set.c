@@ -187,7 +187,6 @@ int32_t GeoRef_SetZoneDefine(
             GSet->flags |= SET_ZONES;
             return 0;
         case 'N':
-            break;
         case 'S':
         case '!':
             extrap = TRUE;

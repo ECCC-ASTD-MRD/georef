@@ -212,7 +212,7 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
       }
 
       if (Set->Opt.Extrap) {
-         if (!Set->Opt.VectorMode) {
+        if (!Set->Opt.VectorMode) {
             switch (Set->Opt.Extrap) {
                case ER_MAXIMUM:
                   f77name(ez_aminmax)(&valmin,&valmax,zin,&(reffrom->NX),&nj);

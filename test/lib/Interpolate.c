@@ -1,18 +1,23 @@
 #include <App.h>
 #include <GeoRef.h>
+#include <Def.h>
 #include <georef_build_info.h>
 
 #define APP_NAME "Interpolate"
 #define APP_DESC "ECCC/CMC RPN fstd interpolation tool."
 
-int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket,TRef_Interp Type) {
+extern char *TRef_InterpString[];
+extern char *TRef_ExtrapString[];
+
+int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket) {
 
    TGeoRef    *refin=NULL,*refout=NULL;
+   TDef       *defin=NULL,*defout=NULL;
    fst_record  crit=default_fst_record,truth,grid=default_fst_record,record=default_fst_record;
    fst_file   *fin,*fout,*fgrid,*ftruth;
    int         n=0;
 
-  if (!(fin=fst24_open(In,"R/O"))) {
+   if (!(fin=fst24_open(In,"R/O"))) {
       App_Log(APP_ERROR,"Problems opening input file %s\n",In);
       return(FALSE);
    }
@@ -53,10 +58,9 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       }
    }
 
-   GeoRef_Options.Interp=Type;
-//   GeoRef_Options.NoData=-999.0;
-
    GeoRef_WriteFST(refout,NULL,-1,-1,-1,-1,fout);
+   defout=Def_Create(grid.ni,grid.nj,grid.nk,TD_Float32,grid.data,NULL,NULL);
+   defout->NoData=GeoRef_Options.NoData;
 
    strncpy(crit.nomvar,Vars[0],FST_NOMVAR_LEN);
    fst_query* query = fst24_new_query(fin,&crit,NULL);
@@ -68,7 +72,9 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       }
 
       // Proceed with interpolation
-      if (!GeoRef_Interp(refout,refin,&GeoRef_Options,grid.data,record.data)) {
+      defin=Def_Create(record.ni,record.nj,record.nk,TD_Float32,record.data,NULL,NULL);
+      if (!GeoRef_InterpDef(refout, defout, refin, defin, &GeoRef_Options,1)) {
+ //     if (!GeoRef_Interp(refout,refin,&GeoRef_Options,grid.data,record.data)) {
          App_Log(APP_ERROR,"Interpolation problem");
          return(FALSE);
       }
@@ -84,7 +90,6 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 
    // Write index
    TGeoSet    *gset=GeoRef_SetGet(refout,refin,NULL);
-//   GeoRef_SetGet(refout,refin,NULL);
    if (GeoRef_SetHasIndex(gset)) {
       App_Log(APP_DEBUG,"Saving index containing %i items\n",gset->IndexSize);
 
@@ -101,16 +106,16 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 
 int main(int argc, char *argv[]) {
 
-   TRef_Interp interp=IR_LINEAR;
-   int         ok=0,code=EXIT_FAILURE;
-   char        *etiket=NULL,*in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*type=NULL,*vars[APP_LISTMAX],dtype[]="LINEAR";
+   int         ok=0,m=-1,code=0;
+   char        *etiket=NULL,*in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*method=NULL,*extrap=NULL,*vars[APP_LISTMAX],*ptr,dmethod[]="LINEAR",dextrap[]="VALUE";
 
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,    1,             "i", "input",  "Input file" },
         { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
         { APP_CHAR,  &truth, 1,             "t", "truth",  "Truth data file to compare with" },
         { APP_CHAR,  &grid,  1,             "g", "grid",   "Grid file" },
-        { APP_CHAR,  &type,  1,             "m", "type",   "Interpolation type (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC)" },
+        { APP_CHAR,  &method,1,             "m", "method", "Interpolation method (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC,CONSERVATIVE,NORMALIZED_CONSERVATIVE,MAXIMUM,MINIMUM,SUM,AVERAGE,VARIANCE,SQUARE,NORMALIZED_COUNT,COUNT,VECTOR_AVERAGE,SUBNEAREST,SUBLINEAR)" },
+        { APP_CHAR,  &extrap,1,             "x", "extrap", "Extrapolation method (MAXIMUM,MINIMUM,"APP_COLOR_GREEN"VALUE"APP_COLOR_RESET",ABORT)" },
         { APP_CHAR,  &etiket,1,             "e", "etiket", "ETIKET for destination field" },
         { APP_CHAR,  vars,  APP_LISTMAX-1,  "n", "nomvar", "List of variable to process" },
         { APP_NIL } };
@@ -140,21 +145,50 @@ int main(int argc, char *argv[]) {
       App_Log(APP_ERROR,"No variable specified\n");
       exit(EXIT_FAILURE);
    }
-   if (!type) {
-      type=dtype;
+   if (!method) {
+      method=dmethod;
+   }
+   if (!extrap) {
+      extrap=dextrap;
    }
 
    // Launch the app
    App_Start();
-   switch(type[0]) {
-      case 'N': interp=IR_NEAREST; break;
-      case 'L': interp=IR_LINEAR; break;
-      case 'V': interp=IR_CUBIC; break;
-      default:
-         App_Log(APP_ERROR,"Invalid interpolation method: %s\n",type);
+
+   // Validate options
+   m=0;
+   while (TRef_InterpString[m]) {
+      if (strcmp(TRef_InterpString[m],method)==0) {
+         GeoRef_Options.Interp=m;
+         break;
+      }
+      m++;
+   }
+   if (m>IR_SUBLINEAR) {
+      App_Log(APP_ERROR,"Invalid interpolation method: %s\n",method);
+      code=EXIT_FAILURE;
    }
 
-   ok=Interpolate(in,out,truth,grid,vars,etiket,interp);
+   m=0;
+   while (TRef_ExtrapString[m]) {
+      if (strcmp(TRef_ExtrapString[m],extrap)==0) {
+         GeoRef_Options.Extrap=m;
+         break;
+      }
+      m++;
+   }
+   if (m>ER_ABORT) {
+      GeoRef_Options.NoData=strtof(extrap,&ptr);
+
+      if (ptr==extrap) {
+         App_Log(APP_ERROR,"Invalid extrapolation: %s\n",extrap);
+         code=EXIT_FAILURE;
+      }
+   }
+
+   if (code!=EXIT_FAILURE) {
+      ok=Interpolate(in,out,truth,grid,vars,etiket);
+   }
    code=App_End(ok?0:EXIT_FAILURE);
    App_Free();
 
