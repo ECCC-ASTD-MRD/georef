@@ -15,7 +15,8 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    TDef       *defin=NULL,*defout=NULL;
    fst_record  crit=default_fst_record,truth,grid=default_fst_record,record=default_fst_record;
    fst_file   *fin,*fout,*fgrid,*ftruth;
-   int         n=0;
+   char       *var;
+   int         v=0,n=0;
 
    if (!(fin=fst24_open(In,"R/O"))) {
       App_Log(APP_ERROR,"Problems opening input file %s\n",In);
@@ -34,15 +35,29 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 
    // Create the desination grid
    strncpy(crit.nomvar,"GRID",FST_NOMVAR_LEN);
-   if (!fst24_read(fgrid,&crit,NULL,&grid)) {
-      App_Log(APP_ERROR,"Problems reading grid field\n");
-      return(FALSE);
+   if (fst24_read(fgrid,&crit,NULL,&grid)) {
+      refout=GeoRef_CreateFromRecord(&grid);
+   } else {
+      // Try to for descriptor only
+      fst_record tic_tic = default_fst_record;
+      fst_record tac_tac = default_fst_record;
+
+      strncpy(crit.nomvar, ">>", FST_NOMVAR_LEN);
+      if (!fst24_find_next(fst24_new_query(fgrid,&crit,NULL),&tic_tic)){
+         App_Log(APP_ERROR,"Can't find >> field\n");
+      }
+
+      strncpy(crit.nomvar, "^^", FST_NOMVAR_LEN);
+      if (!fst24_find_next(fst24_new_query(fgrid,&crit,NULL),&tac_tac)){
+         App_Log(APP_ERROR,"Can't find ^^ field\n");
+      }
+
+      refout=GeoRef_Create(tic_tic.ni,tac_tac.nj,"Z",tic_tic.ip1,tic_tic.ip2,tic_tic.ip3,0,fgrid);
    }
 
-   refout=GeoRef_CreateFromRecord(&grid);
-   if(refout == NULL){
-       App_Log(APP_ERROR, "Problem creating TGeoRef object\n");
-       return(FALSE);
+   if (!refout) {
+      App_Log(APP_ERROR,"Problems reading grid field\n");
+      return(FALSE);
    }
 
    if (Truth) {
@@ -62,32 +77,40 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    defout=Def_Create(grid.ni,grid.nj,grid.nk,TD_Float32,grid.data,NULL,NULL);
    defout->NoData=GeoRef_Options.NoData;
 
-   strncpy(crit.nomvar,Vars[0],FST_NOMVAR_LEN);
-   fst_query* query = fst24_new_query(fin,&crit,NULL);
-   while(fst24_read_next(query,&record)>0 && n++<10) {
-//      App_Log(APP_INFO,"Processing %s %i\n",Vars[0],record->file_index);
+   while(var=Vars[v++]) {
+      strncpy(crit.nomvar,var,FST_NOMVAR_LEN);
+      fst_query* query = fst24_new_query(fin,&crit,NULL);
+      n=0;
+      while(fst24_read_next(query,&record)>0) {
 
-      if (!refin) {
-         refin=GeoRef_CreateFromRecord(&record);
-      }
+         if (!refin) {
+            refin=GeoRef_CreateFromRecord(&record);
+         }
 
-      // Proceed with interpolation
-      defin=Def_Create(record.ni,record.nj,record.nk,TD_Float32,record.data,NULL,NULL);
-      if (!GeoRef_InterpDef(refout, defout, refin, defin, &GeoRef_Options,1)) {
- //     if (!GeoRef_Interp(refout,refin,&GeoRef_Options,grid.data,record.data)) {
-         App_Log(APP_ERROR,"Interpolation problem");
-         return(FALSE);
-      }
+         // Clear output buffer
+         for(uint64_t i = 0; i < FSIZE3D(defout); i++) {
+            ((float*)grid.data)[i]=defout->NoData;
+         }
 
-      // Write results
-	   fst24_record_copy_metadata(&grid,&record,FST_META_TIME|FST_META_INFO);
-      if (Etiket) strncpy(grid.etiket,Etiket,FST_ETIKET_LEN);
-      if (fst24_write(fout, &grid, FST_NO) < 0) {
-         App_Log(APP_ERROR, "Unable to write record\n");
-         return FALSE;
+         // Proceed with interpolation
+         defin=Def_Create(record.ni,record.nj,record.nk,TD_Float32,record.data,NULL,NULL);
+         if (!GeoRef_InterpDef(refout, defout, refin, defin, &GeoRef_Options,1)) {
+   //     if (!GeoRef_Interp(refout,refin,&GeoRef_Options,grid.data,record.data)) {
+            App_Log(APP_ERROR,"Interpolation problem");
+            return(FALSE);
+         }
+
+         // Write results
+         fst24_record_copy_metadata(&grid,&record,FST_META_TIME|FST_META_INFO);
+         if (Etiket) strncpy(grid.etiket,Etiket,FST_ETIKET_LEN);
+         if (fst24_write(fout, &grid, FST_NO) < 0) {
+            App_Log(APP_ERROR, "Unable to write record\n");
+            return FALSE;
+         }
+         n++;
       }
+      App_Log(APP_INFO,"Processed %i x '%s'\n",n,var);
    }
-
    // Write index
    TGeoSet *gset=GeoRef_SetGet(refout,refin,&GeoRef_Options);
    if (GeoRef_SetHasIndex(gset)) {
@@ -97,6 +120,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
          return(0);
       }
    }
+
    fst24_close(fin);
    fst24_close(fout);
    fst24_close(fgrid);
@@ -112,8 +136,8 @@ int main(int argc, char *argv[]) {
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,    1,             "i", "input",  "Input file" },
         { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
-        { APP_CHAR,  &truth, 1,             "t", "truth",  "Truth data file to compare with" },
         { APP_CHAR,  &grid,  1,             "g", "grid",   "Grid file" },
+        { APP_CHAR,  &truth, 1,             "t", "truth",  "Truth data file to compare with" },
         { APP_CHAR,  &method,1,             "m", "method", "Interpolation method (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC,CONSERVATIVE,NORMALIZED_CONSERVATIVE,MAXIMUM,MINIMUM,SUM,AVERAGE,VARIANCE,SQUARE,NORMALIZED_COUNT,COUNT,VECTOR_AVERAGE,SUBNEAREST,SUBLINEAR)" },
         { APP_CHAR,  &extrap,1,             "x", "extrap", "Extrapolation method (MAXIMUM,MINIMUM,"APP_COLOR_GREEN"[VALUE]"APP_COLOR_RESET",ABORT)" },
         { APP_CHAR,  &etiket,1,             "e", "etiket", "ETIKET for destination field" },

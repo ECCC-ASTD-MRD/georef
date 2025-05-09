@@ -23,7 +23,7 @@ if (EC_INIT_DONE LESS 2)
         add_executable(Interpolate EXCLUDE_FROM_ALL Interpolate.c)
         add_dependencies(check Interpolate)
 
-        target_link_libraries(Interpolate georef-shared rmn::rmn m)
+        target_link_libraries(Interpolate georef-ompi-shared rmn::rmn-ompi m)
         set_target_properties(Interpolate PROPERTIES VERSION ${PROJECT_VERSION})
 
         file(REMOVE libgeoref.fstd)
