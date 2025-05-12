@@ -96,10 +96,9 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
          if (!refin) {
             refin=GeoRef_CreateFromRecord(&record);
          }
+
          // Clear output buffer
-         for(uint64_t i = 0; i < FSIZE3D(defout); i++) {
-            ((float*)grid.data)[i]=defout->NoData;
-         }
+         Def_Clear(defout);
 
          // Proceed with interpolation
          defin=Def_Create(record.ni,record.nj,record.nk,TD_Float32,record.data,NULL,NULL);
@@ -123,6 +122,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       }
       App_Log(APP_INFO,"Processed %i x '%s'\n",n,var);
    }
+
    // Write index
    TGeoSet *gset=GeoRef_SetGet(refout,refin,&GeoRef_Options);
    if (GeoRef_SetHasIndex(gset)) {
