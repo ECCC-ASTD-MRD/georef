@@ -51,9 +51,19 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       if (!fst24_find_next(fst24_new_query(fgrid,&crit,NULL),&tac_tac)){
          App_Log(APP_ERROR,"Can't find ^^ field\n");
       }
+      grid.ni=tic_tic.ni;
+      grid.nj=tac_tac.nj;
+      grid.nk=1;
+      grid.ig1=tic_tic.ip1;
+      grid.ig2=tic_tic.ip2;
+      grid.ig3=tic_tic.ip3;
+      grid.ig4=0;
+      grid.grtyp[0]='Z';
+      grid.grtyp[1]='/0';
+      grid.data=(float*)malloc(grid.ni*grid.nj*grid.nk*sizeof(float));
 
       refout=GeoRef_Create(tic_tic.ni,tac_tac.nj,"Z",tic_tic.ip1,tic_tic.ip2,tic_tic.ip3,0,fgrid);
-   }
+  }
 
    if (!refout) {
       App_Log(APP_ERROR,"Problems reading grid field\n");
@@ -86,7 +96,6 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
          if (!refin) {
             refin=GeoRef_CreateFromRecord(&record);
          }
-
          // Clear output buffer
          for(uint64_t i = 0; i < FSIZE3D(defout); i++) {
             ((float*)grid.data)[i]=defout->NoData;
