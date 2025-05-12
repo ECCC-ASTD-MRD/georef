@@ -59,7 +59,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       grid.ig3=tic_tic.ip3;
       grid.ig4=0;
       grid.grtyp[0]='Z';
-      grid.grtyp[1]='/0';
+      grid.grtyp[1]='\0';
       grid.data=(float*)malloc(grid.ni*grid.nj*grid.nk*sizeof(float));
 
       refout=GeoRef_Create(tic_tic.ni,tac_tac.nj,"Z",tic_tic.ip1,tic_tic.ip2,tic_tic.ip3,0,fgrid);
@@ -110,6 +110,9 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
          }
 
          // Write results
+         grid.data_type=record.data_type;
+         grid.data_bits=record.data_bits;
+         grid.pack_bits=record.pack_bits;
          fst24_record_copy_metadata(&grid,&record,FST_META_TIME|FST_META_INFO);
          if (Etiket) strncpy(grid.etiket,Etiket,FST_ETIKET_LEN);
          if (fst24_write(fout, &grid, FST_NO) < 0) {
