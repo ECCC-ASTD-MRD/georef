@@ -550,17 +550,17 @@ int32_t GeoRef_InterpYYWD(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float
  * @brief  Converts meteorological winds (speed/direction) to grid winds (uu/vv).
 
  *    @param[in]  Ref          geo-reference
- *    @param[out] uugdout      Destination UU values
- *    @param[out] vvgdout      Destination VV values
- *    @param[in]  uullin       Source speed values
- *    @param[in]  vvllin       Source direction values
- *    @param[in]  Lat          Latitude of wind value points
- *    @param[in]  Lon          Longitude of wind value points
+ *    @param[out] uuout        Destination UU values
+ *    @param[out] vvout        Destination VV values
+ *    @param[in]  spdin        Source speed values
+ *    @param[in]  wdin         Source direction values
+ *    @param[in]  Lat          Latitude of wind value points (NULL, use geo-reference gridpoints)
+ *    @param[in]  Lon          Longitude of wind value points (NULL, use geo-reference gridpoints)
  *    @param[in]  Nb           Number of values to convert (size of arrays)
 
  *    @return                FALSE (0) if operation failed, TRUE (1) otherwise
 */
-int32_t GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,float *vvllin,double *Lat,double *Lon,int32_t Nb) {
+int32_t GeoRef_WD2UV(TGeoRef *Ref,float *uuout,float *vvout,float *spdin,float *wdin,double *Lat,double *Lon,int32_t Nb) {
 
    int32_t   ni,nj;
    double *lat_true,*lon_true;
@@ -569,18 +569,25 @@ int32_t GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,fl
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
       return(-1);
    }
+
+   if (!Lat) {
+      GeoRef_CalcLL(Ref);
+      Lat=Ref->Lat;
+      Lon=Ref->Lon;      
+   }
+
    ni = Nb;
    nj = 1;
 
-   memcpy(uugdout, uullin, Nb*sizeof(float));
-   memcpy(vvgdout, vvllin, Nb*sizeof(float));
+   if (uuout != spdin) memcpy(uuout, spdin, Nb*sizeof(float));
+   if (vvout != wdin)  memcpy(vvout, wdin, Nb*sizeof(float));
 
    switch (Ref->GRTYP[0]) {
       case 'E':
          lat_true=(double *)(malloc(2*Nb*sizeof(double)));
          lon_true=&lat_true[Nb];
          GeoRef_RotateXY(lat_true,lon_true,Lon,Lat,ni,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4);
-         c_ezgfwfllw8(uugdout,vvgdout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4);
+         c_ezgfwfllw8(uuout,vvout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4);
          free(lat_true);
          return(0);
          break;
@@ -593,18 +600,18 @@ int32_t GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,fl
                lat_true=(double *)(malloc(2*Nb*sizeof(double)));
                lon_true=&lat_true[Nb];
                GeoRef_RotateXY(Lat,Lon,lon_true,lat_true,ni,Ref->RPNHeadExt.xgref1,Ref->RPNHeadExt.xgref2,Ref->RPNHeadExt.xgref3,Ref->RPNHeadExt.xgref4);
-               c_ezgfwfllw8(uugdout,vvgdout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4);
+               c_ezgfwfllw8(uuout,vvout,Lat,Lon,lat_true,lon_true,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4);
                free(lat_true);
                return(0);
                break;
 
             default:
-               f77name(ez8_gdwfllw)(uugdout,vvgdout,Lon,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4, 1);
+               f77name(ez8_gdwfllw)(uuout,vvout,Lon,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4, 1);
                break;
          }
 
       default:
-         f77name(ez8_gdwfllw)(uugdout,vvgdout,Lon,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4, 1);
+         f77name(ez8_gdwfllw)(uuout,vvout,Lon,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4, 1);
          break;
    }
 
@@ -616,37 +623,43 @@ int32_t GeoRef_WD2UV(TGeoRef *Ref,float *uugdout,float *vvgdout,float *uullin,fl
 
  *    @param[in]  Ref          geo-reference
  *    @param[out] spdout       Destination speed values
- *    @param[out] wddout       Destination direction values
+ *    @param[out] wdout        Destination direction values
  *    @param[in]  uuin         Source UU values
  *    @param[in]  vvin         Source VV values
- *    @param[in]  Lat          Latitude of wind value points
- *    @param[in]  Lon          Longitude of wind value points
+ *    @param[in]  Lat          Latitude of wind value points (NULL, use geo-reference gridpoints)
+ *    @param[in]  Lon          Longitude of wind value points (NULL, use geo-reference gridpoints)
  *    @param[in]  Nb           Number of values to convert (size of arrays)
 
  *    @return                FALSE (0) if operation failed, TRUE (1) otherwise
 */
-int32_t GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb) {
+int32_t GeoRef_UV2WD(TGeoRef *Ref,float *spdout,float *wdout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb) {
 
-   int32_t    ni,nj;
-   double *lat_rot,*lon_rot;
+   int32_t  ni,nj;
+   double  *lat_rot,*lon_rot;
 
    if (Ref->NbSub > 0 ) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
       return(-1);
    }
 
+   if (!Lat) {
+      GeoRef_CalcLL(Ref);
+      Lat=Ref->Lat;
+      Lon=Ref->Lon;      
+   }
+
    ni = Nb;
    nj = 1;
 
-   memcpy(spd_out, uuin, Nb*sizeof(float));
-   memcpy(wd_out, vvin, Nb*sizeof(float));
+   if (spdout != uuin) memcpy(spdout, uuin, Nb*sizeof(float));
+   if (wdout != vvin)  memcpy(wdout, vvin, Nb*sizeof(float));
 
    switch (Ref->GRTYP[0]) {
       case 'E':
          lat_rot=(double *)(malloc(2*Nb*sizeof(double)));
          lon_rot=&lat_rot[Nb];
          GeoRef_RotateXY(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4);
-         c_ezllwfgfw8(spd_out,wd_out,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4);
+         c_ezllwfgfw8(spdout,wdout,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4);
          free(lat_rot);
          return(0);
          break;
@@ -659,40 +672,60 @@ int32_t GeoRef_UV2WD(TGeoRef *Ref,float *spd_out,float *wd_out,float *uuin,float
                lat_rot=(double *)(malloc(2*Nb*sizeof(double)));
                lon_rot=&lat_rot[Nb];
 	            GeoRef_RotateXY(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHeadExt.xgref1,Ref->RPNHeadExt.xgref2,Ref->RPNHeadExt.xgref3,Ref->RPNHeadExt.xgref4);
-	            c_ezllwfgfw8(spd_out,wd_out,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4);
+	            c_ezllwfgfw8(spdout,wdout,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4);
 	            free(lat_rot);
 	            return(0);
 	            break;
 
 	         default:
-	            f77name(ez8_llwfgdw)(spd_out,wd_out,Lon,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
+	            f77name(ez8_llwfgdw)(spdout,wdout,Lon,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
 	            break;
 	      }
          break;
 
       default:
-         f77name(ez8_llwfgdw)(spd_out,wd_out,Lon,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
+         f77name(ez8_llwfgdw)(spdout,wdout,Lon,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
          break;
    }
 
    return(0);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Converts grid winds (uu/vv) to geographical components(uu/vv on EW/NS axis).
+
+ *    @param[in]  Ref          geo-reference
+ *    @param[out] uullout       Destination speed values
+ *    @param[out] vvllout        Destination direction values
+ *    @param[in]  uuin         Source UU values
+ *    @param[in]  vvin         Source VV values
+ *    @param[in]  Lat          Latitude of wind value points (NULL, use geo-reference gridpoints)
+ *    @param[in]  Lon          Longitude of wind value points (NULL, use geo-reference gridpoints)
+ *    @param[in]  Nb           Number of values to convert (size of arrays)
+
+ *    @return                FALSE (0) if operation failed, TRUE (1) otherwise
+*/
 int32_t GeoRef_UV2UV(TGeoRef *Ref,float *uullout,float *vvllout,float *uuin,float *vvin,double *Lat,double *Lon,int32_t Nb) {
 
-   int32_t    ni,nj;
-   double *lat_rot,*lon_rot;
+   int32_t  ni,nj;
+   double  *lat_rot,*lon_rot;
 
    if (Ref->NbSub>0) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: This operation is not supported for 'U' grids\n",__func__);
       return(FALSE);
    }
 
+   if (!Lat) {
+      GeoRef_CalcLL(Ref);
+      Lat=Ref->Lat;
+      Lon=Ref->Lon;      
+   }
+
    ni = Nb;
    nj = 1;
 
-   memcpy(uullout, uuin, Nb*sizeof(float));
-   memcpy(vvllout, vvin, Nb*sizeof(float));
+   if (uullout != uuin) memcpy(uullout, uuin, Nb*sizeof(float));
+   if (vvllout != vvin) memcpy(vvllout, vvin, Nb*sizeof(float));
 
    switch (Ref->GRTYP[0]) {
       case 'E':
@@ -709,7 +742,7 @@ int32_t GeoRef_UV2UV(TGeoRef *Ref,float *uullout,float *vvllout,float *uuin,floa
       case 'Z':
          switch (Ref->RPNHeadExt.grref[0]) {
             case 'E':
-               lat_rot = (double*)malloc(2*Nb*sizeof(float));
+               lat_rot = (double*)malloc(2*Nb*sizeof(double));
                lon_rot = &lat_rot[Nb];
 	            GeoRef_RotateXY(Lat,Lon,lon_rot,lat_rot,ni,Ref->RPNHeadExt.xgref1,Ref->RPNHeadExt.xgref2,Ref->RPNHeadExt.xgref3,Ref->RPNHeadExt.xgref4);
                c_ezllwfgff8(uullout,vvllout,Lat,Lon,lat_rot,lon_rot,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4);
@@ -728,7 +761,7 @@ int32_t GeoRef_UV2UV(TGeoRef *Ref,float *uullout,float *vvllout,float *uuin,floa
          break;
     }
 
-    return(TRUE);
+   return(TRUE);
 }
 
  /*

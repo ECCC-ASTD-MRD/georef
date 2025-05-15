@@ -9,14 +9,27 @@
 extern char *TRef_InterpString[];
 extern char *TRef_ExtrapString[];
 
+int WriteResults(fst_file *File,fst_record *In,fst_record *Out,char *Etiket) {
+
+   fst24_record_copy_metadata(Out,In,FST_META_TYPE|FST_META_TIME|FST_META_INFO);
+   if (Etiket) strncpy(Out->etiket,Etiket,FST_ETIKET_LEN);
+
+   if (fst24_write(File,Out,FST_NO) < 0) {
+      App_Log(APP_ERROR, "Unable to write record\n");
+      return FALSE;
+   }
+   return TRUE;
+}
+
 int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket) {
 
    TGeoRef    *refin=NULL,*refout=NULL;
    TDef       *defin=NULL,*defout=NULL;
-   fst_record  crit=default_fst_record,truth,grid=default_fst_record,record=default_fst_record;
+   fst_record  crit=default_fst_record,grid=default_fst_record,record=default_fst_record,truth;
+   fst_record  critvv=default_fst_record,gridvv=default_fst_record,recordvv=default_fst_record;
    fst_file   *fin,*fout,*fgrid,*ftruth;
    char       *var;
-   int         v=0,n=0;
+   int         v=0,n=0,vmode=0;
 
    if (!(fin=fst24_open(In,"R/O"))) {
       App_Log(APP_ERROR,"Problems opening input file %s\n",In);
@@ -61,14 +74,18 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       grid.grtyp[0]='Z';
       grid.grtyp[1]='\0';
       grid.data=(float*)malloc(grid.ni*grid.nj*grid.nk*sizeof(float));
-
+ 
       refout=GeoRef_Create(tic_tic.ni,tac_tac.nj,"Z",tic_tic.ip1,tic_tic.ip2,tic_tic.ip3,0,fgrid);
-  }
+   }
 
    if (!refout) {
       App_Log(APP_ERROR,"Problems reading grid field\n");
       return(FALSE);
    }
+
+   // Vector component
+   fst24_record_copy_metadata(&gridvv,&grid,FST_META_SIZE|FST_META_GRID);
+   gridvv.data=(float*)malloc(grid.ni*grid.nj*grid.nk*sizeof(float));
 
    if (Truth) {
       if (!(ftruth=fst24_open(Truth,"R/O"))) {
@@ -84,13 +101,14 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    }
 
    GeoRef_WriteFST(refout,NULL,-1,-1,-1,-1,fout);
-   defout=Def_Create(grid.ni,grid.nj,grid.nk,TD_Float32,grid.data,NULL,NULL);
+   defout=Def_Create(grid.ni,grid.nj,grid.nk,TD_Float32,grid.data,gridvv.data,NULL);
    defout->NoData=GeoRef_Options.NoData;
 
    while(var=Vars[v++]) {
       strncpy(crit.nomvar,var,FST_NOMVAR_LEN);
       fst_query* query = fst24_new_query(fin,&crit,NULL);
       n=0;
+
       while(fst24_read_next(query,&record)>0) {
 
          if (!refin) {
@@ -100,8 +118,25 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
          // Clear output buffer
          Def_Clear(defout);
 
+         // Winds have to be managed with both components
+         vmode=FALSE;
+         if (strncmp(record.nomvar,"VV",2)==0) {
+            // Skip VV, it will be processed with UU
+            continue;
+         }
+         if (strncmp(record.nomvar,"UU",2)==0) {
+            // Read VV component
+            fst24_record_copy_metadata(&critvv,&record,FST_META_TIME|FST_META_INFO);
+            strncpy(critvv.nomvar,"VV",FST_NOMVAR_LEN);
+            if (!fst24_read(fin,&critvv,NULL,&recordvv)) {
+               App_Log(APP_ERROR,"Unable to find VV component");
+               continue;
+            }
+            vmode=TRUE;
+         }
+
          // Proceed with interpolation
-         defin=Def_Create(record.ni,record.nj,record.nk,TD_Float32,record.data,NULL,NULL);
+         defin=Def_Create(record.ni,record.nj,record.nk,TD_Float32,record.data,vmode?recordvv.data:NULL,NULL);
          if (!GeoRef_InterpDef(refout, defout, refin, defin, &GeoRef_Options,1)) {
    //     if (!GeoRef_Interp(refout,refin,&GeoRef_Options,grid.data,record.data)) {
             App_Log(APP_ERROR,"Interpolation problem");
@@ -109,14 +144,9 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
          }
 
          // Write results
-         grid.data_type=record.data_type;
-         grid.data_bits=record.data_bits;
-         grid.pack_bits=record.pack_bits;
-         fst24_record_copy_metadata(&grid,&record,FST_META_TIME|FST_META_INFO);
-         if (Etiket) strncpy(grid.etiket,Etiket,FST_ETIKET_LEN);
-         if (fst24_write(fout, &grid, FST_NO) < 0) {
-            App_Log(APP_ERROR, "Unable to write record\n");
-            return FALSE;
+         WriteResults(fout,&record,&grid,Etiket);
+         if (vmode) {
+            WriteResults(fout,&recordvv,&gridvv,Etiket);
          }
          n++;
       }

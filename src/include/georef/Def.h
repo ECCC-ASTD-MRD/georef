@@ -11,8 +11,16 @@
 #define DEF3DIN(D,I,J,K)    ((I)>=D->Limits[0][0] && (I)<=D->Limits[0][1] && (J)>=D->Limits[1][0] && (J)<=D->Limits[1][1] && (K)>=D->Limits[2][0] && (K)<=D->Limits[2][1])
 #define DEFVALID(Def,val)   (val==val && val!=Def->NoData)
 
-#define Def_Pointer(DEF,COMP,IDX,PTR) PTR=DEF->Data[COMP]+(IDX+DEF->Idx)*TDef_Size[DEF->Type];
-#define Def_PointerMode(DEF,IDX,PTR) PTR=DEF->Mode+(IDX+DEF->Idx)*TDef_Size[DEF->Type];
+#define FSIZE2D(D)                        ((unsigned long)(D->NI)*D->NJ)
+#define FSIZE3D(D)                        ((unsigned long)(D->NI)*D->NJ*D->NK)
+#define FSIZECHECK(D0,D1)                 (D0->NI==D1->NI && D0->NJ==D1->NJ && D0->NK==D1->NK)
+#define FIDX2D(D,I,J)                     ((unsigned long)(J)*D->NI+(I))
+#define FIDX3D(D,I,J,K)                   ((unsigned long)(K)*D->NI*D->NJ+(J)*D->NI+(I))
+#define FIN2D(D,I,J)                      (J>=0 && J<D->NJ && I>=0 && I<D->NI)
+#define FIN25D(D,I,J)                     (J>-0.5 && J<D->NJ+0.5 && I>-0.5 && I<D->NI+0.5)
+
+#define Def_Pointer(DEF,COMP,IDX) (DEF->Data[COMP]+(IDX+DEF->Idx)*TDef_Size[DEF->Type]);
+#define Def_PointerMode(DEF,IDX) (DEF->Mode+(IDX+DEF->Idx)*TDef_Size[DEF->Type]);
 
 #define Def_Set(DEF,COMP,IDX,VAL) {\
 switch(DEF->Type) {\

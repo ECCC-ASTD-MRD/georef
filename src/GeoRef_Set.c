@@ -265,7 +265,7 @@ int32_t GeoRef_SetIndexInit(
         int32_t mult = 1;
         if (!GSet->Index || GSet->IndexMethod != GSet->Opt.Interp) {
             GSet->IndexMethod = GSet->Opt.Interp;
-            if (GSet->IndexMethod == IR_AVERAGE || GSet->IndexMethod == IR_CONSERVATIVE || GSet->IndexMethod == IR_NORMALIZED_CONSERVATIVE) {
+            if (GSet->IndexMethod == IR_AVERAGE || GSet->IndexMethod == IR_VECTOR_AVERAGE || GSet->IndexMethod == IR_CONSERVATIVE || GSet->IndexMethod == IR_NORMALIZED_CONSERVATIVE) {
                 mult = 1024;
                 const char * const str = getenv("GEOREF_INDEX_SIZE_HINT");
                 if (str) {

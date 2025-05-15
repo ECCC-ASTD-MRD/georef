@@ -672,8 +672,8 @@ int32_t Def_GetValue(
         }
 
         if (Def->Data[1] && !C) {
-            Def_Pointer(Def, 0, mem, p0);
-            Def_Pointer(Def, 1, mem, p1);
+            p0=(Def, 0, mem);
+            p1=Def_Pointer(Def, 1, mem);
             GeoRef_XYWDVal(Ref, opt, &valf, &valdf, p0, p1, &X, &Y, 1);
             *Length = valf;
 
@@ -687,7 +687,7 @@ int32_t Def_GetValue(
             if (Def->Type <= TD_Int64 || (ix == x && iy == y)) {
                 Def_Get(Def, C, mem + idx, valf);
             } else {
-                Def_Pointer(Def, C, mem, p0);
+                p0=Def_Pointer(Def, C, mem);
                 GeoRef_XYVal(Ref, opt, &valf, p0, &X, &Y, 1);
             }
             *Length = valf;
@@ -1966,10 +1966,10 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
 */
 int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt){
 
-   double        val, vx, di[4], dj[4], *fld, *aux, di0, di1, dj0, dj1;
+   double        val, vx, vy, di[4], dj[4], *fld, *aux, di0, di1, dj0, dj1;
    float        *ip = NULL;
    int32_t      *acc = NULL, x0, x1, y, y0, y1, isize;
-   unsigned long idxt, idxk, idxj, n, nijk, nij;
+   unsigned long idxt, idxk, idxj, n, nij;
    uint32_t      n2, ndi, ndj, k, t, s, x, dx, dy;
    TGeoSet      *gset;
    TGeoScan      gscan;
@@ -1986,12 +1986,11 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
       return FALSE;
    }
 
-   acc = ToDef->Accum;
+   nij = FSIZE2D(ToDef);
    fld = ToDef->Buffer;
    aux = ToDef->Aux;
-   nij = FSIZE2D(ToDef);
-   nijk = FSIZE3D(ToDef);
-   val = vx = 0.0;
+   acc = ToDef->Accum;
+   val = vx =vy = 0.0;
    interp = Opt->Interp;
 
    if (Opt->Interp != IR_NOP && Opt->Interp != IR_ACCUM && Opt->Interp != IR_BUFFER) {
@@ -2017,21 +2016,21 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
       }
 
       if (!ToDef->Buffer) {
-         fld = ToDef->Buffer = malloc(nijk*sizeof(double));
+         fld = ToDef->Buffer = malloc(nij*sizeof(double));
          if (!ToDef->Buffer) {
             Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Unable to allocate buffer\n", __func__);
             return FALSE;
          }
-         for(n = 0; n < nijk; n++) fld[n] = ToDef->NoData;
+         for(n = 0; n < nij; n++) fld[n] = ToDef->NoData;
+      }
 
-         if (Opt->Interp == IR_VECTOR_AVERAGE) {
-            aux = ToDef->Aux = malloc(nijk*sizeof(double));
-            if (!ToDef->Aux) {
-               Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Unable to allocate auxiliary buffer\n", __func__);
-               return FALSE;
-            }
-            for(n = 0; n < nijk; n++) aux[n] = 0.0;
+      if (Opt->Interp == IR_VECTOR_AVERAGE && !ToDef->Aux) {
+         aux  = ToDef->Aux = malloc(nij*sizeof(double));
+         if (!ToDef->Aux) {
+            Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Unable to allocate auxiliary buffer\n", __func__);
+            return FALSE;
          }
+         for(n = 0; n < nij; n++) aux[n] = 0.0;
       }
 
       if (ToRef->GRTYP[0] == 'Y') {
@@ -2042,6 +2041,7 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
                di0 = floor(di0);
                dj0 = floor(dj0);
 
+//TODO: Finalize vector interpolation
                Opt->Interp = IR_NEAREST;
                Def_GetValue(FromRef, FromDef, Opt, 0, di0, dj0, FromDef->Level, &di[0], &vx);
                Def_GetValue(FromRef, FromDef, Opt, 0, di0+1.0, dj0, FromDef->Level, &di[1], &vx);
@@ -2064,7 +2064,11 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
                   case IR_MINIMUM          : if (vx < fld[idxt]) fld[idxt] = vx; break;
                   case IR_SUM              : fld[idxt] += vx;                  break;
                   case IR_AVERAGE          : fld[idxt] += vx; acc[idxt]++;     break;
-                  case IR_VECTOR_AVERAGE   : vx = DEG2RAD(vx); fld[idxt] += cos(vx); aux[idxt] += sin(vx); acc[idxt]++; break;
+                  case IR_VECTOR_AVERAGE   : vy = DEG2RAD(vy); 
+                                             fld[idxt] += vx;
+                                             aux[idxt] += vy; 
+                                             acc[idxt]++; 
+                                             break;
                   default:
                      Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid interpolation type\n", __func__);
                      return FALSE;
@@ -2114,110 +2118,13 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
          }
 
          gset = GeoRef_SetGet(ToRef, FromRef, Opt);
+         GeoRef_SetIndexInit(gset);
 
          // Do we have and index
-         if (gset->Index && gset->Index[0] != REF_INDEX_EMPTY) {
-
-            // As long as the file or the list is not empty
-            ip = gset->Index;
-            while(*ip != REF_INDEX_END) {
-
-               // Get the gridpoint
-               vx = *(ip++);
-               if (vx == REF_INDEX_SEPARATOR)
-                  continue;
- 
-               // Skip if no data
-               Def_Get(FromDef, 0, (int)vx, vx);
-               if (!DEFVALID(FromDef, vx) && Opt->Interp != IR_COUNT)
-                  continue;
-
-               while(*ip!=REF_INDEX_END && *ip!=REF_INDEX_SEPARATOR) {
-
-                  idxt = *(ip++);
-
-                  // If the previous value is nodata, initialize the counter
-                  if (!DEFVALID(ToDef, fld[idxt])) {
-                     fld[idxt] = (Opt->Interp == IR_SUM || Opt->Interp == IR_AVERAGE  || Opt->Interp == IR_VECTOR_AVERAGE || Opt->Interp == IR_VARIANCE || Opt->Interp == IR_SQUARE || Opt->Interp == IR_NORMALIZED_COUNT || Opt->Interp == IR_COUNT) ? 0.0 : (Opt->Interp == IR_MAXIMUM ? -HUGE_VAL : HUGE_VAL);
-                     if (aux) aux[idxt] = fld[idxt];
-                  }
-                                       
-                  switch(Opt->Interp) {
-                     case IR_MAXIMUM          : if (vx > fld[idxt]) fld[idxt] = vx;
-                                                break;
-                     case IR_MINIMUM          : if (vx < fld[idxt]) fld[idxt] = vx;
-                                                break;
-                     case IR_SUM              : fld[idxt] += vx;
-                                                break;
-                     case IR_VARIANCE         : acc[idxt]++;
-                                                val = Opt->Ancilliary[idxt];
-                                                fld[idxt] += (vx-val)*(vx-val);
-                                                break;
-                     case IR_SQUARE           : acc[idxt]++;
-                                                fld[idxt] += vx*vx;
-                                                break;
-                     case IR_COUNT            : acc[idxt]++;
-                     case IR_AVERAGE          :
-                     case IR_NORMALIZED_COUNT : if (Opt->Table) {
-                                                   t = 0;
-                                                   while(t < ToDef->NK) {
-                                                      if (vx == Opt->Table[t]) {
-                                                         if (Opt->Interp != IR_COUNT) acc[idxt]++;
-                                                         fld[t*nij+idxt] += 1.0;
-                                                         break;
-                                                      }
-                                                      t++;
-                                                   }
-                                                } else if (Opt->lutDef) {
-                                                   int32_t hasvalue = 0;
-                                                   t = 0;
-                                                   while(t < nbClass) {
-                                                      if (vx == fromClass[t]) {
-                                                         if (toClass) { // toClass is between 1 and 26
-                                                            if (toClass[t] > 0)
-                                                               {
-                                                               fld[(toClass[t]-1)*nij+idxt] += 1.0;
-                                                               hasvalue = 1;
-                                                               }
-                                                         } else {
-                                                            for (i = 1; i < Opt->lutDim ; i++) { // skip 1st column : the class id
-                                                               val = Opt->lutDef[i][t+1];
-                                                               if (val > 0) {
-                                                                  fld[(rpnClass[i]-1)*nij+idxt] += val;
-                                                                  hasvalue = 1;
-                                                               }
-                                                            }
-                                                         }
-                                                         break;
-                                                      }
-                                                      t++;
-                                                   }
-                                                   // Dont count missing values
-                                                   if (hasvalue)
-                                                      if (Opt->Interp != IR_COUNT) acc[idxt]++;
-                                                } else {
-                                                   if (DEFVALID(FromDef, vx)) {
-                                                      fld[idxt] += vx;
-                                                      if (Opt->Interp != IR_COUNT) acc[idxt]++;
-                                                   }
-                                                }
-                                                break;
-                     case IR_VECTOR_AVERAGE   : vx = DEG2RAD(vx); fld[idxt] += cos(vx); aux[idxt] += sin(vx); acc[idxt]++; break;
-                     default:
-                        Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid interpolation type\n", __func__);
-                        return FALSE;
-                  }
-               }
-            }
-         } else {
+         if (!gset->Index || gset->Index[0] == REF_INDEX_EMPTY) {
             char *c;
 
-            // Define the max size of the indexes
-            GeoRef_SetIndexInit(gset);
-            if (gset->Index && gset->Index[0] == REF_INDEX_EMPTY) {
-               ip = gset->Index;
-            }
-
+            ip = gset->Index;
 
             // grid based interpolations
             GeoScan_Init(&gscan);
@@ -2243,17 +2150,8 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
                   }
                   dx++;
 
-                  // Skip if no mask
-                  if (FromDef->Mask && !FromDef->Mask[gscan.V[x]])
-                     continue;
-
                   if (x>0) *(ip++) = REF_INDEX_SEPARATOR;
                   *(ip++) = gscan.V[x];
-
-                  // Skip if no data
-                  Def_Get(FromDef, 0, gscan.V[x], vx);
-                  if (!DEFVALID(FromDef, vx) && Opt->Interp != IR_COUNT)
-                     continue;
 
                   // Figure out ordered coverage
                   if (s > 1) {
@@ -2298,95 +2196,125 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
                   for(ndj = dj0; ndj <= dj1; ndj++) {
                      idxj = ndj*ToDef->NI;
                      for(ndi = di0; ndi <= di1; ndi++) {
-                        idxt = idxj+(ndi >= ToDef->NI ? ndi-ToDef->NI : ndi);
-
-                        // Skip if no mask
-                        if (!ToDef->Mask || ToDef->Mask[idxt]) {
-
-                           *(ip++) = idxt;
-
-                           // If the previous value is nodata, initialize the counter
-                           if (!DEFVALID(ToDef, fld[idxt])) {
-                              fld[idxt] = (Opt->Interp == IR_SUM || Opt->Interp == IR_AVERAGE  || Opt->Interp == IR_VECTOR_AVERAGE || Opt->Interp == IR_VARIANCE || Opt->Interp == IR_SQUARE || Opt->Interp == IR_NORMALIZED_COUNT || Opt->Interp == IR_COUNT) ? 0.0 : (Opt->Interp == IR_MAXIMUM ? -HUGE_VAL : HUGE_VAL);
-                              if (aux) aux[idxt] = fld[idxt];
-                           }
-                                                
-                           switch(Opt->Interp) {
-                              case IR_MAXIMUM          : if (vx > fld[idxt]) fld[idxt] = vx;
-                                                         break;
-                              case IR_MINIMUM          : if (vx < fld[idxt]) fld[idxt] = vx;
-                                                         break;
-                              case IR_SUM              : fld[idxt] += vx;
-                                                         break;
-                              case IR_VARIANCE         : acc[idxt]++;
-                                                         val = Opt->Ancilliary[idxt];
-                                                         fld[idxt] += (vx-val)*(vx-val);
-                                                         break;
-                              case IR_SQUARE           : acc[idxt]++;
-                                                         fld[idxt] += vx*vx;
-                                                         break;
-                              case IR_COUNT            : acc[idxt]++;
-                              case IR_AVERAGE          :
-                              case IR_NORMALIZED_COUNT : if (Opt->Table) {
-                                                            t = 0;
-                                                            while(t < ToDef->NK) {
-                                                               if (vx == Opt->Table[t]) {
-                                                                  if (Opt->Interp != IR_COUNT) acc[idxt]++;
-                                                                  fld[t*nij+idxt] += 1.0;
-                                                                  break;
-                                                               }
-                                                               t++;
-                                                            }
-                                                         } else if (Opt->lutDef) {
-                                                            int32_t hasvalue = 0;
-                                                            t = 0;
-                                                            while(t < nbClass) {
-                                                               if (vx == fromClass[t]) {
-                                                                  if (toClass) { // toClass is between 1 and 26
-                                                                     if (toClass[t] > 0)
-                                                                        {
-                                                                        fld[(toClass[t]-1)*nij+idxt] += 1.0;
-                                                                        hasvalue = 1;
-                                                                        }
-                                                                  } else {
-                                                                     for (i = 1; i < Opt->lutDim ; i++) { // skip 1st column : the class id
-                                                                        val = Opt->lutDef[i][t+1];
-                                                                        if (val > 0) {
-                                                                           fld[(rpnClass[i]-1)*nij+idxt] += val;
-                                                                           hasvalue = 1;
-                                                                        }
-                                                                     }
-                                                                  }
-                                                                  break;
-                                                               }
-                                                               t++;
-                                                            }
-                                                            // Dont count missing values
-                                                            if (hasvalue)
-                                                               if (Opt->Interp != IR_COUNT) acc[idxt]++;
-                                                         } else {
-                                                            if (DEFVALID(FromDef, vx)) {
-                                                               fld[idxt] += vx;
-                                                               if (Opt->Interp != IR_COUNT) acc[idxt]++;
-                                                            }
-                                                         }
-                                                         break;
-                              case IR_VECTOR_AVERAGE   : vx = DEG2RAD(vx); fld[idxt] += cos(vx); aux[idxt] += sin(vx); acc[idxt]++; break;
-                              default:
-                                 Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid interpolation type\n", __func__);
-                                 return FALSE;
-                           }
-                        }
+                        *(ip++) = idxj+(ndi >= ToDef->NI ? ndi-ToDef->NI : ndi);
                      }
                   }
                }
                *(ip++) = REF_INDEX_SEPARATOR;
             }
-            *(ip++) = REF_INDEX_END;
+           *(ip++) = REF_INDEX_END;
             gset->IndexSize = (ip-gset->Index)+1;
 
             GeoScan_Clear(&gscan);
          }
+
+         // As long as the file or the list is not empty
+         ip = gset->Index;
+         while(*ip != REF_INDEX_END) {
+
+            // Get the gridpoint
+            vy = *(ip++);
+            if (vy == REF_INDEX_SEPARATOR)
+               continue;
+
+            // Skip if not in mask
+            if (FromDef->Mask && !FromDef->Mask[FromDef->Idx+(int)vy])
+               continue;
+
+            // Skip if no data
+            Def_Get(FromDef, 0, (int)vy, vx);
+            if (!DEFVALID(FromDef, vx) && Opt->Interp != IR_COUNT)
+               continue;
+
+            if (FromDef->Data[1])
+               Def_Get(FromDef, 1, (int)vy, vy);
+
+            while(*ip!=REF_INDEX_END && *ip!=REF_INDEX_SEPARATOR) {
+
+               idxt = *(ip++);
+
+               // Skip if no mask
+               if (ToDef->Mask && ToDef->Mask[idxt]) {
+                  continue;
+               }
+
+               // If the previous value is nodata, initialize the counter
+               if (!DEFVALID(ToDef, fld[idxt])) {
+                  fld[idxt] = (Opt->Interp == IR_SUM || Opt->Interp == IR_AVERAGE  || Opt->Interp == IR_VECTOR_AVERAGE || Opt->Interp == IR_VARIANCE || Opt->Interp == IR_SQUARE || Opt->Interp == IR_NORMALIZED_COUNT || Opt->Interp == IR_COUNT) ? 0.0 : (Opt->Interp == IR_MAXIMUM ? -HUGE_VAL : HUGE_VAL);
+                  if (aux) aux[idxt] = fld[idxt];
+               }
+                                    
+               switch(Opt->Interp) {
+                  case IR_MAXIMUM          : if (vx > fld[idxt]) fld[idxt] = vx;
+                                             break;
+                  case IR_MINIMUM          : if (vx < fld[idxt]) fld[idxt] = vx;
+                                             break;
+                  case IR_SUM              : fld[idxt] += vx;
+                                             break;
+                  case IR_VARIANCE         : acc[idxt]++;
+                                             val = Opt->Ancilliary[idxt];
+                                             fld[idxt] += (vx-val)*(vx-val);
+                                             break;
+                  case IR_SQUARE           : acc[idxt]++;
+                                             fld[idxt] += vx*vx;
+                                             break;
+                  case IR_COUNT            : acc[idxt]++;
+                  case IR_AVERAGE          :
+                  case IR_NORMALIZED_COUNT : if (Opt->Table) {
+                                                t = 0;
+                                                while(t < ToDef->NK) {
+                                                   if (vx == Opt->Table[t]) {
+                                                      if (Opt->Interp != IR_COUNT) acc[idxt]++;
+                                                      fld[t*nij+idxt] += 1.0;
+                                                      break;
+                                                   }
+                                                   t++;
+                                                }
+                                             } else if (Opt->lutDef) {
+                                                int32_t hasvalue = 0;
+                                                t = 0;
+                                                while(t < nbClass) {
+                                                   if (vx == fromClass[t]) {
+                                                      if (toClass) { // toClass is between 1 and 26
+                                                         if (toClass[t] > 0)
+                                                            {
+                                                            fld[(toClass[t]-1)*nij+idxt] += 1.0;
+                                                            hasvalue = 1;
+                                                            }
+                                                      } else {
+                                                         for (i = 1; i < Opt->lutDim ; i++) { // skip 1st column : the class id
+                                                            val = Opt->lutDef[i][t+1];
+                                                            if (val > 0) {
+                                                               fld[(rpnClass[i]-1)*nij+idxt] += val;
+                                                               hasvalue = 1;
+                                                            }
+                                                         }
+                                                      }
+                                                      break;
+                                                   }
+                                                   t++;
+                                                }
+                                                // Dont count missing values
+                                                if (hasvalue)
+                                                   if (Opt->Interp != IR_COUNT) acc[idxt]++;
+                                             } else {
+                                                if (DEFVALID(FromDef, vx)) {
+                                                   fld[idxt] += vx;
+                                                   if (Opt->Interp != IR_COUNT) acc[idxt]++;
+                                                }
+                                             }
+                                             break;
+                  case IR_VECTOR_AVERAGE   : fld[idxt] += vx;
+                                             aux[idxt] += vy;
+                                             acc[idxt]++; 
+                                             break;
+                  default:
+                     Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid interpolation type\n", __func__);
+                     return FALSE;
+               }
+            }
+         }
+         
          if (fromClass) free(fromClass);
          if (toClass) free(toClass);
          if (rpnClass) free(rpnClass);
@@ -2407,8 +2335,8 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
 */
 int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt) {
 
-   int64_t k,n,nij,idx;
-   double  val;
+   int64_t n,nij,idx;
+   double  val,val2;
 
    if (Opt->Interp < IR_NORMALIZED_CONSERVATIVE) {
       return(TRUE);
@@ -2420,14 +2348,12 @@ int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt) {
    switch(Opt->Interp) {
 
       case IR_NORMALIZED_CONSERVATIVE:
-         for (k = 0; k < ToDef->NK; k++) {
-            for(n = 0; n < nij; n++, idx++) {
-               if (ToDef->Buffer[idx] != 0.0) {
-                  Def_Get(ToDef, 0, idx, val);
-                  val /= ToDef->Buffer[idx];
-                  Def_Set(ToDef, 0, idx, val);
-                  ToDef->Buffer[idx] = 0.0;
-               }
+         for(n = 0; n < nij; n++, idx++) {
+            if (ToDef->Buffer[idx] != 0.0) {
+               Def_Get(ToDef, 0, idx, val);
+               val /= ToDef->Buffer[idx];
+               Def_Set(ToDef, 0, idx, val);
+               ToDef->Buffer[idx] = 0.0;
             }
          }
          break;
@@ -2440,52 +2366,59 @@ int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt) {
       case IR_VECTOR_AVERAGE:
       case IR_ACCUM:
       case IR_BUFFER:
-         for(k = 0; k < ToDef->NK; k++) {
-            for(n = 0; n < nij; n++, idx++) {
-               val = ToDef->NoData;
-               switch(Opt->Interp) {
-                  case IR_ACCUM:
-                     if (ToDef->Accum) val = ToDef->Accum[n];
-                     break;
+         for(n = 0; n < nij; n++, idx++) {
+            val = ToDef->NoData;
+            switch(Opt->Interp) {
+               case IR_ACCUM:
+                  if (ToDef->Accum) val = ToDef->Accum[n];
+                  break;
 
-                  case IR_BUFFER:
-                     if (ToDef->Buffer) val = ToDef->Buffer[idx];
-                     break;
+               case IR_BUFFER:
+                  if (ToDef->Buffer) val = ToDef->Buffer[idx];
+                  break;
 
-                  default:
-                     if (ToDef->Buffer) {
-                        if (DEFVALID(ToDef, ToDef->Buffer[idx])) {
-                           if (ToDef->Aux) {
-                              if (ToDef->Accum && ToDef->Accum[n] != 0.0) {
-                                 ToDef->Buffer[idx] /= ToDef->Accum[n];
-                                 ToDef->Aux[idx] /= ToDef->Accum[n];
-                              }
-                              val = RAD2DEG(atan2(ToDef->Aux[idx], ToDef->Buffer[idx]));
-                              if (val < 0.0) val += 360.0;
+               default:
+                  if (ToDef->Buffer) {
+                     if (DEFVALID(ToDef, ToDef->Buffer[idx])) {
+                        if (ToDef->Aux) {
+                           if (ToDef->Accum && ToDef->Accum[n] != 0.0) {
+                              ToDef->Buffer[idx] /= ToDef->Accum[n];
+                              ToDef->Aux[idx] /= ToDef->Accum[n];
+                           }
+                           val  = hypot(ToDef->Aux[idx],ToDef->Buffer[idx]);
+                           val2 = atan2(ToDef->Buffer[idx],ToDef->Aux[idx])+M_PI;
+                           val2 = RAD2DEG(val2);
+                           if (val2 < 0.0) val2 += 360.0;
+                        } else {
+                           val = ToDef->Buffer[idx];
+                           if (ToDef->Accum && ToDef->Accum[n] != 0.0) {
+                              val = ToDef->Buffer[idx]/ToDef->Accum[n];
                            } else {
                               val = ToDef->Buffer[idx];
-                              if (ToDef->Accum && ToDef->Accum[n] != 0.0) {
-                                 val = ToDef->Buffer[idx]/ToDef->Accum[n];
-                              } else {
-                                 val = ToDef->Buffer[idx];
-                              }
                            }
                         }
                      }
-               }
-               Def_Set(ToDef, 0, idx, val);
+                  }
             }
+            Def_Set(ToDef, 0, idx, val);
+            if (ToDef->Aux)
+               Def_Set(ToDef, 1, idx, val2);
+         }
+         if (ToDef->Aux) {
+            GeoRef_WD2UV(ToRef,(float*)ToDef->Data[0],(float*)ToDef->Data[1],(float*)ToDef->Data[0],(float*)ToDef->Data[1],NULL,NULL,nij);
          }
          break;
    }
 
    // Copy first column to last if it's repeated
    if (ToRef->Type&GRID_REPEAT) {
-      for(k = 0; k < ToDef->NK; k++) {
-         idx = k*nij;
-         for(n = ToRef->Y0; n <= ToRef->Y1; n++, idx += ToDef->NI) {
-            Def_Get(ToDef, 0, idx, val);
-            Def_Set(ToDef, 0, idx+ToDef->NI-1, val);
+      idx = nij;
+      for(n = ToRef->Y0; n <= ToRef->Y1; n++) {
+         Def_Get(ToDef, 0, idx, val);
+         Def_Set(ToDef, 0, idx+ToDef->NI-1, val);
+         if (ToDef->Aux) {
+            Def_Get(ToDef, 1, idx, val);
+            Def_Set(ToDef, 1, idx+ToDef->NI-1, val);
          }
       }
    }
@@ -2525,7 +2458,7 @@ TGeoRef *GeoRef_DefSubSelect(TGeoRef *Ref,TDef *Def,int N) {
       Ref->Sub=N;
       return(N>=0?Ref->Subs[N]:Ref);
    }
-   return(NULL);
+   return(Ref->Subs[Ref->Sub]);
 }
 
 /*----------------------------------------------------------------------------
@@ -2540,8 +2473,11 @@ TGeoRef *GeoRef_DefSubSelect(TGeoRef *Ref,TDef *Def,int N) {
 */
 int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t Final) {
 
-   void    *pf0, *pt0, *pf1, *pt1;
-   int32_t  u, k, code = FALSE;
+   void         *pf0, *pt0, *pf1, *pt1;
+   int32_t       u, k, code = FALSE;
+   float        *uu=NULL,*vv=NULL,*spd=NULL,*dir=NULL,*to=NULL;
+   unsigned long sz=0;
+   TGeoRef      *fromref=NULL;
 
    if (!Opt) Opt=&GeoRef_Options;
 
@@ -2568,13 +2504,13 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
       case IR_CUBIC:
          // Loop on vertical levels
          for(k = 0; k < ToDef->NK; k++) {
-            Def_Pointer(ToDef, 0, k*FSIZE2D(ToDef), pt0);
-            Def_Pointer(FromDef, 0, k*FSIZE2D(FromDef), pf0);
+            pt0 = Def_Pointer(ToDef, 0, k*FSIZE2D(ToDef));
+            pf0 = Def_Pointer(FromDef, 0, k*FSIZE2D(FromDef));
 
             if (ToDef->Data[1]) {
                // Interpolation vectorielle
-               Def_Pointer(ToDef, 1, k*FSIZE2D(ToDef), pt1);
-               Def_Pointer(FromDef, 1, k*FSIZE2D(FromDef), pf1);
+               pt1 = Def_Pointer(ToDef, 1, k*FSIZE2D(ToDef));
+               pf1 = Def_Pointer(FromDef, 1, k*FSIZE2D(FromDef));
 
                // In case of Y grid, get the speed and dir instead of wind components
                // since grid oriented components dont mean much
@@ -2612,19 +2548,42 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
       case IR_NORMALIZED_COUNT:
       case IR_COUNT:
       case IR_VECTOR_AVERAGE:
-      case IR_NOP:
-      case IR_ACCUM:
-      case IR_BUFFER:
-         // In case of U grid, we have to select the right subgrid
-         if (FromRef->GRTYP[0] == 'U') {
-            for(u=0;u<FromRef->NbSub;u++) {
-               GeoRef_DefSubSelect(FromRef,FromDef,u);
-               code = GeoRef_InterpAverage(ToRef, ToDef, FromRef->Subs[u], FromDef, Opt);
+         // In case of winds, we have to use speed and direction
+         if (FromDef->Data[1]) {
+            sz=FSIZE2D(FromDef);
+            if (!spd) {
+               spd=(float*)malloc(2*sz*sizeof(float));
+               dir=&spd[sz];
             }
-            GeoRef_DefSubSelect(FromRef,FromDef,-1);
-         } else {
-            code = GeoRef_InterpAverage(ToRef, ToDef, FromRef, FromDef, Opt);
          }
+
+         // In case of U grid, we have to select the right subgrid
+         for(u=0;u<FromRef->NbSub;u++) {
+            fromref=GeoRef_DefSubSelect(FromRef,FromDef,u);
+            if (FromDef->Data[1]) {
+
+               uu=(float*)Def_Pointer(FromDef,0,0);   // Get offset UU source data pointer
+               vv=(float*)Def_Pointer(FromDef,1,0);   // Get offset VV source data pointer
+
+               // Get speed and direction
+               GeoRef_UV2UV(fromref,&spd[FromDef->Idx],&dir[FromDef->Idx],uu,vv,NULL,NULL,sz/2);
+
+               uu=(float*)FromDef->Data[0];           // Save original UU source data pointer
+               vv=(float*)FromDef->Data[1];           // Save original VV source data pointer               
+               FromDef->Data[0]=(char*)spd;           // Interpolate speed
+               FromDef->Data[1]=(char*)dir;           // Interpolate direction
+               Opt->Interp= IR_VECTOR_AVERAGE;
+               code = GeoRef_InterpAverage(ToRef, ToDef, fromref, FromDef, Opt);
+
+               FromDef->Data[0]=(char*)uu;            // Assign back original UU pointer
+               FromDef->Data[1]=(char*)vv;            // Assign back original VV pointer
+            } else {
+               code = GeoRef_InterpAverage(ToRef, ToDef, fromref, FromDef, Opt);
+            }
+         }
+         if (spd) free(spd);
+
+         GeoRef_DefSubSelect(FromRef,FromDef,-1);
          break;
 
       case IR_SUBNEAREST:
@@ -2635,6 +2594,11 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
          }
          ToDef->SubSample = Opt->Sampling;
          code = GeoRef_InterpSub(ToRef, ToDef, FromRef, FromDef, Opt);
+         break;
+
+      case IR_NOP:
+      case IR_ACCUM:
+      case IR_BUFFER:
          break;
    }
 
@@ -2701,145 +2665,6 @@ void GeoScan_Clear(TGeoScan *Scan) {
  *
  *    @return              Size of results
 */
-int32_t _GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t X0, int32_t Y0, int32_t X1, int32_t Y1, int32_t Dim) {
-
-   register int32_t idx, x, y, n = 0;
-   int32_t          d = 0, sz, dd;
-   double       x0, y0, v;
-
-   if (!Opt) Opt=&GeoRef_Options;
-
-   if (!Scan || !ToRef || !FromRef) {
-      return 0;
-   }
-
-   // Check limits
-   X0 = fmax(X0, FromRef->X0);
-   Y0 = fmax(Y0, FromRef->Y0);
-   X1 = fmin(X1, FromRef->X1);
-   Y1 = fmin(Y1, FromRef->Y1);
-
-   // Adjust scan buffer sizes
-   Scan->DX = X1-X0+1;
-   Scan->DY = Y1-Y0+1;
-   dd = (Scan->DX+1)*(Scan->DY+1);
-   sz = Scan->DX*Scan->DY;
-
-   if (Scan->S < sz) {
-      if (!(Scan->X = (double*)realloc(Scan->X, dd*sizeof(double))))
-         return 0;
-      if (!(Scan->Y = (double*)realloc(Scan->Y, dd*sizeof(double))))
-         return 0;
-      if (!(Scan->V = (unsigned int*)realloc(Scan->V, sz*sizeof(unsigned int))))
-         return 0;
-      if (!(Scan->D = (float*)realloc(Scan->D, sz*sizeof(float))))
-         return 0;
-      Scan->S = sz;
-   }
-
-   dd = Dim-1;
-   Scan->N = 0;
-
-   for(y = Y0; y <= Y1+dd; y++) {
-      idx = (y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
-      for(x = X0; x <= X1+dd; x++, idx++, n++) {
-         if (x <= X1 && y <= Y1) {
-            Scan->V[Scan->N++] = idx;
-         }
-
-         x0 = dd ? x-0.5 : x;
-         y0 = dd ? y-0.5 : y;
-
-         GeoRef_XY2LL(FromRef, &x0, &y0, &Scan->X[n], &Scan->Y[n], 1, FALSE);
-
-
-         if (FromRef->Transform) {
-            Scan->X[n] = FromRef->Transform[0]+FromRef->Transform[1]*x0+FromRef->Transform[2]*y0;
-            Scan->Y[n] = FromRef->Transform[3]+FromRef->Transform[4]*x0+FromRef->Transform[5]*y0;
-         } else {
-            Scan->X[n] = x0;
-            Scan->Y[n] = y0;
-         }
-      }
-   }
-
-   // WKT grid type
-   if (FromRef->GRTYP[0] == 'W') {
-#ifdef HAVE_GDAL
-      for(y = Y0; y <= Y1+dd; y++) {
-         idx = (y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
-         for(x = X0; x <= X1+dd; x++, idx++, n++) {
-            if (x <= X1 && y <= Y1) {
-               Scan->V[Scan->N++] = idx;
-            }
-
-            x0 = dd ? x-0.5 : x;
-            y0 = dd ? y-0.5 : y;
-            if (FromRef->Transform) {
-               Scan->X[n] = FromRef->Transform[0]+FromRef->Transform[1]*x0+FromRef->Transform[2]*y0;
-               Scan->Y[n] = FromRef->Transform[3]+FromRef->Transform[4]*x0+FromRef->Transform[5]*y0;
-            } else {
-               Scan->X[n] = x0;
-               Scan->Y[n] = y0;
-            }
-         }
-      }
-
-      if (FromRef->Function) {
-         OCTTransform(FromRef->Function, n, Scan->X, Scan->Y, NULL);
-      }
-#endif
-      d = dd ? 2 : 1;
-
-   // Y GRTYP type
-   } else if (FromRef->GRTYP[0] == 'Y') {
-      for(y = Y0; y <= Y1; y++) {
-         idx = (y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
-         for(x = X0; x <= X1; x++, idx++, n++) {
-            if (x <= X1 && y <= Y1) {
-               Scan->V[Scan->N++] = idx;
-            }
-            Scan->X[n] = FromRef->AX[idx];
-            Scan->Y[n] = FromRef->AY[idx];
-         }
-      }
-      d = 1;
-
-   // Other RPN grids
-   } else {
-      for(y = Y0; y <= Y1+dd; y++) {
-         idx = (y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
-         for(x = X0; x <= X1+dd; x++, idx++, n++) {
-            if (x <= X1 && y <= Y1) {
-               Scan->V[Scan->N++] = idx;
-            }
-            Scan->X[n] = dd ? x+0.5 : x+1.0;
-            Scan->Y[n] = dd ? y+0.5 : y+1.0;
-         }
-      }
-      GeoRef_XY2LL(FromRef, Scan->Y, Scan->X, Scan->X, Scan->Y, n, FALSE);
-
-      d = dd ? 2 : 1;
-   }
-
-   // Project to destination grid
-   for(x = n-1; x >= 0; x--) {
-      x0 = Scan->X[x];
-      y0 = Scan->Y[x];
-
-      if (ToDef) {
-         Scan->D[x] = ToDef->NoData;
-      }
-
-      // If we're inside
-      if (GeoRef_LL2XY(ToRef, &Scan->X[x], &Scan->Y[x], &y0, &x0, 1, FALSE) && ToDef) {
-         Def_GetValue(ToRef, ToDef, Opt, 0, Scan->X[x], Scan->Y[x], 0, &v, NULL);
-         Scan->D[x] = v;
-      }
-   }
-   return d;
-}
-
 int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t X0, int32_t Y0, int32_t X1, int32_t Y1) {
 
    register int32_t idx, x, y, n = 0;
@@ -2885,7 +2710,7 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
    if (FromRef->GRTYP[0] == 'W') {
 #ifdef HAVE_GDAL
       for(y = Y0; y <= Y1+dd; y++) {
-         idx = (y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
+         idx = (y-FromRef->Y0)*FromRef->NX+(X0-FromRef->X0);
          for(x = X0; x <= X1+dd; x++, idx++, n++) {
             if (x <= X1 && y <= Y1) {
                Scan->V[Scan->N++] = idx;
@@ -2913,7 +2738,7 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
    // Y Grid type
    } else if (FromRef->GRTYP[0] == 'Y') {
       for(y = Y0; y <= Y1; y++) {
-         idx = (y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
+         idx = (y-FromRef->Y0)*FromRef->NX+(X0-FromRef->X0);
          for(x = X0; x <= X1; x++, idx++, n++) {
             if (x <= X1 && y <= Y1) {
                Scan->V[Scan->N++] = idx;
@@ -2927,7 +2752,7 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
    // Other RPN grids
    } else {
       for(y = Y0; y <= Y1+dd; y++) {
-         idx = (y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
+         idx = (y-FromRef->Y0)*FromRef->NX+(X0-FromRef->X0);
          for(x = X0; x <= X1+dd; x++, idx++, n++) {
             if (x <= X1 && y <= Y1) {
                Scan->V[Scan->N++] = idx;

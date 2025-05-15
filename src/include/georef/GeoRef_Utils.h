@@ -41,14 +41,6 @@
 #define LOG2(V)                           (log10(V)/0.301029995663981198017)
 #define SIGN(A,B)                         (B<0?-abs(A):abs(A))                                       ///< Returns the value of A with the sign of B
 
-#define FSIZE2D(D)                        ((unsigned long)(D->NI)*D->NJ)
-#define FSIZE3D(D)                        ((unsigned long)(D->NI)*D->NJ*D->NK)
-#define FSIZECHECK(D0,D1)                 (D0->NI==D1->NI && D0->NJ==D1->NJ && D0->NK==D1->NK)
-#define FIDX2D(D,I,J)                     ((unsigned long)(J)*D->NI+(I))
-#define FIDX3D(D,I,J,K)                   ((unsigned long)(K)*D->NI*D->NJ+(J)*D->NI+(I))
-#define FIN2D(D,I,J)                      (J>=0 && J<D->NJ && I>=0 && I<D->NI)
-#define FIN25D(D,I,J)                     (J>-0.5 && J<D->NJ+0.5 && I>-0.5 && I<D->NI+0.5)
-
 #define CLAMP(A,MIN,MAX)                  (A>MAX?MAX:(A<MIN?MIN:A))
 #define ORDER(VAL)                        (VAL==0.0?1.0:floor(log10(ABS(VAL))))
 #define RANGE_ORDER(VAL)                  (VAL==0.0?1.0:ceil(log10(ABS(VAL))-0.25))
