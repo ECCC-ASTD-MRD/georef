@@ -106,12 +106,16 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    defout2=Def_Create(grid.ni,grid.nj,grid.nk,TD_Float32,grid.data,gridvv.data,NULL);
    defout2->NoData=GeoRef_Options.NoData;
 
-   while(var=Vars[v++]) {
+   while((var=Vars[v++]) != NULL) {
       strncpy(crit.nomvar,var,FST_NOMVAR_LEN);
       fst_query* query = fst24_new_query(fin,&crit,NULL);
       n=0;
 
       while(fst24_read_next(query,&record)>0) {
+
+         if(fst24_record_is_descriptor(&record)){
+           continue;
+         }
 
          if (!refin) {
             refin=GeoRef_CreateFromRecord(&record);
@@ -186,7 +190,7 @@ int main(int argc, char *argv[]) {
    int         ok=0,m=-1,code=0;
    char        *etiket=NULL,*in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*method=NULL,*extrap=NULL,*wgeo=NULL,*vars[APP_LISTMAX],*ptr;
    char        dmethod[]="LINEAR",dextrap[]="VALUE",dwgeo[]="GRID";
-
+ 
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,    1,             "i", "input",  "Input file" },
         { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
