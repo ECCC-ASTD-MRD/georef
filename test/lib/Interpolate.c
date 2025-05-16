@@ -21,6 +21,11 @@ int WriteResults(fst_file *File,fst_record *In,fst_record *Out,char *Etiket) {
    return TRUE;
 }
 
+int is_grid_descriptor(const char *nomvar) {
+  // char *desc_names[] = {"^^", "^>", ">>", "!!"};
+  return !((nomvar != NULL) && isalpha(nomvar[0]));
+}
+
 int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket, float NoData) {
 
    TGeoRef    *refin=NULL,*refout=NULL;
@@ -110,6 +115,10 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
       n=0;
 
       while(fst24_read_next(query,&record)>0) {
+
+         if(is_grid_descriptor(record.nomvar)){
+           continue;
+         }
 
          if (!refin) {
             refin=GeoRef_CreateFromRecord(&record);
