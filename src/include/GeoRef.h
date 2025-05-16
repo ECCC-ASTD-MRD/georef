@@ -342,6 +342,7 @@ int32_t  GeoRef_Valid(TGeoRef* __restrict const Ref);
 int32_t  GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4,fst_file *File);
 int32_t  GeoRef_Read(struct TGeoRef *GRef);
 int32_t  GeoRef_CopyDesc(fst_file *FileTo, fst_record* Rec);
+int32_t  GeoRef_AssignToRecord(fst_record *Rec,TGeoRef *Ref);
 
 TGeoRef* GeoRef_CreateFromRecord(fst_record *Rec);
 TGeoRef* GeoRef_Create(int32_t NI, int32_t NJ, char *GRTYP, int32_t IG1, int32_t IG2, int32_t IG3, int32_t IG4, fst_file *File);
