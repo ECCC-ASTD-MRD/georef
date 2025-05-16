@@ -109,7 +109,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    defout=Def_Create(grid.ni,grid.nj,grid.nk,TD_Float32,grid.data,gridvv.data,NULL);
    defout->NoData=NoData;
 
-   while(var=Vars[v++]) {
+   while((var=Vars[v++]) != NULL) {
       strncpy(crit.nomvar,var,FST_NOMVAR_LEN);
       fst_query* query = fst24_new_query(fin,&crit,NULL);
       n=0;
