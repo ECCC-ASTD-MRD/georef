@@ -751,13 +751,11 @@ int32_t GeoRef_UV2UV(TGeoRef *Ref,float *uullout,float *vvllout,float *uuin,floa
                break;
 
             default:
-               f77name(ez8_llwfgdw)(uullout,vvllout,Lon,&ni,&nj,Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
                break;
          }
          break;
 
       default:
-         f77name(ez8_llwfgdw)(uullout,vvllout,Lon,&ni,&nj,Ref->GRTYP,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
          break;
     }
 
