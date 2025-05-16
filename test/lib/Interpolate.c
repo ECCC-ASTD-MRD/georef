@@ -21,7 +21,7 @@ int WriteResults(fst_file *File,fst_record *In,fst_record *Out,char *Etiket) {
    return TRUE;
 }
 
-int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket) {
+int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket, float NoData) {
 
    TGeoRef    *refin=NULL,*refout=NULL;
    TDef       *defin=NULL,*defout=NULL;
@@ -102,7 +102,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 
    GeoRef_WriteFST(refout,NULL,-1,-1,-1,-1,fout);
    defout=Def_Create(grid.ni,grid.nj,grid.nk,TD_Float32,grid.data,gridvv.data,NULL);
-   defout->NoData=GeoRef_Options.NoData;
+   defout->NoData=NoData;
 
    while(var=Vars[v++]) {
       strncpy(crit.nomvar,var,FST_NOMVAR_LEN);
@@ -174,6 +174,7 @@ int main(int argc, char *argv[]) {
 
    int         ok=0,m=-1,code=0;
    char        *etiket=NULL,*in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*method=NULL,*extrap=NULL,*vars[APP_LISTMAX],*ptr,dmethod[]="LINEAR",dextrap[]="VALUE";
+   float       nodata = GeoRef_Options.NoData;
 
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,    1,             "i", "input",  "Input file" },
@@ -183,6 +184,7 @@ int main(int argc, char *argv[]) {
         { APP_CHAR,  &method,1,             "m", "method", "Interpolation method (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC,CONSERVATIVE,NORMALIZED_CONSERVATIVE,MAXIMUM,MINIMUM,SUM,AVERAGE,VARIANCE,SQUARE,NORMALIZED_COUNT,COUNT,VECTOR_AVERAGE,SUBNEAREST,SUBLINEAR)" },
         { APP_CHAR,  &extrap,1,             "x", "extrap", "Extrapolation method (MAXIMUM,MINIMUM,"APP_COLOR_GREEN"[VALUE]"APP_COLOR_RESET",ABORT)" },
         { APP_CHAR,  &etiket,1,             "e", "etiket", "ETIKET for destination field" },
+        { APP_FLOAT64,&nodata,1,            "d", "nodata", "Value to use when there is no data (defaults to NaN)"},
         { APP_CHAR,  vars,  APP_LISTMAX-1,  "n", "nomvar", "List of variable to process" },
         { APP_NIL } };
 
@@ -253,7 +255,7 @@ int main(int argc, char *argv[]) {
    }
 
    if (code!=EXIT_FAILURE) {
-      ok=Interpolate(in,out,truth,grid,vars,etiket);
+      ok=Interpolate(in,out,truth,grid,vars,etiket,nodata);
    }
    code=App_End(ok?0:EXIT_FAILURE);
    App_Free();
