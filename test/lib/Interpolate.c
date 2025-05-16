@@ -21,10 +21,10 @@ int WriteResults(fst_file *File,fst_record *In,fst_record *Out,char *Etiket) {
    return TRUE;
 }
 
-int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket) {
+int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etiket,char *Winds) {
 
    TGeoRef    *refin=NULL,*refout=NULL;
-   TDef       *defin=NULL,*defout=NULL;
+   TDef       *defin=NULL,*defout=NULL,*defout1=NULL,*defout2=NULL;
    fst_record  crit=default_fst_record,grid=default_fst_record,record=default_fst_record,truth;
    fst_record  critvv=default_fst_record,gridvv=default_fst_record,recordvv=default_fst_record;
    fst_file   *fin,*fout,*fgrid,*ftruth;
@@ -101,8 +101,10 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    }
 
    GeoRef_WriteFST(refout,NULL,-1,-1,-1,-1,fout);
-   defout=Def_Create(grid.ni,grid.nj,grid.nk,TD_Float32,grid.data,gridvv.data,NULL);
-   defout->NoData=GeoRef_Options.NoData;
+   defout1=Def_Create(grid.ni,grid.nj,grid.nk,TD_Float32,grid.data,NULL,NULL);
+   defout1->NoData=GeoRef_Options.NoData;
+   defout2=Def_Create(grid.ni,grid.nj,grid.nk,TD_Float32,grid.data,gridvv.data,NULL);
+   defout2->NoData=GeoRef_Options.NoData;
 
    while(var=Vars[v++]) {
       strncpy(crit.nomvar,var,FST_NOMVAR_LEN);
@@ -116,8 +118,9 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
          }
 
          // Clear output buffer
-         Def_Clear(defout);
-
+         Def_Clear(defout1);
+         Def_Clear(defout2);
+         
          // Winds have to be managed with both components
          vmode=FALSE;
          if (strncmp(record.nomvar,"VV",2)==0) {
@@ -137,10 +140,16 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 
          // Proceed with interpolation
          defin=Def_Create(record.ni,record.nj,record.nk,TD_Float32,record.data,vmode?recordvv.data:NULL,NULL);
+         defout=vmode?defout2:defout1;
          if (!GeoRef_InterpDef(refout, defout, refin, defin, &GeoRef_Options,1)) {
    //     if (!GeoRef_Interp(refout,refin,&GeoRef_Options,grid.data,record.data)) {
             App_Log(APP_ERROR,"Interpolation problem");
             return(FALSE);
+         }
+
+         // If winds asked geographic mode
+         if (vmode && Winds[1]=='E') {
+            GeoRef_UV2UV(refout,(float*)defout->Data[0],(float*)defout->Data[1],(float*)defout->Data[0],(float*)defout->Data[1],NULL,NULL,FSIZE2D(defout));
          }
 
          // Write results
@@ -148,6 +157,8 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
          if (vmode) {
             WriteResults(fout,&recordvv,&gridvv,Etiket);
          }
+         Def_Free(defin);
+
          n++;
       }
       App_Log(APP_INFO,"Processed %i x '%s'\n",n,var);
@@ -173,7 +184,8 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 int main(int argc, char *argv[]) {
 
    int         ok=0,m=-1,code=0;
-   char        *etiket=NULL,*in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*method=NULL,*extrap=NULL,*vars[APP_LISTMAX],*ptr,dmethod[]="LINEAR",dextrap[]="VALUE";
+   char        *etiket=NULL,*in=NULL,*out=NULL,*truth=NULL,*grid=NULL,*method=NULL,*extrap=NULL,*wgeo=NULL,*vars[APP_LISTMAX],*ptr;
+   char        dmethod[]="LINEAR",dextrap[]="VALUE",dwgeo[]="GRID";
 
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,    1,             "i", "input",  "Input file" },
@@ -183,6 +195,7 @@ int main(int argc, char *argv[]) {
         { APP_CHAR,  &method,1,             "m", "method", "Interpolation method (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC,CONSERVATIVE,NORMALIZED_CONSERVATIVE,MAXIMUM,MINIMUM,SUM,AVERAGE,VARIANCE,SQUARE,NORMALIZED_COUNT,COUNT,VECTOR_AVERAGE,SUBNEAREST,SUBLINEAR)" },
         { APP_CHAR,  &extrap,1,             "x", "extrap", "Extrapolation method (MAXIMUM,MINIMUM,"APP_COLOR_GREEN"[VALUE]"APP_COLOR_RESET",ABORT)" },
         { APP_CHAR,  &etiket,1,             "e", "etiket", "ETIKET for destination field" },
+        { APP_CHAR,  &wgeo,1,               "w", "winds",  "Wind output type ("APP_COLOR_GREEN"GRID"APP_COLOR_RESET",GEO)" },
         { APP_CHAR,  vars,  APP_LISTMAX-1,  "n", "nomvar", "List of variable to process" },
         { APP_NIL } };
 
@@ -211,11 +224,15 @@ int main(int argc, char *argv[]) {
       App_Log(APP_ERROR,"No variable specified\n");
       exit(EXIT_FAILURE);
    }
+
    if (!method) {
       method=dmethod;
    }
    if (!extrap) {
       extrap=dextrap;
+   }
+   if (!wgeo) {
+      wgeo=dwgeo;
    }
 
    // Launch the app
@@ -253,7 +270,7 @@ int main(int argc, char *argv[]) {
    }
 
    if (code!=EXIT_FAILURE) {
-      ok=Interpolate(in,out,truth,grid,vars,etiket);
+      ok=Interpolate(in,out,truth,grid,vars,etiket,wgeo);
    }
    code=App_End(ok?0:EXIT_FAILURE);
    App_Free();

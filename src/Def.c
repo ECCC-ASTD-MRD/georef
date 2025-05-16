@@ -16,46 +16,6 @@ int32_t TDef_Size[] = { 0, 1, 1, 1, 2, 2, 4, 4, 8, 8, 4, 8 };
 int32_t TDef_Mult[] = { 0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 2, 3 };
 int32_t TDef_DTYP[] = { 0, 0, 2, 4, 2, 4, 2, 4, 2, 4, 5, 5, -1 };
 
-
-//! Re-initialize a data definition
-void Def_Clear(
-    //! [in, out] Data definition to be re-initialised
-    TDef * const def
-) {
-    for(int32_t n = 0; n < def->NC; n++) {
-        for(uint64_t i = 0; i < FSIZE3D(def); i++) {
-            Def_Set(def, n, i, def->NoData);
-        }
-    }
-
-    if (def->Buffer) {
-        free(def->Buffer);
-        def->Buffer = NULL;
-    }
-    if (def->Aux) {
-        free(def->Aux);
-        def->Aux = NULL;
-    }
-    if (def->Accum) {
-        free(def->Accum);
-        def->Accum = NULL;
-    }
-    if (def->Mask) {
-        free(def->Mask);
-        def->Mask = NULL;
-    }
-    if (def->Sub) {
-        free(def->Sub);
-        def->Sub = NULL;
-    }
-
-    if (def->Segments) {
-        TList_Clear(def->Segments, (int(*)(void*))T3DArray_Free);
-        def->Segments = NULL;
-    }
-}
-
-
 //! Check dimensions compatibility betweed 2 data definition and adjust if needed
 int32_t Def_Compat(
     //! [in, out] Data definition to be adjusted
@@ -285,6 +245,44 @@ TDef *Def_CopyData(
         memcpy(def->Mask, srcDef->Mask, srcDef->NIJ);
     }
     return def;
+}
+
+//! Re-initialize a data definition
+void Def_Clear(
+    //! [in, out] Data definition to be re-initialised
+    TDef * const def
+) {
+    for(int32_t n = 0; n < def->NC; n++) {
+        for(uint64_t i = 0; i < FSIZE3D(def); i++) {
+            Def_Set(def, n, i, def->NoData);
+        }
+    }
+
+    if (def->Buffer) {
+        free(def->Buffer);
+        def->Buffer = NULL;
+    }
+    if (def->Aux) {
+        free(def->Aux);
+        def->Aux = NULL;
+    }
+    if (def->Accum) {
+        free(def->Accum);
+        def->Accum = NULL;
+    }
+    if (def->Mask) {
+        free(def->Mask);
+        def->Mask = NULL;
+    }
+    if (def->Sub) {
+        free(def->Sub);
+        def->Sub = NULL;
+    }
+
+    if (def->Segments) {
+        TList_Clear(def->Segments, (int(*)(void*))T3DArray_Free);
+        def->Segments = NULL;
+    }
 }
 
 //! Free a data from a data definition
@@ -2474,7 +2472,7 @@ TGeoRef *GeoRef_DefSubSelect(TGeoRef *Ref,TDef *Def,int N) {
 int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t Final) {
 
    void         *pf0, *pt0, *pf1, *pt1;
-   int32_t       u, k, code = FALSE;
+   int32_t       u, k, code = FALSE, opt;
    float        *uu=NULL,*vv=NULL,*spd=NULL,*dir=NULL,*to=NULL;
    unsigned long sz=0;
    TGeoRef      *fromref=NULL;
@@ -2572,9 +2570,10 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
                vv=(float*)FromDef->Data[1];           // Save original VV source data pointer               
                FromDef->Data[0]=(char*)spd;           // Interpolate speed
                FromDef->Data[1]=(char*)dir;           // Interpolate direction
-               Opt->Interp= IR_VECTOR_AVERAGE;
+               opt=Opt->Interp;
+               Opt->Interp=IR_VECTOR_AVERAGE;
                code = GeoRef_InterpAverage(ToRef, ToDef, fromref, FromDef, Opt);
-
+               Opt->Interp=opt;
                FromDef->Data[0]=(char*)uu;            // Assign back original UU pointer
                FromDef->Data[1]=(char*)vv;            // Assign back original VV pointer
             } else {
