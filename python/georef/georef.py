@@ -367,7 +367,7 @@ class GeoRef:
         opt_ptr = ctypes.byref(options) if options else None
 
         val = _interpwd(self._ptr,
-                        ctypes.c_void_p,
+                        ref_from._ptr,
                         ctypes.byref(opt),
                         uu_out,
                         vv_out,
