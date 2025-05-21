@@ -861,7 +861,7 @@ class GeoRef:
         Returns:
             float: Distance in meters between the two points
         """
-        return float(_xydistance(self._ptr, x0, y0,x1,y1))
+        return _xydistance(self._ptr, x0, y0,x1,y1)
 
 
     # double GeoRef_LLDistance(TGeoRef *Ref, double Lat0, double Lon0, double Lat1, double Lon1)
@@ -880,7 +880,7 @@ class GeoRef:
         Returns:
             float: Great circle distance in meters
         """
-        return float(_lldistance(self._ptr, lat0, lon0, lat1, lon1))
+        return _lldistance(self._ptr, lat0, lon0, lat1, lon1)
 
 
     # INT32_T GeoRef_GetLL(TGeoRef *Ref, double *Lat, double *Lon)
