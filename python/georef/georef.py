@@ -1,6 +1,8 @@
 import ctypes
 import numpy
 import numpy.ctypeslib
+import logging
+
 from rmn import fst24_file
 from typing import Tuple, Union
 from .constants import *
@@ -47,6 +49,15 @@ GEOREF_SUCCESS = 1
 GEOREF_FAILURE = 0
 
 __all__ = ('GeoRef', 'GeoDef', 'GeoSet')
+
+def ensure_fortran_order_and_dtype(arr, dtype):
+    if not arr.flags['F_CONTIGUOUS']:
+        logging.warn("Input array is stored in C order, reordering to Fortran order")
+        arr = numpy.asfortranarray(arr)
+    if arr.dtype != dtype:
+        logging.warn("Converting array from {arr.dtype} to {dtype} expected by GeoRef")
+        arr = arr.astype(dtype)
+    return arr
 
 class GeoRef:
     """Wrapper for the C GeoRef structure providing geographic reference functionality."""
@@ -123,9 +134,9 @@ class GeoRef:
         if options is not None:
             opt_ptr = ctypes.byref(options)
 
-        zout = numpy.empty(self.shape, dtype=numpy.float32)
+        zout = numpy.empty(self.shape, dtype=numpy.float32, order='F')
 
-        result = _interp(self._ptr, reffrom._ptr, opt_ptr, zout, zin)
+        result = _interp(self._ptr, reffrom._ptr, opt_ptr, zout, ensure_fortran_order_and_dtype(zin, numpy.float32))
         if result != GEOREF_SUCCESS:
             raise GeoRefError("Failed to interpolate")
 
@@ -318,8 +329,8 @@ class GeoRef:
             tuple[numpy.ndarray, numpy.ndarray]: A tuple containing:
             The interpolated (uu_out, vv_out) arrays. Arrays are float32 type.
         """
-        uu_out = numpy.empty(self.shape, dtype=numpy.float32)
-        vv_out = numpy.empty(self.shape, dtype=numpy.float32)
+        uu_out = numpy.empty(self.shape, dtype=numpy.float32, order='F')
+        vv_out = numpy.empty(self.shape, dtype=numpy.float32, order='F')
 
         opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
 
@@ -328,8 +339,8 @@ class GeoRef:
                         opt_ptr,
                         uu_out,
                         vv_out,
-                        uu_in,
-                        vv_in)
+                        ensure_fortran_order_and_dtype(uu_in, numpy.float32),
+                        ensure_fortran_order_and_dtype(uu_in, numpy.float32))
 
         if val != GEOREF_SUCCESS:
             raise GeoRefError("Failed to interpolate U/V components")
@@ -350,8 +361,8 @@ class GeoRef:
             tuple[numpy.ndarray, numpy.ndarray]: The interpolated (speed,
             direction) arrays. Arrays are float32 type.
         """
-        uu_out = numpy.empty(self.shape, dtype=numpy.float32)
-        vv_out = numpy.empty(self.shape, dtype=numpy.float32)
+        uu_out = numpy.empty(self.shape, dtype=numpy.float32, order='F')
+        vv_out = numpy.empty(self.shape, dtype=numpy.float32, order='F')
 
         opt_ptr = ctypes.byref(options) if options else None
 
@@ -360,8 +371,8 @@ class GeoRef:
                         ctypes.byref(opt),
                         uu_out,
                         vv_out,
-                        uu_in,
-                        vv_in)
+                        ensure_fortran_order_and_dtype(uu_in, numpy.float32),
+                        ensure_fortran_order_and_dtype(vv_in, numpy.float32))
 
         if val != GEOREF_SUCCESS:
             raise GeoRefError("Failed to interpolate U/V components")
@@ -394,16 +405,16 @@ class GeoRef:
         assert uu_in.shape == vv_in.shape, GeoRefError("uu_in and vv_in must have the same shape")
         assert len(lat) * len(lon) == uu_in.size, GeoRefError("uu_in size must match lat/lon grid size")
         npts = uu_in.size
-        spd_out = numpy.empty(self.shape, dtype=numpy.float32)
-        wd_out = numpy.empty(self.shape, dtype=numpy.float32)
+        spd_out = numpy.empty(self.shape, dtype=numpy.float32, order='F')
+        wd_out = numpy.empty(self.shape, dtype=numpy.float32, order='F')
 
         val = _ud2wd(self._ptr,
                      spd_out,
                      wd_out,
-                     uu_in,
-                     vv_in,
-                     lat,
-                     lon,
+                     ensure_fortran_order_and_dtype(uu_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(vv_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(lat, numpy.float64),
+                     ensure_fortran_order_and_dtype(lon, numpy.float64),
                      npts)
 
         if val != 0:
@@ -436,16 +447,16 @@ class GeoRef:
         assert isinstance(spd_in, numpy.ndarray) and isinstance(dir_in, numpy.ndarray), GeoRefError("spd_in and dir_in must be numpy arrays")
         assert spd_in.shape == dir_in.shape, GeoRefError("spd_in and dir_in must have the same shape")
         npts = spd_in.size
-        uu_out = numpy.empty_like(spd_in, dtype=numpy.float32)
-        vv_out = numpy.empty_like(dir_in, dtype=numpy.float32)
+        uu_out = numpy.empty_like(spd_in, dtype=numpy.float32, order='F')
+        vv_out = numpy.empty_like(dir_in, dtype=numpy.float32, order='F')
 
         val = _wd2uv(self._ptr,
                      uu_out,
                      vv_out,
-                     spd_in,
-                     dir_in,
-                     lat,
-                     lon,
+                     ensure_fortran_order_and_dtype(spd_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(dir_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(lat, numpy.float64),
+                     ensure_fortran_order_and_dtype(lon, numpy.float64),
                      npts)
 
         if val != 0:
@@ -480,16 +491,16 @@ class GeoRef:
         assert isinstance(uu_in, numpy.ndarray) and isinstance(vv_in, numpy.ndarray), GeoRefError("uu_in and vv_in must be numpy arrays")
         assert uu_in.shape == vv_in.shape, GeoRefError("uu_in and vv_in must have the same shape")
         npts = uu_in.size
-        uu_out = numpy.empty_like(uu_in, dtype=numpy.float32)
-        vv_out = numpy.empty_like(vv_in, dtype=numpy.float32)
+        uu_out = numpy.empty_like(uu_in, dtype=numpy.float32, order='F')
+        vv_out = numpy.empty_like(vv_in, dtype=numpy.float32, order='F')
 
         val = _uv2uv(self._ptr,
                      uu_out,
                      vv_out,
-                     uu_in,
-                     vv_in,
-                     lat,
-                     lon,
+                     ensure_fortran_order_and_dtype(uu_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(vv_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(lat, numpy.float64),
+                     ensure_fortran_order_and_dtype(lon, numpy.float64),
                      npts)
 
         if val != 1:
@@ -524,8 +535,8 @@ class GeoRef:
         assert isinstance(uu_in, numpy.ndarray) and isinstance(vv_in, numpy.ndarray), GeoRefError("uu_in and vv_in must be numpy arrays")
         assert uu_in.shape == vv_in.shape, GeoRefError("uu_in and vv_in must have the same shape")
         npts = uu_in.size
-        spd_out = numpy.empty_like(uu_in, dtype=numpy.float32)
-        dir_out = numpy.empty_like(vv_in, dtype=numpy.float32)
+        spd_out = numpy.empty_like(uu_in, dtype=numpy.float32, order='F')
+        dir_out = numpy.empty_like(vv_in, dtype=numpy.float32, order='F')
 
         opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
 
@@ -533,10 +544,10 @@ class GeoRef:
                      opt_ptr,
                      spd_out,
                      dir_out,
-                     uu_in,
-                     vv_in,
-                     lat,
-                     lon,
+                     ensure_fortran_order_and_dtype(uu_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(vv_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(lat, numpy.float64),
+                     ensure_fortran_order_and_dtype(lon, numpy.float64),
                      npts)
 
         if val != 0:
@@ -571,8 +582,8 @@ class GeoRef:
         assert isinstance(uu_in, numpy.ndarray) and isinstance(vv_in, numpy.ndarray), GeoRefError("uu_in and vv_in must be numpy arrays")
         assert uu_in.shape == vv_in.shape, GeoRefError("uu_in and vv_in must have the same shape")
         npts = uu_in.size
-        uu_out = numpy.empty_like(uu_in, dtype=numpy.float32)
-        vv_out = numpy.empty_like(vv_in, dtype=numpy.float32)
+        uu_out = numpy.empty_like(uu_in, dtype=numpy.float32, order='F')
+        vv_out = numpy.empty_like(vv_in, dtype=numpy.float32, order='F')
 
         opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
 
@@ -580,10 +591,10 @@ class GeoRef:
                      opt_ptr,
                      uu_out,
                      vv_out,
-                     uu_in,
-                    vv_in,
-                     lat,
-                     lon,
+                     ensure_fortran_order_and_dtype(uu_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(vv_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(lat, numpy.float64),
+                     ensure_fortran_order_and_dtype(lon, numpy.float64),
                      npts)
 
         if val != 0:
@@ -615,16 +626,16 @@ class GeoRef:
         """
         assert isinstance(z_in, numpy.ndarray), GeoRefError("z_in must be a numpy array")
         npts = z_in.size
-        z_out = numpy.empty_like(z_in, dtype=numpy.float32)
+        z_out = numpy.empty_like(z_in, dtype=numpy.float32, order='F')
 
         opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
 
         val = _llval(self._ptr,
                      opt_ptr,
                      z_out,
-                     z_in,
-                     lat,
-                     lon,
+                     ensure_fortran_order_and_dtype(z_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(lat, numpy.float64),
+                     ensure_fortran_order_and_dtype(lon, numpy.float64),
                      npts)
 
         if val != 0:
@@ -655,8 +666,8 @@ class GeoRef:
         assert isinstance(uu_in, numpy.ndarray) and isinstance(vv_in, numpy.ndarray), GeoRefError("uu_in and vv_in must be numpy arrays")
         assert uu_in.shape == vv_in.shape, GeoRefError("uu_in and vv_in must have the same shape")
         npts = uu_in.size
-        spd_out = numpy.empty_like(uu_in, dtype=numpy.float32)
-        dir_out = numpy.empty_like(vv_in, dtype=numpy.float32)
+        spd_out = numpy.empty_like(uu_in, dtype=numpy.float32, order='F')
+        dir_out = numpy.empty_like(vv_in, dtype=numpy.float32, order='F')
 
         opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
 
@@ -664,10 +675,10 @@ class GeoRef:
                      opt_ptr,
                      spd_out,
                      dir_out,
-                     uu_in,
-                     vv_in,
-                     x,
-                     y,
+                     ensure_fortran_order_and_dtype(uu_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(vv_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(x, numpy.float64),
+                     ensure_fortran_order_and_dtype(y, numpy.float64),
                      npts)
 
         if val != 0:
@@ -697,8 +708,8 @@ class GeoRef:
         assert isinstance(uu_in, numpy.ndarray) and isinstance(vv_in, numpy.ndarray), GeoRefError("uu_in and vv_in must be numpy arrays")
         assert uu_in.shape == vv_in.shape, GeoRefError("uu_in and vv_in must have the same shape")
         npts = uu_in.size
-        uu_out = numpy.empty_like(uu_in, dtype=numpy.float32)
-        vv_out = numpy.empty_like(vv_in, dtype=numpy.float32)
+        uu_out = numpy.empty_like(uu_in, dtype=numpy.float32, order='F')
+        vv_out = numpy.empty_like(vv_in, dtype=numpy.float32, order='F')
 
         opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
 
@@ -706,10 +717,10 @@ class GeoRef:
                      opt_ptr,
                      uu_out,
                      vv_out,
-                     uu_in,
-                     vv_in,
-                     x,
-                     y,
+                     ensure_fortran_order_and_dtype(uu_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(vv_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(x, numpy.float64),
+                     ensure_fortran_order_and_dtype(y, numpy.float64),
                      npts)
 
         if val != 0:
@@ -735,16 +746,16 @@ class GeoRef:
         """
         assert isinstance(z_in, numpy.ndarray), GeoRefError("z_in must be a numpy array")
         npts = z_in.size
-        z_out = numpy.empty_like(z_in, dtype=numpy.float32)
+        z_out = numpy.empty_like(z_in, dtype=numpy.float32, order='F')
 
         opt_ptr = ctypes.byref(options) if options is not None else GeoOptions
 
         val = _xyval(self._ptr,
                      opt_ptr,
                      z_out,
-                     z_in,
-                     x,
-                     y,
+                     ensure_fortran_order_and_dtype(z_in, numpy.float32),
+                     ensure_fortran_order_and_dtype(x, numpy.float64),
+                     ensure_fortran_order_and_dtype(y, numpy.float64),
                      npts)
 
         if val != 0:
@@ -777,14 +788,14 @@ class GeoRef:
         """
         assert isinstance(lat, numpy.ndarray) and isinstance(lon, numpy.ndarray), GeoRefError("lat and lon must be numpy arrays")
         npts = lat.size
-        x_out = numpy.empty_like(lat, dtype=numpy.float64)
-        y_out = numpy.empty_like(lon, dtype=numpy.float64)
+        x_out = numpy.empty_like(lat, dtype=numpy.float64, order='F')
+        y_out = numpy.empty_like(lon, dtype=numpy.float64, order='F')
 
         val = _ll2xy(self._ptr,
                      x_out,
                      y_out,
-                     lat,
-                     lon,
+                     ensure_fortran_order_and_dtype(lat, numpy.float64),
+                     ensure_fortran_order_and_dtype(lon, numpy.float64),
                      npts,
                      extrapolate)
 
@@ -819,14 +830,14 @@ class GeoRef:
         """
         assert isinstance(x, numpy.ndarray) and isinstance(y, numpy.ndarray), GeoRefError("x and y must be numpy arrays")
         npts = x.size
-        lat_out = numpy.empty_like(x, dtype=numpy.float64)
-        lon_out = numpy.empty_like(y, dtype=numpy.float64)
+        lat_out = numpy.empty_like(x, dtype=numpy.float64, order='F')
+        lon_out = numpy.empty_like(y, dtype=numpy.float64, order='F')
 
         val = _xy2ll(self._ptr,
                      lat_out,
                      lon_out,
-                     x,
-                     y,
+                     ensure_fortran_order_and_dtype(x, numpy.float64),
+                     ensure_fortran_order_and_dtype(y, numpy.float64),
                      npts,
                      extrapolate)
 
@@ -886,8 +897,8 @@ class GeoRef:
         Note:
             This wraps GeoRef_GetLL from src/GeoRef_InterpLL.c
         """
-        lat = numpy.empty(self.shape, dtype=numpy.float64) # Awaiting Mr. Gauthier opinion on this
-        lon = numpy.empty(self.shape, dtype=numpy.float64)
+        lat = numpy.empty(self.shape, dtype=numpy.float64, order='F')
+        lon = numpy.empty(self.shape, dtype=numpy.float64, order='F')
         n = _getll(self._ptr, lat, lon)
         if n == -1:
             raise GeoRefError("Failed to get lat/lon coordinates: Missing descriptors")
