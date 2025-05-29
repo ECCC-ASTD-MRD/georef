@@ -280,7 +280,7 @@ void Def_Clear(
     }
 
     if (def->Segments) {
-        TList_Clear(def->Segments, (int(*)(void*))T3DArray_Free);
+        TList_Clear(def->Segments, (TList_FreeProc *)T3DArray_Free);
         def->Segments = NULL;
     }
 }
@@ -308,7 +308,7 @@ void Def_Free(
         if (Def->Poly) OGR_G_DestroyGeometry(Def->Poly);
         //Freed by Def->Poly      if (Def->Pick)       OGR_G_DestroyGeometry(Def->Pick);
 #endif
-        if (Def->Segments) TList_Clear(Def->Segments, (int(*)(void*))T3DArray_Free);
+        if (Def->Segments) TList_Clear(Def->Segments, (TList_FreeProc *)T3DArray_Free);
 
         free(Def);
     }
@@ -646,7 +646,7 @@ int32_t Def_GetValue(
     if (C >= Def->NC) return FALSE;
 
     float valf, valdf;
-    void *p0, *p1;
+    char *p0, *p1;
     // Si on est a l'interieur de la grille
     if ((Ref->GRTYP[0] == 'M' && X >= 0 && X < Ref->NIdx) ||
         (X >= (Ref->X0-d) && Y >= (Ref->Y0-d) && Z >= 0 && X <= (Ref->X1+d) && Y <= (Ref->Y1+d) && Z <= Def->NK-1)) {
@@ -670,9 +670,9 @@ int32_t Def_GetValue(
         }
 
         if (Def->Data[1] && !C) {
-            p0=(Def, 0, mem);
+            p0=Def_Pointer(Def, 0, mem);
             p1=Def_Pointer(Def, 1, mem);
-            GeoRef_XYWDVal(Ref, opt, &valf, &valdf, p0, p1, &X, &Y, 1);
+            GeoRef_XYWDVal(Ref, opt, &valf, &valdf, (float*)p0, (float*)p1, &X, &Y, 1);
             *Length = valf;
 
             // If it's 3D, use the mode for speed since GeoRef_XYWDVal only uses 2D
@@ -686,7 +686,7 @@ int32_t Def_GetValue(
                 Def_Get(Def, C, mem + idx, valf);
             } else {
                 p0=Def_Pointer(Def, C, mem);
-                GeoRef_XYVal(Ref, opt, &valf, p0, &X, &Y, 1);
+                GeoRef_XYVal(Ref, opt, &valf, (float*)p0, &X, &Y, 1);
             }
             *Length = valf;
         }
@@ -1683,7 +1683,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
 
 #ifdef HAVE_GDAL
    TGeoSet    *gset = NULL;
-   int32_t     i, j, na, nt = 0, p = 0, pi, pj, idx2, idx3, intersect, k = 0, isize, nidx, error = 0;
+   int32_t     i, j, na, nt = 0, p = 0, pi, pj, idx3, intersect, k = 0, isize, nidx, error = 0;
    uint64_t    n;
    char        *c;
    double       val0, val1, area, x, y, z, dp;
@@ -1754,7 +1754,6 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                pj = *(ip++);
                dp = *(ip++);
 
-               idx2 = FIDX2D(ToDef, pi, pj);
                idx3 = FIDX3D(ToDef, pi, pj, k);
                Def_Get(ToDef, 0, idx3, val0);
                if (!DEFVALID(ToDef, val0))
@@ -1966,9 +1965,9 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
 
    double        val, vx, vy, di[4], dj[4], *fld, *aux, di0, di1, dj0, dj1;
    float        *ip = NULL;
-   int32_t      *acc = NULL, x0, x1, y, y0, y1, isize;
-   unsigned long idxt, idxk, idxj, n, nij;
-   uint32_t      n2, ndi, ndj, k, t, s, x, dx, dy;
+   int32_t      *acc = NULL, x0, x1, y, y0, y1;
+   unsigned long idxt, idxj, n, nij;
+   uint32_t      n2, ndi, ndj, t, s, x, dx, dy;
    TGeoSet      *gset;
    TGeoScan      gscan;
    TRef_Interp  interp;
@@ -2120,7 +2119,6 @@ int32_t GeoRef_InterpAverage(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef
 
          // Do we have and index
          if (!gset->Index || gset->Index[0] == REF_INDEX_EMPTY) {
-            char *c;
 
             ip = gset->Index;
 
@@ -2473,7 +2471,7 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
 
    void         *pf0, *pt0, *pf1, *pt1;
    int32_t       u, k, code = FALSE, opt;
-   float        *uu=NULL,*vv=NULL,*spd=NULL,*dir=NULL,*to=NULL;
+   float        *uu=NULL,*vv=NULL,*spd=NULL,*dir=NULL;
    unsigned long sz=0;
    TGeoRef      *fromref=NULL;
 

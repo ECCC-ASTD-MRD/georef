@@ -531,7 +531,7 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       return(NULL);
    }
 
-   if (ref=GeoRef_New()) {
+   if ((ref=GeoRef_New())) {
       GeoRef_Size(ref,Ref->X0,Ref->Y0,Ref->X1,Ref->Y1,Ref->BD);
 
       ref->GRTYP[0]=Ref->GRTYP[0];
