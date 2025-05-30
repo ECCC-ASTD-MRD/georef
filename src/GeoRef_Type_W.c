@@ -321,7 +321,7 @@ static inline int32_t GeoRef_WKTUnRotate(TRotationTransform *T,double *Lat,doubl
 int32_t GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb) {
 
 #ifdef HAVE_GDAL
-   double x,y,z=0.0,d;
+   double x,y,z=0.0;
    int32_t    n,ok;
 
    for(n=0;n<Nb;n++) {

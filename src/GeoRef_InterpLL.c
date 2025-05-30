@@ -187,7 +187,7 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
 
          case 'T':
             xp = (double *) malloc(2*npts*sizeof(double));
-            yp = &yp[npts];
+            yp = &xp[npts];
             k=0;
             for (j=0; j<nj; j++) {
                for (i=0; i<ni; i++) {

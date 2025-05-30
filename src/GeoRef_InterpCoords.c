@@ -7,7 +7,7 @@ void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,f
    int32_t n;
    float   r[3][3],ri[3][3];
 
-   f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
+   f77name(ez_crot)((float*)r,(float*)ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
    #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(r,ri,npts,Lat,Lon,X,Y)
    for(n=0;n<npts;n++) {
@@ -35,7 +35,7 @@ void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t 
    double cart[3],carot[3],latr,lonr,cosdar;
    float r[3][3],ri[3][3];
 
-   f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
+   f77name(ez_crot)((float*)r,(float*)ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
    int32_t n;
    #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(stderr,ri,npts,Lat,Lon,X,Y)
@@ -245,7 +245,7 @@ int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
 
    // Check for grid insidness or extrapolation enabled
    icode=Nb;
-   if (!Extrap && !Ref->Type&GRID_SPARSE) {
+   if (!Extrap && !(Ref->Type&GRID_SPARSE)) {
       for(j=0;j<Nb;j++) {
          if (X[j]>(ref->X1+0.5) || Y[j]>(ref->Y1+0.5) || X[j]<(ref->X0-0.5) || Y[j]<(ref->Y0-0.5)) {
             X[j]=-1.0;

@@ -52,7 +52,7 @@ TGeoRef* GeoRef_CreateU(int32_t NI,int32_t NJ,char *grref,int32_t VerCode,int32_
    }
   
    // This georef already exists
-   if (fref=GeoRef_Find(ref)) {
+   if ((fref=GeoRef_Find(ref))) {
       free(ref);
       GeoRef_Incr(fref);
       return(fref);

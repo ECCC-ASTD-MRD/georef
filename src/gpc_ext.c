@@ -1289,14 +1289,14 @@ int32_t gpce_envelope_intersects_line(const gpce_envelope *restrict PEnv,gpc_ver
     gpc_vertex tl=GPC_MK_VERTEX(PEnv->min.x,PEnv->max.y),br=GPC_MK_VERTEX(PEnv->max.x,PEnv->min.y);
 
     if( Dir ) {
-        return (gpce_line_intersects_line(L0,L1,PEnv->min,br,&f,&s) && 0.0<=s && s<=1.0 && f>=0.0
-            || gpce_line_intersects_line(L0,L1,PEnv->min,tl,&f,&s) && 0.0<=s && s<=1.0 && f>=0.0
-            || gpce_line_intersects_line(L0,L1,br,PEnv->max,&f,&s) && 0.0<=s && s<=1.0 && f>=0.0
-            || gpce_line_intersects_line(L0,L1,tl,PEnv->max,&f,&s) && 0.0<=s && s<=1.0 && f>=0.0);
+        return ((gpce_line_intersects_line(L0,L1,PEnv->min,br,&f,&s) && 0.0<=s && s<=1.0 && f>=0.0)
+            || (gpce_line_intersects_line(L0,L1,PEnv->min,tl,&f,&s) && 0.0<=s && s<=1.0 && f>=0.0)
+            || (gpce_line_intersects_line(L0,L1,br,PEnv->max,&f,&s) && 0.0<=s && s<=1.0 && f>=0.0)
+            || (gpce_line_intersects_line(L0,L1,tl,PEnv->max,&f,&s) && 0.0<=s && s<=1.0 && f>=0.0));
     } else {
-        return (gpce_line_intersects_line(L0,L1,PEnv->min,br,NULL,&s) && 0.0<=s && s<=1.0
-            || gpce_line_intersects_line(L0,L1,PEnv->min,tl,NULL,&s) && 0.0<=s && s<=1.0
-            || gpce_line_intersects_line(L0,L1,br,PEnv->max,NULL,&s) && 0.0<=s && s<=1.0
-            || gpce_line_intersects_line(L0,L1,tl,PEnv->max,NULL,&s) && 0.0<=s && s<=1.0);
+        return ((gpce_line_intersects_line(L0,L1,PEnv->min,br,NULL,&s) && 0.0<=s && s<=1.0)
+            || (gpce_line_intersects_line(L0,L1,PEnv->min,tl,NULL,&s) && 0.0<=s && s<=1.0)
+            || (gpce_line_intersects_line(L0,L1,br,PEnv->max,NULL,&s) && 0.0<=s && s<=1.0)
+            || (gpce_line_intersects_line(L0,L1,tl,PEnv->max,NULL,&s) && 0.0<=s && s<=1.0));
     }
 }

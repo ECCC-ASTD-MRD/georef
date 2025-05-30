@@ -390,7 +390,7 @@ void GeoRef_SetFree(
 ) {
     //! \todo Check to free
     if (GSet->RefFrom) {
-        GSet->RefFrom == NULL;
+        GSet->RefFrom = NULL;
     }
 
     if (GSet->Index) {

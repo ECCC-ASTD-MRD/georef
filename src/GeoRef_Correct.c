@@ -35,7 +35,7 @@ int32_t GeoRef_CorrValNorth(TGeoSet *Set,float *zout,float *zin) {
       vals = (float *) malloc(npts * sizeof(float));
       f77name(ez_calcpoleval)(&poleval,&zin[(nj-1)*ni],&ni,reffrom->AX,reffrom->GRTYP,reffrom->RPNHeadExt.grref,1,1);
       f77name(ez_fillnpole)(temp, zin, &ni, &(reffrom->j1), &(reffrom->j2), &poleval);
-
+      
       switch (Set->Opt.Interp) {
          case IR_CUBIC:
 	          switch (reffrom->GRTYP[0]) {

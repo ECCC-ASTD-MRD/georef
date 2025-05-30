@@ -49,13 +49,11 @@ int32_t GeoRef_XY2LL_Y(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
                s=sy*Ref->NX+sx;
                tmpx[i]+=(Ref->AX[s]-tmpx[i])*dx;
             }
-            tmpx[i];
 
             if (++sy<=Ref->Y1) {
                s=sy*Ref->NX+(sx-1);
                tmpy[i]+=(Ref->AY[s]-tmpy[i])*dy;
             }
-            tmpy[i];
          }
          GeoRef_XY2LL_W(Ref,Lat,Lon,tmpx,tmpy,Nb);
          free(tmpx);

@@ -133,22 +133,6 @@ int32_t GeoRef_InterpFinally(
 
     const int32_t old_degre_interp = Opt->Interp;
 
-    switch (Opt->Interp) {
-        //! \todo Check 4 and 5 (DISTANCE TRIANGLE)
-        case IR_AVERAGE:
-        case 5: {
-            int32_t ier = c_gdcompatible_grids(RefFrom, RefTo);
-            if (ier < 0) {
-                Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: Input and output grids are not compatible for average computation, interpolaton level set to linear\n", __func__);
-                Opt->Interp = IR_LINEAR;
-            }
-            break;
-        }
-
-        default:
-            break;
-    }
-
     switch(RefFrom->GRTYP[0]) {
         case 'M':
             gd_interpm(RefFrom, Opt, zout, zin, X, Y, npts);
@@ -183,22 +167,10 @@ int32_t GeoRef_InterpFinally(
                     f77name(ez8_irgdint_3)(zout, x, y, &npts, zin, &RefFrom->NX, &RefFrom->i1, &RefFrom->i2, &RefFrom->j1, &RefFrom->j2, RefFrom->AX, RefFrom->AY, RefFrom->NCX, RefFrom->NCY, &RefFrom->Extension, &Opt->NoData);
                     break;
 
-                case 4:
-                    f77name(ez_avg)(zout, x, y, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
+                default:
+                    Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid interpolation method\n", __func__);
+                    return -1;
                     break;
-
-                case 5: {
-                    double * const gdst_lats = (double*) malloc(sizeof(double) * npts);
-                    double tmp;
-                    double one = 1.0;
-                    for (int32_t j = 0; j < RefTo->NY; j++) {
-                        double real_j = 1.0 * (j+1);
-                        GeoRef_XY2LL(RefTo, &gdst_lats[j], &tmp, &one, &real_j, 1, TRUE);
-                    }
-                    f77name(ez_avg_sph)(zout, x, y, gdst_lats, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
-                    free(gdst_lats);
-                    break;
-                }
             }
             break;
 
@@ -250,22 +222,10 @@ int32_t GeoRef_InterpFinally(
                     }
                     break;
 
-                case 4:
-                    f77name(ez_avg)(zout, x, y, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
+                default:
+                    Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid interpolation method\n", __func__);
+                    return -1;
                     break;
-
-                case 5: {
-                    double * const gdst_lats = (double*) malloc(sizeof(double) * npts);
-                    double tmp;
-                    double zero = 0.0;
-                    for (int32_t j = 0; j < RefTo->NY; j++) {
-                        double real_j = j;
-                        GeoRef_XY2LL(RefTo, &gdst_lats[j], &tmp, &zero, &real_j, 1, TRUE);
-                    }
-                    f77name(ez_avg_sph)(zout, x, y, gdst_lats, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
-                    free(gdst_lats);
-                    break;
-                }
             }
             break;
     }

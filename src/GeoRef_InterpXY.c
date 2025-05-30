@@ -18,7 +18,7 @@ int32_t GeoRef_XYInterp(
         memcpy(lzin, zin, Ref->NX * Ref->NY * sizeof(float));
         f77name(permut)(lzin, &Ref->NX, &Ref->NY);
     } else {
-        lzin = zin;
+        lzin = (float *) zin;
     }
 
     float * lxzin = NULL;
@@ -52,7 +52,7 @@ int32_t GeoRef_XYVal(
     double * const Y,
     const int32_t n
 ) {
-    const TGeoOptions * const opt = Opt ? Opt : (&Ref->Options ? &Ref->Options : &GeoRef_Options);
+    const TGeoOptions * const opt = Opt ? Opt : &GeoRef_Options;
     const TGeoRef * const ref = GeoRef_SubGet(Ref);
 
     if (ref->NbSub > 0) {
@@ -64,15 +64,15 @@ int32_t GeoRef_XYVal(
         for (int32_t j = 0; j < n; j++) {
             if (Y[j] > yin_gd->NY) {
                 tmpy = Y[j]-yin_gd->NY;
-                icode = GeoRef_XYInterp(yan_gd, Opt, &zout[j], &zin[sz], X, &tmpy, 1);
+                icode = GeoRef_XYInterp(yan_gd, opt, &zout[j], &zin[sz], X, &tmpy, 1);
             } else {
                 tmpy = Y[j];
-                icode = GeoRef_XYInterp(yin_gd, Opt, &zout[j], zin, X, &tmpy, 1);
+                icode = GeoRef_XYInterp(yin_gd, opt, &zout[j], zin, X, &tmpy, 1);
             }
         }
         return icode;
     } else {
-        return GeoRef_XYInterp(ref, Opt, zout, zin, X, Y, n);
+        return GeoRef_XYInterp(ref, opt, zout, zin, X, Y, n);
     }
 }
 
@@ -154,7 +154,7 @@ int32_t GeoRef_XYWDVal(
     float * const tmpuu = (float *) malloc(2 * n * sizeof(float));
     float * const tmpvv = &tmpuu[n];
 
-    const TGeoOptions * const opt = Opt ? Opt : (&Ref->Options ? &Ref->Options : &GeoRef_Options);
+    const TGeoOptions * const opt = Opt ? Opt : &GeoRef_Options;
     TGeoRef * const ref = GeoRef_SubGet(Ref);
 
     if (ref->NbSub > 0) {

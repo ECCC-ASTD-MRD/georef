@@ -39,7 +39,7 @@
 #define ILADD(SIDE,F)                     (SIDE?1.0f-F:F)
 #define FARENOUGH(DT,X0,Y0,X1,Y1)         (hypot((Y1-Y0),(X1-X0))>DT)
 #define LOG2(V)                           (log10(V)/0.301029995663981198017)
-#define SIGN(A,B)                         (B<0?-abs(A):abs(A))                                       ///< Returns the value of A with the sign of B
+#define SIGN(A,B)                         (B<0?-fabs(A):fabs(A))                                       ///< Returns the value of A with the sign of B
 
 #define CLAMP(A,MIN,MAX)                  (A>MAX?MAX:(A<MIN?MIN:A))
 #define ORDER(VAL)                        (VAL==0.0?1.0:floor(log10(ABS(VAL))))

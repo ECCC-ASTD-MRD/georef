@@ -533,6 +533,7 @@ int32_t OGM_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREn
  *
  *---------------------------------------------------------------------------------------------------------------
 */
+/*
 static int32_t OGM_QSortSegIntersectionPts(const void *A,const void *B){
    const double *a=A,*b=B,a2=a[0]*a[0]+a[1]*a[1],b2=b[0]*b[0]+b[1]*b[1];
 
@@ -543,7 +544,7 @@ static int32_t OGM_QSortSegIntersectionPts(const void *A,const void *B){
    else
       return 0;
 }
-/*
+
 static int32_t OGM_SegIntersectionPts_(OGRGeometryH Geom,double X0,double Y0,double X1,double Y1,DynArray *restrict Pts) {
    int32_t n,i,npt=0;
 

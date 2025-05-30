@@ -13,8 +13,8 @@
 
 #define GPC_MK_VERTEX(X,Y)                      (gpc_vertex){X,Y}
 #define GPCE_MK_ENVELOPE(MinX,MinY,MaxX,MaxY)   (gpce_envelope){{MinX,MinY},{MaxX,MaxY}}
-#define GPCE_MK_RECT2(X0,Y0,X1,Y1)              (gpc_polygon){(gpc_vertex_list[1]){(gpc_vertex[4]){{X0,Y0},{X1,Y0},{X1,Y1},{X0,Y1}},4},(int[1]){0},1}
-#define GPCE_MK_RECT4(X0,Y0,X1,Y1,X2,Y2,X3,Y3)  (gpc_polygon){(gpc_vertex_list[1]){(gpc_vertex[4]){{X0,Y0},{X1,Y1},{X2,Y2},{X3,Y3}},4},(int[1]){0},1}
+#define GPCE_MK_RECT2(X0,Y0,X1,Y1)              (gpc_polygon){(gpc_vertex_list[1]){{(gpc_vertex[4]){{X0,Y0},{X1,Y0},{X1,Y1},{X0,Y1}},4}},(int[1]){0},1}
+#define GPCE_MK_RECT4(X0,Y0,X1,Y1,X2,Y2,X3,Y3)  (gpc_polygon){(gpc_vertex_list[1]){{(gpc_vertex[4]){{X0,Y0},{X1,Y1},{X2,Y2},{X3,Y3}},4}},(int[1]){0},1}
 
 #define GPCE_PT_IN_ENV(ENV,P)           ((ENV).min.x<=(P).x && (P).x<=(ENV).max.x && (ENV).min.y<=(P).y && (P).y<=(ENV).max.y)
 #define GPCE_ENV_DISJOINT(ENVA,ENVB)    ((ENVA).min.x>(ENVB).max.x || (ENVA).max.x<(ENVB).min.x || (ENVA).min.y>(ENVB).max.y || (ENVA).max.y<(ENVB).min.y)
