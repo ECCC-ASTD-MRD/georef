@@ -52,6 +52,7 @@ find_package(rmn)
 
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed -ldl")
 link_libraries("-Wl,--disable-new-dtags")
+
 add_subdirectory(src/lib)
 add_subdirectory(src/utils)
 add_subdirectory(test/lib)
