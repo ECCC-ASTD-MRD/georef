@@ -50,9 +50,11 @@ set(MODULE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 find_package(OpenMP)
 find_package(rmn)
 
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed -ldl")
 link_libraries("-Wl,--disable-new-dtags")
-add_subdirectory(src)
-# add_subdirectory(test/C test)
+add_subdirectory(src/lib)
+add_subdirectory(src/utils)
+add_subdirectory(test/lib)
 add_subdirectory(python/georef)
 
 configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)
