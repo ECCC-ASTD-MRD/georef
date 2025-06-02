@@ -631,5 +631,6 @@ void f77name(ez_xpngdag2)(float* zout, float* zi, int32_t *ni, int32_t *nj, int3
 void f77name(lorenzo_mask_fill)();
 void f77name(qqq_ezsint_mask)();
 void f77name(qqq_ezget_mask_zones)();
+void f77name(permut)(float*, int32_t *ni, int32_t *nj);
 
 #endif
