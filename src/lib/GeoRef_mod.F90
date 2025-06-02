@@ -386,6 +386,7 @@ contains
 
         lx=x-1.0
         ly=y-1.0
+        
         out=georef_nearest(this%ptr,lx,ly,idxs,dists,nbnear,maxdist)
     end function georef_nearest_f
 
@@ -494,12 +495,13 @@ contains
         integer(C_INT32_T) :: n,c_extrap
         logical, optional :: extrap
 
-
         real(C_DOUBLE), dimension(n) :: lx,ly
-        integer(C_INT32_T) :: out
+        integer(C_INT32_T) :: i,out
 
-        lx=x-1.0
-        ly=y-1.0
+        do i=1,n
+           lx(i)=x(i)-1.0
+           ly(i)=y(i)-1.0
+        enddo
         
         c_extrap=0
         if (present(extrap)) then
@@ -542,10 +544,12 @@ contains
         integer(C_INT32_T) :: n
 
         real(C_DOUBLE), dimension(n) :: lx,ly
-        integer(C_INT32_T) :: out
+        integer(C_INT32_T) :: i,out
 
-        lx=x-1.0
-        ly=y-1.0
+        do i=1,n
+           lx(i)=x(i)-1.0
+           ly(i)=y(i)-1.0
+        enddo
 
         if (present(opt)) then
            out=georef_xyval(this%ptr,C_LOC(opt),zout,zin,lx,ly,n)
@@ -563,10 +567,13 @@ contains
         integer(C_INT32_T) :: n
 
         real(C_DOUBLE), dimension(n) :: lx,ly
-        integer(C_INT32_T) :: out
+        integer(C_INT32_T) :: i, out
 
-        lx=x-1.0
-        ly=y-1.0
+        do i=1,n
+           lx(i)=x(i)-1.0
+           ly(i)=y(i)-1.0
+        enddo
+
 
         if (present(opt)) then
            out=georef_xyuvval(this%ptr,C_LOC(opt),uuout,vvout,uuin,vvin,lx,ly,n)
@@ -584,10 +591,13 @@ contains
         integer(C_INT32_T) :: n
 
         real(C_DOUBLE), dimension(n) :: lx,ly
-        integer(C_INT32_T) :: out
+        integer(C_INT32_T) :: i, out
 
-        lx=x-1.0
-        ly=y-1.0
+       do i=1,n
+           lx(i)=x(i)-1.0
+           ly(i)=y(i)-1.0
+        enddo
+
 
         if (present(opt)) then
            out=georef_xywdval(this%ptr,C_LOC(opt),uuout,vvout,uuin,vvin,lx,ly,n)
