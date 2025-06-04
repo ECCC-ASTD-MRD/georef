@@ -108,7 +108,7 @@ static inline void grps(double *Lat,double *Lon,int32_t NI,int32_t NJ,double PI,
    }
 }
 
-static inline void Permut(double *Z,int32_t NI,int32_t NJ) {
+static inline void Permut64(double *Z,int32_t NI,int32_t NJ) {
 
    int32_t    i,j,ncc,idx,idxn;
    double t;
@@ -334,7 +334,7 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
          case 'B':
          case 'A':
             if (Ref->RPNHead.ig2 == 1) {
-               Permut(Ref->Lat,Ref->NX,Ref->NY);
+               Permut64(Ref->Lat,Ref->NX,Ref->NY);
             }
             break;
 
