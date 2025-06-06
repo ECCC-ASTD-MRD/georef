@@ -1,5 +1,6 @@
 #include <App.h>
 #include "GeoRef.h"
+#include "GeoRef_f.h"
 
 void c_ezgfwfllw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int32_t *ni,int32_t *nj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4);
 void c_ezllwfgfw8(float *uullout,float *vvllout,double *Lat,double *Lon,double *xlatingf,double *xloningf,int32_t *ni,int32_t *nj,char *grtyp,int32_t *ig1,int32_t *ig2,int32_t *ig3,int32_t *ig4);

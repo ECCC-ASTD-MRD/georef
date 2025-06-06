@@ -1,5 +1,6 @@
 #include <App.h>
 #include "GeoRef.h"
+#include "GeoRef_f.h"
 
 /*----------------------------------------------------------------------------
  * @brief  Transforms XY grid coordinates to LatLon for an L grid (Cylindrical)

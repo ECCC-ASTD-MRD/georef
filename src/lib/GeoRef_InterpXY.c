@@ -1,5 +1,6 @@
 #include <App.h>
 #include "GeoRef.h"
+#include "GeoRef_f.h"
 
 int32_t GeoRef_XYInterp(
     const TGeoRef * const Ref,

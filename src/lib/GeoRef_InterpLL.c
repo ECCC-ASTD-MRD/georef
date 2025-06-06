@@ -1,5 +1,6 @@
 #include <App.h>
 #include "GeoRef.h"
+#include "GeoRef_f.h"
 
 /**----------------------------------------------------------------------------
  * @brief  Get latitude and longitudes of a 2d point32_t (Copy of fortran function, but using double precision)

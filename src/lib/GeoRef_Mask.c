@@ -1,5 +1,6 @@
 #include <App.h>
 #include "GeoRef.h"
+#include "GeoRef_f.h"
 
 int32_t GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,char *MaskOut,char *MaskIn) {
 

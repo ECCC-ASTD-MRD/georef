@@ -6,6 +6,7 @@
 
 #include "georef_build_info.h"
 #include "GeoRef.h"
+#include "GeoRef_f.h"
 #include "Def.h"
 #include "Triangle.h"
 
