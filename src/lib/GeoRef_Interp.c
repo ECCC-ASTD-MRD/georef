@@ -132,7 +132,6 @@ int32_t GeoRef_InterpFinally(
     }
 
     const int32_t old_degre_interp = Opt->Interp;
-        fprintf(stderr,"3----s\n");
 
     switch(RefFrom->GRTYP[0]) {
         case 'M':
