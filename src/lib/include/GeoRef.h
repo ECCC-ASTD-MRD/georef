@@ -107,8 +107,8 @@ typedef struct {
 
 #define GeoRef_ScanX(X)         (((float*)GeoScanX)[X]-1.0)
 #define GeoRef_ScanY(X)         (((float*)GeoScanY)[X]-1.0)
-#define GeoRef_Lon(R, L)         (((L)>180 && R->Type&GRID_NEGLON)?(L)-360.0:((L)<0 && !(R->Type&GRID_NEGLON))?(L)+360.0:(L))
-#define GeoRef_SubGet(REF)      ( (REF->Sub < REF->NbSub && REF->Sub >= 0) ? REF->Subs[REF->Sub] : REF)
+#define GeoRef_Lon(R, L)        (((L)>180 && R->Type&GRID_NEGLON)?(L)-360.0:((L)<0 && !(R->Type&GRID_NEGLON))?(L)+360.0:(L))
+#define GeoRef_SubGet(REF)      ((REF->Sub < REF->NbSub && REF->Sub >= 0) ? REF->Subs[REF->Sub] : REF)
 #define GeoRef_SetHasIndex(G)   (G && G->Index && G->Index[0] != REF_INDEX_EMPTY)
 #define GeoRef_SetEmptyIndex(G) (G && G->Index && G->Index[0] == REF_INDEX_EMPTY)
 
@@ -435,7 +435,6 @@ void GeoRef_GridGetExpanded(
 int32_t  GeoRef_GridGetParams(TGeoRef *Ref, int32_t *NI, int32_t *NJ, char *GRTYP, int32_t *IG1, int32_t *IG2, int32_t *IG3, int32_t *IG4, char *grref, int32_t *IG1REF, int32_t *IG2REF, int32_t *IG3REF, int32_t *IG4REF);  //c_ezgxprm
 void     GeoRef_AxisDefine(TGeoRef * const Ref, double * const AX, double * const AY);                                                         // gdaxes
 int32_t  GeoRef_AxisGetExpanded(const TGeoRef * const Ref, double * const AX, double * const AY);                                              // gdgxpndaxes
-void     GeoRef_AxisDefine(TGeoRef* Ref, double *AX, double *AY);
 void     GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref);
 void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
 

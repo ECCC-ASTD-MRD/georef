@@ -132,6 +132,7 @@ int32_t GeoRef_InterpFinally(
     }
 
     const int32_t old_degre_interp = Opt->Interp;
+        fprintf(stderr,"3----s\n");
 
     switch(RefFrom->GRTYP[0]) {
         case 'M':
@@ -165,7 +166,7 @@ int32_t GeoRef_InterpFinally(
 
                 case IR_CUBIC:
                     f77name(ez8_irgdint_3)(zout, x, y, &npts, zin, &RefFrom->NX, &RefFrom->i1, &RefFrom->i2, &RefFrom->j1, &RefFrom->j2, RefFrom->AX, RefFrom->AY, RefFrom->NCX, RefFrom->NCY, &RefFrom->Extension, &Opt->NoData);
-                    break;
+                   break;
 
                 default:
                     Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid interpolation method\n", __func__);

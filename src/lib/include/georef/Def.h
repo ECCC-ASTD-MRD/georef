@@ -48,55 +48,55 @@ switch(DEF->Type) {\
 
 #define Def_GetQuad(DEF,COMP,IDX,VAL) {\
 switch(DEF->Type) {\
-   case TD_UByte:  VAL[0]=((unsigned char*)DEF->Data[COMP])[IDX[0]];\
-                   VAL[1]=((unsigned char*)DEF->Data[COMP])[IDX[1]];\
-                   VAL[2]=((unsigned char*)DEF->Data[COMP])[IDX[2]];\
-                   VAL[3]=((unsigned char*)DEF->Data[COMP])[IDX[3]];\
+   case TD_UByte:  VAL[0]=((unsigned char*)DEF->Data[COMP])[IDX[0]+DEF->Idx];\
+                   VAL[1]=((unsigned char*)DEF->Data[COMP])[IDX[1]+DEF->Idx];\
+                   VAL[2]=((unsigned char*)DEF->Data[COMP])[IDX[2]+DEF->Idx];\
+                   VAL[3]=((unsigned char*)DEF->Data[COMP])[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_Byte:   VAL[0]=((char*)DEF->Data[COMP])[IDX[0]];\
-                   VAL[1]=((char*)DEF->Data[COMP])[IDX[1]];\
-                   VAL[2]=((char*)DEF->Data[COMP])[IDX[2]];\
-                   VAL[3]=((char*)DEF->Data[COMP])[IDX[3]];\
+   case TD_Byte:   VAL[0]=((char*)DEF->Data[COMP])[IDX[0]+DEF->Idx];\
+                   VAL[1]=((char*)DEF->Data[COMP])[IDX[1]+DEF->Idx];\
+                   VAL[2]=((char*)DEF->Data[COMP])[IDX[2]+DEF->Idx];\
+                   VAL[3]=((char*)DEF->Data[COMP])[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_UInt16: VAL[0]=((unsigned short*)DEF->Data[COMP])[IDX[0]];\
-                   VAL[1]=((unsigned short*)DEF->Data[COMP])[IDX[1]];\
-                   VAL[2]=((unsigned short*)DEF->Data[COMP])[IDX[2]];\
-                   VAL[3]=((unsigned short*)DEF->Data[COMP])[IDX[3]];\
+   case TD_UInt16: VAL[0]=((unsigned short*)DEF->Data[COMP])[IDX[0]+DEF->Idx];\
+                   VAL[1]=((unsigned short*)DEF->Data[COMP])[IDX[1]+DEF->Idx];\
+                   VAL[2]=((unsigned short*)DEF->Data[COMP])[IDX[2]+DEF->Idx];\
+                   VAL[3]=((unsigned short*)DEF->Data[COMP])[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_Int16:  VAL[0]=((short*)DEF->Data[COMP])[IDX[0]];\
-                   VAL[1]=((short*)DEF->Data[COMP])[IDX[1]];\
-                   VAL[2]=((short*)DEF->Data[COMP])[IDX[2]];\
-                   VAL[3]=((short*)DEF->Data[COMP])[IDX[3]];\
+   case TD_Int16:  VAL[0]=((short*)DEF->Data[COMP])[IDX[0]+DEF->Idx];\
+                   VAL[1]=((short*)DEF->Data[COMP])[IDX[1]+DEF->Idx];\
+                   VAL[2]=((short*)DEF->Data[COMP])[IDX[2]+DEF->Idx];\
+                   VAL[3]=((short*)DEF->Data[COMP])[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_UInt32: VAL[0]=((unsigned int*)DEF->Data[COMP])[IDX[0]];\
-                   VAL[1]=((unsigned int*)DEF->Data[COMP])[IDX[1]];\
-                   VAL[2]=((unsigned int*)DEF->Data[COMP])[IDX[2]];\
-                   VAL[3]=((unsigned int*)DEF->Data[COMP])[IDX[3]];\
+   case TD_UInt32: VAL[0]=((unsigned int*)DEF->Data[COMP])[IDX[0]+DEF->Idx];\
+                   VAL[1]=((unsigned int*)DEF->Data[COMP])[IDX[1]+DEF->Idx];\
+                   VAL[2]=((unsigned int*)DEF->Data[COMP])[IDX[2]+DEF->Idx];\
+                   VAL[3]=((unsigned int*)DEF->Data[COMP])[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_Int32:  VAL[0]=((int*)DEF->Data[COMP])[IDX[0]];\
-                   VAL[1]=((int*)DEF->Data[COMP])[IDX[1]];\
-                   VAL[2]=((int*)DEF->Data[COMP])[IDX[2]];\
-                   VAL[3]=((int*)DEF->Data[COMP])[IDX[3]];\
+   case TD_Int32:  VAL[0]=((int*)DEF->Data[COMP])[IDX[0]+DEF->Idx];\
+                   VAL[1]=((int*)DEF->Data[COMP])[IDX[1]+DEF->Idx];\
+                   VAL[2]=((int*)DEF->Data[COMP])[IDX[2]+DEF->Idx];\
+                   VAL[3]=((int*)DEF->Data[COMP])[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_UInt64: VAL[0]=((unsigned long long*)DEF->Data[COMP])[IDX[0]];\
-                   VAL[1]=((unsigned long long*)DEF->Data[COMP])[IDX[1]];\
-                   VAL[2]=((unsigned long long*)DEF->Data[COMP])[IDX[2]];\
-                   VAL[3]=((unsigned long long*)DEF->Data[COMP])[IDX[3]];\
+   case TD_UInt64: VAL[0]=((unsigned long long*)DEF->Data[COMP])[IDX[0]+DEF->Idx];\
+                   VAL[1]=((unsigned long long*)DEF->Data[COMP])[IDX[1]+DEF->Idx];\
+                   VAL[2]=((unsigned long long*)DEF->Data[COMP])[IDX[2]+DEF->Idx];\
+                   VAL[3]=((unsigned long long*)DEF->Data[COMP])[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_Int64:  VAL[0]=((long long*)DEF->Data[COMP])[IDX[0]];\
-                   VAL[1]=((long long*)DEF->Data[COMP])[IDX[1]];\
-                   VAL[2]=((long long*)DEF->Data[COMP])[IDX[2]];\
-                   VAL[3]=((long long*)DEF->Data[COMP])[IDX[3]];\
+   case TD_Int64:  VAL[0]=((long long*)DEF->Data[COMP])[IDX[0]+DEF->Idx];\
+                   VAL[1]=((long long*)DEF->Data[COMP])[IDX[1]+DEF->Idx];\
+                   VAL[2]=((long long*)DEF->Data[COMP])[IDX[2]+DEF->Idx];\
+                   VAL[3]=((long long*)DEF->Data[COMP])[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_Float32:VAL[0]=((float*)DEF->Data[COMP])[IDX[0]];\
-                   VAL[1]=((float*)DEF->Data[COMP])[IDX[1]];\
-                   VAL[2]=((float*)DEF->Data[COMP])[IDX[2]];\
-                   VAL[3]=((float*)DEF->Data[COMP])[IDX[3]];\
+   case TD_Float32:VAL[0]=((float*)DEF->Data[COMP])[IDX[0]+DEF->Idx];\
+                   VAL[1]=((float*)DEF->Data[COMP])[IDX[1]+DEF->Idx];\
+                   VAL[2]=((float*)DEF->Data[COMP])[IDX[2]+DEF->Idx];\
+                   VAL[3]=((float*)DEF->Data[COMP])[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_Float64:VAL[0]=((double*)DEF->Data[COMP])[IDX[0]];\
-                   VAL[1]=((double*)DEF->Data[COMP])[IDX[1]];\
-                   VAL[2]=((double*)DEF->Data[COMP])[IDX[2]];\
-                   VAL[3]=((double*)DEF->Data[COMP])[IDX[3]];\
+   case TD_Float64:VAL[0]=((double*)DEF->Data[COMP])[IDX[0]+DEF->Idx];\
+                   VAL[1]=((double*)DEF->Data[COMP])[IDX[1]+DEF->Idx];\
+                   VAL[2]=((double*)DEF->Data[COMP])[IDX[2]+DEF->Idx];\
+                   VAL[3]=((double*)DEF->Data[COMP])[IDX[3]+DEF->Idx];\
                    break;\
    case TD_Unknown:\
    case TD_Binary: \
@@ -106,55 +106,55 @@ switch(DEF->Type) {\
 
 #define Def_GetQuadMod(DEF,IDX,VAL) {\
 switch(DEF->Type) {\
-   case TD_UByte:  VAL[0]=((unsigned char*)DEF->Mode)[IDX[0]];\
-                   VAL[1]=((unsigned char*)DEF->Mode)[IDX[1]];\
-                   VAL[2]=((unsigned char*)DEF->Mode)[IDX[2]];\
-                   VAL[3]=((unsigned char*)DEF->Mode)[IDX[3]];\
+   case TD_UByte:  VAL[0]=((unsigned char*)DEF->Mode)[IDX[0]+DEF->Idx];\
+                   VAL[1]=((unsigned char*)DEF->Mode)[IDX[1]+DEF->Idx];\
+                   VAL[2]=((unsigned char*)DEF->Mode)[IDX[2]+DEF->Idx];\
+                   VAL[3]=((unsigned char*)DEF->Mode)[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_Byte:   VAL[0]=((char*)DEF->Mode)[IDX[0]];\
-                   VAL[1]=((char*)DEF->Mode)[IDX[1]];\
-                   VAL[2]=((char*)DEF->Mode)[IDX[2]];\
-                   VAL[3]=((char*)DEF->Mode)[IDX[3]];\
+   case TD_Byte:   VAL[0]=((char*)DEF->Mode)[IDX[0]+DEF->Idx];\
+                   VAL[1]=((char*)DEF->Mode)[IDX[1]+DEF->Idx];\
+                   VAL[2]=((char*)DEF->Mode)[IDX[2]+DEF->Idx];\
+                   VAL[3]=((char*)DEF->Mode)[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_UInt16: VAL[0]=((unsigned short*)DEF->Mode)[IDX[0]];\
-                   VAL[1]=((unsigned short*)DEF->Mode)[IDX[1]];\
-                   VAL[2]=((unsigned short*)DEF->Mode)[IDX[2]];\
-                   VAL[3]=((unsigned short*)DEF->Mode)[IDX[3]];\
+   case TD_UInt16: VAL[0]=((unsigned short*)DEF->Mode)[IDX[0]+DEF->Idx];\
+                   VAL[1]=((unsigned short*)DEF->Mode)[IDX[1]+DEF->Idx];\
+                   VAL[2]=((unsigned short*)DEF->Mode)[IDX[2]+DEF->Idx];\
+                   VAL[3]=((unsigned short*)DEF->Mode)[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_Int16:  VAL[0]=((short*)DEF->Mode)[IDX[0]];\
-                   VAL[1]=((short*)DEF->Mode)[IDX[1]];\
-                   VAL[2]=((short*)DEF->Mode)[IDX[2]];\
-                   VAL[3]=((short*)DEF->Mode)[IDX[3]];\
+   case TD_Int16:  VAL[0]=((short*)DEF->Mode)[IDX[0]+DEF->Idx];\
+                   VAL[1]=((short*)DEF->Mode)[IDX[1]+DEF->Idx];\
+                   VAL[2]=((short*)DEF->Mode)[IDX[2]+DEF->Idx];\
+                   VAL[3]=((short*)DEF->Mode)[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_UInt32: VAL[0]=((unsigned int*)DEF->Mode)[IDX[0]];\
-                   VAL[1]=((unsigned int*)DEF->Mode)[IDX[1]];\
-                   VAL[2]=((unsigned int*)DEF->Mode)[IDX[2]];\
-                   VAL[3]=((unsigned int*)DEF->Mode)[IDX[3]];\
+   case TD_UInt32: VAL[0]=((unsigned int*)DEF->Mode)[IDX[0]+DEF->Idx];\
+                   VAL[1]=((unsigned int*)DEF->Mode)[IDX[1]+DEF->Idx];\
+                   VAL[2]=((unsigned int*)DEF->Mode)[IDX[2]+DEF->Idx];\
+                   VAL[3]=((unsigned int*)DEF->Mode)[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_Int32:  VAL[0]=((int*)DEF->Mode)[IDX[0]];\
-                   VAL[1]=((int*)DEF->Mode)[IDX[1]];\
-                   VAL[2]=((int*)DEF->Mode)[IDX[2]];\
-                   VAL[3]=((int*)DEF->Mode)[IDX[3]];\
+   case TD_Int32:  VAL[0]=((int*)DEF->Mode)[IDX[0]+DEF->Idx];\
+                   VAL[1]=((int*)DEF->Mode)[IDX[1]+DEF->Idx];\
+                   VAL[2]=((int*)DEF->Mode)[IDX[2]+DEF->Idx];\
+                   VAL[3]=((int*)DEF->Mode)[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_UInt64: VAL[0]=((unsigned long long*)DEF->Mode)[IDX[0]];\
-                   VAL[1]=((unsigned long long*)DEF->Mode)[IDX[1]];\
-                   VAL[2]=((unsigned long long*)DEF->Mode)[IDX[2]];\
-                   VAL[3]=((unsigned long long*)DEF->Mode)[IDX[3]];\
+   case TD_UInt64: VAL[0]=((unsigned long long*)DEF->Mode)[IDX[0]+DEF->Idx];\
+                   VAL[1]=((unsigned long long*)DEF->Mode)[IDX[1]+DEF->Idx];\
+                   VAL[2]=((unsigned long long*)DEF->Mode)[IDX[2]+DEF->Idx];\
+                   VAL[3]=((unsigned long long*)DEF->Mode)[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_Int64:  VAL[0]=((long long*)DEF->Mode)[IDX[0]];\
-                   VAL[1]=((long long*)DEF->Mode)[IDX[1]];\
-                   VAL[2]=((long long*)DEF->Mode)[IDX[2]];\
-                   VAL[3]=((long long*)DEF->Mode)[IDX[3]];\
+   case TD_Int64:  VAL[0]=((long long*)DEF->Mode)[IDX[0]+DEF->Idx];\
+                   VAL[1]=((long long*)DEF->Mode)[IDX[1]+DEF->Idx];\
+                   VAL[2]=((long long*)DEF->Mode)[IDX[2]+DEF->Idx];\
+                   VAL[3]=((long long*)DEF->Mode)[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_Float32:VAL[0]=((float*)DEF->Mode)[IDX[0]];\
-                   VAL[1]=((float*)DEF->Mode)[IDX[1]];\
-                   VAL[2]=((float*)DEF->Mode)[IDX[2]];\
-                   VAL[3]=((float*)DEF->Mode)[IDX[3]];\
+   case TD_Float32:VAL[0]=((float*)DEF->Mode)[IDX[0]+DEF->Idx];\
+                   VAL[1]=((float*)DEF->Mode)[IDX[1]+DEF->Idx];\
+                   VAL[2]=((float*)DEF->Mode)[IDX[2]+DEF->Idx];\
+                   VAL[3]=((float*)DEF->Mode)[IDX[3]+DEF->Idx];\
                    break;\
-   case TD_Float64:VAL[0]=((double*)DEF->Mode)[IDX[0]];\
-                   VAL[1]=((double*)DEF->Mode)[IDX[1]];\
-                   VAL[2]=((double*)DEF->Mode)[IDX[2]];\
-                   VAL[3]=((double*)DEF->Mode)[IDX[3]];\
+   case TD_Float64:VAL[0]=((double*)DEF->Mode)[IDX[0]+DEF->Idx];\
+                   VAL[1]=((double*)DEF->Mode)[IDX[1]+DEF->Idx];\
+                   VAL[2]=((double*)DEF->Mode)[IDX[2]+DEF->Idx];\
+                   VAL[3]=((double*)DEF->Mode)[IDX[3]+DEF->Idx];\
                    break;\
    case TD_Unknown:\
    case TD_Binary:\
@@ -294,15 +294,15 @@ int32_t Def_GetValue(
     double * const ThetaXY
 );
 
-int32_t GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int32_t I,int32_t J,TGeoOptions *Opt);
-int32_t GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Geom,double Value);
-int32_t GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int32_t Final);
-int32_t GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt);
-int32_t GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt);
-int32_t GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt);
-int32_t GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer *Layer,TGeoOptions *Opt,char *Field,double Value);
-int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt);
-TGeoRef* GeoRef_SubSelect(TGeoRef *Ref, TDef *Def, int N);
+int32_t  GeoRef_Cell2OGR(OGRGeometryH Geom,TGeoRef *ToRef,TGeoRef *FromRef,int32_t I,int32_t J,TGeoOptions *Opt);
+int32_t  GeoRef_Rasterize(TGeoRef *ToRef,TDef *ToDef,TGeoOptions *Opt,OGRGeometryH Geom,double Value);
+int32_t  GeoRef_InterpDef(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt,int32_t Final);
+int32_t  GeoRef_InterpAverage(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt);
+int32_t  GeoRef_InterpConservative(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt);
+int32_t  GeoRef_InterpSub(TGeoRef *ToRef,TDef *ToDef,TGeoRef *FromRef,TDef *FromDef,TGeoOptions *Opt);
+int32_t  GeoRef_InterpOGR(TGeoRef *ToRef,TDef *ToDef,TGeoRef *LayerRef,OGR_Layer *Layer,TGeoOptions *Opt,char *Field,double Value);
+int64_t  GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt);
+TGeoRef *GeoRef_DefSubSelect(TGeoRef *Ref,TDef *Def,int N);
 
 void    GeoScan_Init(TGeoScan *Scan);
 void    GeoScan_Clear(TGeoScan *Scan);

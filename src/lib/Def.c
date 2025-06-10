@@ -2426,15 +2426,15 @@ TGeoRef *GeoRef_DefSubSelect(TGeoRef *Ref,TDef *Def,int N) {
 
    int i;
 
-   if (!Ref || !Def) {
+   if (!Ref) {
       Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid referential of definition\n", __func__);
    }
-   if (N<-1 || N>=Ref->NbSub) {
+   if (N<0 || N>Ref->NbSub) {
       Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid sub grid index (%i)\n", __func__,N);
    }
 
    // If the subgrid index is different from the current
-   if (N!=Ref->Sub && N<Ref->NbSub) {
+   if (N!=Ref->Sub+1) {
 
       for (i=0; i<Ref->NbSet; i++) {
          if (Ref->Sets[i].Index) {
@@ -2445,16 +2445,19 @@ TGeoRef *GeoRef_DefSubSelect(TGeoRef *Ref,TDef *Def,int N) {
       }
 
       // Define sub index position within Def data arrays
-      Def->Idx=0;
-      if (N>0) {
-         Def->Idx=Ref->Subs[N-1]->NX*Ref->Subs[N-1]->NY;
+      if (Def) {
+         Def->Idx=0;
+         if (N>0) {
+            Def->Idx=Ref->Subs[N-1]->NX*Ref->Subs[N-1]->NY;
+         }
       }
 
-      // Return selected georef object
-      Ref->Sub=N;
-      return(N>=0?Ref->Subs[N]:Ref);
+      // Georef sub index starts from -1t
+      Ref->Sub=N-1;
    }
-   return(Ref->Subs[Ref->Sub]);
+
+   // Return selected georef object
+   return(N>=1?Ref->Subs[N-1]:Ref);
 }
 
 /*----------------------------------------------------------------------------
@@ -2554,7 +2557,7 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
          }
 
          // In case of U grid, we have to select the right subgrid
-         for(u=0;u<FromRef->NbSub;u++) {
+         for(u=1;u<=FromRef->NbSub;u++) {
             fromref=GeoRef_DefSubSelect(FromRef,FromDef,u);
             if (FromDef->Data[1]) {
 
@@ -2580,7 +2583,7 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
          }
          if (spd) free(spd);
 
-         GeoRef_DefSubSelect(FromRef,FromDef,-1);
+         GeoRef_DefSubSelect(FromRef,FromDef,0);
          break;
 
       case IR_SUBNEAREST:

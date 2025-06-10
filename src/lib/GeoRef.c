@@ -1010,6 +1010,7 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
       if (!GeoRef_Read(ref)) {
          return(NULL);
       }
+      GeoRef_AxisDefine(ref,ref->AX,ref->AY);
    }
 
    GeoRef_DefRPNXG(ref);
