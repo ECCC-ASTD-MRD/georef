@@ -149,9 +149,11 @@ void GeoRef_AxisDefine(
     switch (Ref->GRTYP[0]) {
         case '#':
         case 'Z':
-            f77name(cigaxg)(Ref->RPNHeadExt.grref,
-                &Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,
-                &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4, 1);
+            if (Ref->RPNHeadExt.grref[0]!='W') {
+               f77name(cigaxg)(Ref->RPNHeadExt.grref,
+                   &Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,
+                   &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4, 1);
+            }
 
             Ref->AX = AX;
             Ref->AY = AY;
