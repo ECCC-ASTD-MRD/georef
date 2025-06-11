@@ -578,7 +578,7 @@ int32_t ZRef_KCube2Pressure(TZRef* restrict const ZRef,float *P0,float *P0LS,int
 
    int32_t   k,idxk=0,ij;
    int32_t   *ips;
-   float pref,ptop,*p0;
+   float pref,ptop,*p0,*p0ls;
 
    if (!P0 && ZRef->Type!=LVL_PRES) {
       Lib_Log(APP_LIBEER,APP_ERROR,"%s: Surface pressure is required\n",__func__);

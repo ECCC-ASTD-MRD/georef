@@ -2696,9 +2696,9 @@ int32_t GeoScan_Get(TGeoScan *Scan, TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRe
          return 0;
       if (!(Scan->Y = (double*)realloc(Scan->Y, dd*sizeof(double))))
          return 0;
-      if (!(Scan->V = (unsigned int*)realloc(Scan->V, sz*sizeof(unsigned int))))
+      if (!(Scan->D = (float*)realloc(Scan->D, dd*sizeof(float))))
          return 0;
-      if (!(Scan->D = (float*)realloc(Scan->D, sz*sizeof(float))))
+      if (!(Scan->V = (unsigned int*)realloc(Scan->V, sz*sizeof(unsigned int))))
          return 0;
       Scan->S = sz;
    }
