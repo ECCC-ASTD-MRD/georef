@@ -310,8 +310,8 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          case 'S': Ref->LL2XY=GeoRef_LL2XY_NS; Ref->XY2LL=GeoRef_XY2LL_NS; break;
          case 'T': Ref->LL2XY=GeoRef_LL2XY_T; Ref->XY2LL=GeoRef_XY2LL_T; break;
          case '!': Ref->LL2XY=GeoRef_LL2XY_LAMBERT; Ref->XY2LL=GeoRef_XY2LL_LAMBERT; break;
-         case '#': break;
-         case 'G': //GeoRef_LL2XY_G(Ref,X,Y,Lat,Lon,Nb); Ref->XY2LL=GeoRef_XY2LL_G; break;
+         case 'G':
+         case '#':
          case 'U':
          case 'Z': Ref->LL2XY=GeoRef_LL2XY_Z; Ref->XY2LL=GeoRef_XY2LL_Z; break;
          case 'O': Ref->LL2XY=GeoRef_LL2XY_O; Ref->XY2LL=GeoRef_XY2LL_O; break;
@@ -675,28 +675,32 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
       crit.datev= h->datev;
       crit.ip1  = h->ig1;
       crit.ip2  = h->ig2;
-      crit.ip3  = h->ig3;
+      crit.ip3  = Grid==-1?-1:h->ig3;
       strncpy(crit.nomvar,Var,FST_NOMVAR_LEN);
 
-      if (Grid==1) {
-         // Look for corresponding time and if not use any time
-         if ((ok=fst24_read(h->file,&crit,NULL,&record))<=0) {
-            crit.datev= -1;
+      switch(abs(Grid)) {
+         case 1:
+            // Look for corresponding time and if not use any time
+            if ((ok=fst24_read(h->file,&crit,NULL,&record))<=0) {
+               crit.datev= -1;
+               ok=fst24_read(h->file,&crit,NULL,&record);
+            }
+            break;
+         case 0:
+            strncpy(crit.etiket,h->etiket,FST_ETIKET_LEN);
+            strncpy(crit.typvar,h->typvar,FST_TYPVAR_LEN);
+            crit.ip1  = h->ip1;
+            crit.ip2  = h->ip2;
+            crit.ip3  = h->ip3;
             ok=fst24_read(h->file,&crit,NULL,&record);
-         }
-     } else if (Grid==0) {
-         strncpy(crit.etiket,h->etiket,FST_ETIKET_LEN);
-         strncpy(crit.typvar,h->typvar,FST_TYPVAR_LEN);
-         crit.ip1  = h->ip1;
-         crit.ip2  = h->ip2;
-         crit.ip3  = h->ip3;
-         ok=fst24_read(h->file,&crit,NULL,&record);
-      } else {
-         strncpy(crit.etiket,h->etiket,FST_ETIKET_LEN);
-         strncpy(crit.typvar,h->typvar,FST_TYPVAR_LEN);
-         crit.ip2  = h->ip2;
-         crit.ip3  = h->ip3;
-         ok=fst24_read(h->file,&crit,NULL,&record);
+            break;
+         default:
+            strncpy(crit.etiket,h->etiket,FST_ETIKET_LEN);
+            strncpy(crit.typvar,h->typvar,FST_TYPVAR_LEN);
+            crit.ip1  = h->ip2;
+            crit.ip2  = h->ip3;
+            ok=fst24_read(h->file,&crit,NULL,&record);
+            break;
       }
 
       if (ok<=0) {
@@ -773,7 +777,7 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
    int32_t     ni,nj,ig1,ig2,ig3,ig4,idx,s,i,j,sz=0;
    char        grref[2];
-   double      *ax,*ay;
+   double      *ax=NULL,*ay=NULL;
 
    if (!GRef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid GeoRef object\n",__func__);
@@ -828,17 +832,18 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
             break;
 
          case '#':
-            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
-            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
-   // TODO: Check with LireEnrPositionel
-   //        if (ax && ay) {
-   //            GRef->AX = (double*) malloc(GRef->NX*sizeof(double));
-   //            GRef->AY = (double*) malloc(GRef->NY*sizeof(double));
-   //            offsetx = ip3 - 1;
-   //            offsety = ip4 - 1;
-   //            for (j=0; j < GRef->NY; j++) GRef->AY[j] = ay[j+offsety];
-   //            for (i=0; i < GRef->NX; i++) GRef->AX[i] = ax[i+offsetx];
-   //         }
+            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&ay,"^^",-1,APP_FLOAT64);
+            if (!GRef->AX) GeoRef_ReadDescriptor(GRef,(void **)&ax,">>",-1,APP_FLOAT64);
+            if (ax && ay) {
+               GRef->AX = (double*)malloc(GRef->NX*sizeof(double));
+               GRef->AY = (double*)malloc(GRef->NY*sizeof(double));
+               ni = GRef->RPNHead.ig3 - 1;
+               nj = GRef->RPNHead.ig4 - 1;
+               for (j=0; j < GRef->NY; j++) GRef->AY[j] = ay[j+nj];
+               for (i=0; i < GRef->NX; i++) GRef->AX[i] = ax[i+ni];
+               free(ax);
+               free(ay);
+            }
             break;
       }
 
@@ -971,7 +976,6 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    ref->RPNHead.ig1 = IG1;
    ref->RPNHead.ig2 = IG2;
    ref->RPNHead.ig3 = IG3;
-//   ref->RPNHead.ig4 = (GRTYP[0]=='#' || GRTYP[0]=='U')?IG4:0;
    ref->RPNHead.ig4 = IG4;
    ref->Extension=0;
    ref->Type=GRID_NONE;
@@ -1045,10 +1049,6 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
    // If not specified, type is X
    if (GRTYP[0]==' ' || GRTYP[0]=='\0') GRTYP[0]='X';
 
-   if (GRTYP[1]=='#') {
-      //TODO: CHECK For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
-   }
-
    return(GeoRef_Define(ref,NI,NJ,GRTYP,"",IG1,IG2,IG3,IG4,NULL,NULL));
 }
 
@@ -1073,10 +1073,6 @@ TGeoRef* GeoRef_CreateFromRecord(fst_record *Rec) {
    ref->RPNHead.ip2=Rec->ig2;
    ref->RPNHead.ip3=Rec->ig3;
    ref->RPNHead.datev=Rec->datev;
-
-   if (Rec->grtyp[0]=='#') {
-      //TODO: CHECK For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
-   }
 
    // Radar grids are treated differently
    if (Rec->grtyp[0]=='R') {
