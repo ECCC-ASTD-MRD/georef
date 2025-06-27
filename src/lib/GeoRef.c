@@ -675,15 +675,18 @@ int32_t GeoRef_ReadDescriptor(TGeoRef *GRef,void **Ptr,char *Var,int32_t Grid,TA
       crit.datev= h->datev;
       crit.ip1  = h->ig1;
       crit.ip2  = h->ig2;
-      crit.ip3  = Grid==-1?-1:h->ig3;
+      crit.ip3  = h->ig3;
       strncpy(crit.nomvar,Var,FST_NOMVAR_LEN);
 
-      switch(abs(Grid)) {
+      switch(Grid) {
          case 1:
             // Look for corresponding time and if not use any time
             if ((ok=fst24_read(h->file,&crit,NULL,&record))<=0) {
-               crit.datev= -1;
-               ok=fst24_read(h->file,&crit,NULL,&record);
+               crit.datev = -1;
+               if ((ok=fst24_read(h->file,&crit,NULL,&record))<=0) {
+                  crit.ip3 = -1;
+                  ok=fst24_read(h->file,&crit,NULL,&record);
+               }
             }
             break;
          case 0:
@@ -832,8 +835,8 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
             break;
 
          case '#':
-            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&ay,"^^",-1,APP_FLOAT64);
-            if (!GRef->AX) GeoRef_ReadDescriptor(GRef,(void **)&ax,">>",-1,APP_FLOAT64);
+            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&ay,"^^",1,APP_FLOAT64);
+            if (!GRef->AX) GeoRef_ReadDescriptor(GRef,(void **)&ax,">>",1,APP_FLOAT64);
             if (ax && ay) {
                GRef->AX = (double*)malloc(GRef->NX*sizeof(double));
                GRef->AY = (double*)malloc(GRef->NY*sizeof(double));
