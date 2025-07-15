@@ -281,6 +281,11 @@ int32_t GeoRef_Interp(
     App_TimerStart(int_timer);
     GeoRef_InterpClear(RefTo, opt, zout);
 
+    // If we're using pre-calculated index weight
+    if (Opt->Interp==IR_WEIGHTINDEX) {
+       return(GeoRef_InterpWeight(RefTo,RefFrom,Opt,zout,zin));
+    }
+
     int32_t ok = TRUE;
     if (RefFrom->NbSub > 0 || RefTo->NbSub > 0) {
         // YY mutli grids involved
@@ -475,4 +480,74 @@ int32_t GeoRef_InterpYY(
     }
 
     return TRUE;
+}
+
+int32_t GeoRef_InterpWeight(
+    //! [in] Destination geo-reference
+    const TGeoRef * const RefTo,
+    //! [in] Source geo-reference
+    const TGeoRef * const RefFrom,
+    //! [in] Interpolation options
+    const TGeoOptions * const Opt,
+    //! [out] Destination interpolated values
+    float * const zout,
+    //! [in] Source values
+    const float * const zin
+) {
+
+   TGeoSet *gset = NULL;
+   int32_t  i, j, pi, pj;
+   float    val, val1,dp;
+   float   *ip = NULL;
+
+   const TGeoOptions * const opt = Opt ? Opt : &GeoRef_Options;
+
+   if (!RefTo) {
+      Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid destination\n", __func__);
+      return FALSE;
+   }
+   if (!RefFrom) {
+      Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid source\n", __func__);
+      return FALSE;
+   }
+
+   gset = GeoRef_SetGet(RefTo, RefFrom, opt);
+   if (!gset->Index || gset->Index[0] == REF_INDEX_EMPTY) {
+      Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Weight index not defined\n", __func__);
+      return FALSE;
+   }
+
+    // Clear destination buffer
+    if (opt->Extrap != ER_VALUE)
+        memset(zout,0x0,RefFrom->NX*RefFrom->NY*sizeof(float));
+    
+    // As long as the file or the list is not empty
+    ip = gset->Index;
+    
+    while(*ip != REF_INDEX_END) {
+
+        // Get the gridpoint
+        i = *(ip++);
+        j = *(ip++);
+        val=0.0;
+
+        // Get the geometry intersections
+        while(*ip != REF_INDEX_SEPARATOR) {
+            pi = *(ip++);
+            pj = *(ip++);
+            dp = *(ip++);
+
+            val1=zin[pj*RefFrom->NX+pi];
+            if (DATA_ISVALID(val1,opt->NoData)) {
+               val += val1*dp;
+            }
+        }
+
+        zout[j*RefTo->NX+i]=val;
+
+        // Skip separator
+        ip++;
+    }
+
+    return(TRUE);
 }

@@ -3,8 +3,8 @@
 #include <Def.h>
 #include <georef_build_info.h>
 
-#define APP_NAME "Interpolate"
-#define APP_DESC "ECCC/CMC RPN fstd interpolation tool."
+#define APP_NAME "georef_interp"
+#define APP_DESC "ECCC/CMC RPN fstd interpolation tool"
 
 extern char *TRef_InterpString[];
 extern char *TRef_ExtrapString[];

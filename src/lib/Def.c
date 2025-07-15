@@ -1681,15 +1681,16 @@ int32_t GeoRef_InterpSub(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
 */
 int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt) {
 
-#ifdef HAVE_GDAL
    TGeoSet    *gset = NULL;
-   int32_t     i, j, na, nt = 0, p = 0, pi, pj, idx3, intersect, k = 0, isize, nidx, error = 0;
+   int32_t     i, j, na, nt = 0, p = 0, pi, pj, idx2, intersect, isize, nidx, error = 0;
    uint64_t    n;
    char        *c;
    double       val0, val1, area, x, y, z, dp;
    float       *ip = NULL, *lp = NULL, **index = NULL;
+#ifdef HAVE_GDAL
    OGRGeometryH cell = NULL, ring = NULL, *pick = NULL, *poly = NULL;
    OGREnvelope  env;
+#endif
 
    if (!Opt) Opt=&GeoRef_Options;
 
@@ -1723,160 +1724,125 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
    if (isize>0) 
       GeoRef_SetIndexInit(gset);
 
-   // Process one level at a time
-   for (k = 0; k < ToDef->NK; k++) {
 
-      // Do we have and index
-      if (gset->Index && gset->Index[0] != REF_INDEX_EMPTY) {
+   // Do we have and index
+   if (gset->Index && gset->Index[0] != REF_INDEX_EMPTY) {
 
-         // As long as the file or the list is not empty
+      // As long as the file or the list is not empty
+      ip = gset->Index;
+      while(*ip != REF_INDEX_END) {
+
+         // Get the gridpoint
+         i = *(ip++);
+         j = *(ip++);
+
+         if (!FIN2D(FromDef, i, j)) {
+            Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Wrong index, index coordinates (%i, %i)\n", __func__, i, j);
+            return FALSE;
+         }
+
+         // Get this gridpoint value
+         Def_Get(FromDef, 0, FIDX2D(FromDef, i, j), val1);
+         if (!DEFVALID(FromDef, val1)) {
+            continue;
+         }
+
+         // Get the geometry intersections
+         while(*ip != REF_INDEX_SEPARATOR) {
+            pi = *(ip++);
+            pj = *(ip++);
+            dp = *(ip++);
+
+            idx2 = FIDX2D(ToDef, pi, pj);
+            Def_Get(ToDef, 0, idx2, val0);
+            if (!DEFVALID(ToDef, val0))
+               val0 = 0.0;
+
+            // Assign new value
+            val0 += val1*dp;
+            Def_Set(ToDef, 0, idx2, val0);
+
+            if (Opt->Interp == IR_NORMALIZED_CONSERVATIVE) {
+               ToDef->Buffer[idx2] += dp;
+            }
+         }
+         // Skip separator
+         ip++;
+      }
+   } else {
+
+#ifdef HAVE_GDAL
+      // U grids need mask to select on 1 grid on overlap zones
+      if (FromRef->NbSub>0) {
+         GeoRef_SetCalcYYXY(gset);
+      }
+
+      if (gset->Index && gset->Index[0] == REF_INDEX_EMPTY) {
+         if (!(index = (float**)malloc(FSIZE2D(FromDef)*sizeof(float*)))) {
+            Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Unable to allocate local index arrays\n", __func__);
+            return FALSE;
+         }
          ip = gset->Index;
-         while(*ip != REF_INDEX_END) {
+      }
 
-            // Get the gridpoint
-            i = *(ip++);
-            j = *(ip++);
+      #pragma omp parallel for collapse(2) firstprivate(cell, ring, pick, poly) private(i, j, nidx, intersect, cnt, p, x, y, z, lp, area, val1, env, n, na) shared(k, isize, FromRef, FromDef, ToRef, ToDef, Opt, error, index, ip) reduction(+ : nt)
+      for(j = 0; j < FromDef->NJ; j++) {
+         for(i = 0; i < FromDef->NI; i++) {
 
-            if (!FIN2D(FromDef, i, j)) {
-               Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Wrong index, index coordinates (%i, %i)\n", __func__, i, j);
-               return FALSE;
+            nidx = j*FromDef->NI+i;
+            if (index) index[nidx] = NULL;
+            if (error) continue;
+
+            // Create gridcell geometry object
+            if (!cell) {
+               cell = OGR_G_CreateGeometry(wkbPolygon);
+               ring = OGR_G_CreateGeometry(wkbLinearRing);
+               OGR_G_AddGeometryDirectly(cell, ring);
             }
 
-            // Get this gridpoint value
-            Def_Get(FromDef, 0, FIDX3D(FromDef, i, j, k), val1);
-            if (!DEFVALID(FromDef, val1)) {
+            if (!pick) {
+               pick = OGR_G_CreateGeometry(wkbLinearRing);
+               poly = OGR_G_CreateGeometry(wkbPolygon);
+               OGR_G_AddGeometryDirectly(poly, pick);
+            }
+
+            // Project the source gridcell into the destination
+            if (!(intersect = GeoRef_Cell2OGR(ring, ToRef, FromRef, i, j, Opt)))
                continue;
-            }
 
-            // Get the geometry intersections
-            while(*ip != REF_INDEX_SEPARATOR) {
-               pi = *(ip++);
-               pj = *(ip++);
-               dp = *(ip++);
-
-               idx3 = FIDX3D(ToDef, pi, pj, k);
-               Def_Get(ToDef, 0, idx3, val0);
-               if (!DEFVALID(ToDef, val0))
-                  val0 = 0.0;
-
-               // Assign new value
-               val0 += val1*dp;
-               Def_Set(ToDef, 0, idx3, val0);
-
-               if (Opt->Interp == IR_NORMALIZED_CONSERVATIVE) {
-                  ToDef->Buffer[idx3] += dp;
-               }
-            }
-            // Skip separator
-            ip++;
-         }
-      } else {
-
-         // U grids need mask to select on 1 grid on overlap zones
-         if (FromRef->NbSub>0) {
-            GeoRef_SetCalcYYXY(gset);
-         }
-
-         if (gset->Index && gset->Index[0] == REF_INDEX_EMPTY) {
-            if (!(index = (float**)malloc(FSIZE2D(FromDef)*sizeof(float*)))) {
-               Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Unable to allocate local index arrays\n", __func__);
-               return FALSE;
-            }
-            ip = gset->Index;
-         }
-
-         #pragma omp parallel for collapse(2) firstprivate(cell, ring, pick, poly) private(i, j, nidx, intersect, cnt, p, x, y, z, lp, area, val1, env, n, na) shared(k, isize, FromRef, FromDef, ToRef, ToDef, Opt, error, index, ip) reduction(+ : nt)
-         for(j = 0; j < FromDef->NJ; j++) {
-            for(i = 0; i < FromDef->NI; i++) {
- 
-               nidx = j*FromDef->NI+i;
-               if (index) index[nidx] = NULL;
-               if (error) continue;
-
-               // Create gridcell geometry object
-               if (!cell) {
-                  cell = OGR_G_CreateGeometry(wkbPolygon);
-                  ring = OGR_G_CreateGeometry(wkbLinearRing);
-                  OGR_G_AddGeometryDirectly(cell, ring);
-               }
-
-               if (!pick) {
-                  pick = OGR_G_CreateGeometry(wkbLinearRing);
-                  poly = OGR_G_CreateGeometry(wkbPolygon);
-                  OGR_G_AddGeometryDirectly(poly, pick);
-               }
-
-               // Project the source gridcell into the destination
-               if (!(intersect = GeoRef_Cell2OGR(ring, ToRef, FromRef, i, j, Opt)))
+            // Allocate local index
+            lp = NULL;
+            if (ip) {
+               if (!(index[nidx] = (float*)malloc(isize*sizeof(float)))) {
+                  Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Unable to allocate local index memory\n", __func__);
+                  error = 1;
                   continue;
-
-               // Allocate local index
-               lp = NULL;
-               if (ip) {
-                  if (!(index[nidx] = (float*)malloc(isize*sizeof(float)))) {
-                     Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Unable to allocate local index memory\n", __func__);
-                     error = 1;
-                     continue;
-                  }
-                  index[nidx][isize-1] = index[nidx][isize-2]  = index[nidx][isize-3] = REF_INDEX_NIL;
-                  index[nidx][0] = REF_INDEX_EMPTY;
-                  lp = index[nidx];
                }
-               n = na = 0;
+               index[nidx][isize-1] = index[nidx][isize-2]  = index[nidx][isize-3] = REF_INDEX_NIL;
+               index[nidx][0] = REF_INDEX_EMPTY;
+               lp = index[nidx];
+            }
+            n = na = 0;
 
-               // Are we crossing the wrap around
-               if (intersect < 0) {
-                  // If so, move the wrapped points (assumed greater than NI/2) to the other side
-                  for(p = 0; p < -intersect; p++) {
-                     OGR_G_GetPoint(ring, p, &x, &y, &z);
-                     if (x > ToDef->NI >> 1) {
-                        x -= ToDef->NI;
-                        OGR_G_SetPoint_2D(ring, p, x, y);
-                     }
-                  }
-
-                  // Process the cell
-                  area = OGR_G_Area(cell);
-
-                  if (area > 0.0) {
-
-                     Def_Get(FromDef, 0, FIDX3D(FromDef, i, j, k), val1);
-                     // If we are saving the indexes, we have to process even if nodata but use 0.0 so as to not affect results
-                     if (!DEFVALID(FromDef, val1)) {
-                        if (lp) {
-                           val1 = 0.0;
-                        } else {
-                           continue;
-                        }
-                     }
-
-                     // Use enveloppe limits to initialize the initial lookup range
-                     OGR_G_GetEnvelope(ring, &env);
-                     env.MaxX += 0.5; env.MaxY += 0.5;
-                     env.MinX = env.MinX < 0 ? 0 : env.MinX;
-                     env.MinY = env.MinY < 0 ? 0 : env.MinY;
-                     env.MaxX = env.MaxX > ToRef->X1 ? ToRef->X1 : env.MaxX;
-                     env.MaxY = env.MaxY > ToRef->Y1 ? ToRef->Y1 : env.MaxY;
-
-                     nt += na = GeoRef_InterpQuad(ToRef, ToDef, Opt, poly, cell, Opt->Interp == IR_CONSERVATIVE ? 'C' : 'N', 'A', area, val1, env.MinX, env.MinY, env.MaxX, env.MaxY, k, &lp);
-
-                     Lib_Log(APP_LIBGEOREF, APP_EXTRA, "%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n", __func__, na, i, j, env.MinX, env.MinY, env.MaxX, env.MaxY);
-                  }
-
-                  // We have to process the part that was out of the grid limits so translate everything NI points
-                  for(p = 0; p < -intersect; p++) {
-                     OGR_G_GetPoint(ring, p, &x, &y, &z);
-                     x += ToDef->NI;
+            // Are we crossing the wrap around
+            if (intersect < 0) {
+               // If so, move the wrapped points (assumed greater than NI/2) to the other side
+               for(p = 0; p < -intersect; p++) {
+                  OGR_G_GetPoint(ring, p, &x, &y, &z);
+                  if (x > ToDef->NI >> 1) {
+                     x -= ToDef->NI;
                      OGR_G_SetPoint_2D(ring, p, x, y);
                   }
                }
 
+               // Process the cell
                area = OGR_G_Area(cell);
 
                if (area > 0.0) {
-                  Def_Get(FromDef, 0, FIDX3D(FromDef, i, j, k), val1);
+
+                  Def_Get(FromDef, 0, FIDX2D(FromDef, i, j), val1);
+                  // If we are saving the indexes, we have to process even if nodata but use 0.0 so as to not affect results
                   if (!DEFVALID(FromDef, val1)) {
-                     // If we are saving the indexes, we have to process even if nodata but use 0.0 so as to not affect results
                      if (lp) {
                         val1 = 0.0;
                      } else {
@@ -1884,57 +1850,94 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                      }
                   }
 
-                  // Use envelop limits to initialize the initial lookup range
+                  // Use enveloppe limits to initialize the initial lookup range
                   OGR_G_GetEnvelope(ring, &env);
-                  if (!(env.MaxX < ToRef->X0 || env.MinX > ToRef->X1 || env.MaxY < ToRef->Y0 || env.MinY > ToRef->Y1)) {
-                     env.MaxX += 0.5; env.MaxY += 0.5;
-                     env.MinX = env.MinX < 0 ? 0 : env.MinX;
-                     env.MinY = env.MinY < 0 ? 0 : env.MinY;
-                     env.MaxX = env.MaxX > ToRef->X1 ? ToRef->X1 : env.MaxX;
-                     env.MaxY = env.MaxY > ToRef->Y1 ? ToRef->Y1 : env.MaxY;
+                  env.MaxX += 0.5; env.MaxY += 0.5;
+                  env.MinX = env.MinX < 0 ? 0 : env.MinX;
+                  env.MinY = env.MinY < 0 ? 0 : env.MinY;
+                  env.MaxX = env.MaxX > ToRef->X1 ? ToRef->X1 : env.MaxX;
+                  env.MaxY = env.MaxY > ToRef->Y1 ? ToRef->Y1 : env.MaxY;
 
-                     nt += n = GeoRef_InterpQuad(ToRef, ToDef, Opt, poly, cell, Opt->Interp == IR_CONSERVATIVE ? 'C' : 'N', 'A', area, val1, env.MinX, env.MinY, env.MaxX, env.MaxY, k, &lp);
+                  nt += na = GeoRef_InterpQuad(ToRef, ToDef, Opt, poly, cell, Opt->Interp == IR_CONSERVATIVE ? 'C' : 'N', 'A', area, val1, env.MinX, env.MinY, env.MaxX, env.MaxY, k, &lp);
 
-                     Lib_Log(APP_LIBGEOREF, APP_EXTRA, "%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n", __func__, n, i, j, env.MinX, env.MinY, env.MaxX, env.MaxY);
+                  Lib_Log(APP_LIBGEOREF, APP_EXTRA, "%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n", __func__, na, i, j, env.MinX, env.MinY, env.MaxX, env.MaxY);
+               }
+
+               // We have to process the part that was out of the grid limits so translate everything NI points
+               for(p = 0; p < -intersect; p++) {
+                  OGR_G_GetPoint(ring, p, &x, &y, &z);
+                  x += ToDef->NI;
+                  OGR_G_SetPoint_2D(ring, p, x, y);
+               }
+            }
+
+            area = OGR_G_Area(cell);
+
+            if (area > 0.0) {
+               Def_Get(FromDef, 0, FIDX2D(FromDef, i, j), val1);
+               if (!DEFVALID(FromDef, val1)) {
+                  // If we are saving the indexes, we have to process even if nodata but use 0.0 so as to not affect results
+                  if (lp) {
+                     val1 = 0.0;
+                  } else {
+                     continue;
                   }
                }
-               if (lp && (n || na)) {
-                  *(lp++) = REF_INDEX_SEPARATOR; // End the list for this gridpoint
+
+               // Use envelop limits to initialize the initial lookup range
+               OGR_G_GetEnvelope(ring, &env);
+               if (!(env.MaxX < ToRef->X0 || env.MinX > ToRef->X1 || env.MaxY < ToRef->Y0 || env.MinY > ToRef->Y1)) {
+                  env.MaxX += 0.5; env.MaxY += 0.5;
+                  env.MinX = env.MinX < 0 ? 0 : env.MinX;
+                  env.MinY = env.MinY < 0 ? 0 : env.MinY;
+                  env.MaxX = env.MaxX > ToRef->X1 ? ToRef->X1 : env.MaxX;
+                  env.MaxY = env.MaxY > ToRef->Y1 ? ToRef->Y1 : env.MaxY;
+
+                  nt += n = GeoRef_InterpQuad(ToRef, ToDef, Opt, poly, cell, Opt->Interp == IR_CONSERVATIVE ? 'C' : 'N', 'A', area, val1, env.MinX, env.MinY, env.MaxX, env.MaxY, k, &lp);
+
+                  Lib_Log(APP_LIBGEOREF, APP_EXTRA, "%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n", __func__, n, i, j, env.MinX, env.MinY, env.MaxX, env.MaxY);
                }
             }
-         }
-
-         // Merge indexes
-         n = 0;
-         if (ip && nt && !error) {
-           if (gset->IndexSize < nt*3) {
-               gset->IndexSize = nt*3+FSIZE2D(FromDef)*3+1;
-               ip = gset->Index = (float*)realloc(gset->Index, gset->IndexSize*sizeof(float));
+            if (lp && (n || na)) {
+               *(lp++) = REF_INDEX_SEPARATOR; // End the list for this gridpoint
             }
-            for(j = 0; j < FromDef->NJ; j++) {
-               for(i = 0; i < FromDef->NI; i++) {
-                  nidx = j*FromDef->NI+i;
-
-                  if ((lp = index[nidx]) && *lp != REF_INDEX_EMPTY) {
-                     // Append gridpoint to the index
-                     *(ip++) = i;
-                     *(ip++) = j;
-
-                     // This gridpoint wraps around
-                     while(*lp != REF_INDEX_SEPARATOR) {
-                        *(ip++) = *(lp++);
-                     }
-                     *(ip++) = REF_INDEX_SEPARATOR;
-                  }
-                  if (index[nidx]) free(index[nidx]);
-               }
-            }
-            *(ip++) = REF_INDEX_END;
-            gset->IndexSize = (ip-gset->Index)+1;
-            free(index);
          }
-         Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: %i total hits\n", __func__, nt);
       }
+
+      // Merge indexes
+      n = 0;
+      if (ip && nt && !error) {
+         if (gset->IndexSize < nt*3) {
+            gset->IndexSize = nt*3+FSIZE2D(FromDef)*3+1;
+            ip = gset->Index = (float*)realloc(gset->Index, gset->IndexSize*sizeof(float));
+         }
+         for(j = 0; j < FromDef->NJ; j++) {
+            for(i = 0; i < FromDef->NI; i++) {
+               nidx = j*FromDef->NI+i;
+
+               if ((lp = index[nidx]) && *lp != REF_INDEX_EMPTY) {
+                  // Append gridpoint to the index
+                  *(ip++) = i;
+                  *(ip++) = j;
+
+                  // This gridpoint wraps around
+                  while(*lp != REF_INDEX_SEPARATOR) {
+                     *(ip++) = *(lp++);
+                  }
+                  *(ip++) = REF_INDEX_SEPARATOR;
+               }
+               if (index[nidx]) free(index[nidx]);
+            }
+         }
+         *(ip++) = REF_INDEX_END;
+         gset->IndexSize = (ip-gset->Index)+1;
+         free(index);
+      }
+      Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: %i total hits\n", __func__, nt);
+#else
+   Lib_Log(APP_LIBGEOREF, APP_ERROR, "Function %s is not available, needs to be built with GDAL\n", __func__);
+   return FALSE;
+#endif
    }
 
 //   OGR_G_DestroyGeometry(ring);
@@ -1943,11 +1946,6 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
    // Return size of index or number of hits, or 1 if nothing found
    nt = gset->Index ? gset->IndexSize : nt;
    return nt == 0 ? 1 : nt;
-#else
-   Lib_Log(APP_LIBGEOREF, APP_ERROR, "Function %s is not available, needs to be built with GDAL\n", __func__);
-   return FALSE;
-#endif
-
 }
 
 /*----------------------------------------------------------------------------

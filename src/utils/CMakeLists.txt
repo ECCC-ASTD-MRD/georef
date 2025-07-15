@@ -6,8 +6,11 @@ IF(DEFINED ENV{INTELCOMP_HOME})
 endif()
 
 add_executable(georef_interp georef_interp.c)
-
 target_link_libraries(georef_interp georef-ompi-static rmn::rmn-ompi m)
 set_target_properties(georef_interp PROPERTIES VERSION ${PROJECT_VERSION})
 
-install(TARGETS georef_interp RUNTIME DESTINATION bin)
+add_executable(georef_nemo_reindexer georef_nemo_reindexer.c)
+target_link_libraries(georef_nemo_reindexer georef-ompi-static rmn::rmn-ompi m)
+set_target_properties(georef_nemo_reindexer PROPERTIES VERSION ${PROJECT_VERSION})
+
+install(TARGETS georef_interp georef_nemo_reindexer RUNTIME DESTINATION bin)

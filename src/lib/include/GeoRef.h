@@ -57,6 +57,8 @@ typedef struct {
 #define SIDELON(SIDE, L)      (((SIDE)>0 && (L)<0)?L+360.0:((SIDE)>0 && (L)<0)?(L)-360.0:(L))                              //!< Force longitude to be all positive or negative
 #define COORD_CLEAR(C)       (C.Lat=C.Lon=C.Elev=-999.0)                                                                  //!< Clear the coordinates values to -999 (undefined)
 
+#define DATA_ISVALID(VAL,NODATA) (VAL!=NODATA && VAL==VAL)
+
 #define BITPOS(i)     (i - ((i >> 5) << 5))
 #define GETMSK(fld, i) ((fld[i >> 5]  & (1 << BITPOS(i))) >> BITPOS(i))
 #define SETMSK(fld, i) (fld[i >> 5] | (fld[i] << BITPOS(i)))
@@ -134,17 +136,18 @@ typedef enum {
    IR_BUFFER                         = 17,   //!< To get the interpolation state of multipl loops before finalization (ie: destionation cell fraction covered in CONSERVATIVE mode)
    IR_SUBNEAREST                     = 18,   //!< Sub grid resolution nearest interpolation
    IR_SUBLINEAR                      = 19,   //!< Sub grid resolution linear intelpolation 
-   IV_FAST                           = 20,   //!< Use a rasterization method (middle of grid cell inclusion)
-   IV_WITHIN                         = 21,   //!< Grid cell has to be totally included in polygon
-   IV_INTERSECT                      = 22,   //!< Grid cell intersects polygon
-   IV_CENTROID                       = 23,   //!< Centroid of geometry is within grid cell
-   IV_ALIASED                        = 24,   //!< Grid cells are assigned the area fraction of the intersection of the polygon value
-   IV_CONSERVATIVE                   = 25,   //!< Distribute polygon value so as to conserve geometry mass in relation to geometry total area and intersecting grid cell area
-   IV_NORMALIZED_CONSERVATIVE        = 26,   //!< Distribute polygon coverage fraction in relation to geometry area and intersecting grid cell area
-   IV_POINT_CONSERVATIVE             = 27,   //!< Distribute polygon value so as to conserve geometry mass
-   IV_LENGTH_CONSERVATIVE            = 28,   //!< Distribute contour value so as to conserve geometry mass in relation to geometry length intersecting grid cell
-   IV_LENGTH_NORMALIZED_CONSERVATIVE = 29,   //!< Distribute contour value fraction in relation to geometry length intersecting grid cell
-   IV_LENGTH_ALIASED                 = 30    //!< Grid cells are assigned the lenght fraction of the intersection of the contour value
+   IR_WEIGHTINDEX                    = 20,   //!< Pre-calculated weight index
+   IV_FAST                           = 21,   //!< Use a rasterization method (middle of grid cell inclusion)
+   IV_WITHIN                         = 22,   //!< Grid cell has to be totally included in polygon
+   IV_INTERSECT                      = 23,   //!< Grid cell intersects polygon
+   IV_CENTROID                       = 24,   //!< Centroid of geometry is within grid cell
+   IV_ALIASED                        = 25,   //!< Grid cells are assigned the area fraction of the intersection of the polygon value
+   IV_CONSERVATIVE                   = 26,   //!< Distribute polygon value so as to conserve geometry mass in relation to geometry total area and intersecting grid cell area
+   IV_NORMALIZED_CONSERVATIVE        = 27,   //!< Distribute polygon coverage fraction in relation to geometry area and intersecting grid cell area
+   IV_POINT_CONSERVATIVE             = 28,   //!< Distribute polygon value so as to conserve geometry mass
+   IV_LENGTH_CONSERVATIVE            = 29,   //!< Distribute contour value so as to conserve geometry mass in relation to geometry length intersecting grid cell
+   IV_LENGTH_NORMALIZED_CONSERVATIVE = 30,   //!< Distribute contour value fraction in relation to geometry length intersecting grid cell
+   IV_LENGTH_ALIASED                 = 31    //!< Grid cells are assigned the lenght fraction of the intersection of the contour value
 } TRef_Interp;
 
 
@@ -227,7 +230,7 @@ typedef struct {
    struct TGeoRef *RefTo;               //!< Destination geo reference
    TGeoZone        zones[SET_NZONES];   //!< Extrapolation zone definitions
    int32_t         flags;               //!< State flags
-   TRef_Interp    IndexMethod;          //!< Index interpolation method
+   TRef_Interp     IndexMethod;         //!< Index interpolation method
    int32_t         IndexSize;           //!< Index size
    float          *Index;               //!< Array of index values
    double         *X, *Y;               //!< Grid coordinates of the destination grid into the source grid
@@ -406,6 +409,7 @@ int32_t GeoRef_Interp(
     float * const zout,
     const float * const zin
 ); // c_ezsint
+int32_t GeoRef_InterpWeight(const TGeoRef * const RefTo, const TGeoRef * const RefFrom, const TGeoOptions * const Opt, float * const zout, const float * const zin);
 int32_t  GeoRef_InterpUV(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt, float *uuout, float *vvout, float *uuin, float *vvin);                 // c_ezuvint
 int32_t  GeoRef_InterpWD(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt, float *uuout, float *vvout, float *uuin, float *vvin);                 // c_ezwdint
 int32_t GeoRef_InterpYY(
