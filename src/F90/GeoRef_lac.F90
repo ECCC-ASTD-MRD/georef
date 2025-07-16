@@ -7,7 +7,7 @@
 !> @param[in] nbpts Number of points
 !>
 !> @date 1990
-subroutine ez_lac(xyz, lon, lat, nbpts)
+subroutine GeoRef_lac(xyz, lon, lat, nbpts)
    implicit none
    integer, intent(in) :: nbpts
    real, dimension(3,nbpts), intent(out) :: xyz

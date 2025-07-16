@@ -1,6 +1,7 @@
 !> Convert from grid wind components to std meteorological speed and direction
 subroutine ez8_llwfgdw(z1, z2, xlon, li, lj, grtyp, ig1, ig2, ig3, ig4)
-    use iso_fortran_env
+    use iso_fortran_env, only: real64
+    use GeoRef_internal_def, only: rdtodg
     implicit none
 
     !> X dimension of the grid
@@ -22,8 +23,6 @@ subroutine ez8_llwfgdw(z1, z2, xlon, li, lj, grtyp, ig1, ig2, ig3, ig4)
     !> On output, a 270 degree wind is a westerly wind, meaning U is +ve and V is zero.
 
    external cigaxg
-
-#include "pi.inc"
 
     real :: xg1, xg2, xg3, xg4
     integer :: i, j
@@ -60,8 +59,8 @@ subroutine ez8_llwfgdw(z1, z2, xlon, li, lj, grtyp, ig1, ig2, ig3, ig4)
                     endif
                 endif
                 dir0 = mod(mod(dir0, 360.0d0) + 360.0, 360.0d0)
-                spd(i, j) = spd0
-                dir(i, j) = dir0
+                spd(i, j) = real(spd0)
+                dir(i, j) = real(dir0)
             enddo
         enddo
         return
@@ -86,8 +85,8 @@ subroutine ez8_llwfgdw(z1, z2, xlon, li, lj, grtyp, ig1, ig2, ig3, ig4)
                     endif
                 endif
                 dir0 = mod(mod(dir0, 360.0d0) + 360.0, 360.0d0)
-                spd(i, j) = spd0
-                dir(i, j) = dir0
+                spd(i, j) = real(spd0)
+                dir(i, j) = real(dir0)
             enddo
         enddo
         return
@@ -111,8 +110,8 @@ subroutine ez8_llwfgdw(z1, z2, xlon, li, lj, grtyp, ig1, ig2, ig3, ig4)
                     endif
                 endif
                 dir0 = mod(mod(dir0, 360.0d0) + 360.0, 360.0d0)
-                spd(i, j) = spd0
-                dir(i, j) = dir0
+                spd(i, j) = real(spd0)
+                dir(i, j) = real(dir0)
             enddo
         enddo
         return

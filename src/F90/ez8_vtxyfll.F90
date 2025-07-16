@@ -1,5 +1,5 @@
 subroutine ez8_testprojt
-    use iso_fortran_env
+    use iso_fortran_env, only: real64
     implicit none
 
     integer i, j, ni, nj
@@ -46,10 +46,9 @@ end
 
 
 subroutine ez8_vtxyfll(x, y, lat, lon, clat, clon, d60, dgrw, ni, nj, n)
-    use iso_fortran_env
+    use iso_fortran_env, only: real64
+    use GeoRef_internal_def, only: dgtord
     implicit none
-
-#include "pi.inc"
 
     integer i, n, ni, nj
     real(kind = real64) x(n), y(n), lat(n), lon(n)
@@ -77,10 +76,9 @@ end
 
 
 subroutine ez8_vtllfxy(lat, lon, x, y, clat, clon, d60, dgrw, ni, nj, n)
-    use iso_fortran_env
+    use iso_fortran_env, only: real64
+    use GeoRef_internal_def, only: dgtord, rdtodg
     implicit none
-
-    include "pi.inc"
 
     integer i, n, ni, nj
     real(kind = real64) x(n), y(n), lat(n), lon(n)

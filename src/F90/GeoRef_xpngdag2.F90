@@ -1,6 +1,6 @@
-subroutine ez_xpngdag2(zout, zi, ni, nj, j1, j2, hem, symetrie)
+subroutine GeoRef_xpngdag2(zout, zi, ni, nj, j1, j2, hem, symetrie)
+    use GeoRef_internal_def, only: nord, sud
     implicit none
-#include "qqqpar.inc"
 
     integer, intent(in) :: j1
     integer, intent(in) :: j2

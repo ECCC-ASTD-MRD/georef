@@ -1,6 +1,7 @@
 !> Computes the grid co-ordinates of a point
 subroutine ez8_vllfxy(dlat, dlon, x, y, ni, nj, d60, dgrw, pi, pj, nhem)
-    use iso_fortran_env
+    use iso_fortran_env, only: real64
+    use GeoRef_internal_def, only: rdtodg
     implicit none
 
     !> \note The companion routine xyfll, which computes the grid co-ordinates given the latitude and longitude, is also available.
@@ -25,9 +26,6 @@ subroutine ez8_vllfxy(dlat, dlon, x, y, ni, nj, d60, dgrw, pi, pj, nhem)
     real, intent(in) :: dgrw
     real, intent(in) :: pi
     real, intent(in) :: pj
-
-#include "pi.inc"
-#include "qqqpar.inc"
 
     real(kind = real64) :: x1, y1
     real(kind = real64) :: re, re2, r2, rlat, rlon

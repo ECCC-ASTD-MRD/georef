@@ -12,11 +12,11 @@ void GeoRef_GridGetExpanded(
     switch (Ref->GRTYP[0]) {
         case 'A':
         case 'G':
-            f77name(ez_xpngdag2)(zout, zin, &Ref->NX, &Ref->NY, &Ref->j1, &Ref->j2, &Ref->RPNHead.ig1, &Opt->Symmetric);
+            f77name(GeoRef_xpngdag2)(zout, zin, &Ref->NX, &Ref->NY, &Ref->j1, &Ref->j2, &Ref->RPNHead.ig1, &Opt->Symmetric);
             break;
 
         case 'B':
-            f77name(ez_xpngdb2)(zout, zin, &Ref->NX, &Ref->NY, &Ref->j1, &Ref->j2, &Ref->RPNHead.ig1, &Opt->Symmetric);
+            f77name(GeoRef_xpngdb2)(zout, zin, &Ref->NX, &Ref->NY, &Ref->j1, &Ref->j2, &Ref->RPNHead.ig1, &Opt->Symmetric);
             break;
 
         default:
@@ -31,7 +31,7 @@ void GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref) {
         return;
     }
 
-    if (Ref->GRTYP[0]!='Y' && !Ref->NCX) {
+    if (Ref->GRTYP[0] != 'Y' && !Ref->NCX) {
 
         int32_t nni = Ref->NX;
         int32_t nnj = Ref->j2 - Ref->j1 + 1;
@@ -176,7 +176,7 @@ void GeoRef_AxisDefine(
                 &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,
                 &Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4, 1);
 
-            Ref->AX = (double*)malloc(Ref->NX*sizeof(double));
+            Ref->AX = (double*)malloc(Ref->NX * sizeof(double));
             double dlon = 360.0 / (double) Ref->NX;
             for (int32_t i = 0; i < Ref->NX; i++) {
                 Ref->AX[i] = (double)i * dlon;
@@ -189,7 +189,7 @@ void GeoRef_AxisDefine(
                 case GRID_GLOBAL: {
                     Ref->AY = (double*) malloc(Ref->NY * sizeof(double));
                     double * const temp = (double*) malloc(Ref->NY * sizeof(double));
-                    f77name(ez_glat)(Ref->AY, temp, &Ref->NY, &zero);
+                    f77name(ez8_glat)(Ref->AY, temp, &Ref->NY, &zero);
                     free(temp);
                     break;
                 }
@@ -199,7 +199,7 @@ void GeoRef_AxisDefine(
                     int32_t deuxnj = 2 * Ref->NY;
                     Ref->AY = (double*) malloc(deuxnj * sizeof(double));
                     double * const temp = (double*) malloc(deuxnj * sizeof(double));
-                    f77name(ez_glat)(Ref->AY, temp, &deuxnj, &zero);
+                    f77name(ez8_glat)(Ref->AY, temp, &deuxnj, &zero);
                     free(temp);
                     break;
                 }

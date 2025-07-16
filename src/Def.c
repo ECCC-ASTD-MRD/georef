@@ -280,7 +280,7 @@ void Def_Clear(
     }
 
     if (def->Segments) {
-        TList_Clear(def->Segments, (int(*)(void*))T3DArray_Free);
+        TList_Clear(def->Segments, (void (* const)(void*))T3DArray_Free);
         def->Segments = NULL;
     }
 }
@@ -308,7 +308,7 @@ void Def_Free(
         if (Def->Poly) OGR_G_DestroyGeometry(Def->Poly);
         //Freed by Def->Poly      if (Def->Pick)       OGR_G_DestroyGeometry(Def->Pick);
 #endif
-        if (Def->Segments) TList_Clear(Def->Segments, (int(*)(void*))T3DArray_Free);
+        if (Def->Segments) TList_Clear(Def->Segments, (void (* const)(void *))T3DArray_Free);
 
         free(Def);
     }
@@ -645,8 +645,6 @@ int32_t Def_GetValue(
 
     if (C >= Def->NC) return FALSE;
 
-    float valf, valdf;
-    void *p0, *p1;
     // Si on est a l'interieur de la grille
     if ((Ref->GRTYP[0] == 'M' && X >= 0 && X < Ref->NIdx) ||
         (X >= (Ref->X0-d) && Y >= (Ref->Y0-d) && Z >= 0 && X <= (Ref->X1+d) && Y <= (Ref->Y1+d) && Z <= Def->NK-1)) {
@@ -670,8 +668,9 @@ int32_t Def_GetValue(
         }
 
         if (Def->Data[1] && !C) {
-            p0=(Def, 0, mem);
-            p1=Def_Pointer(Def, 1, mem);
+            float * const p0 = (float *) Def_Pointer(Def, 0, mem);
+            float * const p1 = (float *) Def_Pointer(Def, 1, mem);
+            float valf, valdf;
             GeoRef_XYWDVal(Ref, opt, &valf, &valdf, p0, p1, &X, &Y, 1);
             *Length = valf;
 
@@ -682,10 +681,11 @@ int32_t Def_GetValue(
             }
             if (ThetaXY) *ThetaXY = valdf;
         } else {
+            float valf;
             if (Def->Type <= TD_Int64 || (ix == x && iy == y)) {
                 Def_Get(Def, C, mem + idx, valf);
             } else {
-                p0=Def_Pointer(Def, C, mem);
+                float * const p0 = (float *) Def_Pointer(Def, C, mem);
                 GeoRef_XYVal(Ref, opt, &valf, p0, &X, &Y, 1);
             }
             *Length = valf;
@@ -951,8 +951,15 @@ int32_t GeoRef_Rasterize(TGeoRef *ToRef, TDef *ToDef, TGeoOptions *Opt, OGRGeome
    }
    return 1;
 #else
-   Lib_Log(APP_LIBGEOREF, APP_ERROR, "Function %s is not available, needs to be built with GDAL\n", __func__);
-   return 0;
+    // Suppress warnings when not compiling with GDAL
+    (void *)ToRef;
+    (void *)ToDef;
+    (void *)Opt;
+    (void *)Geom;
+    (void)Value;
+
+    Lib_Log(APP_LIBGEOREF, APP_ERROR, "Function %s is not available, needs to be built with GDAL\n", __func__);
+    return 0;
 #endif
 }
 

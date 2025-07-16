@@ -289,120 +289,115 @@ void GeoRef_Clear(TGeoRef *Ref,int32_t New) {
    }
 }
 
-/**----------------------------------------------------------------------------
- * @brief  Define qualifying flags for the geo refrence
- * @date   Janvier 2015
- *    @param[in]  Ref   Pointer to geo reference
- */
-void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
+//! Define qualifying flags for the geo refrence
+void GeoRef_Qualify(
+    //! [inout] Georeference
+    TGeoRef* __restrict const Ref
+) {
+    if (Ref) {
+        switch(Ref->GRTYP[0]) {
+            case 'A': Ref->LL2XY = GeoRef_LL2XY_A; Ref->XY2LL = GeoRef_XY2LL_L; break;
+            case 'B': Ref->LL2XY = GeoRef_LL2XY_B; Ref->XY2LL = GeoRef_XY2LL_L; break;
+            case 'E': Ref->LL2XY = GeoRef_LL2XY_E; Ref->XY2LL = GeoRef_XY2LL_E; break;
+            case 'L': Ref->LL2XY = GeoRef_LL2XY_L; Ref->XY2LL = GeoRef_XY2LL_L; break;
+            case 'N':
+            case 'S': Ref->LL2XY = GeoRef_LL2XY_NS; Ref->XY2LL = GeoRef_XY2LL_NS; break;
+            case 'T': Ref->LL2XY = GeoRef_LL2XY_T; Ref->XY2LL = GeoRef_XY2LL_T; break;
+            case '!': Ref->LL2XY = GeoRef_LL2XY_LAMBERT; Ref->XY2LL = GeoRef_XY2LL_LAMBERT; break;
+            case '#': break;
+            case 'G': //GeoRef_LL2XY_G(Ref, X, Y, Lat, Lon, Nb); Ref->XY2LL = GeoRef_XY2LL_G; break;
+            case 'U':
+            case 'Z': Ref->LL2XY = GeoRef_LL2XY_Z; Ref->XY2LL = GeoRef_XY2LL_Z; break;
+            case 'O': Ref->LL2XY = GeoRef_LL2XY_O; Ref->XY2LL = GeoRef_XY2LL_O; break;
+            case 'R': Ref->LL2XY = GeoRef_LL2XY_R; Ref->XY2LL = GeoRef_XY2LL_R; break;
+            case 'M': Ref->LL2XY = GeoRef_LL2XY_M; Ref->XY2LL = GeoRef_XY2LL_M; break;
+            case 'W': Ref->LL2XY = GeoRef_LL2XY_W; Ref->XY2LL = GeoRef_XY2LL_W; break;
+            case 'Y': Ref->LL2XY = GeoRef_LL2XY_Y; Ref->XY2LL = GeoRef_XY2LL_Y; break;
+            case 'X':
+            case 'V': break;
+            default:
+                Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: Invalid grid type: %c\n", __func__, Ref->GRTYP[0]);
+                return;
+        }
 
-   double d[2],lat[2],lon[2],x[2],y[2];
-   int32_t    nx;
+        if (Ref->GRTYP[0] == 'M' || Ref->GRTYP[0] == 'Y' || Ref->GRTYP[0] == 'X' || Ref->GRTYP[0] == 'O') {
+            Ref->Type |= GRID_SPARSE;
+        } else {
+            Ref->Type |= GRID_REGULAR;
+        }
 
-   if (Ref) {
-      switch(Ref->GRTYP[0]) {
-         case 'A': Ref->LL2XY=GeoRef_LL2XY_A; Ref->XY2LL=GeoRef_XY2LL_L; break;
-         case 'B': Ref->LL2XY=GeoRef_LL2XY_B; Ref->XY2LL=GeoRef_XY2LL_L; break;
-         case 'E': Ref->LL2XY=GeoRef_LL2XY_E; Ref->XY2LL=GeoRef_XY2LL_E; break;
-         case 'L': Ref->LL2XY=GeoRef_LL2XY_L; Ref->XY2LL=GeoRef_XY2LL_L; break;
-         case 'N':
-         case 'S': Ref->LL2XY=GeoRef_LL2XY_NS; Ref->XY2LL=GeoRef_XY2LL_NS; break;
-         case 'T': Ref->LL2XY=GeoRef_LL2XY_T; Ref->XY2LL=GeoRef_XY2LL_T; break;
-         case '!': Ref->LL2XY=GeoRef_LL2XY_LAMBERT; Ref->XY2LL=GeoRef_XY2LL_LAMBERT; break;
-         case '#': break;
-         case 'G': //GeoRef_LL2XY_G(Ref,X,Y,Lat,Lon,Nb); Ref->XY2LL=GeoRef_XY2LL_G; break;
-         case 'U':
-         case 'Z': Ref->LL2XY=GeoRef_LL2XY_Z; Ref->XY2LL=GeoRef_XY2LL_Z; break;
-         case 'O': Ref->LL2XY=GeoRef_LL2XY_O; Ref->XY2LL=GeoRef_XY2LL_O; break;
-         case 'R': Ref->LL2XY=GeoRef_LL2XY_R; Ref->XY2LL=GeoRef_XY2LL_R; break;
-         case 'M': Ref->LL2XY=GeoRef_LL2XY_M; Ref->XY2LL=GeoRef_XY2LL_M; break;
-         case 'W': Ref->LL2XY=GeoRef_LL2XY_W; Ref->XY2LL=GeoRef_XY2LL_W; break;
-         case 'Y': Ref->LL2XY=GeoRef_LL2XY_Y; Ref->XY2LL=GeoRef_XY2LL_Y; break;
-         case 'X':
-         case 'V': break;
-         default:
-            Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Invalid grid type: %c\n",__func__,Ref->GRTYP[0]);
-            return;
-            break;
-      }
+        if (Ref->GRTYP[0] == '#') {
+            Ref->Type |= GRID_TILE;
+        }
 
-      if (Ref->GRTYP[0]=='M' || Ref->GRTYP[0]=='Y' || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='O') {
-         Ref->Type|=GRID_SPARSE;
-      } else {
-         Ref->Type|=GRID_REGULAR;
-      }
-
-      if (Ref->GRTYP[0]=='#') {
-         Ref->Type|=GRID_TILE;
-      }
-
-      if (Ref->GRTYP[0]=='O') {
-         // If grid type is O (ORCA) and a pole in within the grid, mark as wrapping grid
-         lat[0]=89.0;lat[1]=-89.0;
-         lon[0]=lon[1]=0.0;
-         if (GeoRef_LL2XY(Ref,x,y,lat,lon,2,TRUE)) {
-            Ref->Type|=GRID_WRAP;
-         }
-      }
-
-      if (Ref->GRTYP[0]=='A' || Ref->GRTYP[0]=='B' || Ref->GRTYP[0]=='G') {
-         Ref->Type|=GRID_WRAP;
-      } else if (Ref->GRTYP[0]!='V' && Ref->GRTYP[0]!='R' && Ref->GRTYP[0]!='X' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
-         // Check if north is up by looking at longitude variation on an Y increment at grid limits
-         x[0]=Ref->X0;x[1]=Ref->X0;
-         y[0]=Ref->Y0;y[1]=Ref->Y0+1.0;
-         GeoRef_XY2LL(Ref,lat,lon,x,y,2,TRUE);
-         d[0]=lon[0]-lon[1];
-         x[0]=Ref->X1;x[1]=Ref->X1;
-         y[0]=Ref->Y1-1;y[1]=Ref->Y1;
-         GeoRef_XY2LL(Ref,lat,lon,x,y,2,TRUE);
-         d[1]=lon[0]-lon[1];
-
-         if (fabs(d[0])>0.0001 || fabs(d[1])>0.0001) {
-            Ref->Type|=GRID_ROTATED;
-         }
-
-         // Get size of a gridpoint
-         x[0]=Ref->X0+(Ref->X1-Ref->X0)/2.0;x[1]=x[0]+1.0;
-         y[0]=y[1]=Ref->Y0+(Ref->Y1-Ref->Y0)/2.0;
-         GeoRef_XY2LL(Ref,lat,lon,x,y,2,TRUE);
-         d[0]=DIST(0.0,DEG2RAD(lat[0]),DEG2RAD(lon[0]),DEG2RAD(lat[1]),DEG2RAD(lon[1]));
-
-         // Get distance between first and lat point
-         x[0]=Ref->X0;x[1]=Ref->X1;
-         y[0]=y[1]=Ref->Y0+(Ref->Y1-Ref->Y0)/2.0;
-         GeoRef_XY2LL(Ref,lat,lon,x,y,2,TRUE);
-         d[1]=DIST(0.0,DEG2RAD(lat[0]),DEG2RAD(lon[0]),DEG2RAD(lat[1]),DEG2RAD(lon[1]));
-
-         // If we're within 1.5 grid point, we wrap
-         if (d[1]<=(d[0]*1.5)) {
-            Ref->Type|=GRID_WRAP;
-         }
-
-         // If we're within 0.25 grid point, we repeat
-         if (d[1]<=(d[0]*0.25)) {
-            Ref->Type|=GRID_REPEAT;
-         }
-      }
-
-      if (Ref->GRTYP[0]=='V') {
-         Ref->Type|=GRID_VERTICAL;
-      }
-
-      if (Ref->GRTYP[0]=='R') {
-         Ref->Type|=GRID_RADIAL;
-      }
-
-      // Check for negative longitude (-180 <-> 180, or 0 <-> 360)
-      if (Ref->AX) {
-         for(nx=0;nx<Ref->NX;nx++) {
-            if (Ref->AX[nx]<0) {
-               Ref->Type|=GRID_NEGLON;
-               break;
+        double d[2], lat[2], lon[2], x[2], y[2];
+        if (Ref->GRTYP[0] == 'O') {
+            // If grid type is O (ORCA) and a pole in within the grid, mark as wrapping grid
+            lat[0] = 89.0; lat[1] = -89.0;
+            lon[0] = lon[1] = 0.0;
+            if (GeoRef_LL2XY(Ref, x, y, lat, lon, 2, TRUE)) {
+                Ref->Type |= GRID_WRAP;
             }
-         }
-      }
-   }
+        }
+
+        if (Ref->GRTYP[0] == 'A' || Ref->GRTYP[0] == 'B' || Ref->GRTYP[0] == 'G') {
+            Ref->Type |= GRID_WRAP;
+        } else if (Ref->GRTYP[0] != 'V' && Ref->GRTYP[0] != 'R' && Ref->GRTYP[0] != 'X' && Ref->X0 != Ref->X1 && Ref->Y0 != Ref->Y1) {
+            // Check if north is up by looking at longitude variation on an Y increment at grid limits
+            x[0] = Ref->X0;x[1] = Ref->X0;
+            y[0] = Ref->Y0;y[1] = Ref->Y0+1.0;
+            GeoRef_XY2LL(Ref, lat, lon, x, y, 2, TRUE);
+            d[0] = lon[0]-lon[1];
+            x[0] = Ref->X1;x[1] = Ref->X1;
+            y[0] = Ref->Y1-1;y[1] = Ref->Y1;
+            GeoRef_XY2LL(Ref, lat, lon, x, y, 2, TRUE);
+            d[1] = lon[0] - lon[1];
+
+            if (fabs(d[0]) > 0.0001 || fabs(d[1]) > 0.0001) {
+                Ref->Type |= GRID_ROTATED;
+            }
+
+            // Get size of a gridpoint
+            x[0] = Ref->X0 + (Ref->X1 - Ref->X0) / 2.0; x[1] = x[0] + 1.0;
+            y[0] = y[1] = Ref->Y0 + (Ref->Y1 - Ref->Y0) / 2.0;
+            GeoRef_XY2LL(Ref, lat, lon, x, y, 2, TRUE);
+            d[0] = DIST(0.0, DEG2RAD(lat[0]), DEG2RAD(lon[0]), DEG2RAD(lat[1]), DEG2RAD(lon[1]));
+
+            // Get distance between first and lat point
+            x[0] = Ref->X0; x[1] = Ref->X1;
+            y[0] = y[1] = Ref->Y0 + (Ref->Y1 - Ref->Y0) / 2.0;
+            GeoRef_XY2LL(Ref, lat, lon, x, y, 2, TRUE);
+            d[1] = DIST(0.0, DEG2RAD(lat[0]), DEG2RAD(lon[0]), DEG2RAD(lat[1]), DEG2RAD(lon[1]));
+
+            // If we're within 1.5 grid point, we wrap
+            if (d[1] <= (d[0] * 1.5)) {
+                Ref->Type |= GRID_WRAP;
+            }
+
+            // If we're within 0.25 grid point, we repeat
+            if (d[1] <= (d[0] * 0.25)) {
+                Ref->Type |= GRID_REPEAT;
+            }
+        }
+
+        if (Ref->GRTYP[0] == 'V') {
+            Ref->Type |= GRID_VERTICAL;
+        }
+
+        if (Ref->GRTYP[0] == 'R') {
+            Ref->Type |= GRID_RADIAL;
+        }
+
+        // Check for negative longitude (-180 <-> 180, or 0 <-> 360)
+        if (Ref->AX) {
+            for(int32_t nx = 0; nx < Ref->NX; nx++) {
+                if (Ref->AX[nx] < 0) {
+                    Ref->Type |= GRID_NEGLON;
+                    break;
+                }
+            }
+        }
+    }
 }
 
 /**----------------------------------------------------------------------------

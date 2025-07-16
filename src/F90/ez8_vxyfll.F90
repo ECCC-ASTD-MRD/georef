@@ -1,6 +1,7 @@
 !> Compute the grid co-ordinates measured from the pole of a point, given the latitude and longitude in degrees
 subroutine ez8_vxyfll(x, y, dlat, dlon, npts, d60, dgrw, pi, pj, nhem)
-    use iso_fortran_env
+    use iso_fortran_env, only: real64
+    use GeoRef_internal_def, only: dgtord, nord, sud
     implicit none
 
     !> Number of elements in the x, y, dlat, dlon arrays
@@ -26,14 +27,11 @@ subroutine ez8_vxyfll(x, y, dlat, dlon, npts, d60, dgrw, pi, pj, nhem)
 
     !> \note The companion routine llfxy, which computes the latitude and longitude given the grid-coordinates, is also available
 
-#include "pi.inc"
-#include "qqqpar.inc"
-
     real(kind = real64) :: re, rlon, rlat, sinlat, r
     integer :: i
 
     re = 1.866025d0 * 6.371d+6 / d60
-    if (nhem == NORD) then
+    if (nhem == nord) then
         !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, rlat, rlon, sinlat, r) SHARED(npts, x, y, dgtord, re, dlat, dlon, pi, pj, dgrw)
         do i = 1, npts
             rlon = dgtord * (dlon(i) + dgrw)
@@ -43,7 +41,7 @@ subroutine ez8_vxyfll(x, y, dlat, dlon, npts, d60, dgrw, pi, pj, nhem)
             x(i) = r * cos(rlon) + pi
             y(i) = r * sin(rlon) + pj
         enddo
-    elseif (nhem == SUD) then
+    elseif (nhem == sud) then
         !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, rlat, rlon, sinlat, r) SHARED(npts, x, y, dgtord, re, dlat, dlon, pi, pj, dgrw)
         do i = 1, npts
             rlon = dlon(i)

@@ -7,22 +7,7 @@
       integer ig1,ig2,ig3,ig4
 
       external cigaxg
-!
-!auteur- y. chartier - avril 91
-!
-!langage  - ratfor
-!
-!objet(gdwfllw)
-!         - passe de vent de grille (composantes u et v)
-!         - a vitesse et direction.
-!
-!librairies
-!
-!appel    - call gdwfllw(spd,psi,li,lj,iyp,xg1,xg2,xg3,xg4)
-!
-!modules  - xgaig
-!
-!arguments
+
 !  in/out - spd   - a l'entree contient la vitesse du vent et
 !                   a la sortie la composante u.
 !  in/out - psi   - a l'entree contient la direction du vent et
@@ -36,18 +21,6 @@
 !   in    - xg4   -    igtyp = 'a', 'b', 'g', xg1 = 0. global,
 !                                                 = 1. nord
 !                                                 = 2. sud **
-!
-!messages - "erreur mauvaise grille (gdwfllw)"
-!
-!-------------------------------------------------------------
-!
-!
-
-
-!
-!     * 1.866025=(1+sin60),   6.371e+6=earth radius in meters.
-!
-!     rdtodg = 180/pie, dgtord = pie/180
 
       real pie,rdtodg,dgtord
 

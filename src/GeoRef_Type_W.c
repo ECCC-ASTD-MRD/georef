@@ -27,10 +27,10 @@
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-// int32_t GeoRef_WKTValue(TGeoRef *Ref,TDef *Def,TRef_Interp Interp,int32_t C,double X,double Y,double Z,double *Length,double *ThetaXY){
+// int32_t GeoRef_WKTValue(TGeoRef *Ref, TDef *Def, TRef_Interp Interp, int32_t C, double X, double Y, double Z, double *Length, double *ThetaXY){
 
-//    double       x,y,d,ddir=0.0;
-//    int32_t          valid=0,mem,ix,iy;
+//    double       x, y, d, ddir=0.0;
+//    int32_t          valid=0, mem, ix, iy;
 //    uint32_t idx;
 
 //   *Length=Def->NoData;
@@ -41,7 +41,7 @@
 
 //       X-=Ref->X0;
 //       Y-=Ref->Y0;
-//       DEFCLAMP(Def,X,Y);
+//       DEFCLAMP(Def, X, Y);
 
 //       // Index memoire du niveau desire
 //       mem=Def->NIJ*(int)Z;
@@ -53,373 +53,366 @@
 //       if (Def->Mask && !Def->Mask[idx]) {
 //          return(valid);
 //       }
-      
+
 //       // Reproject vector orientation by adding grid projection's north difference
-//       if (Def->Data[1] && Ref->Type&GRID_ROTATED) { 
-//          ddir=GeoRef_GeoDir(Ref,X,Y);
+//       if (Def->Data[1] && Ref->Type&GRID_ROTATED) {
+//          ddir=GeoRef_GeoDir(Ref, X, Y);
 //       }
 
 //       if (Def->Type<=9 || Interp==IR_NEAREST || (X==ix && Y==iy)) {
 //          mem+=idx;
-//          Def_GetMod(Def,mem,*Length);
+//          Def_GetMod(Def, mem, *Length);
 
 //          // Pour un champs vectoriel
 //          if (Def->Data[1] && ThetaXY) {
-//             Def_Get(Def,0,mem,x);
-//             Def_Get(Def,1,mem,y);
-//             *ThetaXY=180+RAD2DEG(atan2(x,y)-ddir);
+//             Def_Get(Def, 0, mem, x);
+//             Def_Get(Def, 1, mem, y);
+//             *ThetaXY=180+RAD2DEG(atan2(x, y)-ddir);
 //          }
 //       } else {
-//          *Length=VertexVal(Def,-1,X,Y,Z);
+//          *Length=VertexVal(Def, -1, X, Y, Z);
 //          // Pour un champs vectoriel
 //          if (Def->Data[1] && ThetaXY) {
-//             x=VertexVal(Def,0,X,Y,Z);
-//             y=VertexVal(Def,1,X,Y,Z);
-//             *ThetaXY=180+RAD2DEG(atan2(x,y)-ddir);
+//             x=VertexVal(Def, 0, X, Y, Z);
+//             y=VertexVal(Def, 1, X, Y, Z);
+//             *ThetaXY=180+RAD2DEG(atan2(x, y)-ddir);
 //          }
 //       }
-//       valid=DEFVALID(Def,*Length);
+//       valid=DEFVALID(Def, *Length);
 //    }
-   
+
 //    return(valid);
 // }
 
-/*----------------------------------------------------------------------------
- * @brief  Changes a georeference type to W
- * @date   June 2014
- *    @param[in]     Ref          GeoRef pointer
- *    @param[in]     String       WKT description
- *    @param[in]     Transform    Transformation matrix [2][6]
- *    @param[in]     InvTransform Inverse transformation matrix [2][6]
- *    @param[in]     Spatial      Spatial reference (GDAL object)
 
- *    @return        GeoRef object (NULL=Error)
-*/
-TGeoRef *GeoRef_DefineW(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
-
+//! Change a georeference type to W
+TGeoRef * GeoRef_DefineW(
+    //! [inout] Georeferance
+    TGeoRef * const Ref,
+    //! [in] WKT description
+    const char * const String,
+    //! [in] Transformation matrix [2][6]
+    const double * const Transform,
+    //! [in] Inverse transformation matrix [2][6]
+    const double * const InvTransform,
+    //! [in] Spatial reference (GDAL object)
+    const OGRSpatialReferenceH Spatial
+) {
+    //! \return New georeference or NULL on error
 #ifdef HAVE_GDAL
-   static OGRSpatialReferenceH llref=NULL;
-   char                      *string=NULL;
+    static OGRSpatialReferenceH llref = NULL;
+    char * string = NULL;
 
-   if (String && String[0]!='\0') {
-      string=strdup(String);
-      strtrim(string,' ');
-      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Projection string: %s\n",__func__,string);
-   }
+    if (String && String[0] != '\0') {
+        string = strdup(String);
+        strtrim(string, ' ');
+        Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: Projection string: %s\n", __func__, string);
+    }
 
-   if (Transform || InvTransform) {
-      if (!Ref->Transform)
-         Ref->Transform=(double*)calloc(6,sizeof(double));
-      if (!Ref->InvTransform)
-         Ref->InvTransform=(double*)calloc(6,sizeof(double));
-   }
-   
-   if (Transform) {
-      memcpy(Ref->Transform,Transform,6*sizeof(double));
-   } else {
-      if (!InvTransform || !GDALInvGeoTransform(InvTransform,Ref->Transform)) {
-         if (Ref->Transform) {
-            free(Ref->Transform);
-            Ref->Transform=NULL;
-         }
-      }
-   }
+    if (Transform || InvTransform) {
+        if (!Ref->Transform) Ref->Transform = (double*)calloc(6, sizeof(double));
+        if (!Ref->InvTransform) Ref->InvTransform = (double*)calloc(6, sizeof(double));
+    }
 
-   if (InvTransform) {
-      memcpy(Ref->InvTransform,InvTransform,6*sizeof(double));
-   } else {
-      if (!Transform || !GDALInvGeoTransform(Transform,Ref->InvTransform)) {
-         if (Ref->InvTransform) {
-            free(Ref->InvTransform);
-            Ref->InvTransform=NULL;
-         }
-      }
-   }
+    if (Transform) {
+        memcpy(Ref->Transform, Transform, 6*sizeof(double));
+    } else {
+        if (!InvTransform || !GDALInvGeoTransform(InvTransform, Ref->Transform)) {
+            if (Ref->Transform) {
+                free(Ref->Transform);
+                Ref->Transform=NULL;
+            }
+        }
+    }
 
-   if (Spatial) {
-      Ref->Spatial=OSRClone(Spatial);
-      OSRExportToWkt(Ref->Spatial,&string);
-      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Projection from spatial:%p\n",__func__,string);
-   } else if (string) {
-      Ref->Spatial=OSRNewSpatialReference(NULL);
-      if (OSRSetFromUserInput(Ref->Spatial,string)==OGRERR_FAILURE) {
-        Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Unable to create spatial reference\n",__func__);
-        return(NULL);
-      }
-   } else {
-      string=strdup(REF_DEFAULT);
-      Ref->Spatial=OSRNewSpatialReference(string);
-   }
+    if (InvTransform) {
+        memcpy(Ref->InvTransform, InvTransform, 6*sizeof(double));
+    } else {
+        if (!Transform || !GDALInvGeoTransform(Transform, Ref->InvTransform)) {
+            if (Ref->InvTransform) {
+                free(Ref->InvTransform);
+                Ref->InvTransform=NULL;
+            }
+        }
+    }
 
-   if (Ref->String)
-      free(Ref->String);
-   Ref->String=string;
+    if (Spatial) {
+        Ref->Spatial = OSRClone(Spatial);
+        OSRExportToWkt(Ref->Spatial, &string);
+        Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: Projection from spatial:%p\n", __func__, string);
+    } else if (string) {
+        Ref->Spatial = OSRNewSpatialReference(NULL);
+        if (OSRSetFromUserInput(Ref->Spatial, string) == OGRERR_FAILURE) {
+            Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: Unable to create spatial reference\n", __func__);
+            return NULL;
+        }
+    } else {
+        string = strdup(REF_DEFAULT);
+        Ref->Spatial =OSRNewSpatialReference(string);
+    }
 
-   if (Ref->Spatial) {
-      if (!llref) {
-         // Create global latlon reference on perfect sphere
-         llref=OSRNewSpatialReference(NULL);
-         OSRSetFromUserInput(llref,"EPSG:4047");
+    if (Ref->String) free(Ref->String);
+    Ref->String = string;
+
+    if (Ref->Spatial) {
+        if (!llref) {
+            // Create global latlon reference on perfect sphere
+            llref = OSRNewSpatialReference(NULL);
+            OSRSetFromUserInput(llref, "EPSG:4047");
 #if defined(GDAL_VERSION_MAJOR) && GDAL_VERSION_MAJOR >= 3
-         OSRSetAxisMappingStrategy(llref,OAMS_TRADITIONAL_GIS_ORDER);
+            OSRSetAxisMappingStrategy(llref, OAMS_TRADITIONAL_GIS_ORDER);
 #endif
-      }
+        }
 
-      if (llref) {
-         // Create forward/backward tranformation functions
-         Ref->Function=OCTNewCoordinateTransformation(Ref->Spatial,llref);
-         Ref->InvFunction=OCTNewCoordinateTransformation(llref,Ref->Spatial);
-         if (!Ref->Function || !Ref->InvFunction) {
-            Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Unable to create transformation functions\n",__func__);
-         }
-      }
-   } else {
-      Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Unable to get spatial reference\n",__func__);
-      return(NULL);
-   }
+        if (llref) {
+            // Create forward/backward tranformation functions
+            Ref->Function = OCTNewCoordinateTransformation(Ref->Spatial, llref);
+            Ref->InvFunction = OCTNewCoordinateTransformation(llref, Ref->Spatial);
+            if (!Ref->Function || !Ref->InvFunction) {
+                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Unable to create transformation functions\n", __func__);
+            }
+        }
+    } else {
+        Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: Unable to get spatial reference\n", __func__);
+        return NULL;
+    }
 
-   if (Ref->GRTYP[0]==' ' || Ref->GRTYP[0]=='X' || Ref->GRTYP[0]=='\0') {
-      Ref->GRTYP[0]='W';
-   }
+    if (Ref->GRTYP[0] == ' ' || Ref->GRTYP[0] == 'X' || Ref->GRTYP[0] == '\0') {
+        Ref->GRTYP[0] = 'W';
+    }
 
-   // We might be defining a Z frid mapped on W so we don't want to rerun the qualification
-   if (Ref->GRTYP[0]=='W') {
-      Ref->Height=NULL;
-      Ref->Type=GRID_NONE;
-      GeoRef_Qualify(Ref);
-   }
-   return(Ref);
+    // We might be defining a Z frid mapped on W so we don't want to rerun the qualification
+    if (Ref->GRTYP[0] == 'W') {
+        Ref->Height = NULL;
+        Ref->Type = GRID_NONE;
+        GeoRef_Qualify(Ref);
+    }
+    return Ref;
 #else
-   Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
-   return(NULL);
+    Lib_Log(APP_LIBGEOREF, APP_ERROR, "Function %s is not available, needs to be built with GDAL\n", __func__);
+    return NULL;
 #endif
 }
 
-/*----------------------------------------------------------------------------
- * @brief  Create a W type  georeference
- * @date   June 2014
- *    @param[in]     NI           Number of gridpoints in X
- *    @param[in]     NJ           Number of gridpoints in Y
- *    @param[in]     IG1          Grid descriptor information
- *    @param[in]     IG2          Grid descriptor information
- *    @param[in]     IG3          Grid descriptor information
- *    @param[in]     IG4          Grid descriptor information
- *    @param[in]     String       WKT description
- *    @param[in]     Transform    Transformation matrix [2][6]
- *    @param[in]     InvTransform Inverse transformation matrix [2][6]
- *    @param[in]     Spatial      Spatial reference (GDAL object)
 
- *    @return        GeoRef object (NULL=Error)
-*/
-TGeoRef *GeoRef_CreateW(int32_t NI,int32_t NJ,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
+//! Create a W type georeference
+TGeoRef * GeoRef_CreateW(
+    //! [in] Number of gridpoints in X
+    const int32_t NI,
+    //! [in] Number of gridpoints in Y
+    const int32_t NJ,
+    //! [in] WKT description
+    const char * const String,
+    //! [in] Transformation matrix [2][6]
+    const double * const Transform,
+    //! [in] Inverse transformation matrix [2][6]
+    const double * const InvTransform,
+    //! [in] Spatial reference (GDAL object)
+    const OGRSpatialReferenceH Spatial
+) {
+    //! \return New georeference or NULL on error
 
-   TGeoRef *ref,*fref;
+    TGeoRef * const ref = GeoRef_New();
+    GeoRef_Size(ref, 0, 0, NI > 0 ? NI -1 : 0, NJ > 0 ? NJ - 1 : 0, 0);
+    if (!GeoRef_DefineW(ref, String, Transform, InvTransform, Spatial)) {
+        return NULL;
+    }
 
-   ref=GeoRef_New();
-   GeoRef_Size(ref,0,0,NI>0?NI-1:0,NJ>0?NJ-1:0,0);
-   if (!GeoRef_DefineW(ref,String,Transform,InvTransform,Spatial)) {
-      return(NULL);
-   }
-   
-   ref->GRTYP[0]='W';
-   ref->GRTYP[1]='\0';
+    ref->GRTYP[0] = 'W';
+    ref->GRTYP[1] = '\0';
+    TGeoRef * const fref = GeoRef_Find(ref);
+    if (fref) {
+        // This georef already exists
+        free(ref);
+        GeoRef_Incr(fref);
+        return fref;
+    }
 
-   if ((fref=GeoRef_Find(ref))) {
-      // This georef already exists
-      free(ref);
-      GeoRef_Incr(fref);
-      return(fref);
-   }
+    // This is a new georef
+    GeoRef_Add(ref);
+    GeoRef_Qualify(ref);
 
-   // This is a new georef
-   GeoRef_Add(ref);
-   GeoRef_Qualify(ref);
-
-   return(ref);
+    return ref;
 }
 
 #ifdef HAVE_GDAL
-/*----------------------------------------------------------------------------
- * @brief  Apply rotation matrix to a LatLon pair
- * @date   June 2015
- *    @param[in]     T       Transform matrix
- *    @param[inout]  Lat     Latitude array
- *    @param[inout]  Lon     Longitude array
+//! Apply rotation matrix to a LatLon pair
+static inline int32_t GeoRef_WKTRotate(
+    //! [in] Transformation matrix
+    const TRotationTransform * const T,
+    //! [inout] Latitude
+    double * const Lat,
+    //! [inout] Longitude
+    double * const Lon
+) {
+    //! \returns Always true
 
- *    @return             Error code (TRUE=ok)
-*/
-static inline int32_t GeoRef_WKTRotate(TRotationTransform *T,double *Lat,double *Lon) {
+    const double lon = DEG2RAD(*Lon);
+    const double lat = DEG2RAD(*Lat);
 
-   double lat,lon,x,y,z,xr,yr,zr;
-   
-   lon = DEG2RAD(*Lon);
-   lat = DEG2RAD(*Lat);
+    // Convert from spherical to cartesian coordinates
+    const double x = cos(lon) * cos(lat);
+    const double y = sin(lon) * cos(lat);
+    const double z = sin(lat);
 
-   // Convert from spherical to cartesian coordinates
-   x = cos(lon)*cos(lat); 
-   y = sin(lon)*cos(lat);
-   z = sin(lat);
+    const double xr = T->CosTheta * T->CosPhi * x + T->CosTheta * T->SinPhi * y + T->SinTheta * z;
+    const double yr = -T->SinPhi * x + T->CosPhi * y;
+    const double zr = -T->SinTheta * T->CosPhi * x - T->SinTheta * T->SinPhi * y + T->CosTheta * z;
 
-   xr = T->CosTheta*T->CosPhi*x + T->CosTheta*T->SinPhi*y + T->SinTheta*z;
-   yr = -T->SinPhi*x + T->CosPhi*y;
-   zr = -T->SinTheta*T->CosPhi*x - T->SinTheta*T->SinPhi*y + T->CosTheta*z;
-      
-   // Convert cartesian back to spherical coordinates
-   *Lon = RAD2DEG(atan2(yr,xr)); 
-   *Lat = RAD2DEG(asin(zr));
-   
-   return(TRUE);
+    // Convert cartesian back to spherical coordinates
+    *Lon = RAD2DEG(atan2(yr, xr));
+    *Lat = RAD2DEG(asin(zr));
+
+    return TRUE;
 }
-#endif
 
-#ifdef HAVE_GDAL
-/*----------------------------------------------------------------------------
- * @brief  Apply inverse rotation matrix to a LatLon pair
- * @date   June 2015
- *    @param[in]     T       Transform matrix
- *    @param[inout]  Lat     Latitude array
- *    @param[inout]  Lon     Longitude array
 
- *    @return             Error code (TRUE=ok)
-*/
-static inline int32_t GeoRef_WKTUnRotate(TRotationTransform *T,double *Lat,double *Lon) {
+//! Apply inverse rotation matrix to a LatLon pair
+static inline int32_t GeoRef_WKTUnRotate(
+    //! [in] Transformation matrix
+    const TRotationTransform * const T,
+    //! [inout] Latitude
+    double * const Lat,
+    //! [inout] Longitude
+    double * const Lon
+) {
+    //! \returns Always true
 
-   double lat,lon,x,y,z,xr,yr,zr;
-   
-   lon = DEG2RAD(*Lon);
-   lat = DEG2RAD(*Lat);
+    const double lon = DEG2RAD(*Lon);
+    const double lat = DEG2RAD(*Lat);
 
-   // Convert from spherical to cartesian coordinates
-   x = cos(lon)*cos(lat); 
-   y = sin(lon)*cos(lat);
-   z = sin(lat);
+    // Convert from spherical to cartesian coordinates
+    const double x = cos(lon) * cos(lat);
+    const double y = sin(lon) * cos(lat);
+    const double z = sin(lat);
 
-   xr = T->CosTheta*T->CosPhi*x + -T->SinPhi*y + -T->SinTheta*T->CosPhi*z;
-   yr = -T->CosTheta*-T->SinPhi*x + T->CosPhi*y - -T->SinTheta*-T->SinPhi*z;
-   zr = T->SinTheta*x + T->CosTheta*z;
-      
-   // Convert cartesian back to spherical coordinates
-   *Lon = RAD2DEG(atan2(yr,xr)); 
-   *Lat = RAD2DEG(asin(zr));
+    const double xr = T->CosTheta * T->CosPhi * x + -T->SinPhi * y + -T->SinTheta * T->CosPhi * z;
+    const double yr = -T->CosTheta * -T->SinPhi * x + T->CosPhi * y - -T->SinTheta * -T->SinPhi * z;
+    const double zr = T->SinTheta * x + T->CosTheta * z;
 
-   return(TRUE);
+    // Convert cartesian back to spherical coordinates
+    *Lon = RAD2DEG(atan2(yr, xr));
+    *Lat = RAD2DEG(asin(zr));
+
+    return TRUE;
 }
 #endif
 
-/*----------------------------------------------------------------------------
- * @brief  Transforms XY grid coordinates to LatLon for a W grid
- * @date   June 2015
- *    @param[in]  Ref     Georeference pointer
- *    @param[out] Lat     Latitude array
- *    @param[out] Lon     Longitude array
- *    @param[in]  X       X array
- *    @param[in]  Y       Y array
- *    @param[in]  Nb      Number of coordinates
 
- *    @return             Error code (0=ok)
-*/
-int32_t GeoRef_XY2LL_W(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb) {
-
+//! Transform XY grid coordinates to LatLon for a W grid
+int32_t GeoRef_XY2LL_W(
+    //! [in] Georeference
+    const TGeoRef * const Ref,
+    //! [out] Latitude array
+    double * const Lat,
+    //! [out] Longitude array
+    double * const Lon,
+    //! [in] X array
+    const double * const X,
+    //! [in] Y array
+    const double * const Y,
+    //! [in] Number of coordinates
+    const int32_t Nb
+) {
+    //! \returns Always 0
 #ifdef HAVE_GDAL
-   double x,y,z=0.0,d;
-   int32_t    n,ok;
+    double z = 0.0, d;
+    int32_t ok;
 
-   for(n=0;n<Nb;n++) {
+    for(int32_t n = 0; n < Nb; n++) {
+        // Transform the point32_t into georeferenced coordinates
+        double x = X[n];
+        double y = Y[n];
+        if (Ref->Options.Transform) {
+            if (Ref->Transform) {
+                x = Ref->Transform[0] + Ref->Transform[1] * X[n] + Ref->Transform[2] * Y[n];
+                y = Ref->Transform[3] + Ref->Transform[4] * X[n] + Ref->Transform[5] * Y[n];
+            } else if (Ref->GCPTransform) {
+                GDALGCPTransform(Ref->GCPTransform, FALSE, 1, &x, &y, &z, &ok);
+            } else if (Ref->TPSTransform) {
+                GDALTPSTransform(Ref->TPSTransform, FALSE, 1, &x, &y, &z, &ok);
+            } else if (Ref->RPCTransform) {
+                GDALRPCTransform(Ref->RPCTransform, FALSE, 1, &x, &y, &z, &ok);
+            }
+        }
 
-      // Transform the point32_t into georeferenced coordinates 
-      x=X[n];
-      y=Y[n];
-      if (Ref->Options.Transform) {
-         if (Ref->Transform) {
-            x=Ref->Transform[0]+Ref->Transform[1]*X[n]+Ref->Transform[2]*Y[n];
-            y=Ref->Transform[3]+Ref->Transform[4]*X[n]+Ref->Transform[5]*Y[n];
-         } else if (Ref->GCPTransform) {
-            GDALGCPTransform(Ref->GCPTransform,FALSE,1,&x,&y,&z,&ok);
-         } else if (Ref->TPSTransform) {
-            GDALTPSTransform(Ref->TPSTransform,FALSE,1,&x,&y,&z,&ok);
-         } else if (Ref->RPCTransform) {
-            GDALRPCTransform(Ref->RPCTransform,FALSE,1,&x,&y,&z,&ok);
-         }
-      }
-      
-      // Transform to latlon
-      if (Ref->Function) {
-         if (!OCTTransform(Ref->Function,1,&x,&y,NULL)) {
-            Lon[n]=-999.0;
-            Lat[n]=-999.0;
-            continue;
-         }
-      }
+        // Transform to latlon
+        if (Ref->Function) {
+            if (!OCTTransform(Ref->Function, 1, &x, &y, NULL)) {
+                Lon[n] = -999.0;
+                Lat[n] = -999.0;
+                continue;
+            }
+        }
 
-      Lon[n]=x;
-      Lat[n]=y;
-      
-      if (Ref->RotTransform) 
-         GeoRef_WKTUnRotate(Ref->RotTransform,&Lat[n],&Lon[n]);
-   }
+        Lon[n] = x;
+        Lat[n] = y;
+
+        if (Ref->RotTransform) GeoRef_WKTUnRotate(Ref->RotTransform, &Lat[n], &Lon[n]);
+    }
 #else
-   Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+    Lib_Log(APP_LIBGEOREF, APP_ERROR, "Function %s is not available, needs to be built with GDAL\n", __func__);
 #endif
-
-   return(0);
+    return 0;
 }
 
-/*----------------------------------------------------------------------------
- * @brief  Transforms LatLon coordinates to XY for a Z grid
- * @date   June 2015
- *    @param[in]  Ref     Georeference pointer
- *    @param[out] X       X array
- *    @param[out] Y       Y array
- *    @param[in]  Lat     Latitude array
- *    @param[in]  Lon     Longitude array
- *    @param[in]  Nb      Number of coordinates
 
- *    @return             Error code (0=ok)
-*/
-int32_t GeoRef_LL2XY_W(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
-
+//! Transform LatLon coordinates to XY for a Z grid
+int32_t GeoRef_LL2XY_W(
+    //! [in] Georeference
+    const TGeoRef * const Ref,
+    //! [out] X array
+    double * const X,
+    //! [out] Y array
+    double * const Y,
+    //! [in] Latitude array
+    const double * const Lat,
+    //! [in] Longitude array
+    const double * const Lon,
+    //! [in] Number of coordinates
+    const int32_t Nb
+) {
+    //! \return Always 0
 #ifdef HAVE_GDAL
-   double x,y,z=0.0;
-   int32_t    n,ok;
+    double z = 0.0;
+    int32_t ok;
+    for(int32_t n = 0; n < Nb; n++) {
+        if (Ref->RotTransform) GeoRef_WKTRotate(Ref->RotTransform, &Lat[n], &Lon[n]);
 
-   for(n=0;n<Nb;n++) {
-      if (Ref->RotTransform) 
-         GeoRef_WKTRotate(Ref->RotTransform,&Lat[n],&Lon[n]);
+        // Longitude from -180 to 180
+        CLAMPLON(Lon[n]);
 
-      // Longitude from -180 to 180
-      CLAMPLON(Lon[n]);
+        double x = Lon[n];
+        double y = Lat[n];
 
-      x=Lon[n];
-      y=Lat[n];
+        // Transform from latlon
+        if (Ref->InvFunction) {
+            if (!OCTTransform(Ref->InvFunction, 1, &x, &y, NULL)) {
+                X[n] = -1.0;
+                Y[n] = -1.0;
+                continue;
+            }
+        }
 
-      // Transform from latlon 
-      if (Ref->InvFunction) {
-         if (!OCTTransform(Ref->InvFunction,1,&x,&y,NULL)) {
-            X[n]=-1.0;
-            Y[n]=-1.0;
-            continue;
-         }
-      }
+        // Transform from georeferenced coordinates
+        X[n] = x;
+        Y[n] = y;
+        if (Ref->Options.Transform) {
+            if (Ref->InvTransform) {
+                X[n] = Ref->InvTransform[0] + Ref->InvTransform[1] * x + Ref->InvTransform[2] * y;
+                Y[n] = Ref->InvTransform[3] + Ref->InvTransform[4] * x + Ref->InvTransform[5] * y;
+            } else if (Ref->GCPTransform) {
+                GDALGCPTransform(Ref->GCPTransform, TRUE, 1, &X[n], &Y[n], &z, &ok);
+            } else if (Ref->TPSTransform) {
+                GDALTPSTransform(Ref->TPSTransform, TRUE, 1, &X[n], &Y[n], &z, &ok);
+            } else if (Ref->RPCTransform) {
+                GDALRPCTransform(Ref->RPCTransform, TRUE, 1, &X[n], &Y[n], &z, &ok);
+            }
+        }
 
-      // Transform from georeferenced coordinates
-      X[n]=x;
-      Y[n]=y;
-      if (Ref->Options.Transform) {
-         if (Ref->InvTransform) {
-            X[n]=Ref->InvTransform[0]+Ref->InvTransform[1]*x+Ref->InvTransform[2]*y;
-            Y[n]=Ref->InvTransform[3]+Ref->InvTransform[4]*x+Ref->InvTransform[5]*y;
-         } else if (Ref->GCPTransform) {
-            GDALGCPTransform(Ref->GCPTransform,TRUE,1,&X[n],&Y[n],&z,&ok);
-         } else if (Ref->TPSTransform) {
-            GDALTPSTransform(Ref->TPSTransform,TRUE,1,&X[n],&Y[n],&z,&ok);
-         } else if (Ref->RPCTransform) {
-            GDALRPCTransform(Ref->RPCTransform,TRUE,1,&X[n],&Y[n],&z,&ok);
-         }
-      }  
-
-   }
+    }
 #else
-   Lib_Log(APP_LIBGEOREF,APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+    Lib_Log(APP_LIBGEOREF, APP_ERROR, "Function %s is not available, needs to be built with GDAL\n", __func__);
 #endif
-   return(0);
+    return 0;
 }

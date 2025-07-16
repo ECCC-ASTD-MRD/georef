@@ -1,45 +1,42 @@
-!**S/R UVACART  - compute the winds in the cartesian space from
-!                 the components
+!> Compute the winds in the cartesian space from the components
+subroutine ez8_uvacart(xyz, u, v, lon, lat, ni, nj)
+    use iso_fortran_env, only: real64
+    implicit none
 
-!
-      SUBROUTINE EZ8_UVACART( XYZ, U, V, LON, LAT, NI, NJ)
-      implicit none
-      INTEGER NI, NJ 
-      REAL  U(NI,NJ), V(NI,NJ)
-      real(kind=8)  XYZ(3,NI*NJ), LON(NI,NJ), LAT(NI,NJ)
-!
-!author michel roch - april 90
-!
-!arguments
-!    out    xyz   - unrotated winds in cartesian space
-!    IN     U     - unrotated component  U of the wind
-!           V     - unrotated component  V of the wind
-!           LON   - longitudes of the grid in the unrotated system of coordinates
-!           LAT   - latitudes  of the grid in the unrotated system of coordinates
-!           NI    - E-W DIMENSION of the grid
-!           NJ    - N-S dimension of the grid
-!
-!*
+    !> E-W dimension of the grid
+    integer, intent(in) :: ni
+    !> N-S dimension of the grid
+    integer, intent(in) :: nj
+    !> Unrotated U component of the wind
+    real, intent(in) :: u(ni, nj)
+    !> Unrotated V component of the wind
+    real, intent(in) :: v(ni, nj)
+    !> Unrotated winds in cartesian space
+    real(kind = real64), intent(out) :: xyz(3, ni * nj)
+    !> Grid longitudes in the unrotated system of coordinates
+    real(kind = real64), intent(in) :: lon(ni, nj)
+    !> Grid latitudes in the unrotated system of coordinates
+    real(kind = real64), intent(in) :: lat(ni, nj)
 
-      INTEGER I, J, K 
-      real(kind=8)    A, B, C, D, DAR
+    !> \ingroup ezscint
 
-      DAR = ACOS(-1.)/180.
-      K   = 0
- 
-      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(I,J,A,B,C,D) FIRSTPRIVATE(K) SHARED(NI,NJ,DAR,LAT,LON,U,V,XYZ)
-      DO 20 J=1,NJ
-         DO 10 I=1,NI
-            K        = K+1
-            A        = SIN(DAR*LON(I,J))
-            B        = COS(DAR*LON(I,J))
-            C        = SIN(DAR*LAT(I,J))
-            D        = COS(DAR*LAT(I,J))
-            XYZ(1,K) = -(U(I,J)*A) - (V(I,J)*B*C)
-            XYZ(2,K) =  (U(I,J)*B) - (V(I,J)*A*C)
-            XYZ(3,K) =   V(I,J)*D
- 10         CONTINUE
- 20      CONTINUE
+    integer :: i, j, k
+    real(kind = real64) :: a, b, c, d, dar
 
-      RETURN
-      END 
+    dar = acos(-1.0) / 180.0
+    k = 0
+
+    !$omp parallel do default(none) private(i, j, a, b, c, d) firstprivate(k) shared(ni, nj, dar, lat, lon, u, v, xyz)
+    do j = 1, nj
+        do i = 1, ni
+            k = k + 1
+            a = sin(dar * lon(i, j))
+            b = cos(dar * lon(i, j))
+            c = sin(dar * lat(i, j))
+            d = cos(dar * lat(i, j))
+            xyz(1, k) = real( -(u(i, j) * a) - (v(i, j) * b * c) )
+            xyz(2, k) = real( (u(i, j) * b) - (v(i, j) * a * c) )
+            xyz(3, k) = real( v(i, j) * d )
+        end do
+    end do
+end

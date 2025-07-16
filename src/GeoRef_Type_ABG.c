@@ -1,108 +1,112 @@
 #include <App.h>
 #include "GeoRef.h"
 
-/*----------------------------------------------------------------------------
- * @brief  Transforms XY grid coordinates to LatLon for an A grid
- * @date   June 2015
- *    @param[in]  Ref     Georeference pointer
- *    @param[out] Lat     Latitude array
- *    @param[out] Lon     Longitude array
- *    @param[in]  X       X array
- *    @param[in]  Y       Y array
- *    @param[in]  Nb      Number of coordinates
 
- *    @return             Error code (0=ok)
-*/
-int32_t GeoRef_LL2XY_A(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
+//! \file
 
-   float  dellat,dellon,xlat0,xlon0;   
 
-   dellon = 360.0/Ref->NX;
-   xlon0  = 0.0;
-   switch(Ref->RPNHead.ig1) {
-      case GRID_GLOBAL: dellat = 180.0 / Ref->NY; xlat0 = -90.0 + dellat * 0.5; break;
-      case GRID_NORTH:  dellat = 90.0 / Ref->NY;  xlat0 =  dellat * 0.5;        break;
-      case GRID_SOUTH:  dellat = 90.0 / Ref->NY;  xlat0 = -90.0 + dellat * 0.5; break;
-   }        
-   
-   GeoRef_LL2GD(Ref,X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon);
+//! Transform XY grid coordinates to LatLon for an A grid
+int32_t GeoRef_LL2XY_A(
+    //! [in] Georeference
+    const TGeoRef * const Ref,
+    //! [out] X array
+    double * const X,
+    //! [out] Y array
+    double * const Y,
+    //! [in] Latitude array
+    const double * const Lat,
+    //! [in] Longitude array
+    const double * const Lon,
+    //! [in] Number of coordinates
+    const int32_t Nb
+) {
+    const float dellon = 360.0 / Ref->NX;
+    const float xlon0  = 0.0;
+    float dellat, xlat0;
+    switch(Ref->RPNHead.ig1) {
+        case GRID_GLOBAL: dellat = 180.0 / Ref->NY; xlat0 = -90.0 + dellat * 0.5; break;
+        case GRID_NORTH:  dellat = 90.0 / Ref->NY;  xlat0 =  dellat * 0.5;        break;
+        case GRID_SOUTH:  dellat = 90.0 / Ref->NY;  xlat0 = -90.0 + dellat * 0.5; break;
+    }
 
-   return(0);
+    GeoRef_LL2GD(Ref, X, Y, Lat, Lon, Nb, xlat0, xlon0, dellat, dellon);
+
+    return 0;
 }
 
-/*----------------------------------------------------------------------------
- * @brief  Transforms XY grid coordinates to LatLon for a B grid
- * @date   June 2015
- *    @param[in]  Ref     Georeference pointer
- *    @param[out] Lat     Latitude array
- *    @param[out] Lon     Longitude array
- *    @param[in]  X       X array
- *    @param[in]  Y       Y array
- *    @param[in]  Nb      Number of coordinates
 
- *    @return             Error code (0=ok)
-*/
-int32_t GeoRef_LL2XY_B(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
+//! Transform XY grid coordinates to LatLon for a B grid
+int32_t GeoRef_LL2XY_B(
+    //! [in] Georeference
+    const TGeoRef * const Ref,
+    //! [out] Latitude array
+    double * const Lat,
+    //! [out] Longitude array
+    double * const Lon,
+    //! [in] X array
+    const double * const X,
+    //! [in] Y array
+    const double * const Y,
+    //! [in] Number of coordinates
+    const int32_t Nb
+) {
+    const float dellon = 360.0 / (Ref->NX - 1);
+    const float xlon0 = 0.0;
+    float dellat, xlat0;
+    switch(Ref->RPNHead.ig1) {
+        case GRID_GLOBAL: dellat = 180.0 / (Ref->NY-1); xlat0 = -90.0; break;
+        case GRID_NORTH:  dellat = 90.0 / (Ref->NY-1);  xlat0 = 0.0;   break;
+        case GRID_SOUTH:  dellat = 90.0 / (Ref->NY-1);  xlat0 = -90.0; break;
+    }
 
-   float  dellat,dellon,xlat0,xlon0;   
+    GeoRef_LL2GD(Ref, X, Y, Lat, Lon, Nb, xlat0, xlon0, dellat, dellon);
 
-   dellon = 360.0 / (Ref->NX-1);
-   xlon0  = 0.0;
-   switch(Ref->RPNHead.ig1) {
-      case GRID_GLOBAL: dellat = 180.0 / (Ref->NY-1); xlat0 = -90.0; break;
-      case GRID_NORTH:  dellat = 90.0 / (Ref->NY-1);  xlat0 = 0.0;   break;
-      case GRID_SOUTH:  dellat = 90.0 / (Ref->NY-1);  xlat0 = -90.0; break;
-   }        
-   
-   GeoRef_LL2GD(Ref,X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon);
-
-   return(0);
+    return 0;
 }
 
-/*----------------------------------------------------------------------------
- * @brief  Transforms XY grid coordinates to LatLon for an G grid (Gaussian)
- * @date   June 2015
- *    @param[in]  Ref     Georeference pointer
- *    @param[out] Lat     Latitude array
- *    @param[out] Lon     Longitude array
- *    @param[in]  X       X array
- *    @param[in]  Y       Y array
- *    @param[in]  Nb      Number of coordinates
 
- *    @return             Error code (0=ok)
-*/
-int32_t GeoRef_LL2XY_G(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
+//! Transforms XY grid coordinates to LatLon for an G grid (Gaussian)
+int32_t GeoRef_LL2XY_G(
+    //! [in] Georeference
+    const TGeoRef * const Ref,
+    //! [out] X array
+    double * const X,
+    //! [out] Y array
+    double * const Y,
+    //! [in] Latitude array
+    const double * const Lat,
+    //! [in] Longitude array
+    const double * const Lon,
+    //! [in] Number of coordinates
+    const int32_t Nb
+) {
+    const float dellon = 360.0 / Ref->NX;
+    const float xlon0 = 0.0;
+    switch(Ref->RPNHead.ig1) {
+        case GRID_GLOBAL:
+            for(int32_t i = 0; i < Nb; i++) {
+                X[i] = (CLAMPLON(Lon[i]) - xlon0)/dellon;
+                int32_t indy = GeoRef_XFind(Lat[i], Ref->AX, Ref->NX, 1);
+                if (indy>Ref->NY) indy = Ref->NY - 2;
 
-   float  dellat,dellon,xlat0,xlon0;   
-   int32_t    i,indy;
+                Y[i] = indy + (Lat[i] - Ref->AX[indy]) / (Ref->AX[indy + 1] - Ref->AX[indy]);
+            }
+            break;
 
-   dellon = 360.0 / Ref->NX;
-   xlon0 = 0.0;
+        case GRID_NORTH: {
+            const float dellat = 90.0 / Ref->NY;
+            const float xlat0 =  dellat * 0.5;
+            GeoRef_LL2GD(Ref, X, Y, Lat, Lon, Nb, xlat0, xlon0, dellat, dellon);
+            break;
+        }
 
-   switch(Ref->RPNHead.ig1) {
-      case GRID_GLOBAL: 
-         for(i=0;i<Nb;i++) {
-            X[i] = (CLAMPLON(Lon[i]) - xlon0)/dellon;
-            indy = GeoRef_XFind(Lat[i],Ref->AX,Ref->NX,1);
-            if (indy>Ref->NY) indy = Ref->NY - 2;
-         
-            Y[i]= indy+(Lat[i]-Ref->AX[indy])/(Ref->AX[indy+1]-Ref->AX[indy]);
-         }
-         break;
+        case GRID_SOUTH: {
+            const float dellat = 90.0 / Ref->NY;
+            const float xlat0 = -90.0 + dellat * 0.5;
+            GeoRef_LL2GD(Ref, X, Y, Lat, Lon, Nb, xlat0, xlon0, dellat, dellon);
+            break;
+        }
+    }
 
-      case GRID_NORTH:
-         dellat = 90.0 / Ref->NY;
-         xlat0 =  dellat * 0.5;
-         GeoRef_LL2GD(Ref,X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon);
-         break;
-
-      case GRID_SOUTH:
-         dellat = 90.0 / Ref->NY;
-         xlat0 = -90.0 + dellat * 0.5;
-         GeoRef_LL2GD(Ref,X,Y,Lat,Lon,Nb,xlat0,xlon0,dellat,dellon);
-         break;
-   }
-
-   return(0);
+    return 0;
 }
-     

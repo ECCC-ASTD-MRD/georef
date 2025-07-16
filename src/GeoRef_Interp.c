@@ -184,7 +184,7 @@ int32_t GeoRef_InterpFinally(
                     break;
 
                 case 4:
-                    f77name(ez_avg)(zout, x, y, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
+                    f77name(ez8_avg)(zout, x, y, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
                     break;
 
                 case 5: {
@@ -195,7 +195,7 @@ int32_t GeoRef_InterpFinally(
                         double real_j = 1.0 * (j+1);
                         GeoRef_XY2LL(RefTo, &gdst_lats[j], &tmp, &one, &real_j, 1, TRUE);
                     }
-                    f77name(ez_avg_sph)(zout, x, y, gdst_lats, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
+                    f77name(ez8_avg_sph)(zout, x, y, gdst_lats, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
                     free(gdst_lats);
                     break;
                 }
@@ -211,7 +211,7 @@ int32_t GeoRef_InterpFinally(
                     Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: GeoSet not defined\n", __func__);
                     return -1;
                 }
-                f77name(ez_applywgts)(zout, GSet->wts, GSet->idx, zin, GSet->mask, &RefFrom->NX, &RefFrom->NY, &RefTo->NX, &RefTo->NY, &(GSet->n_wts), &Opt->NoData);
+                f77name(GeoRef_applywgts)(zout, GSet->wts, GSet->idx, zin, GSet->mask, &RefFrom->NX, &RefFrom->NY, &RefTo->NX, &RefTo->NY, &(GSet->n_wts), &Opt->NoData);
             }
             break;
 
@@ -251,7 +251,7 @@ int32_t GeoRef_InterpFinally(
                     break;
 
                 case 4:
-                    f77name(ez_avg)(zout, x, y, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
+                    f77name(ez8_avg)(zout, x, y, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
                     break;
 
                 case 5: {
@@ -262,7 +262,7 @@ int32_t GeoRef_InterpFinally(
                         double real_j = j;
                         GeoRef_XY2LL(RefTo, &gdst_lats[j], &tmp, &zero, &real_j, 1, TRUE);
                     }
-                    f77name(ez_avg_sph)(zout, x, y, gdst_lats, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
+                    f77name(ez8_avg_sph)(zout, x, y, gdst_lats, &RefTo->NX, &RefTo->NY, zin, &RefFrom->NX, &RefFrom->NY, &RefFrom->Extension);
                     free(gdst_lats);
                     break;
                 }

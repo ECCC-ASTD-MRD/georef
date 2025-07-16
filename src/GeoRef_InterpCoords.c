@@ -1,98 +1,122 @@
 #include <App.h>
 #include "GeoRef.h"
 
-void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2) {
 
-   double  cart[3],carot[3],latr,lonr,cosdar;
-   int32_t n;
-   float   r[3][3],ri[3][3];
+void GeoRef_RotateXY(
+    const double * const Lat,
+    const double * const Lon,
+    double * const X,
+    double * const Y,
+    const int32_t npts,
+    const float xlat1,
+    const float xlon1,
+    const float xlat2,
+    const float xlon2
+) {
+    float r[3][3], ri[3][3];
+    f77name(GeoRef_crot)(r, ri, &xlon1, &xlat1, &xlon2, &xlat2);
 
-   f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
+    int32_t n;
+    double cart[3], carot[3], latr, lonr, cosdar;
+    #pragma omp parallel for default(none) private(n, latr, lonr, cosdar, cart, carot) shared(r, ri, npts, Lat, Lon, X, Y)
+    for(n = 0; n < npts; n++) {
+        latr = DEG2RAD(Lat[n]);
+        lonr = DEG2RAD(Lon[n]);
+        cosdar = cos(latr);
 
-   #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(r,ri,npts,Lat,Lon,X,Y)
-   for(n=0;n<npts;n++) {
-      latr=DEG2RAD(Lat[n]);
-      lonr=DEG2RAD(Lon[n]);
-      cosdar = cos(latr);
+        cart[0] = cosdar * cos(lonr);
+        cart[1] = cosdar * sin(lonr);
+        cart[2] = sin(latr);
 
-      cart[0] = cosdar*cos(lonr);
-      cart[1] = cosdar*sin(lonr);
-      cart[2] = sin(latr);
+        carot[0] = r[0][0] * cart[0] + r[1][0] * cart[1] + r[2][0] * cart[2];
+        carot[1] = r[0][1] * cart[0] + r[1][1] * cart[1] + r[2][1] * cart[2];
+        carot[2] = r[0][2] * cart[0] + r[1][2] * cart[1] + r[2][2] * cart[2];
 
-      carot[0] = r[0][0]*cart[0]+r[1][0]*cart[1]+r[2][0]*cart[2];
-      carot[1] = r[0][1]*cart[0]+r[1][1]*cart[1]+r[2][1]*cart[2];
-      carot[2] = r[0][2]*cart[0]+r[1][2]*cart[1]+r[2][2]*cart[2];
-
-      Y[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[2]))));
-      X[n]=RAD2DEG(atan2(carot[1],carot[0]));
-      X[n]=fmod(X[n],360.0);
-      if (X[n]<0.0) X[n]+=360.0;
-   }
+        Y[n] = RAD2DEG(asin(fmax(-1.0, fmin(1.0, carot[2]))));
+        X[n] = RAD2DEG(atan2(carot[1], carot[0]));
+        X[n] = fmod(X[n], 360.0);
+       if (X[n] < 0.0) X[n] += 360.0;
+    }
 }
 
-void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,float xlat1,float xlon1,float xlat2,float xlon2) {
 
-   double cart[3],carot[3],latr,lonr,cosdar;
-   float r[3][3],ri[3][3];
+void GeoRef_RotateInvertXY(
+    double * const Lat,
+    double * const Lon,
+    const double * const X,
+    const double * const Y,
+    const int32_t npts,
+    const float xlat1,
+    const float xlon1,
+    const float xlat2,
+    const float xlon2
+) {
+    float r[3][3], ri[3][3];
+    f77name(GeoRef_crot)(r, ri, &xlon1, &xlat1, &xlon2, &xlat2);
 
-   f77name(ez_crot)(r,ri,&xlon1,&xlat1,&xlon2,&xlat2);
+    int32_t n;
+    double cart[3], carot[3], latr, lonr, cosdar;
+    #pragma omp parallel for default(none) private(n, latr, lonr, cosdar, cart, carot) shared(stderr, ri, npts, Lat, Lon, X, Y)
+    for(n = 0; n < npts; n++) {
+        latr = DEG2RAD(Y[n]);
+        lonr = DEG2RAD(X[n]);
+        cosdar = cos(latr);
 
-   int32_t n;
-   #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(stderr,ri,npts,Lat,Lon,X,Y)
-   for(n = 0; n < npts; n++) {
-      latr=DEG2RAD(Y[n]);
-      lonr=DEG2RAD(X[n]);
-      cosdar = cos(latr);
+        cart[0] = cosdar * cos(lonr);
+        cart[1] = cosdar * sin(lonr);
+        cart[2] = sin(latr);
 
-      cart[0] = cosdar*cos(lonr);
-      cart[1] = cosdar*sin(lonr);
-      cart[2] = sin(latr);
+        carot[0] = ri[0][0] * cart[0] + ri[1][0] * cart[1] + ri[2][0] * cart[2];
+        carot[1] = ri[0][1] * cart[0] + ri[1][1] * cart[1] + ri[2][1] * cart[2];
+        carot[2] = ri[0][2] * cart[0] + ri[1][2] * cart[1] + ri[2][2] * cart[2];
 
-      carot[0] = ri[0][0]*cart[0]+ri[1][0]*cart[1]+ri[2][0]*cart[2];
-      carot[1] = ri[0][1]*cart[0]+ri[1][1]*cart[1]+ri[2][1]*cart[2];
-      carot[2] = ri[0][2]*cart[0]+ri[1][2]*cart[1]+ri[2][2]*cart[2];
-
-      Lat[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[2]))));
-      Lon[n]=RAD2DEG(atan2(carot[1],carot[0]));
-      Lon[n]=fmod(Lon[n],360.0);
-      if (Lon[n]<0.0) Lon[n]+=360.0;
-   }
+        Lat[n] = RAD2DEG(asin(fmax(-1.0, fmin(1.0, carot[2]))));
+        Lon[n] = RAD2DEG(atan2(carot[1], carot[0]));
+        Lon[n] = fmod(Lon[n], 360.0);
+        if (Lon[n] < 0.0) Lon[n] += 360.0;
+    }
 }
 
-int32_t GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb) {
 
-   int32_t hemi;
-   float pi,pj,dgrw,d60,dlat,dlon,xlat0,xlon0,xlat1,xlon1,xlat2,xlon2;
+int32_t GeoRef_LL2GREF(
+    const TGeoRef * const Ref,
+    double * const X,
+    double * const Y,
+    const double * const Lat,
+    const double * const Lon,
+    const int32_t Nb
+) {
+    int32_t hemi;
+    float pi, pj, dgrw, d60, dlat, dlon, xlat0, xlon0, xlat1, xlon1, xlat2, xlon2;
 
-   switch(Ref->RPNHeadExt.grref[0]) {
-      case 'N':
-         f77name(cigaxg)(Ref->RPNHeadExt.grref,&pi,&pj,&d60,&dgrw,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
-         hemi=GRID_NORTH;
-         f77name(ez8_vxyfll)(X,Y,Lat,Lon,&Nb,&d60,&dgrw,&pi,&pj,&hemi);
-         break;
+    switch(Ref->RPNHeadExt.grref[0]) {
+        case 'N':
+            f77name(cigaxg)(Ref->RPNHeadExt.grref, &pi, &pj, &d60, &dgrw, &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4, 1);
+            hemi = GRID_NORTH;
+            f77name(ez8_vxyfll)(X, Y, Lat, Lon, &Nb, &d60, &dgrw, &pi, &pj, &hemi);
+            break;
 
-      case 'S':
-         f77name(cigaxg)(Ref->RPNHeadExt.grref,&pi,&pj,&d60,&dgrw,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
-         hemi=GRID_SOUTH;
-         f77name(ez8_vxyfll)(X,Y,Lat,Lon,&Nb,&d60,&dgrw,&pi,&pj,&hemi);
-         break;
+        case 'S':
+            f77name(cigaxg)(Ref->RPNHeadExt.grref, &pi, &pj, &d60, &dgrw, &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4, 1);
+            hemi = GRID_SOUTH;
+            f77name(ez8_vxyfll)(X, Y, Lat, Lon, &Nb, &d60, &dgrw, &pi, &pj, &hemi);
+            break;
 
-      case 'L':
-         f77name(cigaxg)(Ref->RPNHeadExt.grref,&xlat0,&xlon0,&dlat,&dlon,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
-         GeoRef_LL2GD(Ref,X,Y,Lat,Lon,Nb,xlat0,xlon0,dlat,dlon);
-         break;
+        case 'L':
+            f77name(cigaxg)(Ref->RPNHeadExt.grref, &xlat0, &xlon0, &dlat, &dlon, &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4, 1);
+            GeoRef_LL2GD(Ref, X, Y, Lat, Lon, Nb, xlat0, xlon0, dlat, dlon);
+            break;
 
-      case 'E':
-         f77name(cigaxg)(Ref->RPNHeadExt.grref,&xlat1,&xlon1,&xlat2,&xlon2,&Ref->RPNHeadExt.igref1,&Ref->RPNHeadExt.igref2,&Ref->RPNHeadExt.igref3,&Ref->RPNHeadExt.igref4,1);
-         GeoRef_RotateXY(Lat,Lon,X,Y,Nb,xlat1,xlon1,xlat2,xlon2);
-         break;
+        case 'E':
+            f77name(cigaxg)(Ref->RPNHeadExt.grref, &xlat1, &xlon1, &xlat2, &xlon2, &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4, 1);
+            GeoRef_RotateXY(Lat, Lon, X, Y, Nb, xlat1, xlon1, xlat2, xlon2);
+            break;
 
-      case 'W':
-         GeoRef_LL2XY_W(Ref,X,Y,Lat,Lon,Nb);
-         break;
-   }
-
-   return(1);
+        case 'W':
+            GeoRef_LL2XY_W(Ref, X, Y, Lat, Lon, Nb);
+            break;
+    }
+    return 1;
 }
 
 /*----------------------------------------------------------------------------
@@ -108,76 +132,70 @@ int32_t GeoRef_LL2GREF(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
 
  *    @return             Error code (0=ok)
 */
-int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,int32_t Nb,int32_t Extrap) {
+int32_t GeoRef_XY2LL(TGeoRef *Ref, double *Lat, double *Lon, double *X, double *Y, int32_t Nb, int32_t Extrap) {
+    if (!Ref->XY2LL) {
+        Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid transform function (XY2LL): grtyp=%c\n", __func__, Ref->GRTYP[0]);
+        return(0);
+    }
 
-   TGeoRef *yin_gd,*yan_gd,*ref;
-   int32_t  i,j,icode;
-   double  *latyin,*lonyin,*latyan,*lonyan;
-   double  *tmpy;
-
-   if (!Ref->XY2LL) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid transform function (XY2LL): grtyp=%c\n",__func__,Ref->GRTYP[0]);
-      return(0);
-   }
-
-   ref=GeoRef_SubGet(Ref);
-
-   if (ref->NbSub > 0) {
-      yin_gd=ref->Subs[0];
-      yan_gd=ref->Subs[1];
-      j=0;
-      tmpy = (double*)malloc(5*Nb*sizeof(double));
-      latyin = &tmpy[j+=Nb];
-      lonyin = &tmpy[j+=Nb];
-      latyan = &tmpy[j+=Nb];
-      lonyan = &tmpy[j+=Nb];
-      for (j=0; j< Nb; j++) {
-         if (Y[j] > yin_gd->NY-1) {
-            tmpy[j]=Y[j]-yin_gd->NY;
-         } else {
-            tmpy[j]=Y[j];
-         }
-      }
-      icode = GeoRef_XY2LL(yin_gd,latyin,lonyin,X,tmpy,Nb,Extrap);
-      icode = GeoRef_XY2LL(yan_gd,latyan,lonyan,X,tmpy,Nb,Extrap);
-      for (j=0; j < Nb; j++) {
-         if (Y[j] > yin_gd->NY-1) {
-            Lat[j]=latyan[j];
-            Lon[j]=lonyan[j];
-         } else {
-            Lat[j]=latyin[j];
-            Lon[j]=lonyin[j];
-         }
-      }
-      free(tmpy);
-   } else {
-      if (Ref->Type&GRID_CORNER) {
-         for(j=0;j<Nb;j++) {
-            X[j]+=0.5;
-            Y[j]+=0.5;
-         }
-      }
-
-      Ref->XY2LL(ref,Lat,Lon,X,Y,Nb);
-
-      // Adjust for Longitude reference
-      for (i=0; i<Nb; i++) {
-         Lon[i]=CLAMPLON(Lon[i]);
-      }
-
-      icode=Nb;
-      if (!Extrap) {
-         for(i=0; i < Nb; i++) {
-            if (X[i]<(ref->X0-0.5) || Y[i]<(ref->Y0-0.5) || X[i]>(ref->X1+0.5) || Y[i]>(ref->Y1+0.5)) {
-               Lat[i]=-999.0;
-               Lon[i]=-999.0;
-               icode--;
+    TGeoRef * const ref = GeoRef_SubGet(Ref);
+    int32_t icode;
+    if (ref->NbSub > 0) {
+        TGeoRef * const yin_gd = ref->Subs[0];
+        TGeoRef * const yan_gd = ref->Subs[1];
+        int32_t j = 0;
+        double * const tmpy = (double*)malloc(5 * Nb * sizeof(double));
+        double * const latyin = &tmpy[j += Nb];
+        double * const lonyin = &tmpy[j += Nb];
+        double * const latyan = &tmpy[j += Nb];
+        double * const lonyan = &tmpy[j += Nb];
+        for (j = 0; j < Nb; j++) {
+            if (Y[j] > yin_gd->NY-1) {
+                tmpy[j] = Y[j] - yin_gd->NY;
+            } else {
+                tmpy[j] = Y[j];
             }
-         }
-      }
-   }
+        }
+        icode = GeoRef_XY2LL(yin_gd, latyin, lonyin, X, tmpy, Nb, Extrap);
+        icode = GeoRef_XY2LL(yan_gd, latyan, lonyan, X, tmpy, Nb, Extrap);
+        for (j=0; j < Nb; j++) {
+            if (Y[j] > yin_gd->NY-1) {
+                Lat[j] = latyan[j];
+                Lon[j] = lonyan[j];
+            } else {
+                Lat[j] = latyin[j];
+                Lon[j] = lonyin[j];
+            }
+        }
+        free(tmpy);
+    } else {
+        if (Ref->Type & GRID_CORNER) {
+            for(int32_t j = 0; j < Nb; j++) {
+                X[j] += 0.5;
+                Y[j] += 0.5;
+            }
+        }
 
-   return(icode);
+        Ref->XY2LL(ref, Lat, Lon, X, Y, Nb);
+
+        // Adjust for Longitude reference
+        for (int32_t i = 0; i < Nb; i++) {
+            Lon[i] = CLAMPLON(Lon[i]);
+        }
+
+        icode = Nb;
+        if (!Extrap) {
+            for (int32_t i = 0; i < Nb; i++) {
+                if (X[i] < (ref->X0 - 0.5) || Y[i] < (ref->Y0 - 0.5) || X[i] > (ref->X1 + 0.5) || Y[i] > (ref->Y1 + 0.5)) {
+                    Lat[i] = -999.0;
+                    Lon[i] = -999.0;
+                    icode--;
+                }
+            }
+        }
+    }
+
+    return icode;
 }
 
 /*----------------------------------------------------------------------------
@@ -193,14 +211,14 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
 
  *    @return             Number of valid interpolations
 */
-int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb,int32_t Extrap) {
+int32_t GeoRef_LL2XY(TGeoRef *Ref, double *X, double *Y, double *Lat, double *Lon, int32_t Nb, int32_t Extrap) {
 
-   TGeoRef *yin_gd,*yan_gd,*ref;
-   int32_t     j,icode,maxni,maxnj;
-   double  *xyin,*xyan,*yyin,*yyan;
+   TGeoRef *yin_gd, *yan_gd, *ref;
+   int32_t     j, icode, maxni, maxnj;
+   double  *xyin, *xyan, *yyin, *yyan;
 
    if (!Ref->LL2XY) {
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalid transform function (LL2XY): grtyp=%c\n",__func__,Ref->GRTYP[0]);
+      Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Invalid transform function (LL2XY): grtyp=%c\n", __func__, Ref->GRTYP[0]);
       return(0);
    }
 
@@ -215,8 +233,8 @@ int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
       xyan = &xyin[Nb];
       yyin = &xyin[Nb*2];
       yyan = &xyin[Nb*3];
-      icode = GeoRef_LL2XY(yin_gd,xyin,yyin,Lat,Lon,Nb,Extrap);
-      icode = GeoRef_LL2XY(yan_gd,xyan,yyan,Lat,Lon,Nb,Extrap);
+      icode = GeoRef_LL2XY(yin_gd, xyin, yyin, Lat, Lon, Nb, Extrap);
+      icode = GeoRef_LL2XY(yan_gd, xyan, yyan, Lat, Lon, Nb, Extrap);
       for (j=0; j < Nb; j++) {
          if (xyin[j] > maxni || xyin[j] < 1 || yyin[j] > maxnj || yyin[j] < 1) {
             // point is no good, take from YAN eventhough it may not be good
@@ -240,7 +258,7 @@ int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,in
       free(xyin);
 
    } else {
-      Ref->LL2XY(ref,X,Y,Lat,Lon,Nb);
+      Ref->LL2XY(ref, X, Y, Lat, Lon, Nb);
    }
 
    // Check for grid insidness or extrapolation enabled

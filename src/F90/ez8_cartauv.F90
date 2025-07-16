@@ -1,42 +1,43 @@
-      SUBROUTINE ez8_CARTAUV(U, V, UVCART, LON, LAT, NI, NJ)
-      implicit none
-      INTEGER NI, NJ 
-      REAL    U(NI,NJ), V(NI,NJ)
-      real(kind=8)  UVCART(3,NI*NJ), LON(NI,nj), LAT(ni,NJ)
-!
-!author michel roch - april 90
-!
-!arguments
-!    out    U       - rotated component  U of the wind
-!           V       - rotated component  V of the wind
-!    in     xyz     - rotated winds in cartesian space
-!           LON     - longitudes of the grid in the rotated system of coordinates
-!           LAT     - latitudes of the grid in the rotated system of coordinates
-!           NI      - E-W DIMENSION of the grid
-!           NJ      - N-S dimension of the grid
-!
-!*
+!> Compute the components of the winds in the rotated system of coordinates from the winds in the rotated cartesian space
+subroutine ez8_cartauv(u, v, uvcart, lon, lat, ni, nj)
+    use iso_fortran_env, only: real64
+    implicit none
 
-      INTEGER I, J, K 
-      real(kind=8)    A, B, C, D, E, F, DAR
+    !> E-W dimension of the grid
+    integer, intent(in) :: ni
+    !> N-S dimension of the grid
+    integer, intent(in) :: nj
+    !> Rotated winds in cartesian space
+    real(kind = real64), intent(in) :: uvcart(3, ni * nj)
+    !> Rotated component u of the wind
+    real, intent(out) :: u(ni, nj)
+    !> Rotated component v of the wind
+    real, intent(out) :: v(ni, nj)
+    !> Longitudes of the grid in the rotated system of coordinates
+    real(kind = real64), intent(in) :: lon(ni, nj)
+    !> Latitudes of the grid in the rotated system of coordinates
+    real(kind = real64), intent(in) :: lat(ni, nj)
 
-      DAR = ACOS(-1.)/180.
-      K   = 0
- 
-      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(I,J,A,B,C,D,E,F) FIRSTPRIVATE(K) SHARED(NI,NJ,DAR,LAT,LON,UVCART,U,V)
-      DO 20 J=1,NJ
-         DO 10 I=1,NI
-            K      = K+1
-            A      = COS(DAR*LON(I,j))
-            B      = SIN(DAR*LON(I,j))
-            E      = COS(DAR*LAT(i,J))
-            F      = SIN(DAR*LAT(i,J))
-            U(I,J) = (UVCART(2,K)*A) - (UVCART(1,K)*B)
-            C      = (UVCART(1,K)*A) + (UVCART(2,K)*B)
-            D      = SQRT(C**2 + UVCART(3,K)**2 )
-            V(I,J) = SIGN(D, (UVCART(3,K)*E)-(C*F))
- 10         CONTINUE
- 20      CONTINUE
+    !> \ingroup ezscint
 
-      RETURN
-      END 
+    real(kind = real64), parameter :: dar = acos(-1.0) / 180.0
+
+    integer :: i, j, k
+    real(kind = real64) :: a, b, c, d, e, f
+
+    k = 0
+    !$omp parallel do default(none) private(i, j, a, b, c, d, e, f) firstprivate(k) shared(ni, nj, dar, lat, lon, uvcart, u, v)
+    do j = 1, nj
+        do i = 1, ni
+            k      = k + 1
+            a      = cos(dar * lon(i, j))
+            b      = sin(dar * lon(i, j))
+            e      = cos(dar * lat(i, j))
+            f      = sin(dar * lat(i, j))
+            u(i, j) = (uvcart(2, k) * a) - (uvcart(1, k) * b)
+            c      = (uvcart(1, k) * a) + (uvcart(2, k) * b)
+            d      = sqrt(c**2 + uvcart(3, k)**2 )
+            v(i, j) = sign(real(d), real((uvcart(3, k) * e) - (c * f)))
+        end do
+    end do
+end
