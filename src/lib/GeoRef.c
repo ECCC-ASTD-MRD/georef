@@ -2321,7 +2321,7 @@ int32_t GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4
          record.data_bits = 32;
       }
       if (fst24_write(File,&record,FST_SKIP)<=0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write ^> field (fst24_write failed)\n",__func__);
          return(FALSE);
       }
    } else if (GRef->AX && GRef->AY) {
@@ -2361,7 +2361,7 @@ int32_t GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4
          for(i=0;i<(GRef->Type&GRID_AXY2D?record.ni*record.nj:record.nj);i++) ((float*)record.data)[i]=GRef->AY[i];
       }
       if (fst24_write(File,&record,FST_SKIP)<=0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write ^^ field (fst24_write failed)\n",__func__);
          return(FALSE);
       }
    }
