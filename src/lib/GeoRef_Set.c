@@ -440,7 +440,7 @@ TGeoSet* GeoRef_SetReadFST(
         strncpy(crit.nomvar, "####", FST_NOMVAR_LEN);
         crit.typvar[0]=GSet->RefTo->GRTYP[0];
         crit.typvar[1]=GSet->RefFrom->GRTYP[0];
-        crit.typvar[1]='O';
+//        crit.typvar[1]='O';
         crit.grtyp[0]='\0';
         crit.ip3 = InterpType;
 

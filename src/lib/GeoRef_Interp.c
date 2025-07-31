@@ -282,8 +282,8 @@ int32_t GeoRef_Interp(
     GeoRef_InterpClear(RefTo, opt, zout);
 
     // If we're using pre-calculated index weight
-    if (Opt->Interp==IR_WEIGHTINDEX) {
-       return(GeoRef_InterpWeight(RefTo,RefFrom,Opt,zout,zin));
+    if (opt->Interp==IR_WEIGHTINDEX) {
+       return(GeoRef_InterpWeight(RefTo,RefFrom,opt,zout,zin));
     }
 
     int32_t ok = TRUE;

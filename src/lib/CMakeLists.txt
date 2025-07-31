@@ -50,7 +50,7 @@ foreach(LINK_TYPE static shared)
         endif()
 
         if(vgrid_FOUND)
-            target_link_libraries(georef${OMPI}-${LINK_TYPE} PUBLIC vgrid::vgrid)
+            target_link_libraries(georef${OMPI}-${LINK_TYPE} PUBLIC vgrid::vgrid-${LINK_TYPE})
         endif()
 
         if(GDAL_FOUND)
