@@ -2499,6 +2499,7 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
       case IR_NEAREST:
       case IR_LINEAR:
       case IR_CUBIC:
+      case IR_WEIGHTINDEX:
          // Loop on vertical levels
          for(k = 0; k < ToDef->NK; k++) {
             pt0 = Def_Pointer(ToDef, 0, k*FSIZE2D(ToDef));

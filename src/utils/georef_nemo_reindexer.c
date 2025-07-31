@@ -9,7 +9,7 @@
 const char *NEMO_Vars[] = { "W001","W002","W003","W004", "I001","I002","I003","I004", "J001","J002","J003","J004", "NAVG","MASK", "ANG"};
 typedef enum { W001,W002,W003,W004, I001,I002,I003,I004, J001,J002,J003,J004, NAVG,MASK,ANG } NEMO_Idx;
 
-int ReIndex(char **In,char *Out) {
+int ReIndex(char **In,char *Out,char* FromTo) {
 
    fst_record  rec[2][15];
    fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
@@ -54,11 +54,11 @@ int ReIndex(char **In,char *Out) {
    for(j=0;j<rec[0][0].nj;j++) {
       for(i=0;i<rec[0][0].ni;i++,idx++) {
          if ((g=(((int*)(rec[0][NAVG].data))[idx]))) {
-            for(n=0;n<=g-1;n++){
-               data[v++]=i;
-               data[v++]=j;
-               data[v++]=((int*)(rec[0][n+4].data))[idx];
-               data[v++]=((int*)(rec[0][n+8].data))[idx];
+            data[v++]=i;
+            data[v++]=j;
+            for(n=0;n<g;n++){
+               data[v++]=((int*)(rec[0][n+4].data))[idx]-1;
+               data[v++]=((int*)(rec[0][n+8].data))[idx]-1;
                data[v++]=((double*)(rec[0][n].data))[idx];
             } 
             data[v++]=REF_INDEX_SEPARATOR;
@@ -71,11 +71,11 @@ int ReIndex(char **In,char *Out) {
       for(j=0;j<rec[1][0].nj;j++) {
          for(i=0;i<rec[1][0].ni;i++,idx++) {
             if ((g=(((int*)(rec[1][NAVG].data))[idx]))) {
-               for(n=0;n<=g-1;n++){
-                  data[v++]=i;
-                  data[v++]=j+rec[0][0].nj;
-                  data[v++]=((int*)(rec[1][n+4].data))[idx];
-                  data[v++]=((int*)(rec[1][n+8].data))[idx];
+               data[v++]=i;
+               data[v++]=j+rec[0][0].nj;
+               for(n=0;n<g;n++){
+                  data[v++]=((int*)(rec[1][n+4].data))[idx]-1;
+                  data[v++]=((int*)(rec[1][n+8].data))[idx]-1;
                   data[v++]=((double*)(rec[1][n].data))[idx];
                } 
                data[v++]=REF_INDEX_SEPARATOR;
@@ -102,12 +102,18 @@ int ReIndex(char **In,char *Out) {
    out.ig2   = 0;
    out.ig3   = 0;
    out.ig4   = 0;
-   out.typvar[0] = 'O';
-   out.typvar[1] = In[1]?'U':'Z';
+   if (FromTo) {
+      out.typvar[0] = FromTo[0];
+      out.typvar[1] = FromTo[1];
+   } else {
+      // Default to OU or OZ
+      out.typvar[0] = 'O';
+      out.typvar[1] = In[1]?'U':'Z';
+   }
    strncpy(out.etiket, "GRIDSET", FST_ETIKET_LEN);
    strncpy(out.grtyp, "X", FST_GTYP_LEN);
    strncpy(out.nomvar,"####",FST_NOMVAR_LEN);
-   fst24_write(fout,&out,FST_SKIP);
+   fst24_write(fout,&out,FST_YES);
  
    for(v=MASK;v<=ANG;v++) {
       //for(i=0;i<sz;i++) {
@@ -134,7 +140,7 @@ int ReIndex(char **In,char *Out) {
          rec[0][v].nj*=2;
       }
       rec[0][v].data=data;
-      fst24_write(fout,&rec[0][v],FST_SKIP);
+      fst24_write(fout,&rec[0][v],FST_YES);
    }
  
    fst24_close(fin[0]);
@@ -147,11 +153,12 @@ int ReIndex(char **In,char *Out) {
 int main(int argc, char *argv[]) {
 
    int         ok=0,m=-1,code=0;
-   char        *in[2]={ NULL, NULL },*out=NULL;
+   char        *in[2]={ NULL, NULL },*out=NULL,*ft=NULL;
  
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,    2,             "i", "input",  "Input file" },
         { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
+        { APP_CHAR,  &ft,    1,             "g", "grid",   "Grid types from->to (ie: U->O = 'OU')" },
         { APP_NIL } };
 
    App_Init(APP_MASTER,APP_NAME,VERSION,APP_DESC,BUILD_TIMESTAMP);
@@ -174,7 +181,7 @@ int main(int argc, char *argv[]) {
    App_Start();
 
    if (code!=EXIT_FAILURE) {
-      ok=ReIndex(in,out);
+      ok=ReIndex(in,out,ft);
    }
    code=App_End(ok?0:EXIT_FAILURE);
  

@@ -419,26 +419,28 @@ void GeoRef_SetFree(
 
 //! Read a gridset definition and index from a file
 TGeoSet* GeoRef_SetReadFST(
-    //! [in] Destination grid reference
-    const TGeoRef * const RefTo,
-    //! [in] Source grid reference
-    const TGeoRef * const RefFrom,
+    //! [in] Grid set
+    TGeoSet *GSet,
     //! [in] Interpolation type (2=bilinear, 3=bicubic, -1=any)
     const int32_t InterpType,
     //! [in] FSTD file pointer
     const fst_file * const File
 ) {
     //! \return Grid set pointer or NULL
-    TGeoSet * gset = GeoRef_SetGet(RefTo, RefFrom, NULL);
-    if (!gset) return NULL;
+    if (!GSet) return NULL;
 
     if (File) {
-        // Rechercher et lire l'information de l'enregistrement specifie
+        if (GSet->Index) {
+           Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: GeoSet already contains an index of type %i\n", __func__,GSet->IndexMethod);
+        }
+ 
+         // Rechercher et lire l'information de l'enregistrement specifie
         fst_record crit = default_fst_record;
         strncpy(crit.etiket, "GRIDSET", FST_ETIKET_LEN);
         strncpy(crit.nomvar, "####", FST_NOMVAR_LEN);
-        crit.typvar[0]=RefTo->GRTYP[0];
-        crit.typvar[1]=RefFrom->GRTYP[0];
+        crit.typvar[0]=GSet->RefTo->GRTYP[0];
+        crit.typvar[1]=GSet->RefFrom->GRTYP[0];
+        crit.typvar[1]='O';
         crit.grtyp[0]='\0';
         crit.ip3 = InterpType;
 
@@ -447,28 +449,31 @@ TGeoSet* GeoRef_SetReadFST(
             Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset index field (fst24_read failed)\n", __func__);
             return NULL;
         }
-        gset->IndexMethod = (TRef_Interp)InterpType;
-        gset->Index = (float*)record.data;
+        GSet->IndexMethod = (TRef_Interp)InterpType;
+        GSet->IndexSize = record.ni;
+        GSet->Index = (float*)record.data;
         record.data = NULL;
 
-        strncpy(crit.nomvar, "#>>#", FST_NOMVAR_LEN);
-        if (fst24_read(File, &crit, NULL, &record) != TRUE) {
-            Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset longitude field (fst24_read failed)\n", __func__);
-            return NULL;
-        }
-        gset->X = record.data;
-        record.data = NULL;
+        if (GSet->IndexMethod!=IR_WEIGHTINDEX) {
+            strncpy(crit.nomvar, "#>>#", FST_NOMVAR_LEN);
+            if (fst24_read(File, &crit, NULL, &record) != TRUE) {
+                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset longitude field (fst24_read failed)\n", __func__);
+                return NULL;
+            }
+            GSet->X = record.data;
+            record.data = NULL;
 
-        strncpy(crit.nomvar, "#^^#", FST_NOMVAR_LEN);
-        if (fst24_read(File, &crit, NULL, &record) != TRUE) {
-            Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset longitude field (fst24_read failed)\n", __func__);
-            return NULL;
+            strncpy(crit.nomvar, "#^^#", FST_NOMVAR_LEN);
+            if (fst24_read(File, &crit, NULL, &record) != TRUE) {
+                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset longitude field (fst24_read failed)\n", __func__);
+                return NULL;
+            }
+            GSet->Y = record.data;
+            record.data = NULL;
         }
-        gset->Y = record.data;
-        record.data = NULL;
     }
 
-    return gset;
+    return GSet;
 }
 
 
@@ -510,7 +515,7 @@ int32_t GeoRef_SetWriteFST(
             record.nj   = GSet->RefTo->NY;
             strncpy(record.nomvar, "#>>#", FST_NOMVAR_LEN);
             if (fst24_write(File, &record, FST_SKIP) <= 0) {
-                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset index field (fst24_write failed)\n", __func__);
+                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset #>># index field (fst24_write failed)\n", __func__);
                 return FALSE;
             }
         }
@@ -523,7 +528,7 @@ int32_t GeoRef_SetWriteFST(
             record.nj   = GSet->RefTo->NY;
             strncpy(record.nomvar, "#^^#", FST_NOMVAR_LEN);
             if (fst24_write(File, &record, FST_SKIP) <= 0) {
-                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset index field (fst24_write failed)\n", __func__);
+                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset #^^# index field (fst24_write failed)\n", __func__);
                 return FALSE;
             }
         }
@@ -537,7 +542,7 @@ int32_t GeoRef_SetWriteFST(
             record.ip3  = GSet->IndexMethod;
             strncpy(record.nomvar, "####", FST_NOMVAR_LEN);
             if (fst24_write(File, &record, FST_SKIP) <= 0) {
-                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset index field (fst24_write failed)\n", __func__);
+                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset #### index field (fst24_write failed)\n", __func__);
                 return FALSE;
             }
         }
@@ -560,14 +565,14 @@ TGeoSet* GeoRef_SetGet(
     }
 
     pthread_mutex_lock(&RefTo->Mutex);
-   // Initialize number of geoset in cache
-   if (GeoRef_SetMax < 0) {
-      GeoRef_SetMax = -GeoRef_SetMax;
-      char * georefSetMaxStr = getenv("GEOREF_MAXSET");
-      if (georefSetMaxStr) {
-         GeoRef_SetMax = atoi(georefSetMaxStr);
-      }
-   }
+    // Initialize number of geoset in cache
+    if (GeoRef_SetMax < 0) {
+        GeoRef_SetMax = -GeoRef_SetMax;
+        char * georefSetMaxStr = getenv("GEOREF_MAXSET");
+        if (georefSetMaxStr) {
+            GeoRef_SetMax = atoi(georefSetMaxStr);
+        }
+    }
 
     if (!RefTo->Sets) {
         RefTo->Sets = (TGeoSet*)calloc(GeoRef_SetMax, sizeof(TGeoSet));
@@ -578,6 +583,8 @@ TGeoSet* GeoRef_SetGet(
         pthread_mutex_unlock(&RefTo->Mutex);
         return(RefTo->LastSet);
     }
+
+// TODO: check index method of Set ... #define SET_IOK(SET,METHOD) (SET->IndexMethod == IR_UNDEF || SET->IndexMethod == METHOD)
 
     if (RefTo->NbSet >= GeoRef_SetMax) {
         for (int32_t i = 0; i < RefTo->NbSet; i++) {

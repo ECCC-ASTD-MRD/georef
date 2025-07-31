@@ -119,6 +119,11 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 
          if (!refin) {
             refin=GeoRef_CreateFromRecord(&record);
+
+            if (GeoRef_Options.Interp==IR_WEIGHTINDEX) {
+               TGeoSet * gset = GeoRef_SetGet(refout, refin, NULL);
+               GeoRef_SetReadFST(gset,IR_WEIGHTINDEX,fgrid);
+            }
          }
 
          // Clear output buffer
@@ -164,6 +169,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
          Def_Free(defin);
 
          n++;
+         break;
       }
       App_Log(APP_INFO,"Processed %i x '%s'\n",n,var);
    }
@@ -196,7 +202,7 @@ int main(int argc, char *argv[]) {
         { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
         { APP_CHAR,  &grid,  1,             "g", "grid",   "Grid file" },
         { APP_CHAR,  &truth, 1,             "t", "truth",  "Truth data file to compare with" },
-        { APP_CHAR,  &method,1,             "m", "method", "Interpolation method (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC,CONSERVATIVE,NORMALIZED_CONSERVATIVE,MAXIMUM,MINIMUM,SUM,AVERAGE,VARIANCE,SQUARE,NORMALIZED_COUNT,COUNT,VECTOR_AVERAGE,SUBNEAREST,SUBLINEAR)" },
+        { APP_CHAR,  &method,1,             "m", "method", "Interpolation method (NEAREST,"APP_COLOR_GREEN"LINEAR"APP_COLOR_RESET",CUBIC,CONSERVATIVE,NORMALIZED_CONSERVATIVE,MAXIMUM,MINIMUM,SUM,AVERAGE,VARIANCE,SQUARE,NORMALIZED_COUNT,COUNT,VECTOR_AVERAGE,SUBNEAREST,SUBLINEAR,WEIGHTINDEX)" },
         { APP_CHAR,  &extrap,1,             "x", "extrap", "Extrapolation method (MAXIMUM,MINIMUM,"APP_COLOR_GREEN"[VALUE]"APP_COLOR_RESET",ABORT)" },
         { APP_CHAR,  &etiket,1,             "e", "etiket", "ETIKET for destination field" },
         { APP_CHAR,  &wgeo,1,               "w", "winds",  "Wind output type ("APP_COLOR_GREEN"GRID"APP_COLOR_RESET",GEO)" },
@@ -251,7 +257,7 @@ int main(int argc, char *argv[]) {
       }
       m++;
    }
-   if (m>IR_SUBLINEAR) {
+   if (m>IR_WEIGHTINDEX) {
       App_Log(APP_ERROR,"Invalid interpolation method: %s\n",method);
       code=EXIT_FAILURE;
    }

@@ -529,7 +529,10 @@ int32_t GeoRef_InterpWeight(
         // Get the gridpoint
         i = *(ip++);
         j = *(ip++);
-        val=0.0;
+        val = zout[j*RefTo->NX+i];
+        if (!DATA_ISVALID(val,opt->NoData)) {
+           val = 0.0;
+        }
 
         // Get the geometry intersections
         while(*ip != REF_INDEX_SEPARATOR) {

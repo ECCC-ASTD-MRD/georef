@@ -59,10 +59,10 @@ typedef struct {
 
 #define DATA_ISVALID(VAL,NODATA) (VAL!=NODATA && VAL==VAL)
 
-#define BITPOS(i)     (i - ((i >> 5) << 5))
+#define BITPOS(i)      (i - ((i >> 5) << 5))
 #define GETMSK(fld, i) ((fld[i >> 5]  & (1 << BITPOS(i))) >> BITPOS(i))
 #define SETMSK(fld, i) (fld[i >> 5] | (fld[i] << BITPOS(i)))
-#define NULLOK        (void*)0x1
+#define NULLOK         (void*)0x1
 
 #define SET_ZONES   0x1          //!< Flag for set zone definitions
 #define SET_YYXY    0x4          //!< Flag for set YinYang calculations
@@ -452,8 +452,7 @@ TGeoSet* GeoRef_SetGet(
 );
 void     GeoRef_SetFree(TGeoSet *GSet);
 TGeoSet* GeoRef_SetReadFST(
-    const TGeoRef * const RefTo,
-    const TGeoRef * const RefFrom,
+    TGeoSet * GSet,
     const int32_t InterpType,
     const fst_file * const File
 );
