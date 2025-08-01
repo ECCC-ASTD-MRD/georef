@@ -10,8 +10,8 @@
 #include "Def.h"
 #include "Triangle.h"
 
-static TList          *GeoRef_List=NULL;                                                                                       ///< Global list of known geo references
-static int32_t         GeoRef_Preserve = -10;                                                                                  ///< How many of the first created georef to keep cached (negative means uninitialized)
+static TList          *GeoRef_List=NULL;                 ///< Global list of known geo references
+static int32_t         GeoRef_Preserve = -10;            ///< How many of the first created georef to keep cached (negative means uninitialized)
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
 __thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, CB_REPLACE, TRUE, FALSE, 1, 1, TRUE, FALSE, 10.0, NAN, NULL, NULL, 0, 0, NULL };  ///< Default options
 
@@ -28,7 +28,7 @@ __attribute__ ((constructor)) int32_t GeoRef_Init() {
  * @brief  Apply thread lock on GeoRef access
  * @date   February 2008
 */
-void GeoRef_Lock() {
+static void GeoRef_Lock() {
    pthread_mutex_lock(&GeoRef_Mutex);
 }
 
@@ -36,7 +36,7 @@ void GeoRef_Lock() {
  * @brief  Remove thread lock on GeoRef access
  * @date   February 2008
 */
-void GeoRef_Unlock() {
+static void GeoRef_Unlock() {
    pthread_mutex_unlock(&GeoRef_Mutex);
 }
 
