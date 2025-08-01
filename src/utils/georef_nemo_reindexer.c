@@ -6,10 +6,14 @@
 #define APP_NAME "georef_reindexer"
 #define APP_DESC "ECCC/CMC RPN Index conversion tool"
 
-const char *NEMO_Vars[] = { "W001","W002","W003","W004", "I001","I002","I003","I004", "J001","J002","J003","J004", "NAVG","MASK", "ANG"};
-typedef enum { W001,W002,W003,W004, I001,I002,I003,I004, J001,J002,J003,J004, NAVG,MASK,ANG } NEMO_Idx;
+const char *NEMO_Vars[] = { "W001","W002","W003","W004", "I001","I002","I003","I004", "J001","J002","J003","J004", "NAVG","ANG","MASK" };
+typedef enum { W001,W002,W003,W004, I001,I002,I003,I004, J001,J002,J003,J004, NAVG,ANG,MASK } NEMO_Idx;
 
-int ReIndex(char **In,char *Out,char* FromTo) {
+// Usage example call for CANSIPS
+// GEM_to NEMO: georef_nemo_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -j 131 
+// NEMO_to_GEM: georef_nemo_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yang.std -o ./atmos-ocean-grids.fstd -g UO 
+
+int ReIndex(char **In,char *Out,char* FromTo,int YNJ) {
 
    fst_record  rec[2][15];
    fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
@@ -33,7 +37,7 @@ int ReIndex(char **In,char *Out,char* FromTo) {
    }
 
    // Create the desination grid
-   for(n=0;n<15;n++){
+   for(n=W001;n<=ANG;n++){
       rec[0][n]=rec[1][n]=default_fst_record;
       strncpy(crit.nomvar,NEMO_Vars[n],FST_NOMVAR_LEN);
       if (!fst24_read(fin[0],&crit,NULL,&rec[0][n])) {
@@ -45,7 +49,7 @@ int ReIndex(char **In,char *Out,char* FromTo) {
          return(FALSE);
       }
    }
-  
+
    sz=rec[0][0].ni*rec[0][0].nj;
    data=(float*)malloc(sz*2*15*sizeof(float));
 
@@ -53,29 +57,30 @@ int ReIndex(char **In,char *Out,char* FromTo) {
    idx=0;
    for(j=0;j<rec[0][0].nj;j++) {
       for(i=0;i<rec[0][0].ni;i++,idx++) {
-         if ((g=(((int*)(rec[0][NAVG].data))[idx]))) {
+         if ((g=(((short*)(rec[0][NAVG].data))[idx]))) {
             data[v++]=i;
             data[v++]=j;
             for(n=0;n<g;n++){
-               data[v++]=((int*)(rec[0][n+4].data))[idx]-1;
-               data[v++]=((int*)(rec[0][n+8].data))[idx]-1;
+               data[v++]=((short*)(rec[0][n+4].data))[idx]-1; 
+               data[v++]=((short*)(rec[0][n+8].data))[idx]-1;
                data[v++]=((double*)(rec[0][n].data))[idx];
             } 
             data[v++]=REF_INDEX_SEPARATOR;
          }
       }
    }
+
    // Yang
    if (In[1]) {
       idx=0;
       for(j=0;j<rec[1][0].nj;j++) {
          for(i=0;i<rec[1][0].ni;i++,idx++) {
-            if ((g=(((int*)(rec[1][NAVG].data))[idx]))) {
+            if ((g=(((short*)(rec[1][NAVG].data))[idx]))) {
                data[v++]=i;
-               data[v++]=j+rec[0][0].nj;
+               data[v++]=(FromTo[0]=='U')?j+rec[0][0].nj:j;
                for(n=0;n<g;n++){
-                  data[v++]=((int*)(rec[1][n+4].data))[idx]-1;
-                  data[v++]=((int*)(rec[1][n+8].data))[idx]-1;
+                  data[v++]=((short*)(rec[1][n+4].data))[idx]-1;
+                  data[v++]=((short*)(rec[1][n+8].data))[idx]-1+YNJ;
                   data[v++]=((double*)(rec[1][n].data))[idx];
                } 
                data[v++]=REF_INDEX_SEPARATOR;
@@ -114,8 +119,9 @@ int ReIndex(char **In,char *Out,char* FromTo) {
    strncpy(out.grtyp, "X", FST_GTYP_LEN);
    strncpy(out.nomvar,"####",FST_NOMVAR_LEN);
    fst24_write(fout,&out,FST_YES);
- 
-   for(v=MASK;v<=ANG;v++) {
+
+//TODO put back MASK
+   for(v=ANG;v<=ANG;v++) {
       //for(i=0;i<sz;i++) {
       //  data[i]=((int*)(rec[0][v].data))[i];
       //}
@@ -152,13 +158,14 @@ int ReIndex(char **In,char *Out,char* FromTo) {
 
 int main(int argc, char *argv[]) {
 
-   int         ok=0,m=-1,code=0;
+   int         ok=0,m=-1,code=0,ynj=0;
    char        *in[2]={ NULL, NULL },*out=NULL,*ft=NULL;
  
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,    2,             "i", "input",  "Input file" },
         { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
         { APP_CHAR,  &ft,    1,             "g", "grid",   "Grid types from->to (ie: U->O = 'OU')" },
+        { APP_INT32, &ynj,   1,             "j", "ynj",    "Nj dimension of the YY grid (needed for U->O only)" },
         { APP_NIL } };
 
    App_Init(APP_MASTER,APP_NAME,VERSION,APP_DESC,BUILD_TIMESTAMP);
@@ -181,7 +188,7 @@ int main(int argc, char *argv[]) {
    App_Start();
 
    if (code!=EXIT_FAILURE) {
-      ok=ReIndex(in,out,ft);
+      ok=ReIndex(in,out,ft,ynj);
    }
    code=App_End(ok?0:EXIT_FAILURE);
  

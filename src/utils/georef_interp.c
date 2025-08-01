@@ -171,7 +171,11 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
          n++;
          break;
       }
-      App_Log(APP_INFO,"Processed %i x '%s'\n",n,var);
+      if (!n) {
+         App_Log(APP_WARNING,"No record found for var %s'\n",var);
+      } else {
+         App_Log(APP_INFO,"Processed %i x '%s'\n",n,var);
+      }
    }
 
    // Write index

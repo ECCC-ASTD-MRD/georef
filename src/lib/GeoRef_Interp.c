@@ -523,7 +523,7 @@ int32_t GeoRef_InterpWeight(
     
     // As long as the file or the list is not empty
     ip = gset->Index;
-    
+
     while(*ip != REF_INDEX_END) {
 
         // Get the gridpoint

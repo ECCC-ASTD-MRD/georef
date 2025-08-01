@@ -440,13 +440,15 @@ TGeoSet* GeoRef_SetReadFST(
         strncpy(crit.nomvar, "####", FST_NOMVAR_LEN);
         crit.typvar[0]=GSet->RefTo->GRTYP[0];
         crit.typvar[1]=GSet->RefFrom->GRTYP[0];
-//        crit.typvar[1]='O';
+//TODO test forcings
+//        crit.typvar[0]='O';
+//        crit.typvar[1]='U';
         crit.grtyp[0]='\0';
         crit.ip3 = InterpType;
 
         fst_record record = default_fst_record;;
         if (fst24_read(File, &crit, NULL, &record) != TRUE) {
-            Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset index field (fst24_read failed)\n", __func__);
+            Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset index field %c%c (fst24_read failed)\n", __func__,crit.typvar[0],crit.typvar[1]);
             return NULL;
         }
         GSet->IndexMethod = (TRef_Interp)InterpType;
