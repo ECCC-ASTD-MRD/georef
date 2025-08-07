@@ -48,6 +48,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 
    // Create the desination grid
    strncpy(crit.nomvar,"GRID",FST_NOMVAR_LEN);
+   strncpy(crit.etiket,"OCEAN",FST_ETIKET_LEN);
    if (fst24_read(fgrid,&crit,NULL,&grid)) {
       refout=GeoRef_CreateFromRecord(&grid);
    } else {
@@ -107,6 +108,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
    defout2->NoData=GeoRef_Options.NoData;
 
    while((var=Vars[v++]) != NULL) {
+      crit=default_fst_record;
       strncpy(crit.nomvar,var,FST_NOMVAR_LEN);
       fst_query* query = fst24_new_query(fin,&crit,NULL);
       n=0;

@@ -238,17 +238,23 @@ int32_t GeoRef_InterpFinally(
 
 //! Set each element of Buffer to NoData
 int64_t GeoRef_InterpClear(
+    //! [in] geo-reference
     const TGeoRef * const Ref,
+    //! [in] Interpolation options
     const TGeoOptions * const Opt,
+    //! [inout] Buffer to be cleared
     float * const Buffer
 ) {
     //! \return Number of elements in buffer
+
+    int64_t i = 0;
+
     if (Opt->Extrap == ER_VALUE) {
-        for(int64_t i = 0; i < Ref->NX * Ref->NY; i++) {
+        for(i=0; i < Ref->NX * Ref->NY; i++) {
             Buffer[i] = Opt->NoData;
         }
     }
-    return Ref->NX * Ref->NY;
+    return i;
 }
 
 

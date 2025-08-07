@@ -443,7 +443,6 @@ TGeoSet* GeoRef_SetReadFST(
 //TODO test forcings
 //        crit.typvar[0]='O';
 //        crit.typvar[1]='U';
-        crit.grtyp[0]='\0';
         crit.ip3 = InterpType;
 
         fst_record record = default_fst_record;;
