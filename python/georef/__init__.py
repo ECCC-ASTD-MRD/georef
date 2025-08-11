@@ -1,2 +1,1 @@
-from .georef import *
-from .enums import *
+/home/vma000/code/georef/python/georef/__init__.py

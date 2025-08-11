@@ -514,11 +514,11 @@ static inline CoordUV xy_to_uv(
     const int panel = (int)((y + 0.5) / num_points);
     const double local_y = y - (panel * num_points);
 
-    if (local_y <= -0.5 && panel > 0 && panel < 6) {
-        Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Coordinate y %f lies on a discontinuity within the valid Y range.\n",
-            __func__, y);
-        return error;
-    }
+    // if (local_y <= -0.5 && panel > 0 && panel < 6) {
+    //     Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Coordinate y %f lies on a discontinuity within the valid Y range.\n",
+    //         __func__, y);
+    //     return error;
+    // }
 
     CoordUV c;
     c.p = panel % 6; // accept panel == 6
