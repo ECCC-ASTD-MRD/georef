@@ -14,7 +14,6 @@ void GeoRef_SetZoneFree(
         if (GSet->zones[i].npts > 0) {
             free(GSet->zones[i].idx);
             free(GSet->zones[i].x);
-            free(GSet->zones[i].y);
             GSet->zones[i].npts = 0;
             GSet->zones[i].idx  = NULL;
             GSet->zones[i].x    = NULL;
@@ -57,8 +56,8 @@ int32_t GeoRef_SetZoneDefinePole(
     }
 
     if (zone->npts > 0) {
-        zone->x = (double*)malloc(zone->npts * sizeof(double));
-        zone->y = (double*)malloc(zone->npts * sizeof(double));
+        zone->x = (double*)malloc(2*zone->npts * sizeof(double));
+        zone->y = &zone->x[zone->npts];
         zone->idx = (int32_t *)malloc(zone->npts * sizeof(int));
         Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: Number of points at pole: %d\n", __func__, zone->npts);
 
@@ -98,8 +97,8 @@ int32_t GeoRef_SetZoneDefineThem(
     }
 
     if (zone->npts > 0) {
-        zone->x = (double*)malloc(zone->npts * sizeof(double));
-        zone->y = (double*)malloc(zone->npts * sizeof(double));
+        zone->x = (double*)malloc(2*zone->npts * sizeof(double));
+        zone->y = &zone->x[zone->npts];
         zone->idx = (int32_t *) malloc(zone->npts * sizeof(int));
         Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: Number of points between pole and limit: %d\n", __func__, zone->npts);
 
@@ -146,15 +145,15 @@ int32_t GeoRef_SetZoneDefineOut(
     for (int32_t i = 0; i < nbpts; i++) {
         const int32_t ix = (int32_t)(GSet->X[i] + 0.5);
         const int32_t iy = (int32_t)(GSet->Y[i] + 0.5);
-        if (ix < (1 + offsetleft) || iy < (1 + offsetleft) || ix > (GSet->RefFrom->NX - offsetright) || iy > (GSet->RefFrom->NY - offsetright)) {
+        if (ix < (offsetleft) || iy < (offsetleft) || ix >= (GSet->RefFrom->NX - offsetright) || iy >= (GSet->RefFrom->NY - offsetright)) {
             tmpidx[zone->npts] = i;
             zone->npts++;
         }
     }
 
     if (zone->npts>0) {
-        zone->x = (double*)malloc(zone->npts * sizeof(double));
-        zone->y = (double*)malloc(zone->npts * sizeof(double));
+        zone->x = (double*)malloc(2*zone->npts * sizeof(double));
+        zone->y = &zone->x[zone->npts];
         zone->idx = (int32_t *) malloc(zone->npts * sizeof(int32_t));
         Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: Number of outside points: %i \n", __func__, zone->npts);
 
@@ -431,7 +430,7 @@ TGeoSet* GeoRef_SetReadFST(
 
     if (File) {
         if (GSet->Index) {
-           Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: GeoSet already contains an index of type %i\n", __func__,GSet->IndexMethod);
+           Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: GeoSet already contains an index (type %i)\n", __func__,GSet->IndexMethod);
         }
  
          // Rechercher et lire l'information de l'enregistrement specifie
@@ -445,7 +444,7 @@ TGeoSet* GeoRef_SetReadFST(
 //        crit.typvar[1]='U';
         crit.ip3 = InterpType;
 
-        fst_record record = default_fst_record;;
+        fst_record record = default_fst_record;
         if (fst24_read(File, &crit, NULL, &record) != TRUE) {
             Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset index field %c%c (fst24_read failed)\n", __func__,crit.typvar[0],crit.typvar[1]);
             return NULL;

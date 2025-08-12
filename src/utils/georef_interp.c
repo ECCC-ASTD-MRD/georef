@@ -14,7 +14,7 @@ int WriteResults(fst_file *File,fst_record *In,fst_record *Out,char *Etiket) {
    fst24_record_copy_metadata(Out,In,FST_META_TYPE|FST_META_TIME|FST_META_INFO);
    if (Etiket) strncpy(Out->etiket,Etiket,FST_ETIKET_LEN);
 
-   if (fst24_write(File,Out,FST_NO) < 0) {
+   if (fst24_write(File,Out,FST_NO) <= 0) {
       App_Log(APP_ERROR, "Unable to write record\n");
       return FALSE;
    }
@@ -48,7 +48,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 
    // Create the desination grid
    strncpy(crit.nomvar,"GRID",FST_NOMVAR_LEN);
-   strncpy(crit.etiket,"OCEAN",FST_ETIKET_LEN);
+//   strncpy(crit.etiket,"OCEAN",FST_ETIKET_LEN);
    if (fst24_read(fgrid,&crit,NULL,&grid)) {
       refout=GeoRef_CreateFromRecord(&grid);
    } else {

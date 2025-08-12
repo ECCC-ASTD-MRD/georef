@@ -567,7 +567,6 @@ TGeoRef *GeoRef_HardCopy(TGeoRef* __restrict const Ref) {
       if (Ref->AXY) {}
       if (Ref->AX && Ref->AY) {}
       if (Ref->NIdx) {}
-      
       GeoRef_AxisDefine(ref,Ref->AX,Ref->AY);
 
       if (Ref->Subs) {

@@ -15,7 +15,7 @@ if (EC_INIT_DONE LESS 2)
 
         file(REMOVE libgeoref.fstd)
 
-        add_test(NAME GridInterp_L2L   COMMAND $<TARGET_FILE:georef_interp> -g $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -o ./georef.fstd -n GRID -e L2L -v DEBUG)
+        add_test(NAME GridInterp_L2L   COMMAND $<TARGET_FILE:georef_interp>  -g $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -o ./georef.fstd -n GRID -e L2L -v DEBUG)
         add_test(NAME GridInterp_PS2L  COMMAND $<TARGET_FILE:georef_interp>  -g $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/PS.fstd -o ./georef.fstd -n GRID -e PS2L -v DEBUG)
         add_test(NAME GridInterp_PSN2L COMMAND $<TARGET_FILE:georef_interp>  -g $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/PSN.fstd -o ./georef.fstd -n GRID -e PSN2L -v DEBUG)
         add_test(NAME GridInterp_PSS2L COMMAND $<TARGET_FILE:georef_interp>  -g $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/PSS.fstd -o ./georef.fstd -n GRID -e PSS2L -v DEBUG)

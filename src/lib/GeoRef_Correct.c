@@ -233,7 +233,6 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
                   break;
             }
          }
-
          for (i=0; i < Set->zones[GRID_OUTSIDE].npts; i++) {
 	         zout[Set->zones[GRID_OUTSIDE].idx[i]] = fudgeval;
 	      }
