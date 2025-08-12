@@ -337,7 +337,7 @@ int32_t GeoRef_Interp(
         }
     }
     App_TimerStop(int_timer);
-    Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: Interpolation took \033[1; 32m%.3f ms\033[0m\n", __func__, App_TimerTotalTime_ms(int_timer));
+    Lib_Log(APP_LIBGEOREF, APP_STAT, "%s: Interpolation took \033[1; 32m%.3f ms\033[0m\n", __func__, App_TimerTotalTime_ms(int_timer));
 
     return ok;
 }
