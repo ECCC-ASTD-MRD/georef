@@ -769,16 +769,15 @@ contains
         set%ptr=georef_setget(this%ptr,reffrom%ptr,C_NULL_PTR)
     end function georef_setget_f
 
-    function geoset_readfst_f(this,refto,reffrom,interp,file) result(res) 
+    function geoset_readfst_f(this,interp,file) result(res) 
         class(geoset), intent(inout) :: this    !< georef instance
-        type(georef), intent(in) :: refto,reffrom
         type(fst_file), intent(in) :: file
         integer(C_INT32_T) :: interp
 
         logical :: res
 
         res=.false.
-        this%ptr=georef_setreadfst(refto%ptr,reffrom%ptr,interp,file%get_c_ptr())
+        this%ptr=georef_setreadfst(this%ptr,interp,file%get_c_ptr())
         if (c_associated(this%ptr)) then
            res=.true.
         endif

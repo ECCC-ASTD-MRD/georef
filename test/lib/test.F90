@@ -172,7 +172,7 @@ program test
         call exit(-1)
     end if
 
-    success=set1%readfst(ref1,ref2,IR_CUBIC,fileout)
+    success=set1%readfst(IR_CUBIC,fileout)
     if (.not. success) then
         call App_log(APP_ERROR, 'Test failed: Unable to read geoset to FST file')
         call exit(-1)

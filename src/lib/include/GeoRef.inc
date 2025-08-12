@@ -647,11 +647,11 @@ interface
         type(C_PTR) :: out
     end function georef_setget
 
-!   TGeoSet* GeoRef_SetReadFST(TGeoRef* RefTo,TGeoRef* RefFrom,int32_t InterpType,fst_file *File)
-    function georef_setreadfst(refto,reffrom,interp,file) result(out) bind(C, name = 'GeoRef_SetReadFST')
+!   TGeoSet* GeoRef_SetReadFST(TGeoSet *GSet,const int32_t InterpType,const fst_file * const File)
+    function georef_setreadfst(gset,interp,file) result(out) bind(C, name = 'GeoRef_SetReadFST')
         import :: C_PTR, C_INT32_T
         implicit none
-        type(C_PTR), intent(in), value :: refto,reffrom,file
+        type(C_PTR), intent(in), value :: gset,file
         integer(C_INT32_T), value :: interp
 
         type(C_PTR) :: out
