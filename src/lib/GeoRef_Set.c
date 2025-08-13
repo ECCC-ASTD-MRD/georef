@@ -145,7 +145,7 @@ int32_t GeoRef_SetZoneDefineOut(
     for (int32_t i = 0; i < nbpts; i++) {
         const int32_t ix = (int32_t)(GSet->X[i] + 0.5);
         const int32_t iy = (int32_t)(GSet->Y[i] + 0.5);
-        if (ix < (offsetleft) || iy < (offsetleft) || ix >= (GSet->RefFrom->NX - offsetright) || iy >= (GSet->RefFrom->NY - offsetright)) {
+        if (ix < (offsetleft) || iy < (offsetleft) || ix > (GSet->RefFrom->NX - offsetright-1) || iy > (GSet->RefFrom->NY - offsetright-1)) {
             tmpidx[zone->npts] = i;
             zone->npts++;
         }
