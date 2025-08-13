@@ -45,6 +45,7 @@ void GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref) {
 
 
 void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
+
     Ref->i1 = 1;
     Ref->i2 = Ref->NX;
     switch (Ref->GRTYP[0]) {
@@ -111,9 +112,9 @@ void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
                     Ref->j1 = 1;
                     Ref->j2 = Ref->NY;
                     if ((Ref->AX[Ref->NX-1]-Ref->AX[0]) < 359.0) {
-                    Ref->Extension = 0;
+                       Ref->Extension = 0;
                     } else {
-                    Ref->Extension = 1;
+                       Ref->Extension = 1;
                     }
                 break;
 

@@ -213,7 +213,7 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
       }
 
       if (Set->Opt.Extrap) {
-        if (!Set->Opt.VectorMode) {
+         if (!Set->Opt.VectorMode) {
             switch (Set->Opt.Extrap) {
                case ER_MAXIMUM:
                   f77name(ez_aminmax)(&valmin,&valmax,zin,&(reffrom->NX),&nj);
@@ -233,6 +233,7 @@ int32_t GeoRef_CorrectValue(TGeoSet *Set,float *zout, float *zin) {
                   break;
             }
          }
+
          for (i=0; i < Set->zones[GRID_OUTSIDE].npts; i++) {
 	         zout[Set->zones[GRID_OUTSIDE].idx[i]] = fudgeval;
 	      }

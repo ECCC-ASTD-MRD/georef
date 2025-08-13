@@ -28,7 +28,7 @@ int32_t GeoRef_XY2LL_Z(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,
    tmpy = &tmpx[Nb];
    ytmp = &tmpx[Nb*2];
 
-   #pragma omp parallel for default(none) private(i,indx,indy,delxx,delyy) shared(Nb,Ref,X,Y,Lat,Lon,tmpx,tmpy,ytmp)
+   #pragma omp parallel for default(none) private(i,indx,indy,delxx,delyy) shared(Nb,Ref,X,Y,tmpx,tmpy,ytmp)
    for (i=0; i < Nb; i++) {
       indx = (int)X[i];
       ytmp[i] = (Ref->RPNHead.ig2==1)?Ref->NY+1.0 - Y[i]:Y[i];
@@ -104,9 +104,8 @@ int32_t GeoRef_LL2XY_Z(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,
    d=(Ref->Type&GRID_AXY2D)?Ref->NX:1;
 
    // Look into expansion descriptor
-   #pragma omp parallel for default(none) private(i,indx,indy) shared(stderr,d,Nb,Ref,X,Y,Lat,Lon)
+   #pragma omp parallel for default(none) private(i,indx,indy) shared(d,Nb,Ref,X,Y)
    for(i=0;i<Nb;i++) {
-      //TODO: clarify NX and j2 index          
       indx = GeoRef_XFind(X[i],Ref->AX,Ref->NX,1);
       indy = GeoRef_XFind(Y[i],Ref->AY,Ref->NY,d);
     

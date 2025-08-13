@@ -10,7 +10,7 @@ void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,f
 
    f77name(ez_crot)((float*)r,(float*)ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
-   #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(r,ri,npts,Lat,Lon,X,Y)
+   #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(r,npts,Lat,Lon,X,Y)
    for(n=0;n<npts;n++) {
       latr=DEG2RAD(Lat[n]);
       lonr=DEG2RAD(Lon[n]);
@@ -26,7 +26,6 @@ void  GeoRef_RotateXY(double *Lat,double *Lon,double *X,double *Y,int32_t npts,f
 
       Y[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[2]))));
       X[n]=RAD2DEG(atan2(carot[1],carot[0]));
-      X[n]=fmod(X[n],360.0);
       if (X[n]<0.0) X[n]+=360.0;
    }
 }
@@ -39,7 +38,7 @@ void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t 
    f77name(ez_crot)((float*)r,(float*)ri,&xlon1,&xlat1,&xlon2,&xlat2);
 
    int32_t n;
-   #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(stderr,ri,npts,Lat,Lon,X,Y)
+   #pragma omp parallel for default(none) private(n,latr,lonr,cosdar,cart,carot) shared(ri,npts,Lat,Lon,X,Y)
    for(n = 0; n < npts; n++) {
       latr=DEG2RAD(Y[n]);
       lonr=DEG2RAD(X[n]);
@@ -55,7 +54,6 @@ void  GeoRef_RotateInvertXY(double *Lat,double *Lon,double *X,double *Y,int32_t 
 
       Lat[n]=RAD2DEG(asin(fmax(-1.0,fmin(1.0,carot[2]))));
       Lon[n]=RAD2DEG(atan2(carot[1],carot[0]));
-      Lon[n]=fmod(Lon[n],360.0);
       if (Lon[n]<0.0) Lon[n]+=360.0;
    }
 }
@@ -197,7 +195,7 @@ int32_t GeoRef_XY2LL(TGeoRef *Ref,double *Lat,double *Lon,double *X,double *Y,in
 int32_t GeoRef_LL2XY(TGeoRef *Ref,double *X,double *Y,double *Lat,double *Lon,int32_t Nb,int32_t Extrap) {
 
    TGeoRef *yin_gd,*yan_gd,*ref;
-   int32_t     j,icode,maxni,maxnj;
+   int32_t  j,icode,maxni,maxnj;
    double  *xyin,*xyan,*yyin,*yyan;
 
    if (!Ref->LL2XY) {

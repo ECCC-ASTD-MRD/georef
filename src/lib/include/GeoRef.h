@@ -45,16 +45,16 @@ typedef struct {
 //#define EARTHRADIUS          6378140.0                                                                                   //!< Rayon de la terre en metres
 #define EARTHRADIUS          6371000.0                                                                                    //!< Rayon de la terre en metres (Utilise par RPN)
 
-#define DIST(E, A0, O0, A1, O1)  ((E+EARTHRADIUS)*acos(sin(A0)*sin(A1)+cos(O0-O1)*cos(A0)*cos(A1)))                           //!< Calculates great circle distance on earth at a specific elevation between tow set of coordinates (in radian)
-#define COURSE(A0, O0, A1, O1)  (fmod(atan2(sin(O0-O1)*cos(A1), cos(A0)*sin(A1)-sin(A0)*cos(A1)*cos(O0-O1)), M_2PI))           //!< Calculates true course between 2 set of coordinates (in radian)
+#define DIST(E, A0, O0, A1, O1)  ((E+EARTHRADIUS)*acos(sin(A0)*sin(A1)+cos(O0-O1)*cos(A0)*cos(A1)))                       //!< Calculates great circle distance on earth at a specific elevation between tow set of coordinates (in radian)
+#define COURSE(A0, O0, A1, O1)  (fmod(atan2(sin(O0-O1)*cos(A1), cos(A0)*sin(A1)-sin(A0)*cos(A1)*cos(O0-O1)), M_2PI))      //!< Calculates true course between 2 set of coordinates (in radian)
 #define M2RAD(M)             ((double)(M)*0.00000015706707756635)                                                         //!< Convert meters to radians
 #define M2DEG(M)             ((double)(M)*8.9992806450057884399546578634955e-06)                                          //!< Convert meters to degrees
 #define RAD2M(R)             ((double)(R)*6.36670701949370745569e+06)                                                     //!< Convert radians to meters
 #define DEG2M(D)             ((double)(D)*1.11119992746859911778451e+05)                                                  //!< Convert degrees to meters
 #define CLAMPLAT(LAT)        (LAT=LAT>90.0?90.0:(LAT<-90.0?-90.0:LAT))                                                    //!< Clamp latitude between -90 and 90
 #define CLAMPLON(LON)        (LON=LON>180?LON-360:(LON<-180?LON+360:LON))                                                 //!< Clamp longitude between -180 and 180
-#define CLAMPLONRAD(LON)     (LON=(LON>M_PI?(fmod(LON+M_PI, M_2PI)-M_PI):(LON<=-M_PI?(fmod(LON-M_PI, M_2PI)+M_PI):LON)))    //!< Clamp longitude in radians -PI and PI
-#define SIDELON(SIDE, L)      (((SIDE)>0 && (L)<0)?L+360.0:((SIDE)>0 && (L)<0)?(L)-360.0:(L))                              //!< Force longitude to be all positive or negative
+#define CLAMPLONRAD(LON)     (LON=(LON>M_PI?(fmod(LON+M_PI, M_2PI)-M_PI):(LON<=-M_PI?(fmod(LON-M_PI, M_2PI)+M_PI):LON)))  //!< Clamp longitude in radians -PI and PI
+#define SIDELON(SIDE, L)     (((SIDE)>0 && (L)<0)?L+360.0:((SIDE)>0 && (L)<0)?(L)-360.0:(L))                              //!< Force longitude to be all positive or negative
 #define COORD_CLEAR(C)       (C.Lat=C.Lon=C.Elev=-999.0)                                                                  //!< Clear the coordinates values to -999 (undefined)
 
 #define DATA_ISVALID(VAL,NODATA) (VAL!=NODATA && VAL==VAL)
@@ -443,21 +443,11 @@ void     GeoRef_AxisCalcNewtonCoeff(TGeoRef* Ref);
 
 // Internal functions
 TGeoRef* GeoRef_Add(TGeoRef *Ref);
-TGeoSet* GeoRef_SetGet(
-    TGeoRef * const RefTo,
-    TGeoRef * const RefFrom,
-    const TGeoOptions * const Opt
-);
+
+TGeoSet* GeoRef_SetGet(TGeoRef * const RefTo, TGeoRef * const RefFrom, const TGeoOptions * const Opt);
 void     GeoRef_SetFree(TGeoSet *GSet);
-TGeoSet* GeoRef_SetReadFST(
-    TGeoSet * GSet,
-    const int32_t InterpType,
-    const fst_file * const File
-);
-int32_t GeoRef_SetWriteFST(
-    const TGeoSet * const GSet,
-    fst_file * const File
-);
+TGeoSet* GeoRef_SetReadFST(TGeoSet * GSet, const int32_t InterpType, const fst_file * const File);
+int32_t  GeoRef_SetWriteFST(const TGeoSet * const GSet, fst_file * const File);
 int32_t  GeoRef_SetZoneDefine(TGeoSet *GSet);
 int32_t  GeoRef_SetCalcXY(TGeoSet *GSet);
 int32_t  GeoRef_SetCalcYYXY(TGeoSet *GSet);

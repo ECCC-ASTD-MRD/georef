@@ -4,7 +4,7 @@
 #include "Triangle.h"
 
 //! Predicate for grid rotation
-int32_t c_gd_isgridrotated(
+int32_t GeoRef_IsRotated(
     const TGeoRef * const gr
 ) {
     //! \return 1 when rotated, 0 otherwise
@@ -40,7 +40,7 @@ int32_t c_gdcompatible_grids(
             if (RefTo->RPNHeadExt.grref[0] == 'L') {
                 return 0;
             } else if (RefTo->RPNHeadExt.grref[0] == 'E') {
-                if (!c_gd_isgridrotated(RefTo)) {
+                if (!GeoRef_IsRotated(RefTo)) {
                     return 0;
                 } else {
                     return -1;
@@ -56,7 +56,7 @@ int32_t c_gdcompatible_grids(
 }
 
 
-int32_t gd_interpm(
+int32_t GeoRef_InterpGridM(
     const TGeoRef * const Ref,
     const TGeoOptions * const Opt,
     float * const Out,
@@ -122,20 +122,23 @@ int32_t GeoRef_InterpFinally(
         return -1;
     }
 
+    // Fortran interpolation functions expect 1 to N
     double *x, *y;
-    x = (double*)malloc(npts * sizeof(double) * 2);
-    y = &x[npts];
+    if (RefFrom->GRTYP[0]!='M') {
+        x = (double*)malloc(npts * sizeof(double) * 2);
+        y = &x[npts];
 
-    for(int32_t j = 0; j < npts; j++) {
-        x[j] = X[j] + 1.0;
-        y[j] = Y[j] + 1.0;
+        for(int32_t j = 0; j < npts; j++) {
+            x[j] = X[j] + 1.0;
+            y[j] = Y[j] + 1.0;
+        }
     }
 
     const int32_t old_degre_interp = Opt->Interp;
 
     switch(RefFrom->GRTYP[0]) {
         case 'M':
-            gd_interpm(RefFrom, Opt, zout, zin, X, Y, npts);
+            GeoRef_InterpGridM(RefFrom, Opt, zout, zin, X, Y, npts);
             break;
         case '#':
         case 'Z':
