@@ -13,6 +13,9 @@ int WriteResults(fst_file *File,fst_record *In,fst_record *Out,char *Etiket) {
 
    fst24_record_copy_metadata(Out,In,FST_META_TYPE|FST_META_TIME|FST_META_INFO);
    if (Etiket) strncpy(Out->etiket,Etiket,FST_ETIKET_LEN);
+   
+   Out->data_type = FST_TYPE_REAL_IEEE;
+   Out->data_bits = 32;
 
    if (fst24_write(File,Out,FST_NO) <= 0) {
       App_Log(APP_ERROR, "Unable to write record\n");
