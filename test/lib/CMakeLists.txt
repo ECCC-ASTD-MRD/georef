@@ -46,6 +46,8 @@ if (EC_INIT_DONE LESS 2)
         add_test(NAME GridInterp_U2ZE   COMMAND $<TARGET_FILE:georef_interp>  -g $ENV{ECCI_DATA_DIR}/georef/grids/ZE.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/U.fstd -o ./georef.fstd -n GRID -e U2ZE -v DEBUG)
         add_test(NAME GridInterp_U2O    COMMAND $<TARGET_FILE:georef_interp>  -g $ENV{ECCI_DATA_DIR}/georef/grids/O.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/U.fstd -o ./georef.fstd -n GRID -e U2O -v DEBUG)
 
+        add_test(NAME GridInterp_U2O_IW COMMAND $<TARGET_FILE:georef_interp>  -g $ENV{ECCI_DATA_DIR}/georef/grids/O_IW.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/U_IW.fstd -o ./georef.fstd -n GRID -e U2O_IW -m WEIGHTINDEX -v DEBUG)        
+    
         if(GDAL_FOUND)
             add_test(NAME GridInterp_ZW2L  COMMAND $<TARGET_FILE:georef_interp>  -i $ENV{ECCI_DATA_DIR}/georef/grids/ZW.fstd -g $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -o ./georef.fstd -n GRID -e ZW2L -v DEBUG)
             add_test(NAME GridInterp_L2ZW  COMMAND $<TARGET_FILE:georef_interp>  -g $ENV{ECCI_DATA_DIR}/georef/grids/ZW.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd -o ./georef.fstd -n GRID -e L2ZW -v DEBUG)
