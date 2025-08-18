@@ -525,7 +525,7 @@ int32_t GeoRef_InterpWeight(
       Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Weight index not defined\n", __func__);
       return FALSE;
    }
-
+ 
     // Clear destination buffer
     if (opt->Extrap != ER_VALUE)
         memset(zout,0x0,RefFrom->NX*RefFrom->NY*sizeof(float));
@@ -538,11 +538,11 @@ int32_t GeoRef_InterpWeight(
         // Get the gridpoint
         i = *(ip++);
         j = *(ip++);
-        val = zout[j*RefTo->NX+i];
-        if (!DATA_ISVALID(val,opt->NoData)) {
-           val = 0.0;
-        }
-
+//        val = zout[j*RefTo->NX+i];
+//        if (!DATA_ISVALID(val,opt->NoData)) {
+//           val = 0.0;
+//        }
+         val = 0.0;
         // Get the geometry intersections
         while(*ip != REF_INDEX_SEPARATOR) {
             pi = *(ip++);
