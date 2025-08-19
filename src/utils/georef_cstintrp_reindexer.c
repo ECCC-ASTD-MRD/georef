@@ -60,12 +60,14 @@ int ReIndex(char **In,char *Out,char* FromTo,int *YDim,int BDW) {
          if ((g=(((short*)(rec[0][NAVG].data))[idx]))) {
             // Check if inside core grid
             in=TRUE;
-            for(n=0;n<g;n++){
-               iy=((short*)(rec[0][n+4].data))[idx]-1;
-               jy=((short*)(rec[0][n+8].data))[idx]-1;
-               if (iy<BDW || jy<BDW || iy>=(YDim[0]-BDW) || jy>=(YDim[1]-BDW)) {
-                  in=FALSE;
-                  break;
+            if (BDW) {
+               for(n=0;n<g;n++){
+                  iy=((short*)(rec[0][n+4].data))[idx]-1;
+                  jy=((short*)(rec[0][n+8].data))[idx]-1;
+                  if (iy<BDW || jy<BDW || iy>=(YDim[0]-BDW) || jy>=(YDim[1]-BDW)) {
+                     in=FALSE;
+                     break;
+                  }
                }
             }
             if (in) {
@@ -90,12 +92,14 @@ int ReIndex(char **In,char *Out,char* FromTo,int *YDim,int BDW) {
             if ((g=(((short*)(rec[1][NAVG].data))[idx]))) {
                // Check if inside core grid
                in=TRUE;
-               for(n=0;n<g;n++){
-                  iy=((short*)(rec[1][n+4].data))[idx]-1;
-                  jy=((short*)(rec[1][n+8].data))[idx]-1;
-                  if (iy<BDW || jy<BDW || iy>=(YDim[0]-BDW) || jy>=(YDim[1]-BDW)) {
-                     in=FALSE;
-                     break;
+               if (BDW) {
+                  for(n=0;n<g;n++){
+                     iy=((short*)(rec[1][n+4].data))[idx]-1;
+                     jy=((short*)(rec[1][n+8].data))[idx]-1;
+                     if (iy<BDW || jy<BDW || iy>=(YDim[0]-BDW) || jy>=(YDim[1]-BDW)) {
+                        in=FALSE;
+                        break;
+                     }
                   }
                }
                if (in) {
