@@ -60,8 +60,6 @@
       real(kind=8) cx(6),cy(6)
       real(kind=8) z1,z2,z3,z4
       
-#include "ez_qqqxtrp.cdk"
-
 !     definition des fonctions in-line
 
 

@@ -46,7 +46,6 @@
       integer n,i,j
       integer imoins1, iplus1, iplus2, limite
 
-#include "ez_qqqxtrp.cdk"
 #include "cubic8.cdk"
 
       limite = ni+2-wrap
