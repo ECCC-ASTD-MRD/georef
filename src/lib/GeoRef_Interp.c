@@ -527,8 +527,8 @@ int32_t GeoRef_InterpWeight(
    }
  
     // Clear destination buffer
-    if (opt->Extrap != ER_VALUE)
-        memset(zout,0x0,RefFrom->NX*RefFrom->NY*sizeof(float));
+//    if (opt->Extrap != ER_VALUE)
+//       memset(zout,0x0,RefFrom->NX*RefFrom->NY*sizeof(float));
     
     // As long as the file or the list is not empty
     ip = gset->Index;
@@ -538,11 +538,12 @@ int32_t GeoRef_InterpWeight(
         // Get the gridpoint
         i = *(ip++);
         j = *(ip++);
+// TODO: The current indexes contains multiple values per gridpoint (YY) 
 //        val = zout[j*RefTo->NX+i];
 //        if (!DATA_ISVALID(val,opt->NoData)) {
 //           val = 0.0;
 //        }
-         val = 0.0;
+        val = 0.0;
         // Get the geometry intersections
         while(*ip != REF_INDEX_SEPARATOR) {
             pi = *(ip++);

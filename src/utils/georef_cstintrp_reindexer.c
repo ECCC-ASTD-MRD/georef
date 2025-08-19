@@ -10,16 +10,16 @@ const char *NEMO_Vars[] = { "W001","W002","W003","W004", "I001","I002","I003","I
 typedef enum { W001,W002,W003,W004, I001,I002,I003,I004, J001,J002,J003,J004, NAVG,ANG,MASK } NEMO_Idx;
 
 // Usage example call for CANSIPS
-// GEM_to NEMO: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -j 131 
+// GEM_to NEMO: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -y 319 131 -b 2
 // NEMO_to_GEM: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yang.std -o ./atmos-ocean-grids.fstd -g UO 
 
-int ReIndex(char **In,char *Out,char* FromTo,int YNJ) {
+int ReIndex(char **In,char *Out,char* FromTo,int *YDim,int BDW) {
 
    fst_record  rec[2][15];
    fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
    fst_file   *fin[2],*fout;
    float      *data;
-   int         i=0,j=0,n=0,v=0,sz=0,idx,g;
+   int         i=0,j=0,iy,jy,n=0,v=0,sz=0,idx,g,in;
 
    if (!(fin[0]=fst24_open(In[0],"R/O"))) {
       App_Log(APP_ERROR,"Problems opening input file %s\n",In[0]);
@@ -58,14 +58,26 @@ int ReIndex(char **In,char *Out,char* FromTo,int YNJ) {
    for(j=0;j<rec[0][0].nj;j++) {
       for(i=0;i<rec[0][0].ni;i++,idx++) {
          if ((g=(((short*)(rec[0][NAVG].data))[idx]))) {
-            data[v++]=i;
-            data[v++]=j;
+            // Check if inside core grid
+            in=TRUE;
             for(n=0;n<g;n++){
-               data[v++]=((short*)(rec[0][n+4].data))[idx]-1; 
-               data[v++]=((short*)(rec[0][n+8].data))[idx]-1;
-               data[v++]=((double*)(rec[0][n].data))[idx];
-            } 
-            data[v++]=REF_INDEX_SEPARATOR;
+               iy=((short*)(rec[0][n+4].data))[idx]-1;
+               jy=((short*)(rec[0][n+8].data))[idx]-1;
+               if (iy<BDW || jy<BDW || iy>=(YDim[0]-BDW) || jy>=(YDim[1]-BDW)) {
+                  in=FALSE;
+                  break;
+               }
+            }
+            if (in) {
+               data[v++]=i;
+               data[v++]=j;
+               for(n=0;n<g;n++){
+                  data[v++]=((short*)(rec[0][n+4].data))[idx]-1; 
+                  data[v++]=((short*)(rec[0][n+8].data))[idx]-1;
+                  data[v++]=((double*)(rec[0][n].data))[idx];
+               } 
+               data[v++]=REF_INDEX_SEPARATOR;
+            }
          }
       }
    }
@@ -76,14 +88,26 @@ int ReIndex(char **In,char *Out,char* FromTo,int YNJ) {
       for(j=0;j<rec[1][0].nj;j++) {
          for(i=0;i<rec[1][0].ni;i++,idx++) {
             if ((g=(((short*)(rec[1][NAVG].data))[idx]))) {
-               data[v++]=i;
-               data[v++]=(FromTo[0]=='U')?j+rec[0][0].nj:j;
+               // Check if inside core grid
+               in=TRUE;
                for(n=0;n<g;n++){
-                  data[v++]=((short*)(rec[1][n+4].data))[idx]-1;
-                  data[v++]=((short*)(rec[1][n+8].data))[idx]-1+YNJ;
-                  data[v++]=((double*)(rec[1][n].data))[idx];
+                  iy=((short*)(rec[1][n+4].data))[idx]-1;
+                  jy=((short*)(rec[1][n+8].data))[idx]-1;
+                  if (iy<BDW || jy<BDW || iy>=(YDim[0]-BDW) || jy>=(YDim[1]-BDW)) {
+                     in=FALSE;
+                     break;
+                  }
+               }
+               if (in) {
+                  data[v++]=i;
+                  data[v++]=(FromTo[0]=='U')?j+rec[0][0].nj:j;
+                  for(n=0;n<g;n++){
+                     data[v++]=((short*)(rec[1][n+4].data))[idx]-1; 
+                     data[v++]=((short*)(rec[1][n+8].data))[idx]-1+YDim[1];
+                     data[v++]=((double*)(rec[1][n].data))[idx];
+                  }
+                  data[v++]=REF_INDEX_SEPARATOR;
                } 
-               data[v++]=REF_INDEX_SEPARATOR;
             }  
          }
       }
@@ -158,14 +182,15 @@ int ReIndex(char **In,char *Out,char* FromTo,int YNJ) {
 
 int main(int argc, char *argv[]) {
 
-   int         ok=0,m=-1,code=0,ynj=0;
+   int         ok=0,m=-1,code=0,ydim[2]={0,0},bdw=0;
    char        *in[2]={ NULL, NULL },*out=NULL,*ft=NULL;
  
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,    2,             "i", "input",  "Input file" },
         { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
         { APP_CHAR,  &ft,    1,             "g", "grid",   "Grid types from->to (ie: U->O = 'OU')" },
-        { APP_INT32, &ynj,   1,             "j", "ynj",    "Nj dimension of the YY grid (needed for U->O only)" },
+        { APP_INT32, &ydim,  2,             "y", "ydim",   "NI,NJ dimension of the Yin grid (needed for U->O only)" },
+        { APP_INT32, &bdw,   1,             "b", "border", "Number of border gridpoint not to be used" },
         { APP_NIL } };
 
    App_Init(APP_MASTER,APP_NAME,VERSION,APP_DESC,BUILD_TIMESTAMP);
@@ -188,7 +213,7 @@ int main(int argc, char *argv[]) {
    App_Start();
 
    if (code!=EXIT_FAILURE) {
-      ok=ReIndex(in,out,ft,ynj);
+      ok=ReIndex(in,out,ft,ydim,bdw);
    }
    code=App_End(ok?0:EXIT_FAILURE);
  
