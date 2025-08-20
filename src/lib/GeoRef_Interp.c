@@ -505,7 +505,7 @@ int32_t GeoRef_InterpWeight(
 ) {
 
    TGeoSet *gset = NULL;
-   int32_t  i, j, pi, pj;
+   int32_t  i, j, pi, pj, n;
    float    val, val1,dp;
    float   *ip = NULL;
 
@@ -530,25 +530,21 @@ int32_t GeoRef_InterpWeight(
 //    if (opt->Extrap != ER_VALUE)
 //       memset(zout,0x0,RefFrom->NX*RefFrom->NY*sizeof(float));
     
-    // As long as the file or the list is not empty
     ip = gset->Index;
 
+    // As long as the file or the list is not empty
     while(*ip != REF_INDEX_END) {
 
-        // Get the gridpoint
+        // Get destination gridpoint
         i = *(ip++);
         j = *(ip++);
-// TODO: The current indexes contains multiple values per gridpoint (YY) 
-//        val = zout[j*RefTo->NX+i];
-//        if (!DATA_ISVALID(val,opt->NoData)) {
-//           val = 0.0;
-//        }
         val = 0.0;
-        // Get the geometry intersections
+
+        // Loop on contributing gritpoints
         while(*ip != REF_INDEX_SEPARATOR) {
-            pi = *(ip++);
+            pi = *(ip++);   // Source gridpoint
             pj = *(ip++);
-            dp = *(ip++);
+            dp = *(ip++);   // Fraction of value to use
 
             val1=zin[pj*RefFrom->NX+pi];
             if (DATA_ISVALID(val1,opt->NoData)) {
@@ -556,6 +552,11 @@ int32_t GeoRef_InterpWeight(
             }
         }
 
+        // Check for valid previous value and average if so (we suppose 2 values (Yin/Yang)
+        val1 = zout[j*RefTo->NX+i];
+        if (DATA_ISVALID(val1,opt->NoData)) {
+           val = (val + val1)/2.0;
+        }
         zout[j*RefTo->NX+i]=val;
 
         // Skip separator
