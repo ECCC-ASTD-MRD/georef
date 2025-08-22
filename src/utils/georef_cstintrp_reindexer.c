@@ -11,9 +11,9 @@ typedef enum { W001,W002,W003,W004, I001,I002,I003,I004, J001,J002,J003,J004, NA
 
 // Usage example call for CANSIPS
 // GEM_to NEMO: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -d 319 131 -b 2
-// NEMO_to_GEM: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yang.std -o ./atmos-ocean-grids.fstd -g UO 
+// NEMO_to_GEM: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yang.std -o ./atmos-ocean-grids.fstd -g UO -d 362 292 --orca 1
 
-int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW) {
+int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
 
    fst_record  rec[2][15];
    fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
@@ -74,7 +74,8 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW) {
                data[v++]=i;
                data[v++]=j;
                for(n=0;n<g;n++){
-                  data[v++]=((short*)(rec[0][n+4].data))[idx]-1; 
+                  iy=((short*)(rec[0][n+4].data))[idx]-1;
+                  data[v++]= (Orca && iy==0) ? OtherDims[0]-2 : ((Orca && iy==OtherDims[0]-1) ? 1 : iy);
                   data[v++]=((short*)(rec[0][n+8].data))[idx]-1;
                   data[v++]=((double*)(rec[0][n].data))[idx];
                } 
@@ -106,8 +107,10 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW) {
                   data[v++]=i;
                   data[v++]=(FromTo[0]=='U')?j+rec[0][0].nj:j;
                   for(n=0;n<g;n++){
-                     data[v++]=((short*)(rec[1][n+4].data))[idx]-1; 
-                     data[v++]=((short*)(rec[1][n+8].data))[idx]-1+OtherDims[1];
+                     iy=((short*)(rec[1][n+4].data))[idx]-1;
+                     data[v++]= (Orca && iy==1) ? OtherDims[0]-2 : ((Orca && iy==OtherDims[0]-1) ? 1 : iy);
+                     jy=((short*)(rec[1][n+8].data))[idx]-1;
+                     data[v++]= (FromTo[0]=='O') ? jy+OtherDims[1] : jy;
                      data[v++]=((double*)(rec[1][n].data))[idx];
                   }
                   data[v++]=REF_INDEX_SEPARATOR;
@@ -186,7 +189,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW) {
 
 int main(int argc, char *argv[]) {
 
-   int         ok=0,m=-1,code=0,odim[2]={0,0},bdw=0;
+   int         ok=0,m=-1,code=0,odim[2]={0,0},bdw=0,orca=0;
    char        *in[2]={ NULL, NULL },*out=NULL,*ft=NULL;
  
    TApp_Arg appargs[]=
@@ -195,6 +198,7 @@ int main(int argc, char *argv[]) {
         { APP_CHAR,  &ft,    1,             "g", "grid",   "Grid types from->to (ie: U->O = 'OU')" },
         { APP_INT32, &odim,  2,             "d", "dims",   "NI,NJ dimension of the other (sub)grid " },
         { APP_INT32, &bdw,   1,             "b", "border", "Number of border gridpoint not to be used" },
+        { APP_INT32, &orca,  1,             "r", "orca",   "Source grid is NEMO ORCA grid, use real i indices when in halo columns" },
         { APP_NIL } };
 
    App_Init(APP_MASTER,APP_NAME,VERSION,APP_DESC,BUILD_TIMESTAMP);
@@ -217,7 +221,7 @@ int main(int argc, char *argv[]) {
    App_Start();
 
    if (code!=EXIT_FAILURE) {
-      ok=ReIndex(in,out,ft,odim,bdw);
+      ok=ReIndex(in,out,ft,odim,bdw,orca);
    }
    code=App_End(ok?0:EXIT_FAILURE);
  
