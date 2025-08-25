@@ -10,10 +10,10 @@ const char *NEMO_Vars[] = { "W001","W002","W003","W004", "I001","I002","I003","I
 typedef enum { W001,W002,W003,W004, I001,I002,I003,I004, J001,J002,J003,J004, NAVG,ANG,MASK } NEMO_Idx;
 
 // Usage example call for CANSIPS
-// GEM_to NEMO: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -y 319 131 -b 2
+// GEM_to NEMO: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -d 319 131 -b 2
 // NEMO_to_GEM: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yang.std -o ./atmos-ocean-grids.fstd -g UO 
 
-int ReIndex(char **In,char *Out,char* FromTo,int *YDim,int BDW) {
+int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW) {
 
    fst_record  rec[2][15];
    fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
@@ -64,7 +64,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *YDim,int BDW) {
                for(n=0;n<g;n++){
                   iy=((short*)(rec[0][n+4].data))[idx]-1;
                   jy=((short*)(rec[0][n+8].data))[idx]-1;
-                  if (iy<BDW || jy<BDW || iy>=(YDim[0]-BDW) || jy>=(YDim[1]-BDW)) {
+                  if (iy<BDW || jy<BDW || iy>=(OtherDims[0]-BDW) || jy>=(OtherDims[1]-BDW)) {
                      in=FALSE;
                      break;
                   }
@@ -96,7 +96,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *YDim,int BDW) {
                   for(n=0;n<g;n++){
                      iy=((short*)(rec[1][n+4].data))[idx]-1;
                      jy=((short*)(rec[1][n+8].data))[idx]-1;
-                     if (iy<BDW || jy<BDW || iy>=(YDim[0]-BDW) || jy>=(YDim[1]-BDW)) {
+                     if (iy<BDW || jy<BDW || iy>=(OtherDims[0]-BDW) || jy>=(OtherDims[1]-BDW)) {
                         in=FALSE;
                         break;
                      }
@@ -107,7 +107,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *YDim,int BDW) {
                   data[v++]=(FromTo[0]=='U')?j+rec[0][0].nj:j;
                   for(n=0;n<g;n++){
                      data[v++]=((short*)(rec[1][n+4].data))[idx]-1; 
-                     data[v++]=((short*)(rec[1][n+8].data))[idx]-1+YDim[1];
+                     data[v++]=((short*)(rec[1][n+8].data))[idx]-1+OtherDims[1];
                      data[v++]=((double*)(rec[1][n].data))[idx];
                   }
                   data[v++]=REF_INDEX_SEPARATOR;
@@ -186,14 +186,14 @@ int ReIndex(char **In,char *Out,char* FromTo,int *YDim,int BDW) {
 
 int main(int argc, char *argv[]) {
 
-   int         ok=0,m=-1,code=0,ydim[2]={0,0},bdw=0;
+   int         ok=0,m=-1,code=0,odim[2]={0,0},bdw=0;
    char        *in[2]={ NULL, NULL },*out=NULL,*ft=NULL;
  
    TApp_Arg appargs[]=
       { { APP_CHAR,  &in,    2,             "i", "input",  "Input file" },
         { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
         { APP_CHAR,  &ft,    1,             "g", "grid",   "Grid types from->to (ie: U->O = 'OU')" },
-        { APP_INT32, &ydim,  2,             "y", "ydim",   "NI,NJ dimension of the Yin grid (needed for U->O only)" },
+        { APP_INT32, &odim,  2,             "d", "dims",   "NI,NJ dimension of the other (sub)grid " },
         { APP_INT32, &bdw,   1,             "b", "border", "Number of border gridpoint not to be used" },
         { APP_NIL } };
 
@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
    App_Start();
 
    if (code!=EXIT_FAILURE) {
-      ok=ReIndex(in,out,ft,ydim,bdw);
+      ok=ReIndex(in,out,ft,odim,bdw);
    }
    code=App_End(ok?0:EXIT_FAILURE);
  
