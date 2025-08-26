@@ -157,6 +157,7 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
          // Proceed with interpolation
          defin=Def_Create(record.ni,record.nj,record.nk,TD_Float32,record.data,vmode?recordvv.data:NULL,NULL);
          defout=vmode?defout2:defout1;
+
          if (!GeoRef_InterpDef(refout, defout, refin, defin, &GeoRef_Options,1)) {
    //     if (!GeoRef_Interp(refout,refin,&GeoRef_Options,grid.data,record.data)) {
             App_Log(APP_ERROR,"Interpolation problem");

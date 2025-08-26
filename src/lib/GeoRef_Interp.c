@@ -123,7 +123,7 @@ int32_t GeoRef_InterpFinally(
     }
 
     // Fortran interpolation functions expect 1 to N
-    double *x, *y;
+    double *x=NULL, *y=NULL;
     if (RefFrom->GRTYP[0]!='M') {
         x = (double*)malloc(npts * sizeof(double) * 2);
         y = &x[npts];
@@ -233,7 +233,7 @@ int32_t GeoRef_InterpFinally(
             break;
     }
 
-    free(x);
+    if (x) free(x);
     Opt->Interp = old_degre_interp;
     return 0;
 }
