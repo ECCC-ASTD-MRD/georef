@@ -292,7 +292,7 @@ int32_t GeoRef_Interp(
 
     // If we're using pre-calculated index weight
     if (opt->Interp==IR_WEIGHTINDEX) {
-       return(GeoRef_InterpWeight(RefTo,RefFrom,opt,zout,zin));
+       return(GeoRef_InterpWeight(RefTo,RefFrom,opt,zout,NULL,zin,NULL));
     }
 
     int32_t ok = TRUE;
@@ -498,15 +498,20 @@ int32_t GeoRef_InterpWeight(
     const TGeoRef * const RefFrom,
     //! [in] Interpolation options
     const TGeoOptions * const Opt,
-    //! [out] Destination interpolated values
-    float * const zout,
-    //! [in] Source values
-    const float * const zin
+    //! [out] Destination interpolated values U
+    float * const zuout,
+    //! [out] Destination interpolated values V (optional)
+    float * const zvout,
+    //! [in] Source values U
+    const float * const zuin,
+    //! [in] Source values V (optional)
+    const float * const zvin
 ) {
 
    TGeoSet *gset = NULL;
    int32_t  i, j, pi, pj, n;
-   float    val, val1,dp;
+   uint32_t idx;
+   float    uval, vval, val1,dp;
    float   *ip = NULL;
 
    const TGeoOptions * const opt = Opt ? Opt : &GeoRef_Options;
@@ -538,26 +543,42 @@ int32_t GeoRef_InterpWeight(
         // Get destination gridpoint
         i = *(ip++);
         j = *(ip++);
-        val = 0.0;
-
+        idx= j*RefTo->NX+i;
+        uval = vval = 0.0;
+        
         // Loop on contributing gritpoints
         while(*ip != REF_INDEX_SEPARATOR) {
             pi = *(ip++);   // Source gridpoint
             pj = *(ip++);
             dp = *(ip++);   // Fraction of value to use
 
-            val1=zin[pj*RefFrom->NX+pi];
+            val1=zuin[pj*RefFrom->NX+pi];
             if (DATA_ISVALID(val1,opt->NoData)) {
-               val += val1*dp;
+                uval += val1*dp;
+
+                if (zvin) {
+                   val1=zvin[pj*RefFrom->NX+pi];
+                   vval += val1*dp;
+                }
             }
         }
 
         // Check for valid previous value and average if so (we suppose 2 values (Yin/Yang)
-        val1 = zout[j*RefTo->NX+i];
+        val1 = zuout[idx];
         if (DATA_ISVALID(val1,opt->NoData)) {
-           val = (val + val1)/2.0;
+            uval = (uval + val1)/2.0;
+
+            if (zvin) {
+                val1 = zvout[idx];
+                vval = (vval + val1)/2.0;
+            }
         }
-        zout[j*RefTo->NX+i]=val;
+
+        zuout[idx]=uval;
+
+        if (zvin) {
+            zvout[idx]=vval;
+        }
 
         // Skip separator
         ip++;

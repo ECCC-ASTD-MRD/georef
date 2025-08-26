@@ -402,6 +402,10 @@ void GeoRef_SetFree(
         GSet->X = NULL;
         GSet->Y = NULL;
     }
+    if (GSet->R) {
+        free(GSet->R);
+        GSet->R = NULL;
+    }
 
     GeoRef_SetZoneFree(GSet);
 
@@ -454,7 +458,15 @@ TGeoSet* GeoRef_SetReadFST(
         GSet->Index = (float*)record.data;
         record.data = NULL;
 
-        if (GSet->IndexMethod!=IR_WEIGHTINDEX) {
+        if (GSet->IndexMethod==IR_WEIGHTINDEX) {
+            strncpy(crit.nomvar, "#@@#", FST_NOMVAR_LEN);
+            if (fst24_read(File, &crit, NULL, &record) != TRUE) {
+                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find vector rotation field (fst24_read failed)\n", __func__);
+                return NULL;
+            }
+            GSet->R = record.data;
+            record.data = NULL;
+        } else {
             strncpy(crit.nomvar, "#>>#", FST_NOMVAR_LEN);
             if (fst24_read(File, &crit, NULL, &record) != TRUE) {
                 Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset longitude field (fst24_read failed)\n", __func__);
@@ -506,6 +518,19 @@ int32_t GeoRef_SetWriteFST(
         strncpy(record.etiket, "GRIDSET", FST_ETIKET_LEN);
         strncpy(record.grtyp, "X", FST_GTYP_LEN);
         record.data_type = FST_TYPE_REAL_IEEE;
+
+        if (GSet->R) {
+            record.data = GSet->R;
+            record.data_bits = 32;
+            record.pack_bits = 32;
+            record.ni   = GSet->RefTo->NX;
+            record.nj   = GSet->RefTo->NY;
+            strncpy(record.nomvar, "#@@#", FST_NOMVAR_LEN);
+            if (fst24_write(File, &record, FST_SKIP) <= 0) {
+                Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not write gridset #@@# index field (fst24_write failed)\n", __func__);
+                return FALSE;
+            }
+        }
 
         if (GSet->X) {
             record.data = GSet->X;

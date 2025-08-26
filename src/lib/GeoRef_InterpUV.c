@@ -27,6 +27,12 @@ int32_t GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *
    TGeoOptions opt;
 
    if (!Opt) Opt=&GeoRef_Options;
+
+   // If we're using pre-calculated index weight
+   if (Opt->Interp==IR_WEIGHTINDEX) {
+       return(GeoRef_InterpWeight(RefTo,RefFrom,Opt,uuout,vvout,uuin,vvin));
+   }
+
    set=GeoRef_SetGet(RefTo,RefFrom,Opt);
 
    if (RefFrom->NbSub > 0 || RefTo->NbSub > 0) {

@@ -234,6 +234,7 @@ typedef struct {
    int32_t         IndexSize;           //!< Index size
    float          *Index;               //!< Array of index values
    double         *X, *Y;               //!< Grid coordinates of the destination grid into the source grid
+   float          *R;                   //!< Vector rotation adjustment of the destination grid into the source grid
 
    float *yin_maskout, *yan_maskout;
    double *yinlat, *yinlon, *yanlat, *yanlon;
@@ -407,7 +408,7 @@ int32_t GeoRef_Interp(
     float * const zout,
     const float * const zin
 ); // c_ezsint
-int32_t GeoRef_InterpWeight(const TGeoRef * const RefTo, const TGeoRef * const RefFrom, const TGeoOptions * const Opt, float * const zout, const float * const zin);
+int32_t GeoRef_InterpWeight(const TGeoRef * const RefTo, const TGeoRef * const RefFrom, const TGeoOptions * const Opt, float * const zuout, float * const zvout, const float * const zuin, const float * const zvin);
 int32_t  GeoRef_InterpUV(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt, float *uuout, float *vvout, float *uuin, float *vvin);                 // c_ezuvint
 int32_t  GeoRef_InterpWD(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt, float *uuout, float *vvout, float *uuin, float *vvin);                 // c_ezwdint
 int32_t GeoRef_InterpYY(
