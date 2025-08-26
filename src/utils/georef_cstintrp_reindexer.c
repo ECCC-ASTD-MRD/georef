@@ -178,7 +178,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *YDim,int BDW) {
    }
  
    fst24_close(fin[0]);
-   In[1] && fst24_close(fin[0]);
+   In[1] && fst24_close(fin[1]);
    fst24_close(fout);
 
    return(TRUE);

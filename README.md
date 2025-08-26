@@ -156,25 +156,25 @@ git repo after having cloned.
 
 ## At CMC
 
-Source the right file depending on the architecture you need from the env directory.
-This will load the specified compiler and define the ECCI_DATA_DIR variable for the test datasets
+load the right [code-tools](https://gitlab.science.gc.ca/RPN-SI/code-tools) environment depending on the architecture you need from the env directory.
+This will load the specified compiler, cmake_rpn and the specific compiler parameters per platform
 
-- Example for PPP3 and skylake specific architecture:
+- Example for PPP6/SC6 and icelake specific architecture:
 
 ```bash
-. $ECCI_ENV/latest/ubuntu-18.04-skylake-64/intel-19.0.3.199.sh
+. r.load.dot mrd/rpn/code-tools/latest/env/rhel-8-icelake-64@intelonapi-2025.1.0
 ```
 
-- Example for XC50 on intel-19.0.5
+- Example for generic architecture on ppp6/SC6
 
 ```bash
-. $ECCI_ENV/latest/sles-15-skylake-64/intel-19.0.5.281.sh
+   r.load.dot mrd/rpn/code-tools/latest/env/rhel-8-amd64-64@intelonapi-2025.1.0
 ```
 
-- Example for CMC network and gnu 7.5:
+- Example for GNU on any architecture:
 
 ```bash
-. $ECCI_ENV/latest/ubuntu-18.04-amd-64/gnu-7.5.0.sh
+   r.load.dot mrd/rpn/code-tools/latest/env/gnu
 ```
 
 ## Build and install
