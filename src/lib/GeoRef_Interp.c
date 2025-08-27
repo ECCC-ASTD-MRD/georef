@@ -511,8 +511,9 @@ int32_t GeoRef_InterpWeight(
    TGeoSet *gset = NULL;
    int32_t  i, j, pi, pj, n;
    uint32_t idx;
-   float    uval, vval, val1,dp;
+   float    uval, vval, uvalr, vvalr, val1,dp,cosa,sina;
    float   *ip = NULL;
+   float   *rp = NULL;
 
    const TGeoOptions * const opt = Opt ? Opt : &GeoRef_Options;
 
@@ -536,6 +537,7 @@ int32_t GeoRef_InterpWeight(
 //       memset(zout,0x0,RefFrom->NX*RefFrom->NY*sizeof(float));
     
     ip = gset->Index;
+    rp = gset->R;
 
     // As long as the file or the list is not empty
     while(*ip != REF_INDEX_END) {
@@ -563,25 +565,32 @@ int32_t GeoRef_InterpWeight(
             }
         }
 
+        // Rotate components
+        cosa = *(rp++);
+        sina = *(rp++);
+        uvalr = cosa*uval - sina*vval;
+        vvalr = sina*uval + cosa*vval;
+
         // Check for valid previous value and average if so (we suppose 2 values (Yin/Yang)
         val1 = zuout[idx];
         if (DATA_ISVALID(val1,opt->NoData)) {
-            uval = (uval + val1)/2.0;
+            uvalr = (uvalr + val1)/2.0;
 
             if (zvin) {
                 val1 = zvout[idx];
-                vval = (vval + val1)/2.0;
+                vvalr = (vvalr + val1)/2.0;
             }
         }
 
-        zuout[idx]=uval;
+        zuout[idx]=uvalr;
 
         if (zvin) {
-            zvout[idx]=vval;
+            zvout[idx]=vvalr;
         }
 
-        // Skip separator
+        // Skip separators
         ip++;
+        rp++;
     }
 
     return(TRUE);
