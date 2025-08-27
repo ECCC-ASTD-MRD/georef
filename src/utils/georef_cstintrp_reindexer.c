@@ -18,8 +18,9 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    fst_record  rec[2][15];
    fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
    fst_file   *fin[2],*fout;
-   float      *data;
-   int         i=0,j=0,iy,jy,n=0,v=0,sz=0,idx,g,in;
+   float      *data, *angle_data;
+   int         i=0,j=0,iy,jy,n=0,v=0,w=0,sz=0,idx,g,in;
+   float       a;
 
    if (!(fin[0]=fst24_open(In[0],"R/O"))) {
       App_Log(APP_ERROR,"Problems opening input file %s\n",In[0]);
@@ -52,6 +53,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
 
    sz=rec[0][0].ni*rec[0][0].nj;
    data=(float*)malloc(sz*2*15*sizeof(float));
+   angle_data=(float*)malloc(sz*2*3*sizeof(float));
 
    //Yin
    idx=0;
@@ -73,13 +75,16 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
             if (in) {
                data[v++]=i;
                data[v++]=j;
+               a=-((double*)(rec[0][ANG].data))[idx]*M_PI/180;
+               angle_data[w++]=cos(a);
+               angle_data[w++]=sin(a);
                for(n=0;n<g;n++){
                   iy=((short*)(rec[0][n+4].data))[idx]-1;
                   data[v++]= (Orca && iy==0) ? OtherDims[0]-2 : ((Orca && iy==OtherDims[0]-1) ? 1 : iy);
                   data[v++]=((short*)(rec[0][n+8].data))[idx]-1;
                   data[v++]=((double*)(rec[0][n].data))[idx];
                } 
-               data[v++]=REF_INDEX_SEPARATOR;
+               data[v++]=angle_data[w++]=REF_INDEX_SEPARATOR;
             }
          }
       }
@@ -106,6 +111,9 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
                if (in) {
                   data[v++]=i;
                   data[v++]=(FromTo[0]=='U')?j+rec[0][0].nj:j;
+                  a=-((double*)(rec[1][ANG].data))[idx]*M_PI/180;
+                  angle_data[w++]=cos(a);
+                  angle_data[w++]=sin(a);
                   for(n=0;n<g;n++){
                      iy=((short*)(rec[1][n+4].data))[idx]-1;
                      data[v++]= (Orca && iy==1) ? OtherDims[0]-2 : ((Orca && iy==OtherDims[0]-1) ? 1 : iy);
@@ -113,73 +121,50 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
                      data[v++]= (FromTo[0]=='O') ? jy+OtherDims[1] : jy;
                      data[v++]=((double*)(rec[1][n].data))[idx];
                   }
-                  data[v++]=REF_INDEX_SEPARATOR;
+                  data[v++]=angle_data[w++]=REF_INDEX_SEPARATOR;
                } 
             }  
          }
       }
    }   
-   data[v++]=REF_INDEX_END;
+   data[v++]=angle_data[w++]=REF_INDEX_END;
 
    out.data=data;
-   out.data_type = FST_TYPE_REAL_IEEE;
-   out.data_bits = 32;
-   out.pack_bits = 32;
+   ang.data=angle_data;
+   out.data_type = ang.data_type = FST_TYPE_REAL_IEEE;
+   out.data_bits = ang.data_bits = 32;
+   out.pack_bits = ang.data_bits = 32;
    out.ni=v;
-   out.nj=1;
-   out.nk=1;
-   out.dateo= 0;
-   out.deet = 0;
-   out.npas = 0;
-   out.ip1  = 0;
-   out.ip2  = 0;
-   out.ip3  = IR_WEIGHTINDEX;
-   out.ig1   = 0;
-   out.ig2   = 0;
-   out.ig3   = 0;
-   out.ig4   = 0;
+   ang.ni=w;
+   out.nj=ang.nj=1;
+   out.nk=ang.nk=1;
+   out.dateo= ang.dateo = 0;
+   out.deet = ang.deet  = 0;
+   out.npas = ang.npas  = 0;
+   out.ip1  = ang.ip1   = 0;
+   out.ip2  = ang.ip2   = 0;
+   out.ip3  = ang.ip3   = IR_WEIGHTINDEX;
+   out.ig1  = ang.ig1   = 0;
+   out.ig2  = ang.ig2   = 0;
+   out.ig3  = ang.ig3   = 0;
+   out.ig4  = ang.ig4   = 0;
    if (FromTo) {
-      out.typvar[0] = FromTo[0];
-      out.typvar[1] = FromTo[1];
+      out.typvar[0] = ang.typvar[0] = FromTo[0];
+      out.typvar[1] = ang.typvar[1] = FromTo[1];
    } else {
       // Default to OU or OZ
-      out.typvar[0] = 'O';
-      out.typvar[1] = In[1]?'U':'Z';
+      out.typvar[0] = ang.typvar[0] = 'O';
+      out.typvar[1] = ang.typvar[0] = In[1]?'U':'Z';
    }
    strncpy(out.etiket, "GRIDSET", FST_ETIKET_LEN);
+   strncpy(ang.etiket, "GRIDSET", FST_ETIKET_LEN);
    strncpy(out.grtyp, "X", FST_GTYP_LEN);
+   strncpy(ang.grtyp, "X", FST_GTYP_LEN);
    strncpy(out.nomvar,"####",FST_NOMVAR_LEN);
+   strncpy(ang.nomvar,"#@@#",FST_NOMVAR_LEN);
    fst24_write(fout,&out,FST_YES);
+   fst24_write(fout,&ang,FST_YES);
 
-//TODO put back MASK
-   for(v=ANG;v<=ANG;v++) {
-      //for(i=0;i<sz;i++) {
-      //  data[i]=((int*)(rec[0][v].data))[i];
-      //}
-      memset(data,0x0,2*sz*sizeof(float));
-      memcpy(data,rec[0][v].data,sz*rec[0][v].data_bits/8);
-      if (In[1]) {
-      //  for(i=0;i<sz;i++) {
-      //      data[sz+i]=((int*)(rec[1][v].data))[i];
-      //  }
-         memcpy(&data[sz],rec[1][v].data,sz*rec[1][v].data_bits/8);
-      }
-
-      rec[0][v].dateo= 0;
-      rec[0][v].deet = 0;
-      rec[0][v].npas = 0;
-      rec[0][v].ip1  = 0;
-      rec[0][v].ip2  = 0;
-      rec[0][v].typvar[0] = 'P';
-      rec[0][v].typvar[1] = ' ';
-      if (In[1]) {
-         rec[0][v].grtyp[0] = 'U';
-         rec[0][v].nj*=2;
-      }
-      rec[0][v].data=data;
-      fst24_write(fout,&rec[0][v],FST_YES);
-   }
- 
    fst24_close(fin[0]);
    In[1] && fst24_close(fin[1]);
    fst24_close(fout);
