@@ -1858,7 +1858,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                   env.MaxX = env.MaxX > ToRef->X1 ? ToRef->X1 : env.MaxX;
                   env.MaxY = env.MaxY > ToRef->Y1 ? ToRef->Y1 : env.MaxY;
 
-                  nt += na = GeoRef_InterpQuad(ToRef, ToDef, Opt, poly, cell, Opt->Interp == IR_CONSERVATIVE ? 'C' : 'N', 'A', area, val1, env.MinX, env.MinY, env.MaxX, env.MaxY, k, &lp);
+                  nt += na = GeoRef_InterpQuad(ToRef, ToDef, Opt, poly, cell, Opt->Interp == IR_CONSERVATIVE ? 'C' : 'N', 'A', area, val1, env.MinX, env.MinY, env.MaxX, env.MaxY, 0, &lp);
 
                   Lib_Log(APP_LIBGEOREF, APP_EXTRA, "%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n", __func__, na, i, j, env.MinX, env.MinY, env.MaxX, env.MaxY);
                }
@@ -1893,7 +1893,7 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
                   env.MaxX = env.MaxX > ToRef->X1 ? ToRef->X1 : env.MaxX;
                   env.MaxY = env.MaxY > ToRef->Y1 ? ToRef->Y1 : env.MaxY;
 
-                  nt += n = GeoRef_InterpQuad(ToRef, ToDef, Opt, poly, cell, Opt->Interp == IR_CONSERVATIVE ? 'C' : 'N', 'A', area, val1, env.MinX, env.MinY, env.MaxX, env.MaxY, k, &lp);
+                  nt += n = GeoRef_InterpQuad(ToRef, ToDef, Opt, poly, cell, Opt->Interp == IR_CONSERVATIVE ? 'C' : 'N', 'A', area, val1, env.MinX, env.MinY, env.MaxX, env.MaxY, 0, &lp);
 
                   Lib_Log(APP_LIBGEOREF, APP_EXTRA, "%s: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n", __func__, n, i, j, env.MinX, env.MinY, env.MaxX, env.MaxY);
                }

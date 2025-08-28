@@ -444,7 +444,7 @@ interface
     end function georef_interp
 
 !   int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt, int32_t Final);
-    function georef_interpdef(refto,reffrom,defto,deffrom,opt,final) result(out) bind(C, name = 'GeoRef_InterpDef')
+    function georef_interpdef(refto,defto,reffrom,deffrom,opt,final) result(out) bind(C, name = 'GeoRef_InterpDef')
         import :: C_PTR,C_INT32_T,C_DOUBLE
         implicit none
 

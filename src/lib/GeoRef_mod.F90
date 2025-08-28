@@ -687,9 +687,9 @@ contains
         endif
 
         if (present(opt)) then
-           out=georef_interpdef(this%ptr,reffrom%ptr,defout%ptr,defin%ptr,C_LOC(opt),ifinal)
+           out=georef_interpdef(this%ptr,defout%ptr,reffrom%ptr,defin%ptr,C_LOC(opt),ifinal)
         else 
-           out=georef_interpdef(this%ptr,reffrom%ptr,defout%ptr,defin%ptr,C_LOC(georef_options),ifinal)
+           out=georef_interpdef(this%ptr,defout%ptr,reffrom%ptr,defin%ptr,C_LOC(georef_options),ifinal)
         endif
     end function georef_interpdef_f
 
