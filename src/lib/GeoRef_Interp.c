@@ -531,11 +531,15 @@ int32_t GeoRef_InterpWeight(
       Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Weight index not defined\n", __func__);
       return FALSE;
    }
- 
+
     // Clear destination buffer
-//    if (opt->Extrap != ER_VALUE)
-//       memset(zout,0x0,RefFrom->NX*RefFrom->NY*sizeof(float));
-    
+    // if (opt->Extrap != ER_VALUE){
+        memset(zuout,0x0,RefTo->NX*RefTo->NY*sizeof(float));
+        if (zvin){
+            memset(zvout,0x0,RefTo->NX*RefTo->NY*sizeof(float));
+        }
+    // }
+
     ip = gset->Index;
     rp = gset->R;
 
