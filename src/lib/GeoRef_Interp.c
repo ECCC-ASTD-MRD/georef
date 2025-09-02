@@ -568,8 +568,12 @@ int32_t GeoRef_InterpWeight(
         // Rotate components
         cosa = *(rp++);
         sina = *(rp++);
-        uvalr = cosa*uval - sina*vval;
-        vvalr = sina*uval + cosa*vval;
+        if (zvin) {
+            uvalr = cosa*uval - sina*vval;
+            vvalr = sina*uval + cosa*vval;
+	} else {
+            uvalr = uval;
+        }
 
         // Check for valid previous value and average if so (we suppose 2 values (Yin/Yang)
         val1 = zuout[idx];
