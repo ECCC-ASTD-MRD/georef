@@ -129,7 +129,10 @@ int Interpolate(char *In,char *Out,char *Truth,char *Grid,char **Vars,char *Etik
 
             if (GeoRef_Options.Interp==IR_WEIGHTINDEX) {
                TGeoSet * gset = GeoRef_SetGet(refout, refin, NULL);
-               GeoRef_SetReadFST(gset,IR_WEIGHTINDEX,fgrid);
+               if (GeoRef_SetReadFST(gset,IR_WEIGHTINDEX,fgrid) == NULL) {
+                  App_Log(APP_ERROR, "%s: Unable to read index in grid file %s\n", __func__, fst24_file_name(fgrid));
+                  return(FALSE);
+               }
             }
          }
 
