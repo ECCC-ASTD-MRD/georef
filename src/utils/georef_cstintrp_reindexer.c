@@ -75,7 +75,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
             if (in) {
                data[v++]=i;
                data[v++]=j;
-               a=-((double*)(rec[0][ANG].data))[idx]*M_PI/180;
+               a=-((float*)(rec[0][ANG].data))[idx]*M_PI/180;
                angle_data[w++]=cos(a);
                angle_data[w++]=sin(a);
                for(n=0;n<g;n++){
@@ -111,7 +111,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
                if (in) {
                   data[v++]=i;
                   data[v++]=(FromTo[0]=='U')?j+rec[0][0].nj:j;
-                  a=-((double*)(rec[1][ANG].data))[idx]*M_PI/180;
+                  a=-((float*)(rec[1][ANG].data))[idx]*M_PI/180;
                   angle_data[w++]=cos(a);
                   angle_data[w++]=sin(a);
                   for(n=0;n<g;n++){
