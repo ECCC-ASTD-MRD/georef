@@ -19,8 +19,13 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
    fst_file   *fin[2],*fout;
    float      *data, *angle_data;
-   int         i=0,j=0,iy,jy,n=0,v=0,w=0,sz=0,idx,g,in;
+   int         i=0,j=0,iy,jy,n=0,v=0,w=0,sz=0,idx,g,in,subgrid;
    float       a;
+   short      *iy_data[2][4];
+   short      *jy_data[2][4];
+   double     *w_data[2][4];
+   short      *navg_in;
+   float      *ang_in;
 
    if (!(fin[0]=fst24_open(In[0],"R/O"))) {
       App_Log(APP_ERROR,"Problems opening input file %s\n",In[0]);
@@ -51,21 +56,33 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
       }
    }
 
+   // Transfer void* data pointers into pointers of the proper type for
+   // indexing into the arrays.
+   for(n=W001; n<=W004; n++){
+       for(subgrid = 0; subgrid <= (In[1] ? 1 : 0); subgrid++){
+            w_data[subgrid][n] = rec[subgrid][n].data;
+           iy_data[subgrid][n] = rec[subgrid][I001+n].data;
+           jy_data[subgrid][n] = rec[subgrid][J001+n].data;
+       }
+   }
+
    sz=rec[0][0].ni*rec[0][0].nj;
    data=(float*)malloc(sz*2*15*sizeof(float));
    angle_data=(float*)malloc(sz*2*3*sizeof(float));
 
    //Yin
+   navg_in = (short*)rec[0][NAVG].data;
+   ang_in = (float*)rec[0][ANG].data;
    idx=0;
    for(j=0;j<rec[0][0].nj;j++) {
       for(i=0;i<rec[0][0].ni;i++,idx++) {
-         if ((g=(((short*)(rec[0][NAVG].data))[idx]))) {
+         if ((g=navg_in[idx]) > 0) {
             // Check if inside core grid
             in=TRUE;
             if (BDW) {
                for(n=0;n<g;n++){
-                  iy=((short*)(rec[0][n+4].data))[idx]-1;
-                  jy=((short*)(rec[0][n+8].data))[idx]-1;
+                  iy=iy_data[0][n][idx]-1;
+                  jy=jy_data[0][n][idx]-1;
                   if (iy<BDW || jy<BDW || iy>=(OtherDims[0]-BDW) || jy>=(OtherDims[1]-BDW)) {
                      in=FALSE;
                      break;
@@ -75,14 +92,14 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
             if (in) {
                data[v++]=i;
                data[v++]=j;
-               a=-((float*)(rec[0][ANG].data))[idx]*M_PI/180;
+               a=-ang_in[idx]*M_PI/180;
                angle_data[w++]=cos(a);
                angle_data[w++]=sin(a);
                for(n=0;n<g;n++){
-                  iy=((short*)(rec[0][n+4].data))[idx]-1;
+                  iy=iy_data[0][n][idx]-1;
                   data[v++]= (Orca && iy==0) ? OtherDims[0]-2 : ((Orca && iy==OtherDims[0]-1) ? 1 : iy);
-                  data[v++]=((short*)(rec[0][n+8].data))[idx]-1;
-                  data[v++]=((double*)(rec[0][n].data))[idx];
+                  data[v++]= jy_data[0][n][idx]-1;
+                  data[v++]= w_data[0][n][idx];
                } 
                data[v++]=angle_data[w++]=REF_INDEX_SEPARATOR;
             }
@@ -92,16 +109,18 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
 
    // Yang
    if (In[1]) {
+      navg_in = (short*)rec[1][NAVG].data;
+      ang_in = (float*)rec[1][ANG].data;
       idx=0;
       for(j=0;j<rec[1][0].nj;j++) {
          for(i=0;i<rec[1][0].ni;i++,idx++) {
-            if ((g=(((short*)(rec[1][NAVG].data))[idx]))) {
+            if ((g=navg_in[idx]) > 0) {
                // Check if inside core grid
                in=TRUE;
                if (BDW) {
                   for(n=0;n<g;n++){
-                     iy=((short*)(rec[1][n+4].data))[idx]-1;
-                     jy=((short*)(rec[1][n+8].data))[idx]-1;
+                     iy=iy_data[1][n][idx]-1;
+                     jy=jy_data[1][n][idx]-1;
                      if (iy<BDW || jy<BDW || iy>=(OtherDims[0]-BDW) || jy>=(OtherDims[1]-BDW)) {
                         in=FALSE;
                         break;
@@ -111,15 +130,15 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
                if (in) {
                   data[v++]=i;
                   data[v++]=(FromTo[0]=='U')?j+rec[0][0].nj:j;
-                  a=-((float*)(rec[1][ANG].data))[idx]*M_PI/180;
+                  a=-ang_in[idx]*M_PI/180;
                   angle_data[w++]=cos(a);
                   angle_data[w++]=sin(a);
                   for(n=0;n<g;n++){
-                     iy=((short*)(rec[1][n+4].data))[idx]-1;
+                     iy=iy_data[1][n][idx]-1;
                      data[v++]= (Orca && iy==1) ? OtherDims[0]-2 : ((Orca && iy==OtherDims[0]-1) ? 1 : iy);
-                     jy=((short*)(rec[1][n+8].data))[idx]-1;
+                     jy=jy_data[1][n][idx]-1;
                      data[v++]= (FromTo[0]=='O') ? jy+OtherDims[1] : jy;
-                     data[v++]=((double*)(rec[1][n].data))[idx];
+                     data[v++]= w_data[1][n][idx];
                   }
                   data[v++]=angle_data[w++]=REF_INDEX_SEPARATOR;
                } 
