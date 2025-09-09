@@ -511,7 +511,12 @@ int32_t GeoRef_InterpWeight(
    TGeoSet *gset = NULL;
    int32_t  i, j, pi, pj, n;
    uint32_t idx;
-   float    uval, vval, uvalr, vvalr, val1,dp,cosa,sina;
+   float    dp,cosa,sina;
+   float    uval_interp, vval_interp;
+   float    uval_contrib, vval_contrib;
+   float    uvalr_prev, vvalr_prev;
+   float    uvalr_cur, vvalr_cur;
+   float    uvalr_avg, vvalr_avg;
    float   *ip = NULL;
    float   *rp = NULL;
 
@@ -546,50 +551,61 @@ int32_t GeoRef_InterpWeight(
         i = *(ip++);
         j = *(ip++);
         idx= j*RefTo->NX+i;
-        uval = vval = 0.0;
+        uval_interp = vval_interp = 0.0;
         
         // Loop on contributing gritpoints
+        // in: pi,pj,dp, zuin, [zvin]
+        // out: uval_interp, [vval_interp]
         while(*ip != REF_INDEX_SEPARATOR) {
-            pi = *(ip++);   // Source gridpoint
-            pj = *(ip++);
+            pi = *(ip++);   // Source gridpoint i
+            pj = *(ip++);   // Source gridpoint j
             dp = *(ip++);   // Fraction of value to use
 
-            val1=zuin[pj*RefFrom->NX+pi];
-            if (DATA_ISVALID(val1,opt->NoData)) {
-                uval += val1*dp;
+            uval_contrib=zuin[pj*RefFrom->NX+pi];
+            if (DATA_ISVALID(uval_contrib,opt->NoData)) {
+                uval_interp += uval_contrib*dp;
 
                 if (zvin) {
-                   val1=zvin[pj*RefFrom->NX+pi];
-                   vval += val1*dp;
+                   vval_contrib=zvin[pj*RefFrom->NX+pi];
+                   vval_interp += vval_contrib*dp;
                 }
             }
         }
 
         // Rotate components
+        // in: cosa,sina,uval_interp,[vval_interp]
+        // out: uvalr_cur,[vvalr_cur]
         cosa = *(rp++);
         sina = *(rp++);
         if (zvin) {
-            uvalr = cosa*uval - sina*vval;
-            vvalr = sina*uval + cosa*vval;
-	} else {
-            uvalr = uval;
+            uvalr_cur = cosa*uval_interp - sina*vval_interp;
+            vvalr_cur = sina*uval_interp + cosa*vval_interp;
+        } else {
+            uvalr_cur = uval_interp;
         }
 
         // Check for valid previous value and average if so (we suppose 2 values (Yin/Yang)
-        val1 = zuout[idx];
-        if (DATA_ISVALID(val1,opt->NoData)) {
-            uvalr = (uvalr + val1)/2.0;
+        // in:uvalr_prev,[vvalr_prev],uvalr_cur,[vvalr_cur]
+        // out:uvalr_avg,[vvalr_avg]
+        uvalr_prev = zuout[idx];
+        if (DATA_ISVALID(uvalr_prev,opt->NoData)) {
+            uvalr_avg = (uvalr_cur + uvalr_prev)/2.0;
 
             if (zvin) {
-                val1 = zvout[idx];
-                vvalr = (vvalr + val1)/2.0;
+                vvalr_prev = zvout[idx];
+                vvalr_avg = (vvalr_cur + vvalr_prev)/2.0;
+            }
+        } else {
+            uvalr_avg = uvalr_cur;
+            if(zvin) {
+                vvalr_avg = vvalr_cur;
             }
         }
 
-        zuout[idx]=uvalr;
-
+        // Put it in the bucket!
+        zuout[idx]=uvalr_avg;
         if (zvin) {
-            zvout[idx]=vvalr;
+            zvout[idx]=vvalr_avg;
         }
 
         // Skip separators
