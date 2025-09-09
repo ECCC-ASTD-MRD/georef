@@ -30,6 +30,8 @@ int32_t GeoRef_InterpUV(TGeoRef *RefTo,TGeoRef *RefFrom,TGeoOptions *Opt,float *
 
    // If we're using pre-calculated index weight
    if (Opt->Interp==IR_WEIGHTINDEX) {
+       GeoRef_InterpClear(RefTo, Opt, uuout);
+       GeoRef_InterpClear(RefTo, Opt, vvout);
        return(GeoRef_InterpWeight(RefTo,RefFrom,Opt,uuout,vvout,uuin,vvin));
    }
 
