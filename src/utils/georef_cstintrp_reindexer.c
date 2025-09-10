@@ -206,7 +206,7 @@ int main(int argc, char *argv[]) {
    char        *in[2]={ NULL, NULL },*out=NULL,*ft=NULL;
  
    TApp_Arg appargs[]=
-      { { APP_CHAR,  &in,    2,             "i", "input",  "Input file" },
+      { { APP_CHAR,   in,    2,             "i", "input",  "Input file" },
         { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
         { APP_CHAR,  &ft,    1,             "g", "grid",   "Grid types from->to (ie: U->O = 'OU')" },
         { APP_INT32, &odim,  2,             "d", "dims",   "NI,NJ dimension of the other (sub)grid " },
