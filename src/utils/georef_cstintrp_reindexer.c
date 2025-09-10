@@ -71,8 +71,8 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    angle_data=(float*)malloc(sz*2*3*sizeof(float));
 
    //Yin
-   navg_in = (short*)rec[0][NAVG].data;
-   ang_in = (float*)rec[0][ANG].data;
+   navg_in = rec[0][NAVG].data;
+   ang_in = rec[0][ANG].data;
    idx=0;
    for(j=0;j<rec[0][0].nj;j++) {
       for(i=0;i<rec[0][0].ni;i++,idx++) {
@@ -109,8 +109,8 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
 
    // Yang
    if (In[1]) {
-      navg_in = (short*)rec[1][NAVG].data;
-      ang_in = (float*)rec[1][ANG].data;
+      navg_in = rec[1][NAVG].data;
+      ang_in = rec[1][ANG].data;
       idx=0;
       for(j=0;j<rec[1][0].nj;j++) {
          for(i=0;i<rec[1][0].ni;i++,idx++) {
