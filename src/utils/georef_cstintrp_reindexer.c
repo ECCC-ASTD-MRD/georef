@@ -221,7 +221,7 @@ int main(int argc, char *argv[]) {
    }
 
    // Error checking
-   if (!in) {
+   if (!in[0]) {
       App_Log(APP_ERROR,"No input standard file specified\n");
       exit(EXIT_FAILURE);
    }
