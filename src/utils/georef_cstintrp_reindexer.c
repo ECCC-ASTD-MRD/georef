@@ -29,6 +29,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    double     *w_data[2][4];
    I1_dest_t  *mask_data[2];
    I16_dest_t *navg_in;
+   I1_dest_t  *mask_in;
    float      *ang_in;
 
    if (!(fin[0]=fst24_open(In[0],"R/O"))) {
@@ -82,6 +83,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    //Yin
    navg_in = rec[0][NAVG].data;
    ang_in = rec[0][ANG].data;
+   mask_in = mask_data[0];
    idx=0;
    for(j=0;j<rec[0][0].nj;j++) {
       for(i=0;i<rec[0][0].ni;i++,idx++) {
@@ -97,6 +99,10 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
                      break;
                   }
                }
+            }
+            // Check if masked point
+            if (mask_in[idx] == 0) {
+               in=FALSE;
             }
             if (in) {
                data[v++]=i;
@@ -120,6 +126,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    if (In[1]) {
       navg_in = rec[1][NAVG].data;
       ang_in = rec[1][ANG].data;
+      mask_in = mask_data[1];
       idx=0;
       for(j=0;j<rec[1][0].nj;j++) {
          for(i=0;i<rec[1][0].ni;i++,idx++) {
@@ -135,6 +142,10 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
                         break;
                      }
                   }
+               }
+               // Check if masked point
+               if (mask_in[idx] == 0) {
+                  in=FALSE;
                }
                if (in) {
                   data[v++]=i;
