@@ -48,8 +48,13 @@ endif()
 set(MODULE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 find_package(OpenMP)
-find_package(rmn)
-find_package(vgrid)
+if (NOT rmn_FOUND)
+  find_package(rmn)
+endif()
+
+if (NOT vgrid_FOUND)
+  find_package(vgrid)
+endif()
 
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed -ldl")
 link_libraries("-Wl,--disable-new-dtags")
