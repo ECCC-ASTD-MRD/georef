@@ -155,7 +155,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
                   angle_data[w++]=sin(a);
                   for(n=0;n<g;n++){
                      iy=iy_data[1][n][idx]-1;
-                     data[v++]= (Orca && iy==1) ? OtherDims[0]-2 : ((Orca && iy==OtherDims[0]-1) ? 1 : iy);
+                     data[v++]= (Orca && iy==0) ? OtherDims[0]-2 : ((Orca && iy==OtherDims[0]-1) ? 1 : iy);
                      jy=jy_data[1][n][idx]-1;
                      data[v++]= (FromTo[0]=='O') ? jy+OtherDims[1] : jy;
                      data[v++]= w_data[1][n][idx];
