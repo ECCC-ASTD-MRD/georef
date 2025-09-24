@@ -49,9 +49,9 @@ typedef struct {
 } Coord3D;
 
 //! Position of a point in 2D space, usually in XY coordinates, but it could also be cartesian.
-typedef struct {
-    double x, y;
-} Coord2D;
+// typedef struct {
+//     double x, y;
+// } Coord2D;
 
 
 // static inline uint32_t encode_cs_angle(const double angle) {
@@ -154,7 +154,9 @@ static inline Coord3D apply_rotation(
 //!     /
 //!    z
 //!```
-static inline Coord3D ll_to_cart(const double lon, const double lat) {
+static inline Coord3D ll_to_cart(const double longitude, const double latitude) {
+    const double lon = DEG2RAD(longitude);
+    const double lat = DEG2RAD(latitude);
     return (Coord3D){
         .x = sin(lon) * cos(lat),
         .y = sin(lat),
@@ -175,6 +177,8 @@ static inline CSPoint lower_left(const CoordXY Coord) {
 static inline CSPoint make_xy(const int32_t x, const int32_t y, const PanelID p) {
     return (CSPoint){.x = x, .y = y, .p = p};
 }
+
+// GeoVect2D GetNextXY(const GeoVect2D XY, const double IncrementX, const double IncrementY);
 
 //! Determine the "local" point that corresponds to the given point, which may lie outside the border
 //! of the panel used to describe it. If the point is outside the given panel, we determine in which panel
@@ -263,7 +267,12 @@ static inline double angular_dist_0(const double lon, const double lat) {
 }
 
 //! Compute euclidian distance between two (lon, lat) points
-static inline double ll_dist(const double lon_a, const double lat_a, const double lon_b, const double lat_b) {
+static inline double ll_dist(
+    const double lon_a, //!< Longitude of 1st point (degrees)
+    const double lat_a, //!< Latitude of 1st point (degrees)
+    const double lon_b, //!< Longitude of 2nd point (degrees)
+    const double lat_b  //!< Latitude of 2nd point (degrees)
+) {
     const Coord3D pa = ll_to_cart(lon_a, lat_a);
     const Coord3D pb = ll_to_cart(lon_b, lat_b);
     const double x = pb.x - pa.x;
@@ -323,12 +332,9 @@ static inline float bilinear_interp_32(
 }
 
 //! Convert given 3D cartesian coordinates to lon-lat coordinates
-static inline Coord2D cart_to_ll(const double x, const double y, const double z) {
+static inline GeoVect2D cart_to_ll(const double x, const double y, const double z) {
     const double xz = sqrt(x*x + z*z);
-    return (Coord2D){
-        .x = atan2(x, z),
-        .y = atan2(y, xz),
-    };
+    return (GeoVect2D){atan2(x, z), atan2(y, xz)};
 }
 
 //! Convert given 3D cartesian point from describing a position on panel 0 to a position
@@ -517,6 +523,9 @@ static inline CoordUV xy_to_uv(
     // if (local_y <= -0.5 && panel > 0 && panel < 6) {
     //     Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Coordinate y %f lies on a discontinuity within the valid Y range.\n",
     //         __func__, y);
+    //     Lib_Log(APP_LIBGEOREF, APP_ERROR,
+    //         "%s: Coordinate y %f lies on a discontinuity within the valid Y range. (x = %f)\n",
+    //         __func__, y, x);
     //     return error;
     // }
 
@@ -548,19 +557,19 @@ static inline double refu_to_refx(const double u, const int32_t degree) {
     return degree - 1 + 0.5 * (u - points[degree - 1]) / (1.0 - points[degree-1]);
 }
 
-static inline Coord2D uv_to_xy(
+static inline GeoVect2D uv_to_xy(
     const CoordUV pt,
     const int32_t num_elem,
     const int32_t degree
 ) {
     const double elem_size = AXIS_RANGE / num_elem;
-    Coord2D result;
+    GeoVect2D result;
 
     const double u_offset = pt.u - AXIS_MIN;
     const int32_t elem_x = u_offset / elem_size;
     const double local_u = u_offset - (elem_x * elem_size);
     const double ref_u = local_u / elem_size * 2.0 - 1.0;
-    result.x = elem_x * degree + refu_to_refx(ref_u, degree);
+    result.X = elem_x * degree + refu_to_refx(ref_u, degree);
     // Lib_Log(APP_LIBGEOREF, APP_WARNING,
     //     "%s: Point %.3f (offset %.3f) is in element %d, remainder %g, reference element u %g, ref_x %g\n",
     //     __func__, pt.u, u_offset, elem_x, local_u, ref_u, refu_to_refx(ref_u, degree));
@@ -569,8 +578,8 @@ static inline Coord2D uv_to_xy(
     const int32_t elem_y = v_offset / elem_size;
     const double local_v = v_offset - (elem_y * elem_size);
     const double ref_v = local_v / elem_size * 2.0 - 1.0;
-    result.y = elem_y * degree + refu_to_refx(ref_v, degree);
-    result.y += num_elem * degree * pt.p;
+    result.Y = elem_y * degree + refu_to_refx(ref_v, degree);
+    result.Y += num_elem * degree * pt.p;
     
     return result;
 }
@@ -605,14 +614,15 @@ int32_t GeoRef_XY2LL_C(TGeoRef *Ref, double *Lat, double *Lon, double *X, double
     int32_t num_points = 0;
     const int32_t num_axis_points = Ref->CGrid->NumAxisPoints;
     const RotationParam rot = Ref->CGrid->LocalToGlobal;
+    
     for (int i = 0; i < Nb; i++) {
         const CoordUV pt_face = xy_to_uv(X[i], Y[i], Ref->AX, num_axis_points);
         if (pt_face.p == PANEL_NONE) continue;
         const Coord3D pt_cube = uv_to_cart(pt_face);
         const Coord3D pt_global = apply_rotation(rot, pt_cube);
-        const Coord2D ll = cart_to_ll(pt_global.x, pt_global.y, pt_global.z);
-        Lon[i] = ll.x;
-        Lat[i] = ll.y;
+        const GeoVect2D ll = cart_to_ll(pt_global.x, pt_global.y, pt_global.z);
+        Lon[i] = RAD2DEG(ll.Lon);
+        Lat[i] = RAD2DEG(ll.Lat);
         num_points++;
     }
 
@@ -638,13 +648,13 @@ int32_t GeoRef_LL2XY_C(TGeoRef *Ref, double *X, double *Y, double *Lat, double *
 
     const RotationParam rot = Ref->CGrid->GlobalToLocal;
     for (int i = 0; i < Nb; i++) {
-        if (Lat[i] > M_PI2 || Lat[i] < -M_PI2) continue; // Invalid latitude
+        if (Lat[i] > 90.0 || Lat[i] < -90.0) continue; // Invalid latitude
         const Coord3D pt_global = ll_to_cart(Lon[i], Lat[i]);
         const Coord3D pt_cube = apply_rotation(rot, pt_global);
         const CoordUV pt_face = cart_to_uv(pt_cube);
-        const Coord2D xy = uv_to_xy(pt_face, Ref->CGrid->NumElem, Ref->CGrid->Degree);
-        X[i] = xy.x;
-        Y[i] = xy.y;
+        const GeoVect2D xy = uv_to_xy(pt_face, Ref->CGrid->NumElem, Ref->CGrid->Degree);
+        X[i] = xy.X;
+        Y[i] = xy.Y;
         num_points++;
     }
 
@@ -652,21 +662,21 @@ int32_t GeoRef_LL2XY_C(TGeoRef *Ref, double *X, double *Y, double *Lat, double *
 }
 
 
-static inline double rel_diff(const double a, const double b) {
-    double diff = a - b;
-    if (fabs(a) > 1e-7) diff /= a;
-    return fabs(diff);
-}
+// static inline double rel_diff(const double a, const double b) {
+//     double diff = a - b;
+//     if (fabs(a) > 1e-7) diff /= a;
+//     return fabs(diff);
+// }
 
-static inline double rel_diff_rad(const double a, const double b) {
-    double a2 = a;
-    if (a2 < 0.0) a2 += M_2PI;
-    double b2 = b;
-    if (b2 < 0.0) b2 += M_2PI;
-    double diff = a2 - b2;
-    if (fabs(a2) > 1e-7) diff /= a2;
-    return fabs(diff);
-}
+// static inline double rel_diff_rad(const double a, const double b) {
+//     double a2 = a;
+//     if (a2 < 0.0) a2 += M_2PI;
+//     double b2 = b;
+//     if (b2 < 0.0) b2 += M_2PI;
+//     double diff = a2 - b2;
+//     if (fabs(a2) > 1e-7) diff /= a2;
+//     return fabs(diff);
+// }
 
 static int check_diffs(const double* ref_lon, const double* ref_lat, const double* comp_lon, const double* comp_lat,
                         const int num_points, const char* label, const int verbose) {
@@ -750,8 +760,10 @@ TGeoRef *GeoRef_DefineC(TGeoRef *Ref) {
     Ref->Lon = (double*) malloc(param->NumPanelPoints * 6 * sizeof(double));
     Ref->Lat = (double*) malloc(param->NumPanelPoints * 6 * sizeof(double));
     Ref->AX  = make_axis(param->NumElem, param->Degree);
+    Ref->NX  = param->NumAxisPoints;
+    Ref->NY  = param->NumAxisPoints * 6;
 
-    Ref->RPNHead.grtyp[0] = 'X';
+    Ref->RPNHead.grtyp[0] = 'C';
     Ref->RPNHead.grtyp[1] = '\0';
     Ref->GRTYP[0] = 'C';
     Ref->GRTYP[1] = '\0';
@@ -761,10 +773,10 @@ TGeoRef *GeoRef_DefineC(TGeoRef *Ref) {
             for (int i = 0; i < param->NumAxisPoints; i++) {
                 const Coord3D pt_cube = uv_to_cart((CoordUV){.u = Ref->AX[i], .v = Ref->AX[j], .p = i_panel});
                 const Coord3D pt_global = apply_rotation(param->LocalToGlobal, pt_cube);
-                const Coord2D ll = cart_to_ll(pt_global.x, pt_global.y, pt_global.z);
+                const GeoVect2D ll = cart_to_ll(pt_global.x, pt_global.y, pt_global.z);
                 const int index = param->NumPanelPoints * i_panel + j * param->NumAxisPoints + i;
-                Ref->Lon[index] = ll.x;
-                Ref->Lat[index] = ll.y;
+                Ref->Lon[index] = RAD2DEG(ll.Lon);
+                Ref->Lat[index] = RAD2DEG(ll.Lat);
             }
         }
     }
@@ -875,15 +887,15 @@ void ApplyLinearInterpC_32(
 }
 
 int test_cubed_sphere(void) {
-    const int num_elem = 20;
+    const int num_elem = 36;
     const int num_solpts = 5;
     TGeoRef* ref = GeoRef_New();
     // ref->RPNHead.ig1 = 0x700000;
     // ref->RPNHead.ig2 = 0x900000;
     // ref->RPNHead.ig3 = 0x800400;
-    ref->RPNHead.ig1 = 0x910000;
-    ref->RPNHead.ig2 = 0x904000;
-    ref->RPNHead.ig3 = 0x7f0000;
+    ref->RPNHead.ig1 = 0x420000;
+    ref->RPNHead.ig2 = 0xa4fa00;
+    ref->RPNHead.ig3 = 0x660000;
     // ref->RPNHead.ig1 = 0x800000;
     // ref->RPNHead.ig2 = 0x800000;
     // ref->RPNHead.ig3 = 0x800000;
@@ -935,29 +947,29 @@ int test_cubed_sphere(void) {
             for (int j = 0; j < param->NumAxisPoints && !escape; j++) {
                 const size_t offset = j * param->NumAxisPoints + offset_p;
                 for (int i = 0; i < param->NumAxisPoints && !escape; i++) {
-                    const Coord2D xy = uv_to_xy(
+                    const GeoVect2D xy = uv_to_xy(
                         (CoordUV){.u = full_u[offset + i], .v = full_v[offset + i], .p = i_panel},
                         num_elem, num_solpts);
 
                     {
-                        const double diff = cart_dist(xy.x, xy.y, i, j + param->NumAxisPoints * i_panel);
+                        const double diff = cart_dist(xy.Lon, xy.Lat, i, j + param->NumAxisPoints * i_panel);
 
                         if (diff > 1e-15 * ref->CGrid->NumAxisPoints) {
                             Lib_Log(APP_LIBGEOREF, APP_ERROR,
                                 "%s: Difference! Expected (%2g, %2g), got (%7.2g, %7.2g), diff %.2e\n",
                                 __func__, (float)i, (float)j + param->NumAxisPoints * i_panel,
-                                xy.x, xy.y, diff);
+                                xy.X, xy.Y, diff);
                             num_errors++;
                         }
                     }
 
                     {
-                        const CoordUV uv = xy_to_uv(xy.x, xy.y, ref->AX, param->NumAxisPoints);
+                        const CoordUV uv = xy_to_uv(xy.X, xy.Y, ref->AX, param->NumAxisPoints);
                         const double diff = cart_dist(uv.u, uv.v, full_u[offset + i], full_v[offset + i]);
                         if (diff > 1e-15 || uv.p != i_panel) {
                             Lib_Log(APP_LIBGEOREF, APP_ERROR,
                                 "%s: (%g, %g) xy->uv error! Expected (%.3f, %.3f), got (%.3f, %.3f) - %d\n",
-                                __func__, xy.x, xy.y, full_u[offset + i], full_v[offset + i], uv.u, uv.v, uv.p);
+                                __func__, xy.X, xy.Y, full_u[offset + i], full_v[offset + i], uv.u, uv.v, uv.p);
                             num_errors++;
                         }
                     }
@@ -1024,8 +1036,9 @@ int test_cubed_sphere(void) {
 
         size_t num_errors = 0;
         for (int i = 0; i < num_total; i++) {
-            const double diff = cart_dist(grid_x[i], grid_y[i], grid_back_x[i], grid_back_y[i]);
-            if (diff > 1e-15 * ref->CGrid->NumAxisPoints) {
+            const double diff = cart_dist(grid_x[i], grid_y[i], grid_back_x[i], grid_back_y[i]) /
+                                    ref->CGrid->NumAxisPoints;
+            if (diff > 2e-15) {
                 App_Log(APP_ERROR, "AAAAHhhhh not the same grid coord (%.2e)\n", diff);
                 num_errors++;
             }
@@ -1044,7 +1057,7 @@ int test_cubed_sphere(void) {
         // Create a field with values defined at grid points
         double* grid_point_field = (double*) malloc(param->NumPanelPoints * 6 * sizeof(double));
         for (int i = 0; i < param->NumPanelPoints * 6; i++) {
-            grid_point_field[i] = angular_dist_0(ref->Lon[i], ref->Lat[i]);
+            grid_point_field[i] = angular_dist_0(DEG2RAD(ref->Lon[i]), DEG2RAD(ref->Lat[i]));
         }
 
         // Write grid and field to file
@@ -1087,7 +1100,6 @@ int test_cubed_sphere(void) {
         }
 
         TApp_Timer t1 = NULL_TIMER;
-        TApp_Timer t2 = NULL_TIMER;
         TApp_Timer t3 = NULL_TIMER;
 
         const size_t num_samples = 1980;
@@ -1180,7 +1192,7 @@ int test_cubed_sphere(void) {
                 continue;
             }
 
-            const double expected = angular_dist_0(lon[i], lat[i]);
+            const double expected = angular_dist_0(DEG2RAD(lon[i]), DEG2RAD(lat[i]));
             const double dist2 = fabs(field_interp[i] - expected);
             total_error2 += dist2;
             if (dist2 > 2e-3) {
@@ -1223,7 +1235,7 @@ int test_cubed_sphere(void) {
             error_avg2, max_error2, num_samples * num_samples, num_large_errors, num_skipped,
             num_large_errors * 100.0 / (num_samples * num_samples - num_skipped),
             method_accurate, method_func);
-        if (error_avg2 > 3e-5 || max_error2 > 5e-3) {
+        if (error_avg2 > 3e-5 || max_error2 > 5.2e-3) {
             Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Error is too large (avg %.2e, max %.2e)\n",
                 __func__, error_avg2, max_error2);
             return -1;

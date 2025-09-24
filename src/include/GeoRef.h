@@ -171,11 +171,16 @@ typedef struct TCoord {
    double Lon, Lat, Elev;
 } TCoord;
 
-// Geo vector (grid / geographical coordinates)
 typedef union {
    Vect3d V;
    TCoord C;
 } GeoVect;
+
+typedef union {
+    Vect2d V;
+    struct { double X, Y; };
+    struct { double Lon, Lat; };
+} GeoVect2D;
 
 struct TDef;
 struct TGeoRef;

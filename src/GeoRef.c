@@ -348,7 +348,11 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
 
       if (Ref->GRTYP[0]=='A' || Ref->GRTYP[0]=='B' || Ref->GRTYP[0]=='G') {
          Ref->Type|=GRID_WRAP;
-      } else if (Ref->GRTYP[0]!='V' && Ref->GRTYP[0]!='R' && Ref->GRTYP[0]!='X' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
+      }
+      else if (Ref->GRTYP[0] == 'C') {
+         Ref->Type |= GRID_ROTATED;
+      }
+      else if (Ref->GRTYP[0]!='V' && Ref->GRTYP[0]!='R' && Ref->GRTYP[0]!='X' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
          // Check if north is up by looking at longitude variation on an Y increment at grid limits
          x[0]=Ref->X0;x[1]=Ref->X0;
          y[0]=Ref->Y0;y[1]=Ref->Y0+1.0;
@@ -914,9 +918,6 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
       Lib_Log(APP_LIBGEOREF,APP_ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);
       return(FALSE);
 #endif
-   }
-   else if (GRef->GRTYP[0] == 'C') {
-      GeoRef_DefineC(GRef);
    }
 
    return(TRUE);
