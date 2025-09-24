@@ -147,12 +147,10 @@ Georef builds on the ezscint package by adding:
 ## Build dependencies
 
 - CMake 3.12+
+- cmake\_rpn
 - librmn
+- vgrid
 - GDAL (optional)
-
-Note: **cmake_rpn** is included as a submodule.  Please clone with the
-**--recursive** flag or run **git submodule update --init --recursive** in the
-git repo after having cloned.
 
 ## At CMC
 
@@ -177,6 +175,47 @@ This will load the specified compiler, cmake_rpn and the specific compiler param
    r.load.dot mrd/rpn/code-tools/latest/env/gnu
 ```
 
+## Outside CMC
+
+We need to intall each dependency and make them available to the project.
+
+### cmake\_rpn
+
+This project and all other RPN-SI projects are built with CMake and use
+[`cmake_rpn`](https://github.com/ECCC-ASTD-MRD/cmake_rpn). There are two ways to get it.
+
+- Install it once with
+  ```
+  git clone https://github.com/ECCC-ASTD-MRD/cmake_rpn
+  ```
+  and set the `EC_CMAKE_MODULE_PATH` to be `<location-of-cmake_rpn>/modules`.
+  All RPN-SI projects look at this variable.
+
+- Use the included submodule
+  ```bash
+  # From the root of this projec
+  git submodule update --init --remote cmake_rpn
+  ```
+  *NOTE* We will not be updating the `cmake_rpn` submodule as it has become
+  stable enough that using the submodule is not worth it anymore.  However we
+  do update it with new features and using `--remote` will get the latest
+  version rather than the one registered to the current commit of `georef`.
+
+### Compiled projects
+
+The RPN-SI projects which are dependencies must be installed somewhere according
+to their instructions and made findable by CMake via the
+[`CMAKE_PREFIX_PATH` environment variable](https://cmake.org/cmake/help/latest/envvar/CMAKE_PREFIX_PATH.html#envvar:CMAKE_PREFIX_PATH)
+
+They can be found at
+- [librmn](https://github.com/ECCC-ASTD-MRD/librmn)
+- [vgrid](https://github.com/ECCC-ASTD-MRD/vgrid)
+
+```bash
+export CMAKE_PREFIX_PATH=<your librmn install path>:${CMAKE_PREFIX_PATH}
+export CMAKE_PREFIX_PATH=<your vgrid install path>:${CMAKE_PREFIX_PATH}
+```
+
 ## Build and install
 
 ```bash
@@ -186,4 +225,15 @@ cmake .. -DCMAKE_INSTALL_PREFIX=[your install path] -DWITH_OMPI=[TRUE|FALSE] -Dr
 make -j 4
 make test
 make install
+```
+
+Note: If using [`CMAKE_PREFIX_PATH` environment variable](https://cmake.org/cmake/help/latest/envvar/CMAKE_PREFIX_PATH.html#envvar:CMAKE_PREFIX_PATH)
+the `-Drmn_ROOT` option is not necessary in the CMake command.
+
+Once installed, this package can be made available to other CMake projects the
+same way its dependencies were made available to it via the
+[`CMAKE_PREFIX_PATH` environment variable](https://cmake.org/cmake/help/latest/envvar/CMAKE_PREFIX_PATH.html#envvar:CMAKE_PREFIX_PATH)
+
+```bash
+export CMAKE_PREFIX_PATH=<your install path>:${CMAKE_PREFIX_PATH}
 ```
