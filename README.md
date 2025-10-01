@@ -160,19 +160,19 @@ This will load the specified compiler, cmake_rpn and the specific compiler param
 - Example for PPP6/SC6 and icelake specific architecture:
 
 ```bash
-. r.load.dot mrd/rpn/code-tools/latest/env/rhel-8-icelake-64@intelonapi-2025.1.0
+. r.load.dot mrd/rpn/code-tools/latest/env/rhel-8-icelake-64@inteloneapi-2025.1.0
 ```
 
 - Example for generic architecture on ppp6/SC6
 
 ```bash
-   r.load.dot mrd/rpn/code-tools/latest/env/rhel-8-amd64-64@intelonapi-2025.1.0
+. r.load.dot mrd/rpn/code-tools/latest/env/rhel-8-amd64-64@inteloneapi-2025.1.0
 ```
 
 - Example for GNU on any architecture:
 
 ```bash
-   r.load.dot mrd/rpn/code-tools/latest/env/gnu
+. r.load.dot mrd/rpn/code-tools/latest/env/gnu
 ```
 
 ## Outside CMC
