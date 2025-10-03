@@ -54,8 +54,8 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
    float      *ang_in;
 
    for(int sg = 0; sg < nsubgrid; sg++){
-      if (!(fin[sg]=fst24_open(In[0],"R/O"))) {
-         App_Log(APP_ERROR,"Problems opening input file %s\n",In[0]);
+      if (!(fin[sg]=fst24_open(In[sg],"R/O"))) {
+         App_Log(APP_ERROR,"Problems opening input file %s\n",In[sg]);
          return(FALSE);
       }
    }
