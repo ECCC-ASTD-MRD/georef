@@ -1,14 +1,16 @@
 if (EC_INIT_DONE LESS 2)
     include(CTest)
     add_custom_target(check COMMAND CTEST_OUTPUT_ON_FAILURE=true ${CMAKE_CTEST_COMMAND})
+    add_custom_target(test-execs)
+    add_dependencies(check test-execs)
 
     if(BUILD_TESTING)
         if ("$ENV{ECCI_DATA_DIR}" STREQUAL "")
             message(FATAL_ERROR "The ECCI_DATA_DIR environment variable isn't defined!\nTests won't be able to find the required data files.\nPlease define that variable or set BUILD_TESTING=NO.")
         endif()
 
-        add_executable(TestF90 EXCLUDE_FROM_ALL test.F90)
-        add_dependencies(check TestF90)
+        add_executable(TestF90 test.F90)
+        add_dependencies(test-execs TestF90)
         target_link_libraries(TestF90 georef-shared rmn::rmn m)
 
         add_test(NAME TestF90 COMMAND TestF90 $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd $ENV{ECCI_DATA_DIR}/georef/grids/PS.fstd)
