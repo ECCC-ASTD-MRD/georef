@@ -240,7 +240,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
 
 int main(int argc, char *argv[]) {
 
-   int         ok=0,code=0,odim[2]={0,0},bdw=0,orca=0, nw=4;
+   int         ok=0,code=0,odim[2]={0,0},bdw=0,orca=0, nw=-1;
    char        *in[2]={ NULL, NULL },*out=NULL,*ft=NULL;
  
    TApp_Arg appargs[]=
@@ -266,6 +266,10 @@ int main(int argc, char *argv[]) {
    }
    if (!out) {
       App_Log(APP_ERROR,"No output standard file specified\n");
+      exit(EXIT_FAILURE);
+   }
+   if (nw == -1){
+      App_Log(APP_ERROR, "No number of weights specified\n");
       exit(EXIT_FAILURE);
    }
 
