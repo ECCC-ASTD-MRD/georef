@@ -53,19 +53,17 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
    I1_dest_t  *mask_in;
    float      *ang_in;
 
-   for(int sg = 0; sg < nsubgrid; sg++){
-      if (!(fin[sg]=fst24_open(In[sg],"R/O"))) {
-         App_Log(APP_ERROR,"Problems opening input file %s\n",In[sg]);
-         return(FALSE);
-      }
-   }
-
    if (!(fout=fst24_open(Out,"R/W"))) {
       App_Log(APP_ERROR,"Problems opening output file %s\n",Out);
       return(FALSE);
    }
 
    for(int sg = 0; sg < nsubgrid; sg++){
+      if (!(fin[sg]=fst24_open(In[sg],"R/O"))) {
+         App_Log(APP_ERROR,"Problems opening input file %s\n",In[sg]);
+         return(FALSE);
+      }
+
       for(n=0; n<nb_weights; n++){
          for(int t = W; t<=J; t++){
             snprintf(crit.nomvar, FST_NOMVAR_LEN, FMT[t], n+1);
@@ -81,11 +79,9 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
          iy_data[sg][n] = rec[sg][n][I].data;
          jy_data[sg][n] = rec[sg][n][J].data;
       }
-   }
 
-   for(n = NAVG; n <= MASK; n++){
-      strncpy(crit.nomvar, OtherStr[n],FST_NOMVAR_LEN);
-      for(int sg = 0; sg < nsubgrid; sg++){
+      for(n = NAVG; n <= MASK; n++){
+         strncpy(crit.nomvar, OtherStr[n],FST_NOMVAR_LEN);
          others[sg][n] = default_fst_record;
          fprintf(stderr, "sg=%d, n=%d, crit.nomvar='%s'\n", sg, n, crit.nomvar);
          if(!fst24_read(fin[sg], &crit, NULL, &others[sg][n])){
@@ -93,19 +89,24 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
             return(FALSE);
          }
       }
-   }
-   // Cast by assigning
-   for(int sg = 0; sg < nsubgrid; sg++){
+
+      // Cast by assigning
       mask_data[sg] = others[sg][MASK].data;
       navg_data[sg] = others[sg][NAVG].data;
       ang_data[sg]  = others[sg][ANG].data;
+
+      // Use first record of file for sizes
       glb_ni[sg] = rec[sg][0][0].ni;
       glb_nj[sg] = rec[sg][0][0].nj;
       sz[sg] = glb_ni[sg]*glb_nj[sg];
+
+      fst24_close(fin[sg]);
    }
 
-   data_out=(float*)malloc(sz[0]*2*(3*(nb_weights+1))*sizeof(float));
-   angle_data_out=(float*)malloc(sz[0]*2*3*sizeof(float));
+   int data_per_point = 2 + 3 * nb_weights + 1; // <i,j of point>(2) + <i,j,w for each contributing point, up to nbweights of them>(3*nb_weights) + <separator>(1)
+   data_out=(float*)malloc(sz[0]*nsubgrid * data_per_point *sizeof(*data_out) + 1); // + 1 for REF_INDEX_END;
+   int angle_data_per_point = 3; // cos, sin, separator
+   angle_data_out=(float*)malloc(sz[0]*nsubgrid*angle_data_per_point*sizeof(float) + 1); // +1 for REF_INDEX_END;
 
    //Yin
    navg_in = navg_data[0];
@@ -188,11 +189,11 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
                      data_out[v++]= w_data[1][n][idx];
                   }
                   data_out[v++]=angle_data_out[w++]=REF_INDEX_SEPARATOR;
-               } 
-            }  
+               }
+            }
          }
       }
-   }   
+   }
    data_out[v++]=angle_data_out[w++]=REF_INDEX_END;
 
    out.data=data_out;
