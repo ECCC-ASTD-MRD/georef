@@ -231,8 +231,6 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
    fst24_write(fout,&out,FST_YES);
    fst24_write(fout,&ang,FST_YES);
 
-   fst24_close(fin[0]);
-   In[1] && fst24_close(fin[1]);
    fst24_close(fout);
 
    return(TRUE);
