@@ -454,7 +454,9 @@ TGeoSet* GeoRef_SetReadFST(
             return NULL;
         }
         GSet->IndexMethod = (TRef_Interp)InterpType;
-        GSet->IndexSize = record.ni;
+        // NOTE: Record is conceptually a 1D stream but we need to use ni x (some) nj
+        // because in some cases, ni x 1 would lead to ni > (2^24)-1 ~ 16M
+        GSet->IndexSize = record.ni * record.nj;
         GSet->Index = (float*)record.data;
         record.data = NULL;
 

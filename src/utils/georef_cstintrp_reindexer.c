@@ -18,6 +18,8 @@ const char *OtherStr[NOTHER] = {"NAVG", "ANG", "MASK"};
 typedef enum {W, I, J, N} RecType;
 const char *FMT[J+1] = {"W%03d", "I%03d", "J%03d"};
 
+const int divisor = 1000;
+
 // Usage example call for CANSIPS
 // GEM_to NEMO: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -d 319 131 -b 2
 // NEMO_to_GEM: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yang.std -o ./atmos-ocean-grids.fstd -g UO -d 362 292 --orca 1
@@ -103,7 +105,8 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
    }
 
    int data_per_point = 2 + 3 * nb_weights + 1; // <i,j of point>(2) + <i,j,w for each contributing point, up to nbweights of them>(3*nb_weights) + <separator>(1)
-   data_out=(float*)malloc(sz[0]*nsubgrid * data_per_point *sizeof(*data_out) + 1); // + 1 for REF_INDEX_END;
+   int data_out_alloc_size = sz[0]*nsubgrid * data_per_point *sizeof(*data_out) + 1 + divisor; // + 1 for REF_INDEX_END, adding 1*divisor to account for the A = QB + r thing we're doing later.
+   data_out=(float*)malloc(data_out_alloc_size);
    int angle_data_per_point = 3; // cos, sin, separator
    angle_data_out=(float*)malloc(sz[0]*nsubgrid*angle_data_per_point*sizeof(float) + 1); // +1 for REF_INDEX_END;
 
@@ -208,10 +211,28 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
    out.data_type = ang.data_type = FST_TYPE_REAL_IEEE;
    out.data_bits = ang.data_bits = 32;
    out.pack_bits = ang.data_bits = 32;
-   out.ni=v;
+
+
+   // Having ni = v, nj=nk=1 causes ni to be larger than can fit in the 24 bits
+   // that librmn has available to store the value.  Here we come up with a way
+   // to have ni = X, nj = Y such that X*Y >= v but keeping X,Y smaller than 2^24
+   //
+   // Let A = v and B some positive value.  Then with integer division, we have
+   //     A = BQ + R, 0 <= R < B
+   // we take X = Q+1, Y = B, and Q is obtained by A/B.
+   //
+   // Since 0<=R<B, that means that (Q+1)*B = QB + B >= QB + r == A so X*Y > A
+   // as desired.  Note the case when Q == 0 (i.e. A < B) is handled, we will
+   // have ni = 1, nj = b and indeed 1 * B > A as we wanted
+   int A = v, B = divisor, Q = A/B;
+   out.ni = Q + 1; // This +1 adds up to divisor from the size
+   out.nj = B;
+
+   fprintf(stderr, "Ending pointer values: v=%d, w=%d, out.ni=%d, out.nj=%d, prod=%d, data_out_alloc_size=%d\n", v, w, out.ni, out.nj, out.ni*out.nj, data_out_alloc_size);
    ang.ni=w;
-   out.nj=ang.nj=1;
+   ang.nj=1;
    out.nk=ang.nk=1;
+
    out.dateo= ang.dateo = 0;
    out.deet = ang.deet  = 0;
    out.npas = ang.npas  = 0;
