@@ -115,6 +115,10 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
    for(j=0;j<glb_nj[0];j++) {
       for(i=0;i<glb_ni[0];i++,idx++) {
          if ((g=navg_in[idx]) > 0) {
+            if(g > nb_weights){
+               App_Log(APP_ERROR, "NAVG for point (%d,%d) is greater than nb_weights=%d\n", i, j, nb_weights);
+               return FALSE;
+            }
             // Check if inside core grid
             in=TRUE;
             if (BDW) {
@@ -158,6 +162,10 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
       for(j=0;j<glb_nj[1];j++) {
          for(i=0;i<glb_ni[1];i++,idx++) {
             if ((g=navg_in[idx]) > 0) {
+               if(g > nb_weights){
+                  App_Log(APP_ERROR, "NAVG for point (%d,%d) is greater than nb_weights=%d\n", i, j, nb_weights);
+                  return FALSE;
+               }
                // Check if inside core grid
                in=TRUE;
                if (BDW) {
