@@ -35,7 +35,6 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
    float      *data_out, *angle_data_out;
    int         i=0,j=0,iy,jy,n=0,v=0,w=0,idx,g,in;
    float       a;
-   char       nomvar[FST_NOMVAR_LEN];
    int        glb_ni[nsubgrid], glb_nj[nsubgrid], sz[nsubgrid];
 
    // Arrays typed pointers for data of W, I, J input records
@@ -70,7 +69,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
             fprintf(stderr, "sg=%d, n=%d, t=%d, crit.nomvar='%s'\n",sg, n,t,crit.nomvar);
             rec[sg][n][t] = default_fst_record;
             if(!fst24_read(fin[sg], &crit, NULL, &rec[sg][n][t])){
-               App_Log(APP_ERROR,"Could not read %s from %s\n", nomvar,In[0]);
+               App_Log(APP_ERROR,"Could not read %s from %s\n", crit.nomvar,In[sg]);
                return(FALSE);
             }
          }
@@ -85,7 +84,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
          others[sg][n] = default_fst_record;
          fprintf(stderr, "sg=%d, n=%d, crit.nomvar='%s'\n", sg, n, crit.nomvar);
          if(!fst24_read(fin[sg], &crit, NULL, &others[sg][n])){
-            App_Log(APP_ERROR,"Could not read %s from %s\n", nomvar,In[0]);
+            App_Log(APP_ERROR,"Could not read %s from %s\n", crit.nomvar,In[sg]);
             return(FALSE);
          }
       }
