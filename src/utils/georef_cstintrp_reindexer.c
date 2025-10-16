@@ -18,9 +18,10 @@ typedef enum {NAVG, ANG, MASK, NOTHER} Other;
 const char *OtherStr[NOTHER] = {"NAVG", "ANG", "MASK"};
 
 typedef enum {W, I, J, N} RecType;
-const char *FMT[J+1] = {"W%03d", "I%03d", "J%03d"};
+const char *FMT[N] = {"W%03d", "I%03d", "J%03d"};
 
 const int divisor = 1000;
+const int MAX_NB_WEIGHTS = 20;
 
 // Usage example call for CANSIPS
 // GEM_to NEMO: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -d 319 131 -b 2
@@ -29,23 +30,39 @@ const int divisor = 1000;
 #define I16_dest_t int32_t // dty: I 16 gets read into 32 bit
 #define I1_dest_t  int32_t // dty: I 1  gets read into 32 bit
 
-int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, int* nb_weights) {
+int count_weights(fst_file *f)
+{
+   fst_record crit = default_fst_record;
+   fst_record rec = default_fst_record;
+   fst_query *q = fst24_new_query(f, &crit, NULL);
+   int nb_weights = 0;
+   while(fst24_find_next(q, &rec)){
+      if(rec.nomvar[0] == 'W'){
+         nb_weights++;
+      }
+   }
+   return nb_weights;
+}
 
-   const int  max_nb_weights = (nb_weights[0] > nb_weights[1] ? nb_weights[0] : nb_weights[1]);
+
+int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
+
+   // const int  max_nb_weights = (nb_weights[0] > nb_weights[1] ? nb_weights[0] : nb_weights[1]);
    const int  nsubgrid = (In[1] ? 2 : 1);
-   fst_record  rec[nsubgrid][max_nb_weights][N];
+   fst_record  rec[nsubgrid][MAX_NB_WEIGHTS][N];
    fst_record others[nsubgrid][3];
    fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
    fst_file   *fin[nsubgrid],*fout;
+   int         nb_weights[nsubgrid];
    float      *data_out, *angle_data_out;
    int         i=0,j=0,iy,jy,n=0,v=0,w=0,idx,g,in;
    float       a;
    int        glb_ni[nsubgrid], glb_nj[nsubgrid], sz[nsubgrid];
 
    // Arrays typed pointers for data of W, I, J input records
-   I16_dest_t *iy_data[nsubgrid][max_nb_weights];
-   I16_dest_t *jy_data[nsubgrid][max_nb_weights];
-   double     *w_data[nsubgrid][max_nb_weights];
+   I16_dest_t *iy_data[nsubgrid][MAX_NB_WEIGHTS];
+   I16_dest_t *jy_data[nsubgrid][MAX_NB_WEIGHTS];
+   double     *w_data[nsubgrid][MAX_NB_WEIGHTS];
 
    // Arrays of typed pointers for NAVG, MASK, ANG input records
    I1_dest_t  *mask_data[nsubgrid];
@@ -66,6 +83,14 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
       if (!(fin[sg]=fst24_open(In[sg],"R/O"))) {
          App_Log(APP_ERROR,"Problems opening input file %s\n",In[sg]);
          return(FALSE);
+      }
+      nb_weights[sg] = count_weights(fin[sg]);
+      if(nb_weights[sg] == 0){
+         App_Log(APP_WARNING, "The file '%s' has zero weight (W001, W002,...) records\n", In[sg]);
+      }
+      if(nb_weights[sg] > MAX_NB_WEIGHTS){
+         App_Log(APP_ERROR, "The file '%s' has more than %d weights: %d\n", In[sg], MAX_NB_WEIGHTS, nb_weights[sg]);
+         return FALSE;
       }
 
       for(n=0; n<nb_weights[sg]; n++){
@@ -104,9 +129,10 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
 
       fst24_close(fin[sg]);
    }
+   int true_max_nb_weights = (nb_weights[0] > nb_weights[1] ? nb_weights[0] : nb_weights[1]);
 
    // <i,j of point>(2) + <i,j,w for each contributing point, up to nbweights of them>(3*nb_weights) + <separator>(1)
-   int data_per_point = 2 + 3 * max_nb_weights + 1;
+   int data_per_point = 2 + 3 * true_max_nb_weights + 1;
    // adding 1*divisor to account for the A = QB + r thing we're doing later.
    size_t data_out_alloc_size = sz[0]*nsubgrid * data_per_point *sizeof(*data_out) + 1 + divisor; // + 1 for REF_INDEX_END
    if(!(data_out=(float*)malloc(data_out_alloc_size))){
@@ -283,13 +309,10 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
 int main(int argc, char *argv[]) {
 
    int         ok=0,code=0,odim[2]={0,0},bdw=0,orca=0;
-   int         nw[2]={-1,-1};
    char        *in[2]={ NULL, NULL },*out=NULL,*ft=NULL;
-   int         nb_files = -1;
  
    TApp_Arg appargs[]=
       { { APP_CHAR,   in,    2,             "i", "input",  "Input file" },
-        { APP_INT32,  nw,    2,             "n", "nb-weights", "Number of weights" },
         { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
         { APP_CHAR,  &ft,    1,             "g", "grid",   "Grid types from->to (ie: U->O = 'OU')" },
         { APP_INT32, &odim,  2,             "d", "dims",   "NI,NJ dimension of the other (sub)grid " },
@@ -308,17 +331,8 @@ int main(int argc, char *argv[]) {
       App_Log(APP_ERROR,"No input standard file specified\n");
       exit(EXIT_FAILURE);
    }
-   nb_files = (in[1] ? 2 : 1);
    if (!out) {
       App_Log(APP_ERROR,"No output standard file specified\n");
-      exit(EXIT_FAILURE);
-   }
-   if (nw[0] == -1){
-      App_Log(APP_ERROR, "No number of weights specified\n");
-      exit(EXIT_FAILURE);
-   }
-   if ((nb_files == 2) && (nw[1] == -1)){
-      App_Log(APP_ERROR, "Two files given but only one number of weights was specified\n");
       exit(EXIT_FAILURE);
    }
 
@@ -326,7 +340,7 @@ int main(int argc, char *argv[]) {
    App_Start();
 
    if (code!=EXIT_FAILURE) {
-      ok=ReIndex(in,out,ft,odim,bdw,orca, nw);
+      ok=ReIndex(in,out,ft,odim,bdw,orca);
    }
    code=App_End(ok?0:EXIT_FAILURE);
  
