@@ -4,6 +4,8 @@
 #include <GeoRef.h>
 #include <Def.h>
 #include <georef_build_info.h>
+#include <errno.h>
+#include <string.h> // For strerror
 
 
 #define APP_NAME "georef_reindexer"
@@ -105,11 +107,21 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
       fst24_close(fin[sg]);
    }
 
-   int data_per_point = 2 + 3 * max_nb_weights + 1; // <i,j of point>(2) + <i,j,w for each contributing point, up to nbweights of them>(3*nb_weights) + <separator>(1)
-   int data_out_alloc_size = sz[0]*nsubgrid * data_per_point *sizeof(*data_out) + 1 + divisor; // + 1 for REF_INDEX_END, adding 1*divisor to account for the A = QB + r thing we're doing later.
-   data_out=(float*)malloc(data_out_alloc_size);
+   // <i,j of point>(2) + <i,j,w for each contributing point, up to nbweights of them>(3*nb_weights) + <separator>(1)
+   int data_per_point = 2 + 3 * max_nb_weights + 1;
+   // adding 1*divisor to account for the A = QB + r thing we're doing later.
+   size_t data_out_alloc_size = sz[0]*nsubgrid * data_per_point *sizeof(*data_out) + 1 + divisor; // + 1 for REF_INDEX_END
+   if(!(data_out=(float*)malloc(data_out_alloc_size))){
+         App_Log(APP_ERROR, "malloc(%lu): %s\n", data_out_alloc_size, strerror(errno));
+         return FALSE;
+   }
+
    int angle_data_per_point = 3; // cos, sin, separator
-   angle_data_out=(float*)malloc(sz[0]*nsubgrid*angle_data_per_point*sizeof(float) + 1); // +1 for REF_INDEX_END;
+   size_t angle_out_alloc_size = sz[0]*nsubgrid*angle_data_per_point*sizeof(float) + 1; // +1 for REF_INDEX_END;
+   if(!(angle_data_out=(float*)malloc(angle_out_alloc_size))){
+         App_Log(APP_ERROR, "malloc(%lu): %s\n", angle_out_alloc_size, strerror(errno));
+         return FALSE;
+   }
 
    //Yin
    navg_in = navg_data[0];
