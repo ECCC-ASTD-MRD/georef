@@ -71,7 +71,6 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
       for(n=0; n<nb_weights[sg]; n++){
          for(int t = W; t<=J; t++){
             snprintf(crit.nomvar, FST_NOMVAR_LEN, FMT[t], n+1);
-            fprintf(stderr, "sg=%d, n=%d, t=%d, crit.nomvar='%s'\n",sg, n,t,crit.nomvar);
             rec[sg][n][t] = default_fst_record;
             if(!fst24_read(fin[sg], &crit, NULL, &rec[sg][n][t])){
                App_Log(APP_ERROR,"Could not read %s from %s\n", crit.nomvar,In[sg]);
@@ -87,7 +86,6 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
       for(n = NAVG; n <= MASK; n++){
          strncpy(crit.nomvar, OtherStr[n],FST_NOMVAR_LEN);
          others[sg][n] = default_fst_record;
-         fprintf(stderr, "sg=%d, n=%d, crit.nomvar='%s'\n", sg, n, crit.nomvar);
          if(!fst24_read(fin[sg], &crit, NULL, &others[sg][n])){
             App_Log(APP_ERROR,"Could not read %s from %s\n", crit.nomvar,In[sg]);
             return(FALSE);
@@ -241,7 +239,6 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca, i
    out.ni = Q + 1; // This +1 adds up to divisor from the size
    out.nj = B;
 
-   fprintf(stderr, "Ending pointer values: v=%d, w=%d, out.ni=%d, out.nj=%d, prod=%d, data_out_alloc_size=%d\n", v, w, out.ni, out.nj, out.ni*out.nj, data_out_alloc_size);
    ang.ni=w;
    ang.nj=1;
    out.nk=ang.nk=1;
