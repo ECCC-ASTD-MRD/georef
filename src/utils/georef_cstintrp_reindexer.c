@@ -13,6 +13,9 @@ typedef enum { W001,W002,W003,W004, I001,I002,I003,I004, J001,J002,J003,J004, NA
 // GEM_to NEMO: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -d 319 131 -b 2
 // NEMO_to_GEM: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yang.std -o ./atmos-ocean-grids.fstd -g UO -d 362 292 --orca 1
 
+#define I16_dest_t int32_t // dty: I 16 gets read into 32 bit
+#define I1_dest_t  int32_t // dty: I 1  gets read into 32 bit
+
 int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
 
    fst_record  rec[2][15];
@@ -21,10 +24,12 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    float      *data, *angle_data;
    int         i=0,j=0,iy,jy,n=0,v=0,w=0,sz=0,idx,g,in,subgrid;
    float       a;
-   short      *iy_data[2][4];
-   short      *jy_data[2][4];
+   I16_dest_t *iy_data[2][4];
+   I16_dest_t *jy_data[2][4];
    double     *w_data[2][4];
-   short      *navg_in;
+   I1_dest_t  *mask_data[2];
+   I16_dest_t *navg_in;
+   I1_dest_t  *mask_in;
    float      *ang_in;
 
    if (!(fin[0]=fst24_open(In[0],"R/O"))) {
@@ -43,7 +48,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    }
 
    // Create the desination grid
-   for(n=W001;n<=ANG;n++){
+   for(n=W001;n<=MASK;n++){
       rec[0][n]=rec[1][n]=default_fst_record;
       strncpy(crit.nomvar,NEMO_Vars[n],FST_NOMVAR_LEN);
       if (!fst24_read(fin[0],&crit,NULL,&rec[0][n])) {
@@ -66,13 +71,19 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
        }
    }
 
+   mask_data[0] = rec[0][MASK].data;
+   if(In[1]){
+       mask_data[1] = rec[1][MASK].data;
+   }
+
    sz=rec[0][0].ni*rec[0][0].nj;
    data=(float*)malloc(sz*2*15*sizeof(float));
    angle_data=(float*)malloc(sz*2*3*sizeof(float));
 
    //Yin
-   navg_in = (short*)rec[0][NAVG].data;
-   ang_in = (float*)rec[0][ANG].data;
+   navg_in = rec[0][NAVG].data;
+   ang_in = rec[0][ANG].data;
+   mask_in = mask_data[0];
    idx=0;
    for(j=0;j<rec[0][0].nj;j++) {
       for(i=0;i<rec[0][0].ni;i++,idx++) {
@@ -88,6 +99,10 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
                      break;
                   }
                }
+            }
+            // Check if masked point
+            if (mask_in[idx] == 0) {
+               in=FALSE;
             }
             if (in) {
                data[v++]=i;
@@ -109,8 +124,9 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
 
    // Yang
    if (In[1]) {
-      navg_in = (short*)rec[1][NAVG].data;
-      ang_in = (float*)rec[1][ANG].data;
+      navg_in = rec[1][NAVG].data;
+      ang_in = rec[1][ANG].data;
+      mask_in = mask_data[1];
       idx=0;
       for(j=0;j<rec[1][0].nj;j++) {
          for(i=0;i<rec[1][0].ni;i++,idx++) {
@@ -127,6 +143,10 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
                      }
                   }
                }
+               // Check if masked point
+               if (mask_in[idx] == 0) {
+                  in=FALSE;
+               }
                if (in) {
                   data[v++]=i;
                   data[v++]=(FromTo[0]=='U')?j+rec[0][0].nj:j;
@@ -135,7 +155,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
                   angle_data[w++]=sin(a);
                   for(n=0;n<g;n++){
                      iy=iy_data[1][n][idx]-1;
-                     data[v++]= (Orca && iy==1) ? OtherDims[0]-2 : ((Orca && iy==OtherDims[0]-1) ? 1 : iy);
+                     data[v++]= (Orca && iy==0) ? OtherDims[0]-2 : ((Orca && iy==OtherDims[0]-1) ? 1 : iy);
                      jy=jy_data[1][n][idx]-1;
                      data[v++]= (FromTo[0]=='O') ? jy+OtherDims[1] : jy;
                      data[v++]= w_data[1][n][idx];
@@ -197,7 +217,7 @@ int main(int argc, char *argv[]) {
    char        *in[2]={ NULL, NULL },*out=NULL,*ft=NULL;
  
    TApp_Arg appargs[]=
-      { { APP_CHAR,  &in,    2,             "i", "input",  "Input file" },
+      { { APP_CHAR,   in,    2,             "i", "input",  "Input file" },
         { APP_CHAR,  &out,   1,             "o", "output", "Output file" },
         { APP_CHAR,  &ft,    1,             "g", "grid",   "Grid types from->to (ie: U->O = 'OU')" },
         { APP_INT32, &odim,  2,             "d", "dims",   "NI,NJ dimension of the other (sub)grid " },
@@ -212,7 +232,7 @@ int main(int argc, char *argv[]) {
    }
 
    // Error checking
-   if (!in) {
+   if (!in[0]) {
       App_Log(APP_ERROR,"No input standard file specified\n");
       exit(EXIT_FAILURE);
    }

@@ -337,6 +337,7 @@ void     GeoRef_Size(TGeoRef *Ref, int32_t X0, int32_t Y0, int32_t X1, int32_t Y
 TGeoRef* GeoRef_Resize(TGeoRef* __restrict const Ref, int32_t NI, int32_t NJ);
 int32_t  GeoRef_Free(TGeoRef *Ref);
 void     GeoRef_Clear(TGeoRef *Ref, int32_t New);
+int64_t  GeoRef_InterpClear(const TGeoRef * const ref, const TGeoOptions * const Opt, float * const Buffer);
 void     GeoRef_Qualify(TGeoRef* __restrict const Ref);
 int32_t  GeoRef_Limits(TGeoRef* __restrict const Ref, double *Lat0, double *Lon0, double *Lat1, double *Lon1);
 int32_t  GeoRef_BoundingBox(TGeoRef* __restrict const Ref, double Lat0, double Lon0, double Lat1, double Lon1, double *I0, double *J0, double *I1, double *J1);
