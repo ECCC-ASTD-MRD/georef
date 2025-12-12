@@ -159,8 +159,10 @@ program test
 
     ! Test interpolation
     len=ref1%interp(ref2,data_array1,data_array2)
-    write(app_msg,*) 'ref1%llval = ll=',lat(1),',',lon(1),' => val=',vals(1)
-    call App_Log(APP_INFO, app_msg)
+    record1%nomvar='data'
+    success=fileout%write(record1)
+
+    len=ref1%interpuv(ref2,data_array1,data_array1,data_array2,data_array2)
     record1%nomvar='data'
     success=fileout%write(record1)
 
