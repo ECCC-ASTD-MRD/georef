@@ -4,6 +4,7 @@
 #include "GeoRef.h"
 
 static int32_t GeoRef_SetMax = -64;    ///< How many set to kepp in memory
+static pthread_mutex_t GeoSet_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
 
 //! Free gridset zone definitions
 void GeoRef_SetZoneFree(
@@ -433,6 +434,8 @@ TGeoSet* GeoRef_SetReadFST(
     if (!GSet) return NULL;
 
     if (File) {
+        pthread_mutex_lock(&GeoSet_Mutex);
+
         if (GSet->Index) {
            Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: GeoSet already contains an index (type %i)\n", __func__,GSet->IndexMethod);
         }
@@ -451,6 +454,7 @@ TGeoSet* GeoRef_SetReadFST(
         fst_record record = default_fst_record;
         if (fst24_read(File, &crit, NULL, &record) != TRUE) {
             Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset index field %c%c (fst24_read failed)\n", __func__,crit.typvar[0],crit.typvar[1]);
+            pthread_mutex_unlock(&GeoSet_Mutex);
             return NULL;
         }
         GSet->IndexMethod = (TRef_Interp)InterpType;
@@ -462,6 +466,7 @@ TGeoSet* GeoRef_SetReadFST(
             strncpy(crit.nomvar, "#@@#", FST_NOMVAR_LEN);
             if (fst24_read(File, &crit, NULL, &record) != TRUE) {
                 Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find vector rotation field (fst24_read failed)\n", __func__);
+                pthread_mutex_unlock(&GeoSet_Mutex);
                 return NULL;
             }
             GSet->R = record.data;
@@ -470,6 +475,7 @@ TGeoSet* GeoRef_SetReadFST(
             strncpy(crit.nomvar, "#>>#", FST_NOMVAR_LEN);
             if (fst24_read(File, &crit, NULL, &record) != TRUE) {
                 Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset longitude field (fst24_read failed)\n", __func__);
+                pthread_mutex_unlock(&GeoSet_Mutex);
                 return NULL;
             }
             GSet->X = record.data;
@@ -478,11 +484,13 @@ TGeoSet* GeoRef_SetReadFST(
             strncpy(crit.nomvar, "#^^#", FST_NOMVAR_LEN);
             if (fst24_read(File, &crit, NULL, &record) != TRUE) {
                 Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Could not find gridset longitude field (fst24_read failed)\n", __func__);
+                pthread_mutex_unlock(&GeoSet_Mutex);
                 return NULL;
             }
             GSet->Y = record.data;
             record.data = NULL;
         }
+        pthread_mutex_unlock(&GeoSet_Mutex);
     }
 
     return GSet;
