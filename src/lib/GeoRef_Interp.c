@@ -189,6 +189,30 @@ int32_t GeoRef_InterpFinally(
                 f77name(ez_applywgts)(zout, GSet->wts, GSet->idx, zin, GSet->mask, &RefFrom->NX, &RefFrom->NY, &RefTo->NX, &RefTo->NY, &(GSet->n_wts), &Opt->NoData);
             }
             break;
+        
+        case 'Q':
+            switch(Opt->Interp) {
+                case IR_NEAREST:
+                    Lib_Log(APP_LIBGEOREF, APP_WARNING,
+                            "%s: Nearest interpolation not implemented for Cubed-sphere grid\n", __func__);
+                    return -1;
+                case IR_LINEAR:
+                    if (GeoRef_SetEmptyIndex(GSet)) {
+                        ComputeLinearInterpIndicesQ(RefFrom, x, y, npts, GSet->Index);
+                    }
+                    ApplyLinearInterpQ_32(GSet->Index, npts, Opt->NoData, zin, zout);
+                    break;
+                case IR_CUBIC:
+                    Lib_Log(APP_LIBGEOREF, APP_WARNING,
+                            "%s: Cubic interpolation not implemented for Cubed-sphere grid\n", __func__);
+                    return -1;
+                default:
+                    Lib_Log(APP_LIBGEOREF, APP_WARNING,
+                            "%s: Interpolation method %d not implemented for Cubed-sphere grid\n",
+                            __func__, Opt->Interp);
+                    return -1;
+            }
+            break;
 
         default:
             switch (Opt->Interp) {
