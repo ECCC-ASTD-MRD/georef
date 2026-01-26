@@ -732,7 +732,7 @@ static double* make_axis(
 }
 
 //! Initialize data structures used to facilitate computations on a cubed-sphere grid
-TGeoRef *GeoRef_DefineC(TGeoRef *Ref) {
+TGeoRef *GeoRef_DefineQ(TGeoRef *Ref) {
     
     Ref->CGrid = (CubedSphereParams*)malloc(sizeof(CubedSphereParams));
     CubedSphereParams* param = Ref->CGrid;
@@ -796,7 +796,7 @@ static inline int is_valid_data_64(const double z, const double no_data) {
 
 
 //! Compute the weights and grid point indices needed to extrapolate to the given positions
-int32_t ComputeLinearInterpIndicesC(
+int32_t ComputeLinearInterpIndicesQ(
     TGeoRef *Ref,               //!< Grid on which we are interpolating
     const double* X,            //!< X position of the points to where we are interpolating
     const double* Y,            //!< Y position of the points to where we are interpolating
@@ -862,7 +862,7 @@ void ApplyLinearInterpC(
     }
 }
 
-void ApplyLinearInterpC_32(
+void ApplyLinearInterpQ_32(
     const float indices[][6],   //!< Weights and grid point indices for interpolating
     const int32_t NumPoints,    //!< How many points to interpolate
     const float NoData,         //!< Value that indicates absence of data
@@ -900,7 +900,7 @@ int test_cubed_sphere(void) {
     // ref->RPNHead.ig2 = 0x800000;
     // ref->RPNHead.ig3 = 0x800000;
     ref->RPNHead.ig4 = encode_cs_ig4(num_elem, num_solpts);
-    if (GeoRef_DefineC(ref) != ref) {
+    if (GeoRef_DefineQ(ref) != ref) {
         App_Log(APP_ERROR, "Error while creating grid!\n");
         return -1;
     }
@@ -1138,7 +1138,7 @@ int test_cubed_sphere(void) {
         // Interpolate field to these points
         App_TimerStart(&t3);
         float (*indices)[6] = malloc(num_samples * num_samples * 6 * sizeof(float));
-        ComputeLinearInterpIndicesC(ref, x, y, num_samples * num_samples, indices);
+        ComputeLinearInterpIndicesQ(ref, x, y, num_samples * num_samples, indices);
         ApplyLinearInterpC(indices, num_samples * num_samples, 10e38, grid_point_field, field_interp);
         App_TimerStop(&t3);
 
