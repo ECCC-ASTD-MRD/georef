@@ -334,7 +334,7 @@ static inline float bilinear_interp_32(
 //! Convert given 3D cartesian coordinates to lon-lat coordinates
 static inline GeoVect2D cart_to_ll(const double x, const double y, const double z) {
     const double xz = sqrt(x*x + z*z);
-    return (GeoVect2D){atan2(x, z), atan2(y, xz)};
+    return (GeoVect2D){{atan2(x, z), atan2(y, xz)}};
 }
 
 //! Convert given 3D cartesian point from describing a position on panel 0 to a position
@@ -596,7 +596,7 @@ static inline size_t xy_to_index(
 }
 
 /*----------------------------------------------------------------------------
- * @brief  Transforms XY grid coordinates to LatLon for a C (cube-sphere) grid
+ * @brief  Transforms XY grid coordinates to LatLon for a Q (cube-sphere) grid
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] Lat     Latitude array
  *    @param[out] Lon     Longitude array
@@ -612,8 +612,8 @@ static inline size_t xy_to_index(
 int32_t GeoRef_XY2LL_Q(TGeoRef *Ref, double *Lat, double *Lon, double *X, double *Y, int32_t Nb) {
 
     int32_t num_points = 0;
-    const int32_t num_axis_points = Ref->CGrid->NumAxisPoints;
-    const RotationParam rot = Ref->CGrid->LocalToGlobal;
+    const int32_t num_axis_points = Ref->QGrid->NumAxisPoints;
+    const RotationParam rot = Ref->QGrid->LocalToGlobal;
     
     for (int i = 0; i < Nb; i++) {
         const CoordUV pt_face = xy_to_uv(X[i], Y[i], Ref->AX, num_axis_points);
@@ -630,7 +630,7 @@ int32_t GeoRef_XY2LL_Q(TGeoRef *Ref, double *Lat, double *Lon, double *X, double
 }
 
 /*----------------------------------------------------------------------------
- * @brief  Transforms LatLon coordinates to XY for a C (cube-sphere) grid
+ * @brief  Transforms LatLon coordinates to XY for a Q (cube-sphere) grid
  *    @param[in]  Ref     Georeference pointer
  *    @param[out] X       X array
  *    @param[out] Y       Y array
@@ -646,13 +646,13 @@ int32_t GeoRef_XY2LL_Q(TGeoRef *Ref, double *Lat, double *Lon, double *X, double
 int32_t GeoRef_LL2XY_Q(TGeoRef *Ref, double *X, double *Y, double *Lat, double *Lon, int32_t Nb) {
     int32_t num_points = 0;
 
-    const RotationParam rot = Ref->CGrid->GlobalToLocal;
+    const RotationParam rot = Ref->QGrid->GlobalToLocal;
     for (int i = 0; i < Nb; i++) {
         if (Lat[i] > 90.0 || Lat[i] < -90.0) continue; // Invalid latitude
         const Coord3D pt_global = ll_to_cart(Lon[i], Lat[i]);
         const Coord3D pt_cube = apply_rotation(rot, pt_global);
         const CoordUV pt_face = cart_to_uv(pt_cube);
-        const GeoVect2D xy = uv_to_xy(pt_face, Ref->CGrid->NumElem, Ref->CGrid->Degree);
+        const GeoVect2D xy = uv_to_xy(pt_face, Ref->QGrid->NumElem, Ref->QGrid->Degree);
         X[i] = xy.X;
         Y[i] = xy.Y;
         num_points++;
@@ -734,8 +734,8 @@ static double* make_axis(
 //! Initialize data structures used to facilitate computations on a cubed-sphere grid
 TGeoRef *GeoRef_DefineQ(TGeoRef *Ref) {
     
-    Ref->CGrid = (CubedSphereParams*)malloc(sizeof(CubedSphereParams));
-    CubedSphereParams* param = Ref->CGrid;
+    Ref->QGrid = (CubedSphereParams*)malloc(sizeof(CubedSphereParams));
+    CubedSphereParams* param = Ref->QGrid;
 
     param->Lon0 = decode_cs_angle(Ref->RPNHead.ig1);
     param->Lat0 = decode_cs_angle(Ref->RPNHead.ig2);
@@ -763,9 +763,9 @@ TGeoRef *GeoRef_DefineQ(TGeoRef *Ref) {
     Ref->NX  = param->NumAxisPoints;
     Ref->NY  = param->NumAxisPoints * 6;
 
-    Ref->RPNHead.grtyp[0] = 'C';
+    Ref->RPNHead.grtyp[0] = 'Q';
     Ref->RPNHead.grtyp[1] = '\0';
-    Ref->GRTYP[0] = 'C';
+    Ref->GRTYP[0] = 'Q';
     Ref->GRTYP[1] = '\0';
 
     for (int i_panel = 0; i_panel < 6; i_panel++) {
@@ -803,8 +803,8 @@ int32_t ComputeLinearInterpIndicesQ(
     const int32_t NumPoints,    //!< How many positions to interpolate
     float indices[][6]          //!< [out] The weights and indices of interpolation grid points
 ) {
-    const int32_t numPanelPoints = Ref->CGrid->NumPanelPoints;
-    const int32_t numAxisPoints = Ref->CGrid->NumAxisPoints;
+    const int32_t numPanelPoints = Ref->QGrid->NumPanelPoints;
+    const int32_t numAxisPoints = Ref->QGrid->NumAxisPoints;
     int32_t num_interp = 0;
     for (int i = 0; i < NumPoints; i++) {
         const int panel = (int)((Y[i] + 0.5) / numAxisPoints);
@@ -838,7 +838,7 @@ int32_t ComputeLinearInterpIndicesQ(
     return num_interp;
 }
 
-void ApplyLinearInterpC(
+void ApplyLinearInterpQ(
     const float indices[][6],   //!< Weights and grid point indices for interpolating
     const int32_t NumPoints,    //!< How many points to interpolate
     const double NoData,        //!< Value that indicates absence of data
@@ -905,7 +905,7 @@ int test_cubed_sphere(void) {
         return -1;
     }
 
-    const CubedSphereParams* param = ref->CGrid;
+    const CubedSphereParams* param = ref->QGrid;
 
     {
         // Compute array of UV coordinates for every grid point
@@ -954,7 +954,7 @@ int test_cubed_sphere(void) {
                     {
                         const double diff = cart_dist(xy.Lon, xy.Lat, i, j + param->NumAxisPoints * i_panel);
 
-                        if (diff > 1e-15 * ref->CGrid->NumAxisPoints) {
+                        if (diff > 1e-15 * ref->QGrid->NumAxisPoints) {
                             Lib_Log(APP_LIBGEOREF, APP_ERROR,
                                 "%s: Difference! Expected (%2g, %2g), got (%7.2g, %7.2g), diff %.2e\n",
                                 __func__, (float)i, (float)j + param->NumAxisPoints * i_panel,
@@ -1037,7 +1037,7 @@ int test_cubed_sphere(void) {
         size_t num_errors = 0;
         for (int i = 0; i < num_total; i++) {
             const double diff = cart_dist(grid_x[i], grid_y[i], grid_back_x[i], grid_back_y[i]) /
-                                    ref->CGrid->NumAxisPoints;
+                                    ref->QGrid->NumAxisPoints;
             if (diff > 2e-15) {
                 App_Log(APP_ERROR, "AAAAHhhhh not the same grid coord (%.2e)\n", diff);
                 num_errors++;
@@ -1062,7 +1062,7 @@ int test_cubed_sphere(void) {
 
         // Write grid and field to file
         {
-            fst_file* f = fst24_open("C.fst", "R/W");
+            fst_file* f = fst24_open("Q.fst", "R/W");
             if (f == NULL) {
                 Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Unable to open file to store test grid\n", __func__);
                 return -1;
@@ -1082,7 +1082,7 @@ int test_cubed_sphere(void) {
             rec.ip3  = ref->RPNHead.ig3;
             // strncpy(rec.typvar,"X", FST_TYPVAR_LEN);
             strncpy(rec.nomvar, "DIST", FST_NOMVAR_LEN);
-            strncpy(rec.grtyp, "C", FST_GTYP_LEN);
+            strncpy(rec.grtyp, "Q", FST_GTYP_LEN);
             strncpy(rec.etiket, "TEST_FIELD", FST_ETIKET_LEN);
             rec.ig1   = 0;
             rec.ig2   = 0;
@@ -1115,8 +1115,8 @@ int test_cubed_sphere(void) {
         // const double corner_y2 = 1.0;
         const double corner_x = -0.5;
         const double corner_y = -0.5;
-        const double corner_x2 = ref->CGrid->NumAxisPoints - 0.5;
-        const double corner_y2 = ref->CGrid->NumAxisPoints * 6 - 0.5;
+        const double corner_x2 = ref->QGrid->NumAxisPoints - 0.5;
+        const double corner_y2 = ref->QGrid->NumAxisPoints * 6 - 0.5;
 
         for (int j = 0; j < num_samples; j++) {
             for (int i = 0; i < num_samples; i++) {
@@ -1139,7 +1139,7 @@ int test_cubed_sphere(void) {
         App_TimerStart(&t3);
         float (*indices)[6] = malloc(num_samples * num_samples * 6 * sizeof(float));
         ComputeLinearInterpIndicesQ(ref, x, y, num_samples * num_samples, indices);
-        ApplyLinearInterpC(indices, num_samples * num_samples, 10e38, grid_point_field, field_interp);
+        ApplyLinearInterpQ(indices, num_samples * num_samples, 10e38, grid_point_field, field_interp);
         App_TimerStop(&t3);
 
         
@@ -1149,10 +1149,10 @@ int test_cubed_sphere(void) {
         double pole_lat[] = {0.0, 0.0};
         GeoRef_LL2XY_Q(ref, pole_x, pole_y, pole_lat, pole_lon, 2);
         {
-            const int panel = (int)((pole_y[0] + 0.5) / ref->CGrid->NumAxisPoints);
-            double local_y = pole_y[0] - (panel * ref->CGrid->NumAxisPoints);
-            if (local_y < 0.0   || local_y > ref->CGrid->NumAxisPoints - 1 ||
-                pole_x[0] < 0.0 || pole_x[0] > ref->CGrid->NumAxisPoints) {
+            const int panel = (int)((pole_y[0] + 0.5) / ref->QGrid->NumAxisPoints);
+            double local_y = pole_y[0] - (panel * ref->QGrid->NumAxisPoints);
+            if (local_y < 0.0   || local_y > ref->QGrid->NumAxisPoints - 1 ||
+                pole_x[0] < 0.0 || pole_x[0] > ref->QGrid->NumAxisPoints) {
                 Lib_Log(APP_LIBGEOREF, APP_ERROR,
                     "%s: Min/max poles are at the edge of a panel. Change your grid parameters\n", __func__);
                 return -1;

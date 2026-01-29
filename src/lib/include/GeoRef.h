@@ -279,7 +279,7 @@ typedef struct TGeoRef {
 
    //! Grid-specific data
    union {
-      CubedSphereParams* CGrid;
+      CubedSphereParams* QGrid;
    };
 
    char                         *String;                  //!< OpenGIS WKT String description

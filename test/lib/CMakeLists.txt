@@ -7,6 +7,11 @@ if (EC_INIT_DONE LESS 2)
             message(FATAL_ERROR "The ECCI_DATA_DIR environment variable isn't defined!\nTests won't be able to find the required data files.\nPlease define that variable or set BUILD_TESTING=NO.")
         endif()
 
+        add_executable(test_cubed_sphere EXCLUDE_FROM_ALL CubedSphere.c)
+        target_link_libraries(test_cubed_sphere georef-shared rmn::rmn m)
+
+        add_test(NAME TestCubedSphere COMMAND test_cubed_sphere)
+
         add_executable(TestF90 EXCLUDE_FROM_ALL test.F90)
         add_dependencies(check TestF90)
         target_link_libraries(TestF90 georef-shared rmn::rmn m)
