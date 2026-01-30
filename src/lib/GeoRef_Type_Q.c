@@ -906,6 +906,7 @@ int test_cubed_sphere(void) {
     }
 
     const CubedSphereParams* param = ref->QGrid;
+    
 
     {
         // Compute array of UV coordinates for every grid point
