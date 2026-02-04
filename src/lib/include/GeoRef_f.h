@@ -38,7 +38,7 @@ void f77name(ez_calcxy_y)();
 void f77name(ez_calcxy_y_m)();
 void f77name(ez_aminmax)();
 void f77name(ez_corrbgd)();
-void f77name(ez_glat)();
+void f77name(ez_glat)(double*, double*, int*, int*);
 void f77name(ez_crot)(float *r, float *ri, float *lon1, float *lat1, float *lon2, float *lat2);
 void f77name(ez_lac)();
 void f77name(ez8_uvacart)(double *XYZ, float *U, float *V, double *LON, double *LAT, int32_t *NI, int32_t *NJ);
