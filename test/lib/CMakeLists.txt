@@ -9,7 +9,7 @@ if (EC_INIT_DONE LESS 2)
 
         add_executable(TestF90 EXCLUDE_FROM_ALL test.F90)
         add_dependencies(check TestF90)
-        target_link_libraries(TestF90 georef-shared rmn::rmn m)
+        target_link_libraries(TestF90 georef-static m)
 
         add_test(NAME TestF90 COMMAND TestF90 $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd $ENV{ECCI_DATA_DIR}/georef/grids/PS.fstd)
 
