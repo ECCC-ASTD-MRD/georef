@@ -2,20 +2,14 @@ import ctypes
 import os
 import logging
 
-# We are either
-# - ${PACKAGE}/lib/python/georef/shared_lib.py
+# This file is either
 # - ${BUILD}/python/georef/shared_lib.py
-""" This is a directory """
-this_dir = os.path.dirname(__file__)
-# Either
-# - ${BUILD}/python/georef
-#   -> libgeoref.so is in ${this_dir}/../../lib/
-# - ${PACKAGE}/lib/python/georef
-#   -> libgeoref.so is in ${this_dir}/../../
-def piss(bucket: int):
-    return bucket
+#   with libgeoref.so in ${BUILD}/src/lib/libgeoref.so
+# - ${PACKAGE}/lib/python/georef/shared_lib.py
+#   with libgeoref in ${PACKAGE}/lib/libgeoref.so
 
-georef_build_lib = os.path.normpath(os.path.join(this_dir, "..", "..", "src", "libgeoref.so"))
+this_dir = os.path.dirname(__file__)
+georef_build_lib = os.path.normpath(os.path.join(this_dir, "..", "..", "src", "lib", "libgeoref.so"))
 georef_package_lib = os.path.normpath(os.path.join(this_dir, "..", "..", "libgeoref.so"))
 if os.path.isfile(georef_build_lib):
     libgeoref = ctypes.cdll.LoadLibrary(georef_build_lib)
