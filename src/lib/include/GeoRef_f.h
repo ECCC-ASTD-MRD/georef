@@ -46,7 +46,7 @@ void f77name(ez8_cartauv)(float *U, float *V, double *UVCART, double *LON, doubl
 void f77name(ez_xpngdb2)(float* zout, float* zi, int32_t *ni, int32_t *nj, int32_t *j1, int32_t *j2, int32_t *hem, int32_t *symetrie);
 void f77name(ez_xpngdag2)(float* zout, float* zi, int32_t *ni, int32_t *nj, int32_t *j1, int32_t *j2, int32_t *hem, int32_t *symetrie);
 void f77name(lorenzo_mask_fill)();
-void f77name(qqq_ezget_mask_zones)();
 void f77name(qqq_ezsint_mask)(char*, double*, double*, int*, int*, char *, int*, int*, TRef_Interp*);
+void f77name(qqq_ezget_mask_zones)(int*, double*,double*, int*, int*, int*, int*, int*);
 
 #endif
