@@ -16,7 +16,7 @@ int32_t GeoRef_InterpMask(TGeoRef *RefTo, TGeoRef *RefFrom,TGeoOptions *Opt,char
    if (RefFrom->GRTYP[0] == 'Y') {
       memcpy(MaskOut,gset->mask,RefTo->NX*RefTo->NY*sizeof(int));
    } else {
-      f77name(qqq_ezsint_mask)(MaskOut,gset->X,gset->Y,&RefTo->NX,&RefTo->NY,MaskIn,&RefFrom->NX,&RefFrom->NY,Opt->Interp);
+      f77name(qqq_ezsint_mask)(MaskOut,gset->X,gset->Y,&RefTo->NX,&RefTo->NY,MaskIn,&RefFrom->NX,&RefFrom->NY,&Opt->Interp);
    }
    return(TRUE);
 }
