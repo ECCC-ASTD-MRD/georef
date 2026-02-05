@@ -30,7 +30,7 @@ void f77name(ez_lambxyfll99)(double *x, double *y, double *lat, double *lon, int
 void f77name(ez8_lambllfxy99)(double *lat, double *lon, double *x, double *y, int32_t *nb, float *latin1, float *latin2, float *yaxislat, float *yaxislon);
 void f77name(ez8_nwtncof)(float *cx, float *cy, double *ax, double *ay, int32_t *ni, int32_t *nj, int32_t *i1, int32_t *i2, int32_t *j1, int32_t *j2, int32_t *extension);
 void f77name(igaxg95)(char *gtypout, float *xg, int32_t *nb, char *grtyp, int32_t *ig1, int32_t *ig2, int32_t *ig3, int32_t *ig4);
-void f77name(ez_applywgts)();
+void f77name(ez_applywgts)(float*, double*, int*, float*, int*, int*, int*, int*, int*, int*, float*);
 void f77name(ez_calcpoleval)(float *poleval, float *z, int32_t *ni, double *ax, char *grtyp, char *grref, int32_t c1, int32_t c2);
 void f77name(ez_fillnpole)(float *zout, float *zin, int32_t *ni, int32_t *j1, int32_t *j2, float *valpole);
 void f77name(ez_fillspole)(float *zout, float *zin, int32_t *ni, int32_t *j1, int32_t *j2, float *valpole);
