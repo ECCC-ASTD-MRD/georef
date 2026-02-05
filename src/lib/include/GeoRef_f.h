@@ -36,8 +36,8 @@ void f77name(ez_fillnpole)(float *zout, float *zin, int32_t *ni, int32_t *j1, in
 void f77name(ez_fillspole)(float *zout, float *zin, int32_t *ni, int32_t *j1, int32_t *j2, float *valpole);
 void f77name(ez_calcxy_y)();
 void f77name(ez_calcxy_y_m)();
-void f77name(ez_aminmax)();
-void f77name(ez_corrbgd)();
+void f77name(ez_aminmax)(float*, float*, float*, int*, int*);
+void f77name(ez_corrbgd)(float*, int*, int*, int*);
 void f77name(ez_glat)(double*, double*, int*, int*);
 void f77name(ez_crot)(float *r, float *ri, float *lon1, float *lat1, float *lon2, float *lat2);
 void f77name(ez_lac)();
