@@ -52,6 +52,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    fst_record  rec[nsubgrid][MAX_NB_WEIGHTS][N];
    fst_record others[nsubgrid][3];
    fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
+   fst_record tictac=default_fst_record;
    fst_file   *fin[nsubgrid],*fout;
    int         nb_weights[nsubgrid];
    float      *data_out, *angle_data_out;
@@ -127,7 +128,6 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
       glb_nj[sg] = rec[sg][0][0].nj;
       sz[sg] = glb_ni[sg]*glb_nj[sg];
 
-      fst24_close(fin[sg]);
    }
    int true_max_nb_weights = (nb_weights[0] > nb_weights[1] ? nb_weights[0] : nb_weights[1]);
 
@@ -301,6 +301,45 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    fst24_write(fout,&out,FST_YES);
    fst24_write(fout,&ang,FST_YES);
 
+   // Write grids records
+   if (out.typvar[0] == 'X' || out.typvar[0] == 'O') {
+     strncpy(others[0][MASK].etiket, "OCEAN", FST_ETIKET_LEN);
+     strncpy(others[0][MASK].typvar, "P@"  ,  FST_TYPVAR_LEN);
+   } else {
+     strncpy(others[0][MASK].etiket, "ATMOS", FST_ETIKET_LEN);
+     strncpy(others[0][MASK].typvar, "P"  ,  FST_TYPVAR_LEN);
+   }
+   strncpy(others[0][MASK].nomvar, "GRID",  FST_NOMVAR_LEN);
+   fst24_write(fout,&others[0][MASK],FST_YES);   
+   if (others[0][MASK].grtyp[0] == 'X' || others[0][MASK].grtyp[0] == 'Z') {
+     // Transfer >> from input to output file
+     strncpy(tictac.nomvar, ">>", FST_NOMVAR_LEN);
+     tictac.ip1=others[0][MASK].ig1;
+     tictac.ip2=others[0][MASK].ig2;
+     tictac.ip3=others[0][MASK].ig3;
+     if(!fst24_read(fin[0], &tictac, NULL, &tictac)){
+       App_Log(APP_ERROR,"Could not read %s from %s\n", tictac.nomvar, In[0]);
+       return(FALSE);
+     }     
+     strncpy(tictac.etiket, "GRID", FST_ETIKET_LEN);
+     fst24_write(fout,&tictac,FST_YES);
+     // Transfer ^^ from input to output file
+     tictac=default_fst_record;
+     strncpy(tictac.nomvar, "^^", FST_NOMVAR_LEN);
+     tictac.ip1=others[0][MASK].ig1;
+     tictac.ip2=others[0][MASK].ig2;
+     tictac.ip3=others[0][MASK].ig3;
+     if(!fst24_read(fin[0], &tictac, NULL, &tictac)){
+       App_Log(APP_ERROR,"Could not read %s from %s\n", tictac.nomvar, In[0]);
+       return(FALSE);
+     }     
+     strncpy(tictac.etiket, "GRID", FST_ETIKET_LEN);
+     fst24_write(fout,&tictac,FST_YES);
+   }
+
+   fst24_close(fin[0]);
+   if (In[1]) fst24_close(fin[1]);
+   
    fst24_close(fout);
 
    return(TRUE);
