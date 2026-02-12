@@ -6,7 +6,7 @@
 #include <georef_build_info.h>
 #include <errno.h>
 #include <string.h> // For strerror
-
+#include <stdbool.h>
 
 #define APP_NAME "georef_reindexer"
 #define APP_DESC "ECCC/CMC RPN Index conversion tool"
@@ -44,6 +44,22 @@ int count_weights(fst_file *f)
    return nb_weights;
 }
 
+bool read_tictac(char *input_file, fst_file *fstfile, const fst_record *fstrec, fst_record tictac[2]){
+  const char *names[2] = {">>", "^^"};
+  for (int i = 0; i < 2; i++) {
+    tictac[i]=default_fst_record;
+    strncpy(tictac[i].nomvar, names[i], FST_NOMVAR_LEN);
+    tictac[i].ip1 = fstrec->ig1;
+    tictac[i].ip2 = fstrec->ig2;
+    tictac[i].ip3 = fstrec->ig3;
+    if (!fst24_read(fstfile, &tictac[i], NULL, &tictac[i])) {
+      App_Log(APP_ERROR,"Could not read %s from %s\n",tictac[i].nomvar, input_file);
+      return false;
+    }
+    strncpy(tictac[i].etiket, "GRID", FST_ETIKET_LEN);
+  }
+  return true;
+}
 
 int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
 
@@ -52,7 +68,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    fst_record  rec[nsubgrid][MAX_NB_WEIGHTS][N];
    fst_record others[nsubgrid][3];
    fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
-   fst_record tictac=default_fst_record;
+   fst_record tictac[nsubgrid][2];
    fst_file   *fin[nsubgrid],*fout;
    int         nb_weights[nsubgrid];
    float      *data_out, *angle_data_out;
@@ -302,39 +318,30 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    fst24_write(fout,&ang,FST_YES);
 
    // Write grids records
-   if (out.typvar[0] == 'X' || out.typvar[0] == 'O') {
-     strncpy(others[0][MASK].etiket, "OCEAN", FST_ETIKET_LEN);
-     strncpy(others[0][MASK].typvar, "P@"  ,  FST_TYPVAR_LEN);
+   // Read >> ^^ from file 0
+   if(!read_tictac(In[0],fin[0],&others[0][MASK],tictac[0]))return false;
+   if ( out.typvar[0] == 'U' ) {
+     // We have to construct the U grid from the two YIN YAN Z grid
+     // This code is based en GEM yyencode program.
+     // Read >> ^^ from file 1
+     if(!read_tictac(In[1],fin[1],&others[1][MASK],tictac[1]))return false;
+     
    } else {
-     strncpy(others[0][MASK].etiket, "ATMOS", FST_ETIKET_LEN);
-     strncpy(others[0][MASK].typvar, "P"  ,  FST_TYPVAR_LEN);
-   }
-   strncpy(others[0][MASK].nomvar, "GRID",  FST_NOMVAR_LEN);
-   fst24_write(fout,&others[0][MASK],FST_YES);   
-   if (others[0][MASK].grtyp[0] == 'X' || others[0][MASK].grtyp[0] == 'Z') {
-     // Transfer >> from input to output file
-     strncpy(tictac.nomvar, ">>", FST_NOMVAR_LEN);
-     tictac.ip1=others[0][MASK].ig1;
-     tictac.ip2=others[0][MASK].ig2;
-     tictac.ip3=others[0][MASK].ig3;
-     if(!fst24_read(fin[0], &tictac, NULL, &tictac)){
-       App_Log(APP_ERROR,"Could not read %s from %s\n", tictac.nomvar, In[0]);
-       return(FALSE);
-     }     
-     strncpy(tictac.etiket, "GRID", FST_ETIKET_LEN);
-     fst24_write(fout,&tictac,FST_YES);
-     // Transfer ^^ from input to output file
-     tictac=default_fst_record;
-     strncpy(tictac.nomvar, "^^", FST_NOMVAR_LEN);
-     tictac.ip1=others[0][MASK].ig1;
-     tictac.ip2=others[0][MASK].ig2;
-     tictac.ip3=others[0][MASK].ig3;
-     if(!fst24_read(fin[0], &tictac, NULL, &tictac)){
-       App_Log(APP_ERROR,"Could not read %s from %s\n", tictac.nomvar, In[0]);
-       return(FALSE);
-     }     
-     strncpy(tictac.etiket, "GRID", FST_ETIKET_LEN);
-     fst24_write(fout,&tictac,FST_YES);
+     // Not YIN YAN
+     if (out.typvar[0] == 'X' || out.typvar[0] == 'O') {
+       strncpy(others[0][MASK].etiket, "OCEAN", FST_ETIKET_LEN);
+       strncpy(others[0][MASK].typvar, "P@"  ,  FST_TYPVAR_LEN);
+     } else {
+       strncpy(others[0][MASK].etiket, "ATMOS", FST_ETIKET_LEN);
+       strncpy(others[0][MASK].typvar, "P"  ,  FST_TYPVAR_LEN);
+     }
+     strncpy(others[0][MASK].nomvar, "GRID",  FST_NOMVAR_LEN);
+     fst24_write(fout,&others[0][MASK],FST_YES);
+     if (others[0][MASK].grtyp[0] == 'X' || others[0][MASK].grtyp[0] == 'Z') {
+       // Transfer >> from input to output file
+       fst24_write(fout,&tictac[0][0],FST_YES);
+       fst24_write(fout,&tictac[0][1],FST_YES);
+     }
    }
 
    fst24_close(fin[0]);
