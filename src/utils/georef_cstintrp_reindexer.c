@@ -47,17 +47,150 @@ int count_weights(fst_file *f)
 bool read_tictac(char *input_file, fst_file *fstfile, const fst_record *fstrec, fst_record tictac[2]){
   const char *names[2] = {">>", "^^"};
   for (int i = 0; i < 2; i++) {
-    tictac[i]=default_fst_record;
     strncpy(tictac[i].nomvar, names[i], FST_NOMVAR_LEN);
     tictac[i].ip1 = fstrec->ig1;
     tictac[i].ip2 = fstrec->ig2;
     tictac[i].ip3 = fstrec->ig3;
+    if (tictac[i].data != NULL) {
+      free(tictac[i].data);
+      tictac[i].data = NULL;
+    }
     if (!fst24_read(fstfile, &tictac[i], NULL, &tictac[i])) {
       App_Log(APP_ERROR,"Could not read %s from %s\n",tictac[i].nomvar, input_file);
       return false;
     }
     strncpy(tictac[i].etiket, "GRID", FST_ETIKET_LEN);
   }
+  return true;
+}
+
+bool build_yin_yan_records(fst_record *yy_rec, fst_record *yy_tictac, fst_record tictac[2][2]){
+  // Adapted from GEM yyencode.F90
+  // tictac[0][j] is yin
+  // tictac[1][j] is yan 
+  // tictac[i][0] is >>
+  // tictac[i][1] is ^^
+  int niyy, ni, nj, sindx, sindx_yin, yin=0, yan=1, tic=0, tac=1;
+  char family_uencode_S = 'F';
+  int version_uencode    = 1;
+  float xlat1,xlon1,xlat2,xlon2;
+  // Sanity check
+  if(tictac[yin][tic].ni != tictac[yan][tic].ni){
+    App_Log(APP_ERROR,"In build_yin_yan_record, YIN and YAN records %s don't have the same ni size : %d vs % d\n",
+	    tictac[yin][tic].nomvar, tictac[yin][tic].ni, tictac[yan][tic].ni);
+    return false;
+  }
+  if(tictac[yin][tac].nj != tictac[yan][tac].nj){
+    App_Log(APP_ERROR,"In build_yin_yan_record, YIN and YAN records %s don't have the same nj size %d vs % d\n",
+	    tictac[yin][tac].nomvar, tictac[yin][tac].nj, tictac[yan][tac].nj);
+    return false;
+  }
+  // ni nj is comment to all
+  ni=tictac[yin][tic].ni;
+  nj=tictac[yin][tac].nj;
+  niyy=5+2*(10+ni+nj);
+  yy_tictac->data_type = FST_TYPE_REAL;
+  yy_tictac->data_bits = 32;
+  yy_tictac->pack_bits = 32;
+  if (yy_tictac->data != NULL) {
+    free(yy_tictac->data);
+    yy_tictac->data = NULL;
+  }
+  if(!(yy_tictac->data = malloc(niyy * sizeof(float)))){
+    App_Log(APP_ERROR, "malloc(%lu): %s\n", niyy, strerror(errno));
+    return false;
+  }
+  float *yy = (float *)yy_tictac->data;
+  yy[0] = (int)family_uencode_S;  // équivalent C de Fortran iachar
+  yy[1] = version_uencode;
+  yy[2] = 2; // 2 grids (Yin & Yang);
+  yy[3] = 1; // the 2 grids have same resolution;
+  yy[4] = 1; // the 2 grids have same area extension on the sphere;
+  //YIN
+  sindx = 5;
+  f77name(cigaxg)("E", &xlat1, &xlon1, &xlat2, &xlon2,
+		  &tictac[yin][tic].ig1,&tictac[yin][tic].ig2,&tictac[yin][tic].ig3,&tictac[yin][tic].ig4,1);
+  // xlat1 must be greather than zero for yin grid
+  if( xlat1 < 0.){
+    App_Log(APP_ERROR, "Looks like the yan file is passe before the yin file, please correct this and rerun.\n",);
+    return false;
+  }
+  yy[sindx  ] = ni;
+  yy[sindx+1] = nj;
+  yy[sindx+6] = xlat1;
+  yy[sindx+7] = xlon1;
+  yy[sindx+8] = xlat2;
+  yy[sindx+9] = xlon2;
+  memcpy(&yy[sindx+10],    tictac[yin][tic].data, ni * sizeof(float));
+  memcpy(&yy[sindx+10+ni], tictac[yin][tac].data, nj * sizeof(float));    
+  yy[sindx+2] = yy[sindx+10      ];
+  yy[sindx+3] = yy[sindx+ 9+ni   ];
+  yy[sindx+4] = yy[sindx+10+ni   ];
+  yy[sindx+5] = yy[sindx+ 9+ni+nj];
+  sindx_yin= sindx;
+  //YAN
+  f77name(cigaxg)("E", &xlat1, &xlon1, &xlat2, &xlon2,
+  	      &tictac[yan][tic].ig1,&tictac[yan][tic].ig2,&tictac[yan][tic].ig3,&tictac[yan][tic].ig4,1);
+  sindx   = sindx+10+ni+nj;
+  yy[sindx  ] = ni;
+  yy[sindx+1] = nj;
+  yy[sindx+2] = yy[sindx_yin+10      ];
+  yy[sindx+3] = yy[sindx_yin+ 9+ni   ];
+  yy[sindx+4] = yy[sindx_yin+10+ni   ];
+  yy[sindx+5] = yy[sindx_yin+ 9+ni+nj];
+  yy[sindx+6] = xlat1;
+  yy[sindx+7] = xlon1;
+  yy[sindx+8] = xlat2;
+  yy[sindx+9] = xlon2;
+  // Note in the yyencode.F90 they copy data from yy but data from tictac is identical
+  memcpy(&yy[sindx+10],    &yy[sindx_yin+10],    ni * sizeof(float));
+  memcpy(&yy[sindx+10+ni], &yy[sindx_yin+10+ni], nj * sizeof(float));    
+  snprintf(yy_tictac->grtyp, FST_GTYP_LEN, "%c", family_uencode_S);
+  yy_tictac->ni=niyy;
+  yy_tictac->nj=1;
+  yy_tictac->nk=1;
+  snprintf(yy_tictac->nomvar, FST_NOMVAR_LEN, "^>");
+  snprintf(yy_tictac->typvar, FST_TYPVAR_LEN, "X");
+  snprintf(yy_tictac->etiket, FST_ETIKET_LEN, "GRID");
+  yy_tictac->ig1=version_uencode;
+  yy_tictac->ig2=0;
+  yy_tictac->ig3=0;
+  yy_tictac->ig4=0;
+  // // make up an ad hoc ip1 ip2 ip3 with some grid info
+  yy_tictac->ip1= (tictac[yin][tic].ig1 + tictac[yan][tic].ig1)/2;
+  yy_tictac->ip2= (tictac[yin][tic].ig2 + tictac[yan][tic].ig2)/2;
+  yy_tictac->ip3= (tictac[yin][tic].ig3 + tictac[yan][tic].ig3)/2;
+  yy_tictac->deet=0;
+  yy_tictac->npas=0;
+  
+  //Construct dummy yy record
+  if (yy_rec->data != NULL) {
+    free(yy_rec->data);
+    yy_rec->data = NULL;
+  }
+  if(!(yy_rec->data=calloc(ni*2*nj, sizeof(float)))){
+    App_Log(APP_ERROR, "calloc(%lu): %s\n", ni*nj, strerror(errno));
+    return false;
+  }
+  yy_rec->ip1 = 0;
+  yy_rec->ip2 = 0;
+  yy_rec->ip3 = 0; 
+  yy_rec->ig1 = yy_tictac->ip1;
+  yy_rec->ig2 = yy_tictac->ip2;
+  yy_rec->ig3 = yy_tictac->ip3;
+  yy_rec->ig4 = 0;
+  snprintf(yy_rec->nomvar, FST_NOMVAR_LEN, "GRID");
+  snprintf(yy_rec->typvar, FST_TYPVAR_LEN, "P");
+  snprintf(yy_rec->etiket, FST_ETIKET_LEN, "ATMOS");
+  snprintf(yy_rec->grtyp, FST_GTYP_LEN, "U");
+  yy_rec->ni = ni;
+  yy_rec->nj = nj*2;
+  yy_rec->nk = 1;
+  yy_rec->data_type=FST_TYPE_REAL;
+  yy_rec->data_bits=32;
+  yy_rec->pack_bits=16;
+  yy_rec->deet=0;
+  yy_rec->npas=0;
   return true;
 }
 
@@ -68,7 +201,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    fst_record  rec[nsubgrid][MAX_NB_WEIGHTS][N];
    fst_record others[nsubgrid][3];
    fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
-   fst_record tictac[nsubgrid][2];
+   fst_record tictac[nsubgrid][2], yy_tictac, yy_rec;
    fst_file   *fin[nsubgrid],*fout;
    int         nb_weights[nsubgrid];
    float      *data_out, *angle_data_out;
@@ -319,13 +452,21 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
 
    // Write grids records
    // Read >> ^^ from file 0
+   tictac[0][0]=default_fst_record;
+   tictac[0][1]=default_fst_record;
    if(!read_tictac(In[0],fin[0],&others[0][MASK],tictac[0]))return false;
    if ( out.typvar[0] == 'U' ) {
      // We have to construct the U grid from the two YIN YAN Z grid
      // This code is based en GEM yyencode program.
      // Read >> ^^ from file 1
+     tictac[1][0]=default_fst_record;
+     tictac[1][1]=default_fst_record;
+     yy_tictac=default_fst_record;
+     yy_rec=default_fst_record;
      if(!read_tictac(In[1],fin[1],&others[1][MASK],tictac[1]))return false;
-     
+     if(!build_yin_yan_records(&yy_rec,&yy_tictac,tictac))return false;
+     fst24_write(fout,&yy_rec,FST_YES);
+     fst24_write(fout,&yy_tictac,FST_YES);
    } else {
      // Not YIN YAN
      if (out.typvar[0] == 'X' || out.typvar[0] == 'O') {
