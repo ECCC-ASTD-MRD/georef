@@ -70,7 +70,7 @@ typedef struct {
 // }
 
 //! Decode the IG4 parameter into its 2 components
-static inline void decode_cs_ig4(
+void decode_cs_ig4(
     const int32_t ig4,      //!< Value of the IG4 parameters
     int32_t* num_elements,  //!< [out] Number of elements along the side of a panel
     int32_t* num_solpts     //!< [out] Number of solution points per element side (= order of discretization)
@@ -80,7 +80,7 @@ static inline void decode_cs_ig4(
 }
 
 //! Encode the IG4 parameter from its 2 components
-static inline int32_t encode_cs_ig4(
+int32_t encode_cs_ig4(
     const int32_t num_elements, //!< Number of elements along the side of a panel
     const int32_t num_solpts    //!< Number of solution points per element side (= order of discretization)
 ) {
@@ -781,6 +781,18 @@ TGeoRef *GeoRef_DefineQ(TGeoRef *Ref) {
         }
     }
 
+    // --- Ajout pour export lon/lat georef ---
+    FILE *f_txt = fopen("lonlat_georef.txt", "w");
+    if (f_txt) {
+        fprintf(f_txt, "Index\tLon\tLat\n");
+        int total_pts = param->NumPanelPoints * 6;
+        for (int k = 0; k < total_pts; k++) {
+            fprintf(f_txt, "%d\t%.18f\t%.18f\n", k, Ref->Lon[k], Ref->Lat[k]);
+        }
+        fclose(f_txt);
+        Lib_Log(APP_LIBGEOREF, APP_INFO, "Coordonnées exportées dans lonlat_georef.txt\n");
+    }
+
     return Ref;
 }
 
@@ -889,6 +901,8 @@ void ApplyLinearInterpQ_32(
 int test_cubed_sphere(void) {
     const int num_elem = 36;
     const int num_solpts = 5;
+    //const int num_elem = 10;
+    //const int num_solpts = 3;
     TGeoRef* ref = GeoRef_New();
     // ref->RPNHead.ig1 = 0x700000;
     // ref->RPNHead.ig2 = 0x900000;
@@ -896,9 +910,9 @@ int test_cubed_sphere(void) {
     ref->RPNHead.ig1 = 0x420000;
     ref->RPNHead.ig2 = 0xa4fa00;
     ref->RPNHead.ig3 = 0x660000;
-    // ref->RPNHead.ig1 = 0x800000;
-    // ref->RPNHead.ig2 = 0x800000;
-    // ref->RPNHead.ig3 = 0x800000;
+    //ref->RPNHead.ig1 = 0x800000;
+    //ref->RPNHead.ig2 = 0xa00000;
+    //ref->RPNHead.ig3 = 0x800000;
     ref->RPNHead.ig4 = encode_cs_ig4(num_elem, num_solpts);
     if (GeoRef_DefineQ(ref) != ref) {
         App_Log(APP_ERROR, "Error while creating grid!\n");

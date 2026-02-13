@@ -91,4 +91,7 @@ static inline double decode_cs_angle(const int32_t angle24) {
     return ((angle24 & 0xffffff) - 0x800000) * interval;
 }
 
+void decode_cs_ig4(const int32_t ig4, int32_t* num_elements, int32_t* num_solpts);
+int32_t encode_cs_ig4(const int32_t num_elements, const int32_t num_solpts); 
+
 #endif 
