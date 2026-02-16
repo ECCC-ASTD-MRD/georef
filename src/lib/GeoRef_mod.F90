@@ -92,6 +92,7 @@ module georef_mod
         procedure, pass   :: createu => georef_createu_f
         procedure, pass   :: creater => georef_creater_f
         procedure, pass   :: createw => georef_createw_f
+        procedure, pass   :: rpnhash => georef_rpnhash_f
         procedure, pass   :: copy => georef_copy_f
         procedure, pass   :: valid => georef_valid_f
         procedure, pass   :: equal => georef_equal_f
@@ -219,6 +220,17 @@ contains
            res=.true.
         endif
     end function georef_createw_f
+
+    function georef_rpnhash_f(this,ig1,ig2) result(res)
+        implicit none
+        class(georef), intent(inout) :: this       !< georef instance
+        integer(C_INT32_T), intent(out) :: ig1,ig2 !< IG1 and IG2 hash
+
+        integer(C_INT32_T):: res                  !< calculated crc32
+
+        res=georef_rpnhash(this%ptr,ig1,ig2)
+
+    end function georef_rpnhash_f
 
     function georef_valid_f(this) result(res)
         implicit none

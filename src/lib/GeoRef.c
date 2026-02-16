@@ -1054,15 +1054,45 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
    return(GeoRef_Define(ref,NI,NJ,GRTYP,"",IG1,IG2,IG3,IG4,NULL,NULL));
 }
 
-int32_t GeoRef_AssignToRecord(fst_record *Rec,TGeoRef *Ref) {
+//     use GRID definition in the interface to define a set of ig1/ig2 values
+//     using a cyclic redundancy check that uniquely define all output grids.
+extern uint32_t f_crc32(uint32_t *crc, const unsigned char *buf, uint32_t *len);
 
-   Rec->ig1=Ref->RPNHead.ig1;
-   Rec->ig2=Ref->RPNHead.ig2;
-   Rec->ig3=Ref->RPNHead.ig3;
-   Rec->ig4=0;
-   Rec->grtyp[0]=Ref->RPNHead.grtyp[0];
+static inline double roundto(double var, double prec) {
+    int value = (int)(var * prec + .5);
+    return (double)value / prec;
+}
 
-   return(TRUE);
+uint32_t GeoRef_RPNHash (TGeoRef *Ref, int32_t *IG1, int32_t *IG2) {
+
+   double *identity_vec=NULL,x;
+   uint32_t crc,n;
+
+   identity_vec=(double*)malloc(Ref->NX*Ref->NY*sizeof(double));
+   fprintf(stderr,"%.8f %.8f %.8f\n",x,roundto(x,100000),roundto(x,100));
+   
+   for(n=0;n<Ref->NX*Ref->NY*2;n+=2) {
+      identity_vec[n]=roundto(Ref->Lat[n],1000);
+      identity_vec[n+1]=roundto(Ref->Lon[n],1000);
+   }
+   identity_vec[n++] = Ref->RPNHeadExt.xg1;
+   identity_vec[n++] = Ref->RPNHeadExt.xg2;
+   identity_vec[n++] = Ref->RPNHeadExt.xg3;
+   identity_vec[n]   = Ref->RPNHeadExt.xg4;
+
+   n*=8;
+   crc=0;
+   crc = f_crc32 (&crc, (const unsigned char *)identity_vec, &n);
+
+   // Before rmn_011 convip was bugged for 3200 < ip1 < 32768, we therefore add 32768 for now
+   Ref->IP1 = (crc >> 16) + 32768;
+   Ref->IP2 = (crc & 0xFFFF) + 32768;
+   Ref->IP3 = 0;
+   
+   if (IG1) *IG1=Ref->IP1;
+   if (IG2) *IG2=Ref->IP2;
+
+   return(crc);
 }
 
 TGeoRef* GeoRef_CreateFromRecord(fst_record *Rec) {
