@@ -5,7 +5,7 @@ subroutine ez_glat(latroots, groots, nj, hem)
 
     integer, intent(in) :: nj
     real(kind = real64), dimension(nj), intent(out) :: latroots
-    real, intent(inout) :: groots(*)
+    real(kind = real64), intent(inout) :: groots(*)
     integer, intent(in) :: hem
 
 #include "qqqpar.inc"
@@ -21,7 +21,7 @@ subroutine ez_glat(latroots, groots, nj, hem)
     else
         npoly = nj
     endif
-    call dgauss(npoly, groots, global)
+    call dgauss8(npoly, groots, global)
 
     do j = 1, npoly / 2
         temp = groots(j)

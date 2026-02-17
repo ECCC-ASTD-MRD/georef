@@ -1,11 +1,11 @@
    subroutine ez_applywgts(outfld, wts, idxs, infld, masque, ni_src, nj_src, ni_dst, nj_dst, n_wts, nodata)
-
+   use, intrinsic :: iso_fortran_env
    implicit none
    integer ni_src, nj_src, ni_dst, nj_dst, n_wts, n
    real :: infld(ni_src*nj_src), outfld(ni_dst*nj_dst), nodata
    integer i,j,k
 
-   real :: wts(ni_dst, nj_dst, n_wts)
+   real(kind=real64) :: wts(ni_dst, nj_dst, n_wts)
    integer :: idxs(ni_dst, nj_dst, n_wts), masque(ni_dst*nj_dst)
 
    outfld = nodata

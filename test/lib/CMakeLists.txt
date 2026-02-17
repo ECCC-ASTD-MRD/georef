@@ -17,10 +17,9 @@ if (EC_INIT_DONE LESS 2)
         add_dependencies(test_execs test_cubed_sphere)
 
         add_executable(TestF90 EXCLUDE_FROM_ALL test.F90)
-        target_link_libraries(TestF90 georef-shared rmn::rmn m)
-        add_dependencies(test_execs TestF90)
-
+        target_link_libraries(TestF90 georef-static m)
         add_test(NAME TestF90 COMMAND TestF90 $ENV{ECCI_DATA_DIR}/georef/grids/L.fstd $ENV{ECCI_DATA_DIR}/georef/grids/PS.fstd)
+        add_dependencies(test_execs TestF90)
 
         file(REMOVE libgeoref.fstd)
 
