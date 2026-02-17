@@ -305,23 +305,23 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          case 'A': Ref->LL2XY=GeoRef_LL2XY_A; Ref->XY2LL=GeoRef_XY2LL_L; break;
          case 'B': Ref->LL2XY=GeoRef_LL2XY_B; Ref->XY2LL=GeoRef_XY2LL_L; break;
          case 'E': Ref->LL2XY=GeoRef_LL2XY_E; Ref->XY2LL=GeoRef_XY2LL_E; break;
+         case 'G': break;
          case 'L': Ref->LL2XY=GeoRef_LL2XY_L; Ref->XY2LL=GeoRef_XY2LL_L; break;
-         case 'N':
+         case 'M': Ref->LL2XY=GeoRef_LL2XY_M; Ref->XY2LL=GeoRef_XY2LL_M; break;
+         case 'N': break;
+         case 'O': Ref->LL2XY=GeoRef_LL2XY_O; Ref->XY2LL=GeoRef_XY2LL_O; break;
+         case 'Q': Ref->LL2XY=GeoRef_LL2XY_Q; Ref->XY2LL=GeoRef_XY2LL_Q; break;
+         case 'R': Ref->LL2XY=GeoRef_LL2XY_R; Ref->XY2LL=GeoRef_XY2LL_R; break;
          case 'S': Ref->LL2XY=GeoRef_LL2XY_NS; Ref->XY2LL=GeoRef_XY2LL_NS; break;
          case 'T': Ref->LL2XY=GeoRef_LL2XY_T; Ref->XY2LL=GeoRef_XY2LL_T; break;
-         case '!': Ref->LL2XY=GeoRef_LL2XY_LAMBERT; Ref->XY2LL=GeoRef_XY2LL_LAMBERT; break;
-         case 'G':
-         case '#':
-         case 'U':
-         case 'Z': Ref->LL2XY=GeoRef_LL2XY_Z; Ref->XY2LL=GeoRef_XY2LL_Z; break;
-         case 'O': Ref->LL2XY=GeoRef_LL2XY_O; Ref->XY2LL=GeoRef_XY2LL_O; break;
-         case 'R': Ref->LL2XY=GeoRef_LL2XY_R; Ref->XY2LL=GeoRef_XY2LL_R; break;
-         case 'M': Ref->LL2XY=GeoRef_LL2XY_M; Ref->XY2LL=GeoRef_XY2LL_M; break;
-         case 'W': Ref->LL2XY=GeoRef_LL2XY_W; Ref->XY2LL=GeoRef_XY2LL_W; break;
-         case 'Y': Ref->LL2XY=GeoRef_LL2XY_Y; Ref->XY2LL=GeoRef_XY2LL_Y; break;
-         case 'Q': Ref->LL2XY=GeoRef_LL2XY_Q; Ref->XY2LL=GeoRef_XY2LL_Q; break;
-         case 'X':
+         case 'U': break;
          case 'V': break;
+         case 'W': Ref->LL2XY=GeoRef_LL2XY_W; Ref->XY2LL=GeoRef_XY2LL_W; break;
+         case 'X': break;
+         case 'Y': Ref->LL2XY=GeoRef_LL2XY_Y; Ref->XY2LL=GeoRef_XY2LL_Y; break;
+         case 'Z': Ref->LL2XY=GeoRef_LL2XY_Z; Ref->XY2LL=GeoRef_XY2LL_Z; break;
+         case '!': Ref->LL2XY=GeoRef_LL2XY_LAMBERT; Ref->XY2LL=GeoRef_XY2LL_LAMBERT; break;
+         case '#': break;
          default:
             Lib_Log(APP_LIBGEOREF,APP_WARNING,"%s: Invalid grid type: %c\n",__func__,Ref->GRTYP[0]);
             return;
@@ -806,10 +806,24 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
             if (!GRef->AX)  sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
             GeoRef_BuildIndex(GRef);
             break;
-
+         case 'O':
+            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
+            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
+            GeoRef_BuildIndex(GRef);
+            break;
+         case 'Q':
+            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
+            break;
+         case 'V':
+            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
+            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
+//      GeoRef_ReadDescriptor(GRef,(void **)&GRef->AXY,"^>",1,APP_FLOAT64);
+//TODO:            RPN_FieldReadLevels(Field);
+            break;
          case 'W':
             break;
-
+         case 'X':
+            break;
          case 'Y':
             if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"LA",0,APP_FLOAT64);
             if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
@@ -818,27 +832,9 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
             if (!GRef->Hgt) GeoRef_ReadDescriptor(GRef,(void **)&GRef->Hgt,"ZH",0,APP_FLOAT32);
             GeoRef_BuildIndex(GRef);
             break;
-
-         case 'X':
-         case 'O':
-            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
-            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
-            GeoRef_BuildIndex(GRef);
-            break;
-
-         case 'V':
-            if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
-            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
-//      GeoRef_ReadDescriptor(GRef,(void **)&GRef->AXY,"^>",1,APP_FLOAT64);
-//TODO:            RPN_FieldReadLevels(Field);
-            break;
-
          case 'Z':
             if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
-         case 'Q':
-            if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
             break;
-
          case '#':
             if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&ay,"^^",1,APP_FLOAT64);
             if (!GRef->AX) GeoRef_ReadDescriptor(GRef,(void **)&ax,">>",1,APP_FLOAT64);
@@ -2098,6 +2094,50 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
 
    switch (Ref->GRTYP[0]) {
       case 'A':
+         break;
+      case 'B':
+         Ref->RPNHeadExt.xg4 = 360. /(Ref->NX-1);
+         Ref->RPNHeadExt.xg2 = 0.0;
+         switch (Ref->RPNHead.ig1) {
+	         case 0:
+	            Ref->RPNHeadExt.xg3 = 180./(Ref->NY-1);
+	            Ref->RPNHeadExt.xg1 = -90.;
+	            break;
+
+	         case 1:
+	            Ref->RPNHeadExt.xg3 = 90./(Ref->NY-1);
+	            Ref->RPNHeadExt.xg1 = 0.;
+	            Ref->Type |= GRID_EXPAND;
+	            break;
+
+	         case 2:
+	            Ref->RPNHeadExt.xg3 = 90./(Ref->NY-1);
+	            Ref->RPNHeadExt.xg1 = -90.;
+	            Ref->Type |= GRID_EXPAND;
+	            break;
+
+	         default:
+  			      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: 'B' grid has to be Global/North/South\n",__func__);
+	            return(-1);
+	      }
+
+         switch(Ref->RPNHead.ig2) {
+	         case 1:
+	            Ref->Type|=GRID_YINVERT;
+	            break;
+
+	         default:
+	            break;
+	      }
+         break;
+      case 'E':
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1,&Ref->RPNHeadExt.xg2,&Ref->RPNHeadExt.xg3,&Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
+      /*      Ref->RPNHeadExt.xg3 = 180./Ref->NY;
+	      Ref->RPNHeadExt.xg4 = 360./(Ref->NX-1);
+	      Ref->RPNHeadExt.xg2 = 0.0;
+	      Ref->RPNHeadExt.xg1 = -90. + 0.5*Ref->RPNHeadExt.xg3;
+      */
+         break;
       case 'G':
          Ref->RPNHeadExt.xg4  = 360. /Ref->NX;
          Ref->RPNHeadExt.xg2 = 0.0;
@@ -2134,65 +2174,33 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
 	            break;
 	      }
          break;
-
-      case 'B':
-         Ref->RPNHeadExt.xg4 = 360. /(Ref->NX-1);
-         Ref->RPNHeadExt.xg2 = 0.0;
-         switch (Ref->RPNHead.ig1) {
-	         case 0:
-	            Ref->RPNHeadExt.xg3 = 180./(Ref->NY-1);
-	            Ref->RPNHeadExt.xg1 = -90.;
-	            break;
-
-	         case 1:
-	            Ref->RPNHeadExt.xg3 = 90./(Ref->NY-1);
-	            Ref->RPNHeadExt.xg1 = 0.;
-	            Ref->Type |= GRID_EXPAND;
-	            break;
-
-	         case 2:
-	            Ref->RPNHeadExt.xg3 = 90./(Ref->NY-1);
-	            Ref->RPNHeadExt.xg1 = -90.;
-	            Ref->Type |= GRID_EXPAND;
-	            break;
-
-	         default:
-  			      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: 'B' grid has to be Global/North/South\n",__func__);
-	            return(-1);
-	      }
-
-         switch(Ref->RPNHead.ig2) {
-	         case 1:
-	            Ref->Type|=GRID_YINVERT;
-	            break;
-
-	         default:
-	            break;
-	      }
+      case 'H':
          break;
-      
+      case 'L':
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
+         break;
+      case 'N':
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
+         Ref->Hemi = GRID_NORTH;
+         break;
       case 'Q':
          Ref->RPNHeadExt.xg1 = decode_cs_angle(Ref->RPNHead.ig1);
          Ref->RPNHeadExt.xg2 = decode_cs_angle(Ref->RPNHead.ig2);
          Ref->RPNHeadExt.xg3 = decode_cs_angle(Ref->RPNHead.ig3);
          // TODO What do we do with the 4th one?
          Ref->RPNHeadExt.xg4 = 0.0;
-
-      case 'E':
-         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1,&Ref->RPNHeadExt.xg2,&Ref->RPNHeadExt.xg3,&Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
-      /*      Ref->RPNHeadExt.xg3 = 180./Ref->NY;
-	      Ref->RPNHeadExt.xg4 = 360./(Ref->NX-1);
-	      Ref->RPNHeadExt.xg2 = 0.0;
-	      Ref->RPNHeadExt.xg1 = -90. + 0.5*Ref->RPNHeadExt.xg3;
-      */
+      case 'S':
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
+         Ref->Hemi = GRID_SOUTH;
          break;
-
-      case 'H':
+      case 'T':
+		   //TODO: What's T
+         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
+         break;
+      case 'U':
+         break;    
       case 'Y':
-      case '!':
          break;
-
-      case '#':
       case 'Z':
          if (Ref->RPNHeadExt.grref[0] != 'W') {;
             if (Ref->RPNHeadExt.grref[0] == 'N') Ref->Hemi = GRID_NORTH;
@@ -2200,29 +2208,10 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
             f77name(cigaxg)(Ref->RPNHeadExt.grref,&Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,&Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4,1);
          }
          break;
-
-      case 'L':
-         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
+      case '!':
          break;
-
-      case 'N':
-         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
-         Ref->Hemi = GRID_NORTH;
+      case '#':
          break;
-
-      case 'S':
-         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
-         Ref->Hemi = GRID_SOUTH;
-         break;
-
-      case 'T':
-		   //TODO: What's T
-         f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1, &Ref->RPNHeadExt.xg2, &Ref->RPNHeadExt.xg3, &Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1, &Ref->RPNHead.ig2, &Ref->RPNHead.ig3, &Ref->RPNHead.ig4,1);
-         break;
-
-      case 'U':
-         break;
-
       default:
 	      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Grid type not supported %c\n",__func__,Ref->GRTYP[0]);
          return(-1);

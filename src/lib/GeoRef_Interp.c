@@ -29,12 +29,11 @@ int32_t c_gdcompatible_grids(
     const TGeoRef * const RefFrom
 ) {
     switch(RefFrom->GRTYP[0]) {
-        case 'L':
         case 'A':
         case 'B':
         case 'G':
             return 0;
-
+        case 'L':
         // This is a fix from previous version that was never reached
         case 'Z':
             if (RefTo->RPNHeadExt.grref[0] == 'L') {
@@ -137,11 +136,6 @@ int32_t GeoRef_InterpFinally(
     const int32_t old_degre_interp = Opt->Interp;
 
     switch(RefFrom->GRTYP[0]) {
-        case 'M':
-            GeoRef_InterpGridM(RefFrom, Opt, zout, zin, X, Y, npts);
-            break;
-        case '#':
-        case 'Z':
         case 'G':
             switch (Opt->Interp) {
                 case IR_NEAREST:
@@ -176,20 +170,9 @@ int32_t GeoRef_InterpFinally(
                     break;
             }
             break;
-
-        case 'Y':
-            if (RefFrom->NX > 1 && RefFrom->NY > 1 && Opt->Interp==IR_LINEAR) {
-                int32_t un = 1;
-                f77name(ez8_rgdint_1)(zout, x, y, &npts, zin, &RefFrom->NX, &un, &RefFrom->NY, 0, &Opt->NoData);
-            } else {
-                if (!GSet) {
-                    Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: GeoSet not defined\n", __func__);
-                    return -1;
-                }
-                f77name(ez_applywgts)(zout, GSet->wts, GSet->idx, zin, GSet->mask, &RefFrom->NX, &RefFrom->NY, &RefTo->NX, &RefTo->NY, &(GSet->n_wts), &Opt->NoData);
-            }
+        case 'M':
+            GeoRef_InterpGridM(RefFrom, Opt, zout, zin, X, Y, npts);
             break;
-        
         case 'Q':
             switch(Opt->Interp) {
                 case IR_NEAREST:
@@ -213,7 +196,22 @@ int32_t GeoRef_InterpFinally(
                     return -1;
             }
             break;
-
+        case 'Y':
+            if (RefFrom->NX > 1 && RefFrom->NY > 1 && Opt->Interp==IR_LINEAR) {
+                int32_t un = 1;
+                f77name(ez8_rgdint_1)(zout, x, y, &npts, zin, &RefFrom->NX, &un, &RefFrom->NY, 0, &Opt->NoData);
+            } else {
+                if (!GSet) {
+                    Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: GeoSet not defined\n", __func__);
+                    return -1;
+                }
+                f77name(ez_applywgts)(zout, GSet->wts, GSet->idx, zin, GSet->mask, &RefFrom->NX, &RefFrom->NY, &RefTo->NX, &RefTo->NY, &(GSet->n_wts), &Opt->NoData);
+            }
+            break;
+        case 'Z':
+            break;
+        case '#':
+            break;
         default:
             switch (Opt->Interp) {
                 case IR_NEAREST:

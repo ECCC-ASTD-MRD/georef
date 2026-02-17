@@ -12,14 +12,13 @@ void GeoRef_GridGetExpanded(
 ) {
     switch (Ref->GRTYP[0]) {
         case 'A':
-        case 'G':
-            f77name(ez_xpngdag2)(zout, zin, &Ref->NX, &Ref->NY, &Ref->j1, &Ref->j2, &Ref->RPNHead.ig1, &Opt->Symmetric);
             break;
-
         case 'B':
             f77name(ez_xpngdb2)(zout, zin, &Ref->NX, &Ref->NY, &Ref->j1, &Ref->j2, &Ref->RPNHead.ig1, &Opt->Symmetric);
             break;
-
+        case 'G':
+            f77name(ez_xpngdag2)(zout, zin, &Ref->NX, &Ref->NY, &Ref->j1, &Ref->j2, &Ref->RPNHead.ig1, &Opt->Symmetric);
+            break;
         default:
             break;
     }
@@ -49,37 +48,7 @@ void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
     Ref->i1 = 1;
     Ref->i2 = Ref->NX;
     switch (Ref->GRTYP[0]) {
-        case '!':
-        case 'L':
-        case 'N':
-        case 'S':
-        case 'T':
-            Ref->j1 = 1;
-            Ref->j2 = Ref->NY;
-            Ref->Extension = 0;
-            break;
-
         case 'A':
-        case 'G':
-            Ref->Extension = 2;
-            switch (Ref->RPNHead.ig1) {
-                case GRID_GLOBAL:
-                    Ref->j1 = 1;
-                    Ref->j2 = Ref->NY;
-                    break;
-
-                case GRID_NORTH:
-                    Ref->j1 = -Ref->NY+1;
-                    Ref->j2 =  Ref->NY;
-                    break;
-
-                case GRID_SOUTH:
-                    Ref->j1 = 1;
-                    Ref->j2 =  2 * Ref->NY;
-                    break;
-            }
-            break;
-
         case 'B':
             Ref->Extension = 1;
             switch (Ref->RPNHead.ig1) {
@@ -99,13 +68,40 @@ void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
                     break;
             }
             break;
-
         case 'E':
             Ref->j1 = 1;
             Ref->j2 = Ref->NY;
             break;
+        case 'G':
+            Ref->Extension = 2;
+            switch (Ref->RPNHead.ig1) {
+                case GRID_GLOBAL:
+                    Ref->j1 = 1;
+                    Ref->j2 = Ref->NY;
+                    break;
 
-        case '#':
+                case GRID_NORTH:
+                    Ref->j1 = -Ref->NY+1;
+                    Ref->j2 =  Ref->NY;
+                    break;
+
+                case GRID_SOUTH:
+                    Ref->j1 = 1;
+                    Ref->j2 =  2 * Ref->NY;
+                    break;
+            }
+            break;
+        case 'L':
+            break;
+        case 'N':
+            break;
+        case 'S':
+            break;
+        case 'T':
+            Ref->j1 = 1;
+            Ref->j2 = Ref->NY;
+            Ref->Extension = 0;
+            break;
         case 'Z':
             switch (Ref->RPNHeadExt.grref[0]) {
                 case 'E':
@@ -125,7 +121,10 @@ void GeoRef_AxisCalcExpandCoeff(TGeoRef* Ref) {
                     break;
             }
             break;
-
+        case '!':
+            break;
+        case '#':
+            break;
         default:
             Ref->j1 = 1;
             Ref->j2 = Ref->NY;
@@ -148,28 +147,6 @@ void GeoRef_AxisDefine(
     //! \return 1 on success, 0 otherwise
 
     switch (Ref->GRTYP[0]) {
-        case '#':
-        case 'Z':
-            if (Ref->RPNHeadExt.grref[0]!='W') {
-               f77name(cigaxg)(Ref->RPNHeadExt.grref,
-                   &Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,
-                   &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4, 1);
-            }
-
-            Ref->AX = AX;
-            Ref->AY = AY;
-
-            GeoRef_AxisCalcExpandCoeff(Ref);
-            GeoRef_AxisCalcNewtonCoeff(Ref);
-            break;
-
-        case 'Y':
-            Ref->AX = AX;
-            Ref->AY = AY;
-
-            GeoRef_AxisCalcExpandCoeff(Ref);
-            break;
-
         case 'G':
             Ref->RPNHeadExt.grref[0] = 'L';
             Ref->RPNHeadExt.xgref1 = 0.0;
@@ -211,12 +188,31 @@ void GeoRef_AxisDefine(
 
             GeoRef_AxisCalcNewtonCoeff(Ref);
             break;
-
         case 'Q':
             Ref->AX = AX;
             Ref->AY = AY;
             break;
+        case 'Y':
+            Ref->AX = AX;
+            Ref->AY = AY;
 
+            GeoRef_AxisCalcExpandCoeff(Ref);
+            break;
+        case 'Z':
+            if (Ref->RPNHeadExt.grref[0]!='W') {
+               f77name(cigaxg)(Ref->RPNHeadExt.grref,
+                   &Ref->RPNHeadExt.xgref1, &Ref->RPNHeadExt.xgref2, &Ref->RPNHeadExt.xgref3, &Ref->RPNHeadExt.xgref4,
+                   &Ref->RPNHeadExt.igref1, &Ref->RPNHeadExt.igref2, &Ref->RPNHeadExt.igref3, &Ref->RPNHeadExt.igref4, 1);
+            }
+
+            Ref->AX = AX;
+            Ref->AY = AY;
+
+            GeoRef_AxisCalcExpandCoeff(Ref);
+            GeoRef_AxisCalcNewtonCoeff(Ref);
+            break;
+        case '#':
+            break;
         default:
             GeoRef_AxisCalcExpandCoeff(Ref);
             break;
