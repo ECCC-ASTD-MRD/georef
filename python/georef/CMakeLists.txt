@@ -8,6 +8,7 @@ set(python_files
     __init__.py
     _georef_c_bindings.py
     constants.py
+    cubed_sphere.py
     enums.py
     georef.py
     shared_lib.py

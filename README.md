@@ -7,7 +7,7 @@ This package provides C/Fortran/Python functions to project latitude/longitude c
 Georef builds on the ezscint package by adding:
 * More interpolation methods (conservative, average, geometric, rasterization)
 * More projections through PROJ4 ('W'), Needs to build with optional GDAL library
-* Manage tripole grids ('O'), triangular meshes ('M') and cube sphere ('C')
+* Manage tripole grids ('O'), triangular meshes ('M') and cube sphere ('Q')
 * All coordinates transformations are done at double precision
 * Can read and save grid records in 64 bits (export GEOREF_DESCRIPTOR_64=TRUE)
 * Can save and read interpolation indexes and weights
