@@ -784,7 +784,7 @@ TGeoRef *GeoRef_DefineQ(TGeoRef *Ref) {
     // --- Ajout pour export lon/lat georef ---
     FILE *f_txt = fopen("lonlat_georef.txt", "w");
     if (f_txt) {
-        fprintf(f_txt, "Index\tLon\tLat\n");
+        fprintf(f_txt, "Index\tLongitude\tLatitude\n");
         int total_pts = param->NumPanelPoints * 6;
         for (int k = 0; k < total_pts; k++) {
             fprintf(f_txt, "%d\t%.18f\t%.18f\n", k, Ref->Lon[k], Ref->Lat[k]);
