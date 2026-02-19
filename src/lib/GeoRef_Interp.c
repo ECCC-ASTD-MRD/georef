@@ -198,9 +198,9 @@ int32_t GeoRef_InterpFinally(
                     return -1;
                 case IR_LINEAR:
                     if (GeoRef_SetEmptyIndex(GSet)) {
-                        ComputeLinearInterpIndicesQ(RefFrom, x, y, npts, GSet->Index);
+                        ComputeLinearInterpIndicesQ(RefFrom, x, y, npts, (float (*)[6])GSet->Index);
                     }
-                    ApplyLinearInterpQ_32(GSet->Index, npts, Opt->NoData, zin, zout);
+                    ApplyLinearInterpQ_32((float (*)[6])GSet->Index, npts, Opt->NoData, zin, zout);
                     break;
                 case IR_CUBIC:
                     Lib_Log(APP_LIBGEOREF, APP_WARNING,
