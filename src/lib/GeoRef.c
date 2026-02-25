@@ -319,6 +319,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          case 'M': Ref->LL2XY=GeoRef_LL2XY_M; Ref->XY2LL=GeoRef_XY2LL_M; break;
          case 'W': Ref->LL2XY=GeoRef_LL2XY_W; Ref->XY2LL=GeoRef_XY2LL_W; break;
          case 'Y': Ref->LL2XY=GeoRef_LL2XY_Y; Ref->XY2LL=GeoRef_XY2LL_Y; break;
+         case 'Q': Ref->LL2XY=GeoRef_LL2XY_Q; Ref->XY2LL=GeoRef_XY2LL_Q; break;
          case 'X':
          case 'V': break;
          default:
@@ -348,7 +349,11 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
 
       if (Ref->GRTYP[0]=='A' || Ref->GRTYP[0]=='B' || Ref->GRTYP[0]=='G') {
          Ref->Type|=GRID_WRAP;
-      } else if (Ref->GRTYP[0]!='V' && Ref->GRTYP[0]!='R' && Ref->GRTYP[0]!='X' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
+      } 
+      else if (Ref->GRTYP[0] == 'Q') {
+         Ref->Type |= GRID_ROTATED;
+      }
+      else if (Ref->GRTYP[0]!='V' && Ref->GRTYP[0]!='R' && Ref->GRTYP[0]!='X' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
          // Check if north is up by looking at longitude variation on an Y increment at grid limits
          x[0]=Ref->X0;x[1]=Ref->X0;
          y[0]=Ref->Y0;y[1]=Ref->Y0+1.0;
@@ -830,6 +835,7 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
          case 'Z':
             if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
+         case 'Q':
             if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
             break;
 
@@ -981,6 +987,10 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    ref->RPNHead.ig4 = IG4;
    ref->Extension=0;
    ref->Type=GRID_NONE;
+
+   if (GRTYP[0] == 'Q') {
+      GeoRef_DefineQ(ref);
+   }
 
    GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
 
@@ -2190,6 +2200,13 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
 	            break;
 	      }
          break;
+      
+      case 'Q':
+         Ref->RPNHeadExt.xg1 = decode_cs_angle(Ref->RPNHead.ig1);
+         Ref->RPNHeadExt.xg2 = decode_cs_angle(Ref->RPNHead.ig2);
+         Ref->RPNHeadExt.xg3 = decode_cs_angle(Ref->RPNHead.ig3);
+         // TODO What do we do with the 4th one?
+         Ref->RPNHeadExt.xg4 = 0.0;
 
       case 'E':
          f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1,&Ref->RPNHeadExt.xg2,&Ref->RPNHeadExt.xg3,&Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
