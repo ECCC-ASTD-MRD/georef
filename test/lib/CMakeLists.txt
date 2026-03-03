@@ -62,5 +62,8 @@ if (EC_INIT_DONE LESS 2)
             add_test(NAME GridInterp_LZE2ZW  COMMAND $<TARGET_FILE:georef_interp>  -g $ENV{ECCI_DATA_DIR}/georef/grids/ZW.fstd -i $ENV{ECCI_DATA_DIR}/georef/grids/HRDPS.fstd -o ./georef.fstd -n TT -e LZE2ZW -v DEBUG)
         endif()
 
+        find_package(Python3 REQUIRED COMPONENTS Interpreter)
+        add_test(NAME ComparaisonGrids COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/comparaison_grids.py)
+
     endif()
 endif()
