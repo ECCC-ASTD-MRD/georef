@@ -64,6 +64,7 @@ if (EC_INIT_DONE LESS 2)
 
         find_package(Python3 REQUIRED COMPONENTS Interpreter)
         add_test(NAME ComparaisonGrids COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/comparaison_grids.py)
+        set_property(TEST ComparaisonGrids PROPERTY ENVIRONMENT "PYTHONPATH=${rmn_PYTHONPATH}" "LD_LIBRARY_PATH=/home/rab004/site7/librmn_build/install/lib")
 
     endif()
 endif()
