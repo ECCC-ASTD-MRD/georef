@@ -1,5 +1,8 @@
+import os
+
 import numpy as np
 import georef
+from georef.cubed_sphere import encodeig4
 from rmn import fst24_file, fst_record, FstDataType
 
 
@@ -9,37 +12,34 @@ def angular_dist_0(lon, lat):
     f2 = np.sin(lon)
     return np.abs(np.arctan2(np.sqrt(f1**2 + f2**2), np.cos(lon) * np.cos(lat)))
 
-def encode_cs_ig4(num_elements, num_solpts):
-    return ((num_elements & 0x1ffff) << 7) | (num_solpts & 0x3f)
-
-# Generation du fichier Q.fst
-def write_complete_fst(lons, lats, filename, ni, num_elem, num_solpts, nomvar="DIST", etiket="TEST"):
+# Generation des fichiers .fst
+def generate_grid(lons, lats, filename, ni, nj=None, num_elem=0, num_solpts=0, grtyp="Q", ig1=0, ig2=0, ig3=0, ig4=0, nomvar="DIST", etiket="TEST"):
     """
     Génère un fichier FST : grille + champ
-    """
-    nj = ni * 6
-    grtyp = "Q"
+    """        
+    if os.path.exists(filename):
+        os.remove(filename)
     
-    ig1 = 0x420000  
-    ig2 = 0xa4fa00   
-    ig3 = 0x660000   
-    ig4 = encode_cs_ig4(num_elem, num_solpts)
-
-    # Calcul des données
-    data = angular_dist_0(np.radians(lons), np.radians(lats)).astype(np.float64)
+    if grtyp == "Q":
+        actual_nj = ni * 6
+        ig4 = encodeig4(num_elem, num_solpts) 
+    else:
+        actual_nj = nj if nj is not None else ni // 2
 
     # Ouverture du fichier
     try:
-        f_fst = fst24_file(filename, "R/W") 
-    except Exception as e:
-        print(f"Erreur d'ouverture de {filename} : {e}")
-        return
+        f_fst = fst24_file(filename, "RSF+R/W") 
 
-    try:
         # Grille
-        geo = georef.GeoRef(ni, nj, grtyp, ig1, ig2, ig3, ig4, f_fst)
-        geo.write_fst(f_fst, ig1, ig2, ig3, ig4, "my_grid")
+        geo = georef.GeoRef(ni, actual_nj, grtyp, ig1, ig2, ig3, ig4, f_fst)
+        lats, lons = geo.getll()
+        
         print("GRID généré")
+
+        # Calcul des données
+        data = angular_dist_0(np.radians(lons), np.radians(lats)).astype(np.float64)
+
+        geo.write_fst(f_fst, ig1, ig2, ig3, ig4, "my_grid")
 
         # Champ
         rec = fst_record()
@@ -52,7 +52,7 @@ def write_complete_fst(lons, lats, filename, ni, num_elem, num_solpts, nomvar="D
         rec.datev = 0      
         rec.data = data 
         rec.ni = ni 
-        rec.nj = nj
+        rec.nj = actual_nj
         rec.nk = 1
         rec.nomvar = nomvar
         rec.etiket = etiket
@@ -67,13 +67,8 @@ def write_complete_fst(lons, lats, filename, ni, num_elem, num_solpts, nomvar="D
         rec.ig4 = 0 
 
         # Écriture du champ
-        FST_SKIP = 0 
-        result = f_fst.write(rec, FST_SKIP)
-        
-        if result is not None and result <= 0:
-            print(f"Erreur d'écriture du champ {nomvar}")
-        else:
-            print(f"Record {nomvar} généré")
+        FST_REWRITE = 2
+        f_fst.write(rec, FST_REWRITE)
 
     except Exception as e:
         print(f"Erreur durant la génération du fichier : {e}")
@@ -83,4 +78,9 @@ def write_complete_fst(lons, lats, filename, ni, num_elem, num_solpts, nomvar="D
         print(f"Fichier {filename} généré")
 
 if __name__ == "__main__":
-    write_complete_fst(np.array([0, 45]), np.array([0, 10]),"Q_python_grid_field.fst", 180, 36, 5)
+    #(lons, lats, filename, ni, nj=None, num_elem=0, num_solpts=0, grtyp="Q", ig1=0, ig2=0, nomvar="DIST", etiket="TEST")
+    generate_grid(np.array([0, 45]), np.array([0, 10]),"Grid_Q.fst", 180, num_elem=36, num_solpts=5, grtyp="Q", ig1=0x420000, ig2=0xa4fa00, ig3=0x660000)
+    generate_grid(np.array([0, 45]), np.array([0, 10]),"Grid_A.fst", 180, grtyp="A", ig1=1)
+    generate_grid(np.array([0, 45]), np.array([0, 10]),"Grid_B.fst", 180, grtyp="B", ig2=1)
+    generate_grid(np.array([0, 45]), np.array([0, 10]),"Grid_G.fst", 180, grtyp="G", ig1=1, ig2=1)
+
