@@ -478,7 +478,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
      }
      strncpy(others[0][MASK].nomvar, "GRID",  FST_NOMVAR_LEN);
      fst24_write(fout,&others[0][MASK],FST_YES);
-     if (others[0][MASK].grtyp[0] == 'X' || others[0][MASK].grtyp[0] == 'Z') {
+     if (others[0][MASK].grtyp[0] == 'X' || others[0][MASK].grtyp[0] == 'Z' || others[0][MASK].grtyp[0] == 'O') {
        // Transfer >> from input to output file
        fst24_write(fout,&tictac[0][0],FST_YES);
        fst24_write(fout,&tictac[0][1],FST_YES);
