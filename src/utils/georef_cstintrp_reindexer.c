@@ -396,7 +396,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    ang.data=angle_data_out;
    out.data_type = ang.data_type = FST_TYPE_REAL_IEEE;
    out.data_bits = ang.data_bits = 32;
-   out.pack_bits = ang.data_bits = 32;
+   out.pack_bits = ang.pack_bits = 32;
 
 
    // FIXME: This divisor thing is no longer necessary when using later versions
