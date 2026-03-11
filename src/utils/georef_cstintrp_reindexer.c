@@ -27,6 +27,14 @@ const int MAX_NB_WEIGHTS = 20;
 // GEM_to NEMO: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -d 319 131 -b 2
 // NEMO_to_GEM: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yang.std -o ./atmos-ocean-grids.fstd -g UO -d 362 292 --orca 1
 
+// Usage example call for GDPS
+// GEM_to NEMO: georef_cstintrp_reindexer -i /home/socn000/env_rhel-8-icelake-64/ppp5/datafiles/constants/oce/repository/master/CONCEPTS/orca025/coupling/yy_2073x1418_v2_mask/weights_gem2073x1418_to_orca025_default_yin.std /home/socn000/env_rhel-8-icelake-64/ppp5/datafiles/constants/oce/repository/master/CONCEPTS/orca025/coupling/yy_2073x1418_v2_mask/weights_gem2073x1418_to_orca025_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -d 2073 709 -b 2
+// NEMO_to_GEM: georef_cstintrp_reindexer -i /home/socn000/env_rhel-8-icelake-64/ppp5/datafiles/constants/oce/repository/master/CONCEPTS/orca025/coupling/yy_2073x1418_v2_mask/weights_orca025_to_gem2073x1418_default_yin.std /home/socn000/env_rhel-8-icelake-64/ppp5/datafiles/constants/oce/repository/master/CONCEPTS/orca025/coupling/yy_2073x1418_v2_mask/weights_orca025_to_gem2073x1418_default_yang.std -o ./atmos-ocean-grids.fstd -g UO -d 1442 1021 --orca 1
+
+// Usage example call for CAPS
+// GEM_to NEMO: georef_cstintrp_reindexer -i /home/saqu500/data/ords/constants/cmde/caps/3.0.0/coupling_weights/weights_gem2272x1872_caps_to_creg12pe.std -o ./atmos-ocean-grids.fstd -g OZ	-d 2272 1872 -b 2
+// NEMO_to_GEM: georef_cstintrp_reindexer -i /home/saqu500/data/ords/constants/cmde/caps/3.0.0/coupling_weights/weights_creg12pe_to_gem2272x1872_caps.std -o ./atmos-ocean-grids.fstd -g ZO -d 1580 2198
+
 #define I16_dest_t int32_t // dty: I 16 gets read into 32 bit
 #define I1_dest_t  int32_t // dty: I 1  gets read into 32 bit
 
