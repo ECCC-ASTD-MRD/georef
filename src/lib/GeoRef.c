@@ -1078,8 +1078,8 @@ uint32_t GeoRef_RPNHash (TGeoRef *Ref, int32_t *IG1, int32_t *IG2) {
    double *identity_vec=NULL,x;
    uint32_t crc,n;
 
-   identity_vec=(double*)malloc(Ref->NX*Ref->NY*sizeof(double));
-   
+   identity_vec=(double*)malloc(Ref->NX*Ref->NY * 2 * sizeof(double));
+
    for(n=0;n<Ref->NX*Ref->NY*2;n+=2) {
       identity_vec[n]=roundto(Ref->Lat[n],1000);
       identity_vec[n+1]=roundto(Ref->Lon[n],1000);
