@@ -442,7 +442,7 @@ TGeoSet* GeoRef_SetReadFST(
  
          // Rechercher et lire l'information de l'enregistrement specifie
         fst_record crit = default_fst_record;
-        snprintf(crit.etiket, 13, "%-13s", "GRIDSET");
+        snprintf(crit.etiket, FST_ETIKET_LEN, "%-12s", "GRIDSET");
         strncpy(crit.nomvar, "####", FST_NOMVAR_LEN);
         crit.typvar[0]=GSet->RefTo->GRTYP[0];
         crit.typvar[1]=GSet->RefFrom->GRTYP[0];

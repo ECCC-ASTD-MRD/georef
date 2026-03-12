@@ -1079,7 +1079,6 @@ uint32_t GeoRef_RPNHash (TGeoRef *Ref, int32_t *IG1, int32_t *IG2) {
    uint32_t crc,n;
 
    identity_vec=(double*)malloc(Ref->NX*Ref->NY*sizeof(double));
-   fprintf(stderr,"%.8f %.8f %.8f\n",x,roundto(x,100000),roundto(x,100));
    
    for(n=0;n<Ref->NX*Ref->NY*2;n+=2) {
       identity_vec[n]=roundto(Ref->Lat[n],1000);
@@ -1095,12 +1094,12 @@ uint32_t GeoRef_RPNHash (TGeoRef *Ref, int32_t *IG1, int32_t *IG2) {
    crc = f_crc32 (&crc, (const unsigned char *)identity_vec, &n);
 
    // Before rmn_011 convip was bugged for 3200 < ip1 < 32768, we therefore add 32768 for now
-   Ref->IP1 = (crc >> 16) + 32768;
-   Ref->IP2 = (crc & 0xFFFF) + 32768;
-   Ref->IP3 = 0;
+   Ref->RPNHead.ig1 = (crc >> 16) + 32768;
+   Ref->RPNHead.ig2 = (crc & 0xFFFF) + 32768;
+   Ref->RPNHead.ig3 = 0;
    
-   if (IG1) *IG1=Ref->IP1;
-   if (IG2) *IG2=Ref->IP2;
+   if (IG1) *IG1=Ref->RPNHead.ig1;
+   if (IG2) *IG2=Ref->RPNHead.ig2;
 
    return(crc);
 }
