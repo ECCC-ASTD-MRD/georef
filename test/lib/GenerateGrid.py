@@ -1,8 +1,7 @@
-import os
-
-import numpy as np
 import georef
 from georef.cubed_sphere import encodeig4
+import numpy as np
+import os
 from rmn import fst24_file, fst_record, FstDataType
 
 
@@ -17,6 +16,7 @@ def generate_grid(lons, lats, filename, ni, nj=None, num_elem=0, num_solpts=0, g
     """
     Génère un fichier FST : grille + champ
     """        
+    
     if os.path.exists(filename):
         os.remove(filename)
     
@@ -77,10 +77,12 @@ def generate_grid(lons, lats, filename, ni, nj=None, num_elem=0, num_solpts=0, g
         f_fst.close()
         print(f"Fichier {filename} généré")
 
-if __name__ == "__main__":
-    #(lons, lats, filename, ni, nj=None, num_elem=0, num_solpts=0, grtyp="Q", ig1=0, ig2=0, nomvar="DIST", etiket="TEST")
-    generate_grid(np.array([0, 45]), np.array([0, 10]),"Grid_Q.fst", 180, num_elem=36, num_solpts=5, grtyp="Q", ig1=0x420000, ig2=0xa4fa00, ig3=0x660000)
-    generate_grid(np.array([0, 45]), np.array([0, 10]),"Grid_A.fst", 180, grtyp="A", ig1=1)
-    generate_grid(np.array([0, 45]), np.array([0, 10]),"Grid_B.fst", 180, grtyp="B", ig2=1)
-    generate_grid(np.array([0, 45]), np.array([0, 10]),"Grid_G.fst", 180, grtyp="G", ig1=1, ig2=1)
+
+
+#if __name__ == "__main__":
+    # generate_grid(lons, lats, filename, ni, nj=None, num_elem=0, num_solpts=0, grtyp="Q", ig1=0, ig2=0, nomvar="DIST", etiket="TEST")
+ #   generate_grid(np.array([0, 45]), np.array([0, 10]),"Grid_Q.fst", 180, num_elem=36, num_solpts=5, grtyp="Q", ig1=0x420000, ig2=0xa4fa00, ig3=0x660000)
+  #  generate_grid(np.array([0, 45]), np.array([0, 10]),"Grid_A.fst", 180, grtyp="A", ig1=1)
+   # generate_grid(np.array([0, 45]), np.array([0, 10]),"Grid_B.fst", 180, grtyp="B", ig2=1)
+    #generate_grid(np.array([0, 45]), np.array([0, 10]),"Grid_G.fst", 180, grtyp="G", ig1=1, ig2=1)
 
