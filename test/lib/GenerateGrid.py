@@ -37,14 +37,14 @@ def generate_grid(lons, lats, filename, ni, nj=None, num_elem=0, num_solpts=0, g
         print("GRID généré")
 
         # Calcul des données
-        data = angular_dist_0(np.radians(lons), np.radians(lats)).astype(np.float64)
+        data = angular_dist_0(np.radians(lons), np.radians(lats)).astype(np.float32)
 
         geo.write_fst(f_fst, ig1, ig2, ig3, ig4, "my_grid")
 
         # Champ
         rec = fst_record()
         rec.data_type = FstDataType.FST_TYPE_REAL
-        rec.data_bits = 64
+        rec.data_bits = 32
         rec.pack_bits = 32
         rec.dateo = 0      
         rec.deet  = 0      

@@ -17,7 +17,12 @@ def interpolate_grid(src_file, dest_file, dest_params):
     # Ouverture du fichier source
     try:
         f_src = fst24_file(src_file, "R")
-        rec_src = f_src.get_record(nomvar="DIST") 
+        # 
+        query = f_src.new_query() 
+        for rec in query:
+            rec_src = rec
+            d = rec_src.data
+
         if rec_src is None:
             raise ValueError(f"Champ DIST introuvable dans {src_file}")
         
@@ -32,25 +37,26 @@ def interpolate_grid(src_file, dest_file, dest_params):
     try:
         f_dest = fst24_file(dest_file, "RSF+R/W")
         
-        # Calcul des paramètres destination (même logique que generate_grid)
+        # Calcul des paramètres destination 
         d = dest_params
         if d['grtyp'] == "Q":
             d_nj = d['ni'] * 6
+            d_ig4 = encodeig4(d.get('num_elem', 0), d.get('num_solpts', 0))
         else:
             d_nj = d.get('nj', d['ni'] // 2)
+            d_ig4 = d.get('ig4', 0)
 
-        dest_geo = georef.GeoRef(d['ni'], d_nj, d['grtyp'], d['ig1'], d['ig2'], d['ig3'], d['ig4'], f_dest)
+        dest_geo = georef.GeoRef(d['ni'], d_nj, d['grtyp'], d.get('ig1', 0), d.get('ig2', 0), d.get('ig3', 0), d_ig4, f_dest)
 
-        dest_geo.write_fst(f_dest, d['ig1'], d['ig2'], d['ig3'], d['ig4'], "dest_grid")
+        dest_geo.write_fst(f_dest, d.get('ig1', 0), d.get('ig2', 0), d.get('ig3', 0), d_ig4, "dest_grid")
 
         # Interpolation
-        print(f"Interpolation en cours : {src_geo.grtyp} -> {dest_geo.grtyp}...")
         data_interp = dest_geo.interp(src_geo, data_src)
 
         # Champ interpolé
         rec_dest = fst_record()
         rec_dest.data_type = FstDataType.FST_TYPE_REAL
-        rec_dest.data_bits = 64
+        rec_dest.data_bits = 32
         rec_dest.pack_bits = 32
         rec_dest.dateo = 0      
         rec_dest.deet  = 0      
@@ -64,9 +70,9 @@ def interpolate_grid(src_file, dest_file, dest_params):
         rec_dest.etiket = "INTERP"
         rec_dest.grtyp = d['grtyp']
         rec_dest.typvar = "X"
-        rec_dest.ip1 = d['ig1'] 
-        rec_dest.ip2 = d['ig2']
-        rec_dest.ip3 = d['ig3']
+        rec_dest.ip1 = d.get('ig1', 0)
+        rec_dest.ip2 = d.get('ig2', 0)
+        rec_dest.ip3 = d.get('ig3', 0)
         rec_dest.ig1 = 0
         rec_dest.ig2 = 0 
         rec_dest.ig3 = 0
@@ -81,30 +87,29 @@ def interpolate_grid(src_file, dest_file, dest_params):
 
 
 if __name__ == "__main__":
+    # Dictionnaire des fichiers sources à créer
     grids_config = [
         {
-            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "A", "ni": 180, "ig1": 1,
-            "filename": "Grid_A.fst", "label": "Lat-Lon Equidistante"
+            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "A", "ni": 180, "ig1": 1, "filename": "Grid_A.fst", "label": "Lat-Lon Equidistante"
         },
         {
-            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "B", "ni": 180, "ig2": 1, 
-            "filename": "Grid_B.fst", "label": "Lat-Lon avec Pôles"
+            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "B", "ni": 180, "ig2": 1, "filename": "Grid_B.fst", "label": "Lat-Lon avec Pôles"
         },
         {
-            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "G", "ni": 180, "ig1": 1, "ig2": 1, 
-            "filename": "Grid_G.fst", "label": "Gaussienne"
+            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "G", "ni": 180, "ig1": 1, "ig2": 1, "filename": "Grid_G.fst", "label": "Gaussienne"
         },
-        {
-            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "Q", "ni": 180, "num_elem": 36,  
-            "num_solpts": 5, "ig1": 0x420000, "ig2": 0xa4fa00, "ig3": 0x660000, "filename": "Grid_Q.fst", "label": "Cubed Sphere"
-        }
+        # quarantaine pour grille Q car pb interpolation
+        #{
+         #   "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "Q", "ni": 180, "num_elem": 36, "num_solpts": 5, "ig1": 0x420000, "ig2": 0xa4fa00, "ig3": 0x660000, "filename": "Grid_Q.fst", "label": "Cubed Sphere"
+        #}
     ]
 
-
+    # Création des fichiers sources
     for config in grids_config:
         args = {k: v for k, v in config.items() if k not in ['label', 'filename']}
-        generate_grid(config['filename'], **args)
+        generate_grid(filename=config['filename'], **args)
 
+    # Création des fichiers interpolés
     for src in grids_config:
         for dest in grids_config:
             output_file = f"interp_{src['grtyp']}_to_{dest['grtyp']}.fst"
