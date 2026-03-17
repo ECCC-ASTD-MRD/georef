@@ -17,7 +17,6 @@ def interpolate_grid(src_file, dest_file, dest_params):
     # Ouverture du fichier source
     try:
         f_src = fst24_file(src_file, "R")
-        # 
         query = f_src.new_query() 
         for rec in query:
             rec_src = rec
@@ -86,19 +85,60 @@ def interpolate_grid(src_file, dest_file, dest_params):
         f_dest.close()
 
 
+def calculate_diff(src_file, interp_file):
+    """
+    Compare le champ DIST entre le fichier source et le fichier interpolé.
+    """
+    
+    try:
+        # Lecture du fichier source
+        with fst24_file(src_file, "R") as f_src:
+            q_src = f_src.new_query(nomvar="DIST")
+            rec_src = next(iter(q_src), None)
+            if rec_src is None: return None
+            data_src = rec_src.data.astype(np.float32)
+
+        # Lecture du fichier interpolé
+        with fst24_file(interp_file, "R") as f_int:
+            q_int = f_int.new_query(nomvar="DIST")
+            rec_int = next(iter(q_int), None)
+            if rec_int is None: return None
+            data_int = rec_int.data.astype(np.float32)
+
+        # Vérification des dimensions
+        if data_src.shape != data_int.shape:
+            return {"error": f"Dimensions incompatibles: {data_src.shape} vs {data_int.shape}"}
+
+        # Calcul de la différence
+        diff = (data_src - data_int).ravel()
+        
+        # Calcul des normes
+        norm = np.linalg.norm(diff)
+        max_err = np.linalg.norm(diff, ord=np.inf)
+
+        print(f"Fichier : {interp_file}")
+        print(f"Norme par defaut : {norm:.6e}")
+        print(f"Erreur Max       : {max_err:.6e}")
+        print("-" * 30)
+
+    except Exception as e:
+        print(f"Erreur : {e}")
+
+
 if __name__ == "__main__":
     # Dictionnaire des fichiers sources à créer
     grids_config = [
         {
-            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "A", "ni": 180, "ig1": 1, "filename": "Grid_A.fst", "label": "Lat-Lon Equidistante"
+            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "A", "ni": 180, "filename": "Grid_A.fst", "label": "Lat-Lon Equidistante"
         },
         {
-            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "B", "ni": 180, "ig2": 1, "filename": "Grid_B.fst", "label": "Lat-Lon avec Pôles"
+            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "B", "ni": 180, "filename": "Grid_B.fst", "label": "Lat-Lon avec Pôles"
         },
-        {
-            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "G", "ni": 180, "ig1": 1, "ig2": 1, "filename": "Grid_G.fst", "label": "Gaussienne"
-        },
-        # quarantaine pour grille Q car pb interpolation
+        # probleme au niveau de NaN dans fichier
+        #{
+         #   "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "G", "ni": 128, "nj": 64,  "filename": "Grid_G.fst", "label": "Gaussienne"
+        #},
+        # quarantaine pour grille Q car pb génération interpolation
         #{
          #   "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "Q", "ni": 180, "num_elem": 36, "num_solpts": 5, "ig1": 0x420000, "ig2": 0xa4fa00, "ig3": 0x660000, "filename": "Grid_Q.fst", "label": "Cubed Sphere"
         #}
@@ -109,7 +149,7 @@ if __name__ == "__main__":
         args = {k: v for k, v in config.items() if k not in ['label', 'filename']}
         generate_grid(filename=config['filename'], **args)
 
-    # Création des fichiers interpolés
+    # Création des fichiers interpolés + Comparaison fichier source et interpolés
     for src in grids_config:
         for dest in grids_config:
             output_file = f"interp_{src['grtyp']}_to_{dest['grtyp']}.fst"
@@ -118,6 +158,7 @@ if __name__ == "__main__":
             
             try:
                 interpolate_grid(src['filename'], output_file, dest)
+                calculate_diff(dest['filename'], output_file)
                 
             except Exception as e:
                 print(f"  [ERREUR] Échec de {src['grtyp']} vers {dest['grtyp']} : {e}")
