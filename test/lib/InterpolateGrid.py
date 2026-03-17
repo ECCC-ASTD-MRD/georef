@@ -134,14 +134,8 @@ if __name__ == "__main__":
         {
             "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "B", "ni": 180, "filename": "Grid_B.fst", "label": "Lat-Lon avec Pôles"
         },
-        # probleme au niveau de NaN dans fichier
-        #{
-         #   "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "G", "ni": 128, "nj": 64,  "filename": "Grid_G.fst", "label": "Gaussienne"
-        #},
-        # quarantaine pour grille Q car pb génération interpolation
-        #{
-         #   "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "Q", "ni": 180, "num_elem": 36, "num_solpts": 5, "ig1": 0x420000, "ig2": 0xa4fa00, "ig3": 0x660000, "filename": "Grid_Q.fst", "label": "Cubed Sphere"
-        #}
+        # TODO: Grille G a des données NaaN dans les fichiers .fst
+        # TODO: Grille Q, la fonction cubic interpolation n’est pas implémentée pour la grille Q
     ]
 
     # Création des fichiers sources
