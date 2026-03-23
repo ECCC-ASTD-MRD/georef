@@ -2,6 +2,7 @@
 
 import ctypes
 import numpy as np
+import georef
 
 class GeoOptions(ctypes.Structure):
     _fields_ = [
@@ -55,6 +56,14 @@ class GeoOptions(ctypes.Structure):
     @ancilliary.setter
     def ancilliary(self, value):
         self._ancilliary = value
+
+    def __new__(cls, *args, **kwargs):
+        return _get_default_GeoOptions()
+
+_get_default_GeoOptions = georef.get_default_GeoOptions
+_get_default_GeoOptions.argtypes = tuple()
+_get_default_GeoOptions.restype = GeoOptions
+
 
 
 
