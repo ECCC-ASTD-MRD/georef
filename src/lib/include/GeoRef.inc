@@ -230,6 +230,18 @@ interface
         integer(C_INT32_T) :: out
     end function georef_nearest
 
+!   uint32_t GeoRef_RPNHash (TGeoRef *Ref, int32_t *IG1, int32_t *IG2);
+    function georef_rpnhash(ref,ig1,ig2) result(out) bind(C, name = 'GeoRef_RPNHash')
+        import :: C_PTR,C_INT32_T
+        implicit none
+
+        type(C_PTR), intent(in), value :: ref
+        integer(C_INT32_T), intent(out) :: ig1,ig2
+
+        integer(C_INT32_T) :: out
+
+    end function georef_rpnhash
+
 !   int32_t  GeoRef_Valid(TGeoRef* __restrict const Ref);
     function georef_valid(ref) result(out) bind(C, name = 'GeoRef_Valid')
         import :: C_PTR,C_INT32_T
