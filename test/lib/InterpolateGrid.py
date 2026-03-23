@@ -2,6 +2,7 @@ import georef
 import numpy as np
 from rmn import fst24_file
 from GenerateGrid import generate_grid
+from georef.cubed_sphere import encodeig4
 
 def validate_interpolation(src_file, dest_file):
     """
@@ -30,7 +31,12 @@ def validate_interpolation(src_file, dest_file):
         dest_grid.shape = (grid_record.ni, grid_record.nj, grid_record.nk)
         data_dest = rec_dest_data.data.astype(np.float32)
 
-        data_interp = dest_grid.interp(src_geo, data_src)
+        options = None
+        if grid_record.grtyp == "Q":
+            options = georef.GeoOptions(Interp=3)
+
+
+        data_interp = dest_grid.interp(src_geo, data_src, options=options)
 
     # Calcul de la différence
     diff = (data_interp - data_dest).ravel()
@@ -54,8 +60,14 @@ if __name__ == "__main__":
         {
             "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "B", "ni": 180, "nj": 90, "filename": "Grid_B.fst", "label": "Lat-Lon avec Pôles"
         },
+        {
+            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "X", "ni": 180, "nj": 90,"filename": "Grid_X.fst", "label": "Theorie"
+        },
+        #{
+         #   "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "Q", "ni": 180, "nj": 1080, "ig4": 1801, "filename": "Grid_Q.fst", "label": "Cubed Sphere"
+        #},
         # TODO: Grille G a des données NaaN dans les fichiers .fst
-        # TODO: Grille Q, la fonction cubic interpolation n’est pas implémentée pour la grille Q
+        # TODO: Pour faire la grille U, il faut que la grille Z fonctionne (car U = 2 grilles Z concaténées)
     ]
 
     # Création des fichiers sources

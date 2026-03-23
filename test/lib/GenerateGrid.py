@@ -1,5 +1,4 @@
 import georef
-from georef.cubed_sphere import encodeig4
 import numpy as np
 import os
 from rmn import fst24_file, fst_record, FstDataType
@@ -12,7 +11,7 @@ def angular_dist_0(lon, lat):
     return np.abs(np.arctan2(np.sqrt(f1**2 + f2**2), np.cos(lon) * np.cos(lat)))
 
 # Generation des fichiers .fst
-def generate_grid(lons, lats, filename, ni, nj, num_elem=0, num_solpts=0, grtyp="Q", ig1=0, ig2=0, ig3=0, ig4=0, nomvar="DIST", etiket="TEST"):
+def generate_grid(lons, lats, filename, ni, nj, grtyp="Q", ig1=0, ig2=0, ig3=0, ig4=0, nomvar="DIST", etiket="TEST"):
     """
     Génère un fichier FST : grille + champ
     """        
