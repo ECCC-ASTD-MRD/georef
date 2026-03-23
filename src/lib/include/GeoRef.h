@@ -115,6 +115,26 @@ typedef struct {
 #define GeoRef_SetHasIndex(G)   (G && G->Index && G->Index[0] != REF_INDEX_EMPTY)
 #define GeoRef_SetEmptyIndex(G) (G && G->Index && G->Index[0] == REF_INDEX_EMPTY)
 
+#define default_GeoOptions ((TGeoOptions) {               \
+    .Interp = IR_CUBIC,                                          \
+    .Extrap = ER_VALUE,                                          \
+    .Combine = CB_REPLACE,                                         \
+    .Transform = TRUE,                                    \
+    .Symmetric = FALSE,                                   \
+    .Segment = 1,                                         \
+    .Sampling = 1,                                        \
+    .PolarCorrect = TRUE,                                 \
+    .VectorMode = FALSE,                                  \
+    .DistTreshold = 10.0,                                 \
+    .NoData = NAN,                                        \
+    .Table = NULL,                                        \
+    .lutDef = NULL,                                      \
+    .lutSize = 0,                                         \
+    .lutDim = 0,                                          \
+    .Ancilliary = NULL,                                   \
+})
+
+
 // Interpolation modes
 typedef enum {
    IR_UNDEF                          = 0,    //!< Undefined
