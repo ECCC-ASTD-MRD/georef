@@ -13,7 +13,7 @@
 static TList          *GeoRef_List=NULL;                 ///< Global list of known geo references
 static int32_t         GeoRef_Preserve = -10;            ///< How many of the first created georef to keep cached (negative means uninitialized)
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
-__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, CB_REPLACE, TRUE, FALSE, 1, 1, TRUE, FALSE, 10.0, NAN, NULL, NULL, 0, 0, NULL };  ///< Default options
+__thread TGeoOptions   GeoRef_Options = default_GeoOptions;  ///< Default options
 
 const char *TRef_ExtrapString[] = { "UNDEF","MAXIMUM","MINIMUM","VALUE","ABORT",NULL };
 const char *TRef_InterpString[] = { "UNDEF","NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR", "WEIGHTINDEX",
@@ -2538,3 +2538,14 @@ int32_t GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec) {
 
    return(TRUE);
 }
+
+/*----------------------------------------------------------------------------
+ * @brief  Used to get a default Geo Options and by the __new__() method of the GeoOptions class
+ * @date   Mars 2026
+ *
+ *    @return             default Geo Options
+*/
+TGeoOptions get_default_GeoOptions(void) {
+    return default_GeoOptions;
+}
+
