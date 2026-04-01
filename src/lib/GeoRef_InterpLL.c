@@ -270,6 +270,7 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
                   k++;
                }
             }
+            break;
 
          case '#':
          case 'Z':
@@ -373,11 +374,15 @@ int32_t GeoRef_GetLL(TGeoRef *Ref,double *Lat,double *Lon) {
       n=GeoRef_GetLL(ref->Subs[0],Lat,Lon);           // Yin
       n+=GeoRef_GetLL(ref->Subs[1],&Lat[i],&Lon[i]);  // Yang
    } else {
+      printf("first%f\n",ref->Lat[0]);
       n=GeoRef_CalcLL(ref);
 
       if (ref->Lat) {
+         printf("boucle%f\n",ref->Lat[0]);
          if (Lon) memcpy(Lon,ref->Lon,n*sizeof(double));
          if (Lat) memcpy(Lat,ref->Lat,n*sizeof(double));
+         memset(Lat, 0, n * sizeof(double));
+         printf("%d\n",n);
       } else {
          Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Missing descriptors\n",__func__);
          return(-1);

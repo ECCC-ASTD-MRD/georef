@@ -26,10 +26,13 @@ def generate_grid(lons, lats, filename, ni, nj, grtyp="Q", ig1=0, ig2=0, ig3=0, 
         geo = georef.GeoRef(ni, nj, grtyp, ig1, ig2, ig3, ig4, f_fst)
         lats, lons = geo.getll()
         
-        print("GRID généré")
+        print("GRID générée")
 
         # Calcul des données
         data = angular_dist_0(np.radians(lons), np.radians(lats)).astype(np.float32)
+
+        #if np.isnan(data).any():
+         #   raise ValueError(f"Données")
 
         geo.write_fst(f_fst, ig1, ig2, ig3, ig4, "my_grid")
 

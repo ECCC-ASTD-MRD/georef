@@ -2,7 +2,7 @@ import georef
 import numpy as np
 from rmn import fst24_file
 from GenerateGrid import generate_grid
-from georef.cubed_sphere import encodeig4
+import sys
 
 def validate_interpolation(src_file, dest_file):
     """
@@ -45,28 +45,42 @@ def validate_interpolation(src_file, dest_file):
     norm = np.linalg.norm(diff)
     max_err = np.linalg.norm(diff, ord=np.inf)
 
+    # Définition des seuils
+    THRESHOLD_NORM = 2.0
+    THRESHOLD_MAX_ERR = 4e-2
+
+    if norm > THRESHOLD_NORM or max_err > THRESHOLD_MAX_ERR:
+        # Message d'erreur détaillé avant de stopper
+        error_msg = (
+            f"ERREUR : Seuils de tolérance dépassés pour {src['grtyp']} -> {dest['grtyp']} !\n"
+            f"Seuils : Norme < {THRESHOLD_NORM}, MaxErr < {THRESHOLD_MAX_ERR}\n"
+            f"Valeurs actuelles : Norme = {norm:.6e}, MaxErr = {max_err:.6e}"
+        )
+        raise ValueError(error_msg)
+
     print(f"Interpolation {src['grtyp']} vers {dest['grtyp']}")
     print(f"Norme par defaut : {norm:.6e}")
     print(f"Erreur Max       : {max_err:.6e}")
     print("-" * 30)
 
+    
+
 
 if __name__ == "__main__":
     # Dictionnaire des fichiers sources à créer
     grids_config = [
+        #{
+         #   "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "A", "ni": 180, "nj": 90, "filename": "Grid_A.fst", "label": "Lat-Lon Equidistante"
+        #},
+        #{
+         #   "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "B", "ni": 180, "nj": 90, "filename": "Grid_B.fst", "label": "Lat-Lon avec Pôles"
+        #},
         {
-            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "A", "ni": 180, "nj": 90, "filename": "Grid_A.fst", "label": "Lat-Lon Equidistante"
-        },
-        {
-            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "B", "ni": 180, "nj": 90, "filename": "Grid_B.fst", "label": "Lat-Lon avec Pôles"
-        },
-        {
-            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "X", "ni": 180, "nj": 90,"filename": "Grid_X.fst", "label": "Theorie"
+            "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "G", "ni": 180, "nj": 90, "filename": "Grid_G.fst", "label": "Gaussien"
         },
         #{
          #   "lons": np.array([0, 45]), "lats": np.array([0, 10]), "grtyp": "Q", "ni": 180, "nj": 1080, "ig4": 1801, "filename": "Grid_Q.fst", "label": "Cubed Sphere"
         #},
-        # TODO: Grille G a des données NaaN dans les fichiers .fst
         # TODO: Pour faire la grille U, il faut que la grille Z fonctionne (car U = 2 grilles Z concaténées)
     ]
 
@@ -78,9 +92,5 @@ if __name__ == "__main__":
     # Création des fichiers interpolés + Comparaison fichier source et interpolés
     for src in grids_config:
         for dest in grids_config:
-                        
-            try:
-                validate_interpolation(src['filename'], dest['filename'])
+            validate_interpolation(src['filename'], dest['filename'])
                 
-            except Exception as e:
-                print(f"  [ERREUR] Échec de {src['grtyp']} vers {dest['grtyp']} : {e}")
