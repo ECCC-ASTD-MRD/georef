@@ -28,17 +28,12 @@ subroutine dgauss8 (n, roots, kase)
     !> pi. The negative roots are  filled by symmetry. for kase=global, all n roots are found, while for
     !> dase=north/south only the +ve/-ve roots are found, (including 0 if n is odd)  i.e. n/2+mod(n, 2) roots.
 
-    external :: ordleg
+    external :: ordleg8
 
-#if defined (ALL64)
-    real, parameter :: tol = 1.0E-13
-#else
-    real, parameter :: tol = 1.0E-6
-#endif
-
-    real :: normn, normnm
+    real(real64), parameter :: tol = 1.0E-13
+    real(real64) :: normn, normnm
     integer :: i, j, l, irt
-    real :: delta, g, gm, pn, pnm, rdpdx, t
+    real(real64) :: delta, g, gm, pn, pnm, rdpdx, t
 
     !  ordleg returns polynomials normalized to unit integral.
     !  normn, normnmn restore the convention normalization, p(n;1.0)=1.0.
@@ -60,8 +55,8 @@ subroutine dgauss8 (n, roots, kase)
         ! Repeat 1 newton iteration
         delta = huge(0.0)
         do while (abs(delta) > tol)
-            call ordleg(g, roots(i), n)
-            call ordleg(gm, roots(i), n - 1)
+            call ordleg8(g, roots(i), n)
+            call ordleg8(gm, roots(i), n - 1)
             pn = normn * g
             pnm = normnm * gm
             rdpdx = (roots(i) ** 2 - 1.0) / (n * (roots(i) * pn - pnm))
