@@ -35,6 +35,7 @@ def validate_interpolation(src_file, target_file):
         if grid_record.grtyp == "Q":
             options = georef.GeoOptions(Interp=3)
 
+
         data_interp = target_grid.interp(src_geo, data_src, options=options)
 
     # Calcul de la différence
@@ -73,22 +74,25 @@ base_config = {
 if __name__ == "__main__":
     # Dictionnaire des fichiers sources à créer
     grids_config = [
-        {
-            **base_config, "grtyp": "A", "filename": "Grid_A.fst", "label": "Lat-Lon Equidistante"
-        },
-        {
-            **base_config, "grtyp": "B", "filename": "Grid_B.fst", "label": "Lat-Lon avec Pôles"
-        },
-        {
-            **base_config, "grtyp": "G", "filename": "Grid_G.fst", "label": "Gaussien"
-        },
+        # {
+        #     **base_config, "grtyp": "A", "filename": "Grid_A.fst", "label": "Lat-Lon Equidistante"
+        # },
+        # {
+        #     **base_config, "grtyp": "B", "filename": "Grid_B.fst", "label": "Lat-Lon avec Pôles"
+        # },
+        # {
+        #     **base_config, "grtyp": "G", "filename": "Grid_G.fst", "label": "Gaussien"
+        # },
 
-        # Problème avec l'interpolation N->N et S->S
+        # # Problème avec l'interpolation N->N et S->S
+        # {
+        #     **base_config, "grtyp": "N", "filename": "Grid_N.fst", "ig1":1, "ig2":1, "ig3":1, "ig4":1, "label": "Hemisphere Nord"
+        # },
+        # {
+        #     **base_config, "grtyp": "S", "filename": "Grid_S.fst", "ig1":1, "ig2":1, "ig3":1, "ig4":1, "label": "Hemisphere Sud"
+        # },
         {
-            **base_config, "grtyp": "N", "filename": "Grid_N.fst", "ig1":1, "ig2":1, "ig3":1, "ig4":1, "label": "Hemisphere Nord"
-        },
-        {
-            **base_config, "grtyp": "S", "filename": "Grid_S.fst", "ig1":1, "ig2":1, "ig3":1, "ig4":1, "label": "Hemisphere Sud"
+            **base_config, "grtyp": "V", "filename": "Grid_V.fst", "ig1":1, "ig2":1, "ig3":1, "ig4":1, "label": "Hemisphere Sud"
         },
         #{
          #   **base_config, "grtyp": "Q", "ig4": 1801, "filename": "Grid_Q.fst", "label": "Cubed Sphere"

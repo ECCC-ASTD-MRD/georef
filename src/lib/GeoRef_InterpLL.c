@@ -89,24 +89,29 @@ static inline void grll(double *Lat,double *Lon,int32_t NI,int32_t NJ,double Lat
  *    @param[in]   NJ      Size in y
  *    @param[in]   PI      X Pole coordinate
  *    @param[in]   PJ      Y Pole coordinate
- *    @param[in]   D60     Distance in meters between the gridpoints at 60 degree latitude
+ *    @param[in]   D60     Distance in meters between the gridpoints at 60 degree latitude, must be greater than 0
  *    @param[in]   DGRW    Angle between  the X axis and the Greenwich meridian
  *    @param[in]   HEM     Side of the hemisphere (1=North, 2=South)
  *
  */
-static inline void grps(double *Lat,double *Lon,int32_t NI,int32_t NJ,double PI,double PJ,double D60,double DGRW,int32_t HEM) {
+static inline int32_t grps(double *Lat,double *Lon,int32_t NI,int32_t NJ,double PI,double PJ,double D60,double DGRW,int32_t HEM) {
+
+   if (D60 <= 0.0) {
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Invalide distance D60 = %f \n",__func__, D60);
+      return (-1);
+   }
 
    int32_t idx = 0;
-   double x,y;
 
    for(int32_t j = 0; j < NJ; j++) {
-      y=j+1-PJ;
+      const double y=j+1-PJ;
       for(int32_t i = 0; i < NI; i++) {
-         x=i+1-PI;
+         const double x=i+1-PI;
          llfxy(&Lat[idx],&Lon[idx],x,y,D60,DGRW,HEM);
          idx++;
       }
    }
+   return (0);
 }
 
 static inline void Permut64(double *Z,int32_t NI,int32_t NJ) {
@@ -183,7 +188,9 @@ int32_t GeoRef_CalcLL(TGeoRef* Ref) {
 	         } else {
                hemisphere = 2;
             }
-            grps(Ref->Lat,Ref->Lon,ni,nj,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4,hemisphere);
+            if (grps(Ref->Lat,Ref->Lon,ni,nj,Ref->RPNHeadExt.xg1,Ref->RPNHeadExt.xg2,Ref->RPNHeadExt.xg3,Ref->RPNHeadExt.xg4,hemisphere) != 0) {
+               return 0;
+            };
             break;
 
          case 'T':

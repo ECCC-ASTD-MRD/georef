@@ -742,7 +742,7 @@ TGeoRef *GeoRef_DefineQ(TGeoRef *Ref) {
     param->Yaw0 = decode_cs_angle(Ref->RPNHead.ig3);
     decode_cs_ig4(Ref->RPNHead.ig4, &(param->NumElem), &(param->Degree));
 
-    Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: ig1-3 = %d (%g), %d (%g), %d (%g), num elem %d, degree %d\n",
+    Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: ig1-3 = %d (%g), %d (%g), %d (%g), num elem %d, degree %d\n",
             __func__, Ref->RPNHead.ig1, param->Lon0, Ref->RPNHead.ig2, param->Lat0,
             Ref->RPNHead.ig3, param->Yaw0, param->NumElem, param->Degree);
 

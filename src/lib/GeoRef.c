@@ -1029,8 +1029,10 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
       GeoRef_AxisDefine(ref,ref->AX,ref->AY);
    }
 
-   GeoRef_DefRPNXG(ref);
-   GeoRef_CalcLL(ref);
+
+
+   if (GeoRef_DefRPNXG(ref) != 0) return(NULL);
+   if (GeoRef_CalcLL(ref) <= 0) return(NULL);
    GeoRef_Qualify(ref);
 
    return(ref);
@@ -2253,7 +2255,7 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
          break;
 
       default:
-	      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Grid type not supported %c\n",__func__,Ref->GRTYP[0]);
+	      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Grid type not supported %c\n",__func__,Ref->GRTYP[0]);
          return(-1);
     }
 
@@ -2521,10 +2523,10 @@ int32_t GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec) {
          // Does it already exists in the destination file
          strncpy(srec.nomvar,desc,FST_NOMVAR_LEN);
          query = fst24_new_query(FileTo,&srec,NULL);
-         if (!fst24_find_next(query,&rec)) {
+         if (fst24_find_next(query,&rec) != TRUE) {
             // If not already existing in destination
             if (fst24_read(Rec->file,&srec,NULL,&rec)) {
-               if (!fst24_write(FileTo,&rec,TRUE)) {
+               if (fst24_write(FileTo,&rec,FST_YES) != TRUE) {
                   return(FALSE);
                }
             }
