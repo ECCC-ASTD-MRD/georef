@@ -556,6 +556,7 @@ int32_t GeoRef_InterpWeight(
             if (DATA_ISVALID(val1,opt->NoData)) {
                 uval += val1*dp;
 
+                // If we have a second component (vector field)
                 if (zvin) {
                    val1=zvin[pj*RefFrom->NX+pi];
                    vval += val1*dp;
