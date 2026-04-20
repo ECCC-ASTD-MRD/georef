@@ -13,7 +13,7 @@
 static TList          *GeoRef_List=NULL;                 ///< Global list of known geo references
 static int32_t         GeoRef_Preserve = -10;            ///< How many of the first created georef to keep cached (negative means uninitialized)
 static pthread_mutex_t GeoRef_Mutex=PTHREAD_MUTEX_INITIALIZER;                                                                 ///< Thread lock on geo reference access
-__thread TGeoOptions   GeoRef_Options= { IR_CUBIC, ER_VALUE, CB_REPLACE, TRUE, FALSE, 1, 1, TRUE, FALSE, 10.0, NAN, NULL, NULL, 0, 0, NULL };  ///< Default options
+__thread TGeoOptions   GeoRef_Options = default_GeoOptions;  ///< Default options
 
 const char *TRef_ExtrapString[] = { "UNDEF","MAXIMUM","MINIMUM","VALUE","ABORT",NULL };
 const char *TRef_InterpString[] = { "UNDEF","NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR", "WEIGHTINDEX",
@@ -319,6 +319,7 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
          case 'M': Ref->LL2XY=GeoRef_LL2XY_M; Ref->XY2LL=GeoRef_XY2LL_M; break;
          case 'W': Ref->LL2XY=GeoRef_LL2XY_W; Ref->XY2LL=GeoRef_XY2LL_W; break;
          case 'Y': Ref->LL2XY=GeoRef_LL2XY_Y; Ref->XY2LL=GeoRef_XY2LL_Y; break;
+         case 'Q': Ref->LL2XY=GeoRef_LL2XY_Q; Ref->XY2LL=GeoRef_XY2LL_Q; break;
          case 'X':
          case 'V': break;
          default:
@@ -348,7 +349,11 @@ void GeoRef_Qualify(TGeoRef* __restrict const Ref) {
 
       if (Ref->GRTYP[0]=='A' || Ref->GRTYP[0]=='B' || Ref->GRTYP[0]=='G') {
          Ref->Type|=GRID_WRAP;
-      } else if (Ref->GRTYP[0]!='V' && Ref->GRTYP[0]!='R' && Ref->GRTYP[0]!='X' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
+      } 
+      else if (Ref->GRTYP[0] == 'Q') {
+         Ref->Type |= GRID_ROTATED;
+      }
+      else if (Ref->GRTYP[0]!='V' && Ref->GRTYP[0]!='R' && Ref->GRTYP[0]!='X' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
          // Check if north is up by looking at longitude variation on an Y increment at grid limits
          x[0]=Ref->X0;x[1]=Ref->X0;
          y[0]=Ref->Y0;y[1]=Ref->Y0+1.0;
@@ -830,6 +835,7 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
 
          case 'Z':
             if (!GRef->AY) GeoRef_ReadDescriptor(GRef,(void **)&GRef->AY,"^^",1,APP_FLOAT64);
+         case 'Q':
             if (!GRef->AX) sz=GeoRef_ReadDescriptor(GRef,(void **)&GRef->AX,">>",1,APP_FLOAT64);
             break;
 
@@ -982,6 +988,10 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    ref->Extension=0;
    ref->Type=GRID_NONE;
 
+   if (GRTYP[0] == 'Q') {
+      GeoRef_DefineQ(ref);
+   }
+
    GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
 
    if ((fref=GeoRef_Find(ref))) {
@@ -1054,15 +1064,44 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
    return(GeoRef_Define(ref,NI,NJ,GRTYP,"",IG1,IG2,IG3,IG4,NULL,NULL));
 }
 
-int32_t GeoRef_AssignToRecord(fst_record *Rec,TGeoRef *Ref) {
+//     use GRID definition in the interface to define a set of ig1/ig2 values
+//     using a cyclic redundancy check that uniquely define all output grids.
+extern uint32_t f_crc32(uint32_t *crc, const unsigned char *buf, uint32_t *len);
 
-   Rec->ig1=Ref->RPNHead.ig1;
-   Rec->ig2=Ref->RPNHead.ig2;
-   Rec->ig3=Ref->RPNHead.ig3;
-   Rec->ig4=0;
-   Rec->grtyp[0]=Ref->RPNHead.grtyp[0];
+static inline double roundto(double var, double prec) {
+    int value = (int)(var * prec + .5);
+    return (double)value / prec;
+}
 
-   return(TRUE);
+uint32_t GeoRef_RPNHash (TGeoRef *Ref, int32_t *IG1, int32_t *IG2) {
+
+   double *identity_vec=NULL,x;
+   uint32_t crc,n;
+
+   identity_vec=(double*)malloc(Ref->NX*Ref->NY * 2 * sizeof(double));
+
+   for(n=0;n<Ref->NX*Ref->NY*2;n+=2) {
+      identity_vec[n]=roundto(Ref->Lat[n],1000);
+      identity_vec[n+1]=roundto(Ref->Lon[n],1000);
+   }
+   identity_vec[n++] = Ref->RPNHeadExt.xg1;
+   identity_vec[n++] = Ref->RPNHeadExt.xg2;
+   identity_vec[n++] = Ref->RPNHeadExt.xg3;
+   identity_vec[n]   = Ref->RPNHeadExt.xg4;
+
+   n*=8;
+   crc=0;
+   crc = f_crc32 (&crc, (const unsigned char *)identity_vec, &n);
+
+   // Before rmn_011 convip was bugged for 3200 < ip1 < 32768, we therefore add 32768 for now
+   Ref->RPNHead.ig1 = (crc >> 16) + 32768;
+   Ref->RPNHead.ig2 = (crc & 0xFFFF) + 32768;
+   Ref->RPNHead.ig3 = 0;
+   
+   if (IG1) *IG1=Ref->RPNHead.ig1;
+   if (IG2) *IG2=Ref->RPNHead.ig2;
+
+   return(crc);
 }
 
 TGeoRef* GeoRef_CreateFromRecord(fst_record *Rec) {
@@ -2160,6 +2199,13 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
 	            break;
 	      }
          break;
+      
+      case 'Q':
+         Ref->RPNHeadExt.xg1 = decode_cs_angle(Ref->RPNHead.ig1);
+         Ref->RPNHeadExt.xg2 = decode_cs_angle(Ref->RPNHead.ig2);
+         Ref->RPNHeadExt.xg3 = decode_cs_angle(Ref->RPNHead.ig3);
+         // TODO What do we do with the 4th one?
+         Ref->RPNHeadExt.xg4 = 0.0;
 
       case 'E':
          f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1,&Ref->RPNHeadExt.xg2,&Ref->RPNHeadExt.xg3,&Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
@@ -2321,7 +2367,7 @@ int32_t GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4
          record.data_bits = 32;
       }
       if (fst24_write(File,&record,FST_SKIP)<=0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write ^> field (fst24_write failed)\n",__func__);
          return(FALSE);
       }
    } else if (GRef->AX && GRef->AY) {
@@ -2361,7 +2407,7 @@ int32_t GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4
          for(i=0;i<(GRef->Type&GRID_AXY2D?record.ni*record.nj:record.nj);i++) ((float*)record.data)[i]=GRef->AY[i];
       }
       if (fst24_write(File,&record,FST_SKIP)<=0) {
-         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write >> field (fst24_write failed)\n",__func__);
+         Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Could not write ^^ field (fst24_write failed)\n",__func__);
          return(FALSE);
       }
    }
@@ -2492,3 +2538,14 @@ int32_t GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec) {
 
    return(TRUE);
 }
+
+/*----------------------------------------------------------------------------
+ * @brief  Used to get a default Geo Options and by the __new__() method of the GeoOptions class
+ * @date   Mars 2026
+ *
+ *    @return             default Geo Options
+*/
+TGeoOptions get_default_GeoOptions(void) {
+    return default_GeoOptions;
+}
+

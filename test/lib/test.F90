@@ -19,7 +19,7 @@ program test
     real(kind = real32), dimension(:), pointer :: data_array1, data_array2
     real(C_DOUBLE) :: lat0,lon0,lat1,lon1,x0,y0,x1,y1,val
     real(C_DOUBLE), dimension(2700000) :: lats,lons
-    integer(C_INT32_T) :: ix0,ix1,iy0,iy1
+    integer(C_INT32_T) :: ix0,ix1,iy0,iy1,crc,ig1,ig2
 
     ! Read first file
     call get_command_argument(1,argument,len,status)
@@ -157,10 +157,17 @@ program test
     write(app_msg,*) 'ref1%llval = ll=',lat(1),',',lon(1),' => val=',vals(1)
     call App_Log(APP_INFO, app_msg)
 
+    ! Test grid hash
+    crc=ref1%rpnhash(ig1,ig2)
+    write(app_msg,*) 'crc=',crc,', igs=',ig1,ig2
+    call App_Log(APP_INFO, app_msg)
+
     ! Test interpolation
     len=ref1%interp(ref2,data_array1,data_array2)
-    write(app_msg,*) 'ref1%llval = ll=',lat(1),',',lon(1),' => val=',vals(1)
-    call App_Log(APP_INFO, app_msg)
+    record1%nomvar='data'
+    success=fileout%write(record1)
+
+    len=ref1%interpuv(ref2,data_array1,data_array1,data_array2,data_array2)
     record1%nomvar='data'
     success=fileout%write(record1)
 

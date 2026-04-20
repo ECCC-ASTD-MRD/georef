@@ -30,15 +30,15 @@ void f77name(ez_lambxyfll99)(double *x, double *y, double *lat, double *lon, int
 void f77name(ez8_lambllfxy99)(double *lat, double *lon, double *x, double *y, int32_t *nb, float *latin1, float *latin2, float *yaxislat, float *yaxislon);
 void f77name(ez8_nwtncof)(float *cx, float *cy, double *ax, double *ay, int32_t *ni, int32_t *nj, int32_t *i1, int32_t *i2, int32_t *j1, int32_t *j2, int32_t *extension);
 void f77name(igaxg95)(char *gtypout, float *xg, int32_t *nb, char *grtyp, int32_t *ig1, int32_t *ig2, int32_t *ig3, int32_t *ig4);
-void f77name(ez_applywgts)();
+void f77name(ez_applywgts)(float*, double*, int*, float*, int*, int*, int*, int*, int*, int*, float*);
 void f77name(ez_calcpoleval)(float *poleval, float *z, int32_t *ni, double *ax, char *grtyp, char *grref, int32_t c1, int32_t c2);
 void f77name(ez_fillnpole)(float *zout, float *zin, int32_t *ni, int32_t *j1, int32_t *j2, float *valpole);
 void f77name(ez_fillspole)(float *zout, float *zin, int32_t *ni, int32_t *j1, int32_t *j2, float *valpole);
 void f77name(ez_calcxy_y)();
 void f77name(ez_calcxy_y_m)();
-void f77name(ez_aminmax)();
-void f77name(ez_corrbgd)();
-void f77name(ez_glat)();
+void f77name(ez_aminmax)(float*, float*, float*, int*, int*);
+void f77name(ez_corrbgd)(float*, int*, int*, int*);
+void f77name(ez_glat)(double*, double*, int*, int*);
 void f77name(ez_crot)(float *r, float *ri, float *lon1, float *lat1, float *lon2, float *lat2);
 void f77name(ez_lac)();
 void f77name(ez8_uvacart)(double *XYZ, float *U, float *V, double *LON, double *LAT, int32_t *NI, int32_t *NJ);
@@ -46,7 +46,7 @@ void f77name(ez8_cartauv)(float *U, float *V, double *UVCART, double *LON, doubl
 void f77name(ez_xpngdb2)(float* zout, float* zi, int32_t *ni, int32_t *nj, int32_t *j1, int32_t *j2, int32_t *hem, int32_t *symetrie);
 void f77name(ez_xpngdag2)(float* zout, float* zi, int32_t *ni, int32_t *nj, int32_t *j1, int32_t *j2, int32_t *hem, int32_t *symetrie);
 void f77name(lorenzo_mask_fill)();
-void f77name(qqq_ezsint_mask)();
-void f77name(qqq_ezget_mask_zones)();
+void f77name(qqq_ezsint_mask)(char*, double*, double*, int*, int*, char *, int*, int*, TRef_Interp*);
+void f77name(qqq_ezget_mask_zones)(int*, double*,double*, int*, int*, int*, int*, int*);
 
 #endif

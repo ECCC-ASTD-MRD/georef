@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Append EC specific module path
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_rpn/modules $ENV{EC_CMAKE_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake_rpn/modules)
 
 include(ec_init)           # Initialise compilers and ec specific functions
 ec_git_version()           # Get version from git state
@@ -48,8 +48,13 @@ endif()
 set(MODULE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 find_package(OpenMP)
-find_package(rmn)
-find_package(vgrid)
+if (NOT rmn_FOUND)
+  find_package(rmn)
+endif()
+
+if (NOT vgrid_FOUND)
+  find_package(vgrid)
+endif()
 
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed -ldl")
 link_libraries("-Wl,--disable-new-dtags")
