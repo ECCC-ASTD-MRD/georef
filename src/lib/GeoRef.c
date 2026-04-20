@@ -918,12 +918,107 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
       if (proj) free(proj);
       if (mtx)  free(mtx);
 #else
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: W grid support not enabled, needs to be built with GDAL\n",__func__);
       return(FALSE);
 #endif
    }
 
    return(TRUE);
+}
+
+/**----------------------------------------------------------------------------
+ * @brief  Merge 2 Z grids into a U grid (YinYang)
+ *    @param[in]  YinRef   Pointer to Yin reference
+ *    @param[in]  YangRef  Pointer to Yang reference
+ */
+TGeoRef* GeoRef_UMerge(TGeoRef *YinRef,TGeoRef *YangRef) {
+
+   // Adapted from GEM yyencode.F90
+   TGeoRef *uref=GeoRef_New();
+
+   int   niyy, sindx, sindx_yin;
+   char  family_uencode_S = 'F';
+   int   version_uencode    = 1;
+   float xlat1,xlon1,xlat2,xlon2;
+
+   // Sanity check
+   if (YinRef->NX != YangRef->NX){
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: YIN and YAN records don't have the same ni size : %d vs % d\n",__func__,YinRef->NX,YangRef->NX);
+      return(NULL);
+   }
+   if (YinRef->NX != YangRef->NX){
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: YIN and YAN records don't have the same nj size : %d vs % d\n",__func__,YinRef->NX,YangRef->NY);
+      return(NULL);
+   }
+
+   niyy=5+2*(10+YinRef->NX+YangRef->NY);
+
+   if(!(uref->AXY = (double*)malloc(niyy * sizeof(double)))){
+      Lib_Log(APP_LIBGEOREF,APP_SYSTEM, "%s: Cannot allocate U buffer of sie %lu\n",__func__,niyy);
+      return(NULL);
+   }
+
+   uref->AXY[0] = (int)family_uencode_S;  // équivalent C de Fortran iachar
+   uref->AXY[1] = version_uencode;
+   uref->AXY[2] = 2; // 2 grids (Yin & Yang);
+   uref->AXY[3] = 1; // the 2 grids have same resolution;
+   uref->AXY[4] = 1; // the 2 grids have same area extension on the sphere;
+
+   //YIN
+   sindx = 5;
+   f77name(cigaxg)("E", &xlat1, &xlon1, &xlat2, &xlon2,
+         &YinRef->RPNHead.ig1,&YinRef->RPNHead.ig2,&YinRef->RPNHead.ig3,&YinRef->RPNHead.ig4,1);
+ 
+   // xlat1 must be greather than zero for yin grid
+   if( xlat1 < 0.0){
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Yan and Yin Georef might be inverted\n",__func__);
+      return(NULL);
+   }
+
+   uref->AXY[sindx  ] = YinRef->NX;
+   uref->AXY[sindx+1] = YinRef->NY;
+   uref->AXY[sindx+6] = xlat1;
+   uref->AXY[sindx+7] = xlon1;
+   uref->AXY[sindx+8] = xlat2;
+   uref->AXY[sindx+9] = xlon2;
+   memcpy(&uref->AXY[sindx+10],            YinRef->AX, YinRef->NX * sizeof(double));
+   memcpy(&uref->AXY[sindx+10+YinRef->NX], YinRef->AY, YinRef->NY * sizeof(double));    
+   uref->AXY[sindx+2] = uref->AXY[sindx+10];
+   uref->AXY[sindx+3] = uref->AXY[sindx+ 9+YinRef->NX];
+   uref->AXY[sindx+4] = uref->AXY[sindx+10+YinRef->NX];
+   uref->AXY[sindx+5] = uref->AXY[sindx+ 9+YinRef->NX+YinRef->NY];
+   sindx_yin = sindx;
+
+   //YANG
+   f77name(cigaxg)("E", &xlat1, &xlon1, &xlat2, &xlon2,
+            &YangRef->RPNHead.ig1,&YangRef->RPNHead.ig2,&YangRef->RPNHead.ig3,&YangRef->RPNHead.ig4,1);
+   sindx              = sindx+10+YinRef->NX+YinRef->NY;
+   uref->AXY[sindx  ] = YangRef->NX;
+   uref->AXY[sindx+1] = YangRef->NY;
+   uref->AXY[sindx+2] = uref->AXY[sindx_yin+10      ];
+   uref->AXY[sindx+3] = uref->AXY[sindx_yin+ 9+YangRef->NX];
+   uref->AXY[sindx+4] = uref->AXY[sindx_yin+10+YangRef->NX];
+   uref->AXY[sindx+5] = uref->AXY[sindx_yin+ 9+YangRef->NX+YangRef->NY];
+   uref->AXY[sindx+6] = xlat1;
+   uref->AXY[sindx+7] = xlon1;
+   uref->AXY[sindx+8] = xlat2;
+   uref->AXY[sindx+9] = xlon2;
+
+   // Note in the yyencode.F90 they copy data from yy but data from tictac is identical
+   memcpy(&uref->AXY[sindx+10],             &uref->AXY[sindx_yin+10],             YangRef->NX * sizeof(double));
+   memcpy(&uref->AXY[sindx+10+YangRef->NX], &uref->AXY[sindx_yin+10+YangRef->NX], YangRef->NY * sizeof(double));    
+
+   uref->GRTYP[0]='U';
+   uref->NbSub=2;
+   uref->NX=YinRef->NX;
+   uref->NY=YinRef->NY*uref->NbSub;
+   uref->Subs[0]=YinRef;
+   uref->Subs[1]=YangRef;
+
+   // make up an ad hoc ip1 ip2 ip3 with some grid info
+ // hash
+
+   return(uref);
 }
 
 /**----------------------------------------------------------------------------

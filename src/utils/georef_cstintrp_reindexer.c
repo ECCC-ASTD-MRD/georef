@@ -82,6 +82,7 @@ bool build_yin_yan_records(fst_record *yy_rec, fst_record *yy_tictac, fst_record
   char family_uencode_S = 'F';
   int version_uencode    = 1;
   float xlat1,xlon1,xlat2,xlon2;
+
   // Sanity check
   if(tictac[yin][tic].ni != tictac[yan][tic].ni){
     App_Log(APP_ERROR,"In build_yin_yan_record, YIN and YAN records %s don't have the same ni size : %d vs % d\n",
@@ -93,6 +94,7 @@ bool build_yin_yan_records(fst_record *yy_rec, fst_record *yy_tictac, fst_record
 	    tictac[yin][tac].nomvar, tictac[yin][tac].nj, tictac[yan][tac].nj);
     return false;
   }
+
   // ni nj is comment to all
   ni=tictac[yin][tic].ni;
   nj=tictac[yin][tac].nj;
@@ -206,10 +208,9 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
 
    // const int  max_nb_weights = (nb_weights[0] > nb_weights[1] ? nb_weights[0] : nb_weights[1]);
    const int  nsubgrid = (In[1] ? 2 : 1);
-   fst_record  rec[nsubgrid][MAX_NB_WEIGHTS][N];
+   fst_record rec[nsubgrid][MAX_NB_WEIGHTS][N];
    fst_record others[nsubgrid][3];
-   fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
-   fst_record tictac[nsubgrid][2], yy_tictac, yy_rec;
+   fst_record out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
    fst_file   *fin[nsubgrid],*fout;
    int         nb_weights[nsubgrid];
    float      *data_out, *angle_data_out;
@@ -406,7 +407,6 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    out.data_bits = ang.data_bits = 32;
    out.pack_bits = ang.pack_bits = 32;
 
-
    // FIXME: This divisor thing is no longer necessary when using later versions
    // of librmn: commit 3070309ee5bc78d9756c31c79ecf39ff628f614c of librmn allows
    // ni and nj to be up to 2^31.  When writing this, this commit is not in
@@ -458,39 +458,29 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    fst24_write(fout,&out,FST_YES);
    fst24_write(fout,&ang,FST_YES);
 
+   TGeoRef *yinref,*yangref,*uref;
+   int ig1,ig2,ig3,ig4;
+   
    // Write grids records
-   // Read >> ^^ from file 0
-   tictac[0][0]=default_fst_record;
-   tictac[0][1]=default_fst_record;
-   if(!read_tictac(In[0],fin[0],&others[0][MASK],tictac[0]))return false;
+   // Read grid descriptors from file 0
+   if (!(yinref=GeoRef_CreateFromRecord(&others[0][MASK])))
+      return(false);
+
    if ( out.typvar[0] == 'U' ) {
-     // We have to construct the U grid from the two YIN YAN Z grid
-     // This code is based en GEM yyencode program.
-     // Read >> ^^ from file 1
-     tictac[1][0]=default_fst_record;
-     tictac[1][1]=default_fst_record;
-     yy_tictac=default_fst_record;
-     yy_rec=default_fst_record;
-     if(!read_tictac(In[1],fin[1],&others[1][MASK],tictac[1]))return false;
-     if(!build_yin_yan_records(&yy_rec,&yy_tictac,tictac))return false;
-     fst24_write(fout,&yy_rec,FST_YES);
-     fst24_write(fout,&yy_tictac,FST_YES);
+      // Read descriptors from file 1
+      if (!(yangref=GeoRef_CreateFromRecord(&others[1][MASK]))) return(false);
+
+      // We have to construct the U grid from the two YIN YAN Z grid
+      if (!(uref=GeoRef_UMerge(yinref,yangref))) return(false);
+
+      GeoRef_WriteFST(uref,"ATMOS",ig1,ig2,ig3,ig4,fout);
    } else {
      // Not YIN YAN
-     if (out.typvar[0] == 'X' || out.typvar[0] == 'O') {
-       strncpy(others[0][MASK].etiket, "OCEAN", FST_ETIKET_LEN);
-       strncpy(others[0][MASK].typvar, "P@"  ,  FST_TYPVAR_LEN);
-     } else {
-       strncpy(others[0][MASK].etiket, "ATMOS", FST_ETIKET_LEN);
-       strncpy(others[0][MASK].typvar, "P"  ,  FST_TYPVAR_LEN);
-     }
-     strncpy(others[0][MASK].nomvar, "GRID",  FST_NOMVAR_LEN);
-     fst24_write(fout,&others[0][MASK],FST_YES);
-     if (others[0][MASK].grtyp[0] == 'X' || others[0][MASK].grtyp[0] == 'Z' || others[0][MASK].grtyp[0] == 'O') {
-       // Transfer >> from input to output file
-       fst24_write(fout,&tictac[0][0],FST_YES);
-       fst24_write(fout,&tictac[0][1],FST_YES);
-     }
+      if (out.typvar[0] == 'X' || out.typvar[0] == 'O') {
+         GeoRef_WriteFST(yinref,"OCEAN",ig1,ig2,ig3,ig4,fout);
+      } else {
+         GeoRef_WriteFST(yinref,"ATMOS",ig1,ig2,ig3,ig4,fout);
+      }
    }
 
    fst24_close(fin[0]);
