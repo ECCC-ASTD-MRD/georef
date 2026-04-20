@@ -6,7 +6,7 @@
 #include <georef_build_info.h>
 #include <errno.h>
 #include <string.h> // For strerror
-
+#include <stdbool.h>
 
 #define APP_NAME "georef_reindexer"
 #define APP_DESC "ECCC/CMC RPN Index conversion tool"
@@ -27,6 +27,14 @@ const int MAX_NB_WEIGHTS = 20;
 // GEM_to NEMO: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_gem319x262_to_orca1_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -d 319 131 -b 2
 // NEMO_to_GEM: georef_cstintrp_reindexer -i /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yin.std /home/smco502/datafiles/constants/cmdn/cansips/atm_ocean//Grille_20240202/weights/weights_orca1_to_gem319x262_default_yang.std -o ./atmos-ocean-grids.fstd -g UO -d 362 292 --orca 1
 
+// Usage example call for GDPS
+// GEM_to NEMO: georef_cstintrp_reindexer -i /home/socn000/env_rhel-8-icelake-64/ppp5/datafiles/constants/oce/repository/master/CONCEPTS/orca025/coupling/yy_2073x1418_v2_mask/weights_gem2073x1418_to_orca025_default_yin.std /home/socn000/env_rhel-8-icelake-64/ppp5/datafiles/constants/oce/repository/master/CONCEPTS/orca025/coupling/yy_2073x1418_v2_mask/weights_gem2073x1418_to_orca025_default_yang.std -o ./atmos-ocean-grids.fstd -g OU -d 2073 709 -b 2
+// NEMO_to_GEM: georef_cstintrp_reindexer -i /home/socn000/env_rhel-8-icelake-64/ppp5/datafiles/constants/oce/repository/master/CONCEPTS/orca025/coupling/yy_2073x1418_v2_mask/weights_orca025_to_gem2073x1418_default_yin.std /home/socn000/env_rhel-8-icelake-64/ppp5/datafiles/constants/oce/repository/master/CONCEPTS/orca025/coupling/yy_2073x1418_v2_mask/weights_orca025_to_gem2073x1418_default_yang.std -o ./atmos-ocean-grids.fstd -g UO -d 1442 1021 --orca 1
+
+// Usage example call for CAPS
+// GEM_to NEMO: georef_cstintrp_reindexer -i /home/saqu500/data/ords/constants/cmde/caps/3.0.0/coupling_weights/weights_gem2272x1872_caps_to_creg12pe.std -o ./atmos-ocean-grids.fstd -g OZ	-d 2272 1872 -b 2
+// NEMO_to_GEM: georef_cstintrp_reindexer -i /home/saqu500/data/ords/constants/cmde/caps/3.0.0/coupling_weights/weights_creg12pe_to_gem2272x1872_caps.std -o ./atmos-ocean-grids.fstd -g ZO -d 1580 2198
+
 #define I16_dest_t int32_t // dty: I 16 gets read into 32 bit
 #define I1_dest_t  int32_t // dty: I 1  gets read into 32 bit
 
@@ -41,17 +49,20 @@ int count_weights(fst_file *f)
          nb_weights++;
       }
    }
-   return nb_weights;
-}
 
+   strncpy(crit.nomvar,"W   ",FST_NOMVAR_LEN);
+   fst_query *q1 = fst24_new_query(f, &crit, NULL);
+
+      return nb_weights;
+}
 
 int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
 
    // const int  max_nb_weights = (nb_weights[0] > nb_weights[1] ? nb_weights[0] : nb_weights[1]);
    const int  nsubgrid = (In[1] ? 2 : 1);
-   fst_record  rec[nsubgrid][MAX_NB_WEIGHTS][N];
+   fst_record rec[nsubgrid][MAX_NB_WEIGHTS][N];
    fst_record others[nsubgrid][3];
-   fst_record  out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
+   fst_record out=default_fst_record,ang=default_fst_record,crit=default_fst_record;
    fst_file   *fin[nsubgrid],*fout;
    int         nb_weights[nsubgrid];
    float      *data_out, *angle_data_out;
@@ -127,7 +138,6 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
       glb_nj[sg] = rec[sg][0][0].nj;
       sz[sg] = glb_ni[sg]*glb_nj[sg];
 
-      fst24_close(fin[sg]);
    }
    int true_max_nb_weights = (nb_weights[0] > nb_weights[1] ? nb_weights[0] : nb_weights[1]);
 
@@ -247,8 +257,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    ang.data=angle_data_out;
    out.data_type = ang.data_type = FST_TYPE_REAL_IEEE;
    out.data_bits = ang.data_bits = 32;
-   out.pack_bits = ang.data_bits = 32;
-
+   out.pack_bits = ang.pack_bits = 32;
 
    // FIXME: This divisor thing is no longer necessary when using later versions
    // of librmn: commit 3070309ee5bc78d9756c31c79ecf39ff628f614c of librmn allows
@@ -301,6 +310,33 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    fst24_write(fout,&out,FST_YES);
    fst24_write(fout,&ang,FST_YES);
 
+   TGeoRef *yinref,*yangref,*uref;
+   
+   // Write grids records
+   // Read grid descriptors from file 0
+   if (!(yinref=GeoRef_CreateFromRecord(&others[0][MASK])))
+      return(false);
+
+   if ( out.typvar[0] == 'U' ) {
+      // Read descriptors from file 1
+      if (!(yangref=GeoRef_CreateFromRecord(&others[1][MASK]))) return(false);
+
+      // We have to construct the U grid from the two YIN YAN Z grid
+      if (!(uref=GeoRef_UMerge(yinref,yangref))) return(false);
+
+      GeoRef_WriteFST(uref,"ATMOS",0,0,0,0,fout);
+   } else {
+      // Not YIN YAN
+      if (out.typvar[0] == 'X' || out.typvar[0] == 'O') {
+         GeoRef_WriteFST(yinref,"OCEAN",0,0,0,0,fout);
+      } else {
+         GeoRef_WriteFST(yinref,"ATMOS",0,0,0,0,fout);
+      }
+   }
+
+   fst24_close(fin[0]);
+   if (In[1]) fst24_close(fin[1]);
+   
    fst24_close(fout);
 
    return(TRUE);

@@ -924,12 +924,115 @@ int32_t GeoRef_Read(struct TGeoRef *GRef) {
       if (proj) free(proj);
       if (mtx)  free(mtx);
 #else
-      Lib_Log(APP_LIBGEOREF,APP_ERROR,"W grid support not enabled, needs to be built with GDAL\n",__func__);
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: W grid support not enabled, needs to be built with GDAL\n",__func__);
       return(FALSE);
 #endif
    }
 
    return(TRUE);
+}
+
+/**----------------------------------------------------------------------------
+ * @brief  Merge 2 Z grids into a U grid (YinYang)
+ *    @param[in]  YinRef   Pointer to Yin reference
+ *    @param[in]  YangRef  Pointer to Yang reference
+ */
+TGeoRef* GeoRef_UMerge(TGeoRef *YinRef,TGeoRef *YangRef) {
+
+   // Adapted from GEM yyencode.F90
+   TGeoRef *uref=GeoRef_New();
+
+   int   niyy, ni,nj, sindx, sindx_yin;
+   char  family_uencode_S = 'F';
+   int   version_uencode  = 1;
+   float xlat1,xlon1,xlat2,xlon2;
+
+   // Sanity check
+   if (YinRef->NX!=YangRef->NX || YinRef->NY!=YangRef->NY){
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Yin and Yang records don't have the samesize : %dx%d != %dx%d\n",__func__,
+         YinRef->NX,YinRef->NY,YangRef->NX,YangRef->NY);
+      return(NULL);
+   }
+
+   ni=YinRef->NX;
+   nj=YangRef->NY;
+   niyy=5+2*(10+ni+nj);
+
+   if(!(uref->AXY = (double*)malloc(niyy * sizeof(double)))){
+      Lib_Log(APP_LIBGEOREF,APP_SYSTEM, "%s: Cannot allocate buffer of size %lu\n",__func__,niyy);
+      return(NULL);
+   }
+
+   uref->AXY[0] = (int)family_uencode_S;  // équivalent C de Fortran iachar
+   uref->AXY[1] = version_uencode;
+   uref->AXY[2] = 2; // 2 grids (Yin & Yang);
+   uref->AXY[3] = 1; // the 2 grids have same resolution;
+   uref->AXY[4] = 1; // the 2 grids have same area extension on the sphere;
+
+   // YIN
+   sindx = 5;
+   f77name(cigaxg)("E", &xlat1, &xlon1, &xlat2, &xlon2,
+         &YinRef->RPNHeadExt.igref1,&YinRef->RPNHeadExt.igref2,&YinRef->RPNHeadExt.igref3,&YinRef->RPNHeadExt.igref4,1);
+ 
+   // xlat1 must be greater than zero for yin grid
+   if (xlat1 < 0.0){
+      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Yan and Yin Georef might be inverted\n",__func__);
+      return(NULL);
+   }
+
+   uref->AXY[sindx  ] = ni;
+   uref->AXY[sindx+1] = nj;
+   uref->AXY[sindx+6] = xlat1;
+   uref->AXY[sindx+7] = xlon1;
+   uref->AXY[sindx+8] = xlat2;
+   uref->AXY[sindx+9] = xlon2;
+   memcpy(&uref->AXY[sindx+10],            YinRef->AX, ni * sizeof(double));
+   memcpy(&uref->AXY[sindx+10+ni], YinRef->AY, nj * sizeof(double));    
+   uref->AXY[sindx+2] = uref->AXY[sindx+10];
+   uref->AXY[sindx+3] = uref->AXY[sindx+ 9+ni];
+   uref->AXY[sindx+4] = uref->AXY[sindx+10+ni];
+   uref->AXY[sindx+5] = uref->AXY[sindx+ 9+ni+nj];
+   sindx_yin = sindx;
+ 
+   // YANG
+   f77name(cigaxg)("E", &xlat1, &xlon1, &xlat2, &xlon2,
+            &YangRef->RPNHeadExt.igref1,&YangRef->RPNHeadExt.igref2,&YangRef->RPNHeadExt.igref3,&YangRef->RPNHeadExt.igref4,1);
+   sindx              = sindx+10+ni+nj;
+   uref->AXY[sindx  ] = ni;
+   uref->AXY[sindx+1] = nj;
+   uref->AXY[sindx+2] = uref->AXY[sindx_yin+10      ];
+   uref->AXY[sindx+3] = uref->AXY[sindx_yin+ 9+ni];
+   uref->AXY[sindx+4] = uref->AXY[sindx_yin+10+ni];
+   uref->AXY[sindx+5] = uref->AXY[sindx_yin+ 9+ni+nj];
+   uref->AXY[sindx+6] = xlat1;
+   uref->AXY[sindx+7] = xlon1;
+   uref->AXY[sindx+8] = xlat2;
+   uref->AXY[sindx+9] = xlon2;
+
+   // Note in the yyencode.F90 they copy data from yy but data from tictac is identical
+   memcpy(&uref->AXY[sindx+10],             YangRef->AX, ni * sizeof(double));
+   memcpy(&uref->AXY[sindx+10+ni], YangRef->AY, nj * sizeof(double));    
+
+   uref->GRTYP[0]='U';
+   uref->GRTYP[1]='\0';
+   uref->NbSub=2;
+   uref->NX=ni;
+   uref->NY=nj*uref->NbSub;
+   uref->Subs = (TGeoRef**)malloc(uref->NbSub*sizeof(TGeoRef*));
+   uref->Subs[0]=YinRef;
+   uref->Subs[1]=YangRef;
+   uref->RPNHeadExt.igref1=1;
+   uref->RPNHeadExt.igref2=0;
+   uref->RPNHeadExt.igref3=0;
+   uref->RPNHeadExt.igref4=0;
+   uref->RPNHeadExt.grref[0]=family_uencode_S;
+   uref->RPNHeadExt.grref[1]='\0';
+   strncpy(uref->RPNHead.grtyp,uref->GRTYP,FST_GTYP_LEN);
+
+   // Calculate unique ip1 ip2 ip3
+   GeoRef_RPNHash(uref,NULL,NULL,NULL);
+
+   return(uref);
 }
 
 /**----------------------------------------------------------------------------
@@ -1068,38 +1171,44 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
 //     using a cyclic redundancy check that uniquely define all output grids.
 extern uint32_t f_crc32(uint32_t *crc, const unsigned char *buf, uint32_t *len);
 
-static inline double roundto(double var, double prec) {
+static inline float roundto(float var, float prec) {
     int value = (int)(var * prec + .5);
-    return (double)value / prec;
+    return (float)value / prec;
 }
 
-uint32_t GeoRef_RPNHash (TGeoRef *Ref, int32_t *IG1, int32_t *IG2) {
+uint32_t GeoRef_RPNHash (TGeoRef *Ref, int32_t *IG1, int32_t *IG2, int32_t *IG3) {
 
-   double *identity_vec=NULL,x;
-   uint32_t crc,n;
+   float *identity_vec=NULL,x;
+   uint32_t crc,n=0,i=0;
 
-   identity_vec=(double*)malloc(Ref->NX*Ref->NY * 2 * sizeof(double));
+   GeoRef_CalcLL(Ref);
 
-   for(n=0;n<Ref->NX*Ref->NY*2;n+=2) {
-      identity_vec[n]=roundto(Ref->Lat[n],1000);
-      identity_vec[n+1]=roundto(Ref->Lon[n],1000);
+   if (!(identity_vec=(float*)malloc(10+Ref->NX*Ref->NY * 2 * sizeof(float)))) {
+      Lib_Log(APP_LIBGEOREF,APP_SYSTEM, "%s: Cannot allocate buffer of sie %lu\n",__func__,Ref->NX*Ref->NY * 2 * sizeof(double));
+      return(0);
+   }
+
+   for(n=0,i=0;i<Ref->NX*Ref->NY;n+=2,i++) {
+      identity_vec[n]=roundto(Ref->Lat[i],1000);
+      identity_vec[n+1]=roundto(Ref->Lon[i],1000);
    }
    identity_vec[n++] = Ref->RPNHeadExt.xg1;
    identity_vec[n++] = Ref->RPNHeadExt.xg2;
    identity_vec[n++] = Ref->RPNHeadExt.xg3;
    identity_vec[n]   = Ref->RPNHeadExt.xg4;
 
-   n*=8;
+   n*=4;
    crc=0;
    crc = f_crc32 (&crc, (const unsigned char *)identity_vec, &n);
 
    // Before rmn_011 convip was bugged for 3200 < ip1 < 32768, we therefore add 32768 for now
-   Ref->RPNHead.ig1 = (crc >> 16) + 32768;
-   Ref->RPNHead.ig2 = (crc & 0xFFFF) + 32768;
-   Ref->RPNHead.ig3 = 0;
-   
-   if (IG1) *IG1=Ref->RPNHead.ig1;
-   if (IG2) *IG2=Ref->RPNHead.ig2;
+   Ref->RPNHead.ip1 = (crc >> 16) + 32768;
+   Ref->RPNHead.ip2 = (crc & 0xFFFF) + 32768;
+   Ref->RPNHead.ip3 = 0;
+
+   if (IG1) *IG1=Ref->RPNHead.ip1;
+   if (IG2) *IG2=Ref->RPNHead.ip2;
+   if (IG3) *IG3=Ref->RPNHead.ip3;
 
    return(crc);
 }
@@ -2310,10 +2419,10 @@ int32_t GeoRef_WriteFST(TGeoRef *GRef,char *Name,int IG1,int IG2,int IG3,int IG4
       if (envVar) dbl = TRUE;
    }
 
-   if (IG1<=0) IG1=GRef->RPNHead.ig1;
-   if (IG2<=0) IG2=GRef->RPNHead.ig2;
-   if (IG3<=0) IG3=GRef->RPNHead.ig3;
-   if (IG4<=0) IG4=GRef->RPNHead.ig4;
+   if (IG1<=0) IG1=GRef->RPNHead.ip1;
+   if (IG2<=0) IG2=GRef->RPNHead.ip2;
+   if (IG3<=0) IG3=GRef->RPNHead.ip3;
+   if (IG4<=0) IG4=0;
 
    record.data = (float*)calloc(GRef->NX*GRef->NY,sizeof(float));
    record.ni   = GRef->NX;

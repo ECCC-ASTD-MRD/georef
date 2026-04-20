@@ -231,12 +231,12 @@ interface
     end function georef_nearest
 
 !   uint32_t GeoRef_RPNHash (TGeoRef *Ref, int32_t *IG1, int32_t *IG2);
-    function georef_rpnhash(ref,ig1,ig2) result(out) bind(C, name = 'GeoRef_RPNHash')
+    function georef_rpnhash(ref,ig1,ig2,ig3) result(out) bind(C, name = 'GeoRef_RPNHash')
         import :: C_PTR,C_INT32_T
         implicit none
 
         type(C_PTR), intent(in), value :: ref
-        integer(C_INT32_T), intent(out) :: ig1,ig2
+        integer(C_INT32_T), intent(out) :: ig1,ig2,ig3
 
         integer(C_INT32_T) :: out
 

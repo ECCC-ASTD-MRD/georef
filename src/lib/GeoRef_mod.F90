@@ -221,14 +221,14 @@ contains
         endif
     end function georef_createw_f
 
-    function georef_rpnhash_f(this,ig1,ig2) result(res)
+    function georef_rpnhash_f(this,ig1,ig2,ig3) result(res)
         implicit none
         class(georef), intent(inout) :: this       !< georef instance
-        integer(C_INT32_T), intent(out) :: ig1,ig2 !< IG1 and IG2 hash
+        integer(C_INT32_T), intent(out) :: ig1,ig2,ig3 !< IG1 and IG2 hash
 
         integer(C_INT32_T):: res                  !< calculated crc32
 
-        res=georef_rpnhash(this%ptr,ig1,ig2)
+        res=georef_rpnhash(this%ptr,ig1,ig2,ig3)
 
     end function georef_rpnhash_f
 

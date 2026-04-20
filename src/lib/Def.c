@@ -697,6 +697,7 @@ int32_t Def_GetValue(
 }
 
 
+#ifdef HAVE_GDAL
 //! Set a value within a data definition
 static inline void Def_SetValue(
     //! [in] Data definition
@@ -734,6 +735,7 @@ static inline void Def_SetValue(
         }
     }
 }
+#endif
 
 /*----------------------------------------------------------------------------
  * @brief  Rasterize vectorial data within aband or field
@@ -1087,6 +1089,7 @@ int32_t GeoRef_Cell2OGR(OGRGeometryH Geom, TGeoRef *ToRef, TGeoRef *FromRef, int
 #endif
 }
 
+#ifdef HAVE_GDAL
 /*----------------------------------------------------------------------------
  * @brief  Interpolate within a gridpoint defined quad area
  * @date   November 2004
@@ -1228,6 +1231,7 @@ static int32_t GeoRef_InterpQuad(TGeoRef *Ref, TDef *Def, TGeoOptions *Opt, OGRG
    return 0;
 #endif
 }
+#endif
 
 /*----------------------------------------------------------------------------
  * @brief  Interpolate/import vectorial data into a raster field
@@ -1682,12 +1686,16 @@ int32_t GeoRef_InterpSub(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
 int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *FromDef, TGeoOptions *Opt) {
 
    TGeoSet    *gset = NULL;
-   int32_t     i, j, na, nt = 0, p = 0, pi, pj, idx2, intersect, isize, nidx, error = 0;
+   int32_t     i, j, nt = 0, pi, pj, idx2, isize;
    uint64_t    n;
    char        *c;
-   double       val0, val1, area, x, y, z, dp;
-   float       *ip = NULL, *lp = NULL, **index = NULL;
+   double       val0, val1, dp;
+   float       *ip = NULL;
+
 #ifdef HAVE_GDAL
+   int32_t      na, p = 0, intersect, nidx, error = 0;
+   double       area, x, y, z;
+   float        *lp = NULL, **index = NULL;
    OGRGeometryH cell = NULL, ring = NULL, *pick = NULL, *poly = NULL;
    OGREnvelope  env;
 #endif
@@ -2402,6 +2410,8 @@ int64_t GeoRef_InterpFinalize(TGeoRef *ToRef, TDef *ToDef,TGeoOptions *Opt) {
             GeoRef_WD2UV(ToRef,(float*)ToDef->Data[0],(float*)ToDef->Data[1],(float*)ToDef->Data[0],(float*)ToDef->Data[1],NULL,NULL,nij);
          }
          break;
+      default:
+         break;
    }
 
    // Copy first column to last if it's repeated
@@ -2598,6 +2608,8 @@ int32_t GeoRef_InterpDef(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef, TDef *Fr
       case IR_NOP:
       case IR_ACCUM:
       case IR_BUFFER:
+         break;
+      default:
          break;
    }
 
