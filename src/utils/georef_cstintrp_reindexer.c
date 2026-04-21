@@ -50,10 +50,7 @@ int count_weights(fst_file *f)
       }
    }
 
-   strncpy(crit.nomvar,"W   ",FST_NOMVAR_LEN);
-   fst_query *q1 = fst24_new_query(f, &crit, NULL);
-
-      return nb_weights;
+   return nb_weights;
 }
 
 int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
@@ -322,7 +319,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
       if (!(yangref=GeoRef_CreateFromRecord(&others[1][MASK]))) return(false);
 
       // We have to construct the U grid from the two YIN YAN Z grid
-      if (!(uref=GeoRef_UMerge(yinref,yangref))) return(false);
+      if (!(uref=GeoRef_CreateUFromZMerge(yinref,yangref))) return(false);
 
       GeoRef_WriteFST(uref,"ATMOS",0,0,0,0,fout);
    } else {
