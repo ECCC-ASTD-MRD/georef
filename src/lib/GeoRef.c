@@ -989,7 +989,9 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    ref->Type=GRID_NONE;
 
    if (GRTYP[0] == 'Q') {
-      GeoRef_DefineQ(ref);
+      if(GeoRef_DefineQ(ref) == NULL){
+         return NULL;
+      }      
    }
 
    GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
@@ -2208,6 +2210,7 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
          Ref->RPNHeadExt.xg3 = decode_cs_angle(Ref->RPNHead.ig3);
          // TODO What do we do with the 4th one?
          Ref->RPNHeadExt.xg4 = 0.0;
+         break;
 
       case 'E':
          f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1,&Ref->RPNHeadExt.xg2,&Ref->RPNHeadExt.xg3,&Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);

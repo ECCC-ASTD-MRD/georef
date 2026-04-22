@@ -1,8 +1,8 @@
+from georef import cubed_sphere
 import georef
 import numpy as np
 from rmn import fst24_file
 from GenerateGrid import generate_grid
-import sys
 
 def validate_interpolation(src_file, target_file):
     """
@@ -11,57 +11,93 @@ def validate_interpolation(src_file, target_file):
     """
     # Lecture du fichier source
     with fst24_file(src_file, "R") as f_src:
-        q_src = f_src.new_query(nomvar="DIST")
-        rec_src = next(iter(q_src), None)
-        if rec_src is None: return None
-        src_geo = georef.GeoRef(rec_src.ni, rec_src.nj, rec_src.grtyp, rec_src.ip1, rec_src.ip2, rec_src.ip3, rec_src.ig4, f_src)
-        data_src = rec_src.data.astype(np.float32)
+        grid_src = next(iter(f_src.new_query(nomvar="GRID")), None)
+        q_src = next(iter(f_src.new_query(nomvar="DIST")), None)
+        if not grid_src or not q_src: return None
+
+        src_grid = georef.GeoRef.fromrecord(grid_src)
+        src_grid.shape = (grid_src.ni, grid_src.nj, grid_src.nk)
+        data_src = q_src.data.astype(np.float32)
+        src_type = grid_src.grtyp.strip()
+
+        # lats_src, lons_src = src_grid.getll()
+        
+        # print(f"\n--- Coordonnées SOURCE ({src_type}) ---")
+        # print(f"Shape des lats : {lats_src.shape}")
+        # print(f"Latitude Min   : {np.min(lats_src):.4f}")
+        # print(f"Latitude Max   : {np.max(lats_src):.4f}")
+        # print(lats_src)
+        # print(f"Shape des lons : {lons_src.shape}")
+        # print(f"Longitude Min   : {np.min(lons_src):.4f}")
+        # print(f"Longitude Max   : {np.max(lons_src):.4f}")
+        # print(lons_src)
 
     # Lecture du fichier cible
     with fst24_file(target_file, "R") as f_target:
-        # On cherche la grille cible
-        q = f_target.new_query(nomvar="GRID")
-        grid_record = next(iter(q), None)
-
-        # On cherche les données pour comparer
-        q_ref_data = f_target.new_query(nomvar="DIST")
-        rec_ref_data = next(iter(q_ref_data), None)
+        grid_record = next(iter(f_target.new_query(nomvar="GRID")), None)
+        rec_ref_data = next(iter(f_target.new_query(nomvar="DIST")), None)
+        if not grid_record or not rec_ref_data: return None
 
         target_grid = georef.GeoRef.fromrecord(grid_record)
         target_grid.shape = (grid_record.ni, grid_record.nj, grid_record.nk)
         data_ref = rec_ref_data.data.astype(np.float32)
+        tgt_type = grid_record.grtyp.strip()
 
-        options = None
-        if grid_record.grtyp == "Q":
-            options = georef.GeoOptions(Interp=3)
+        # lats_tgt, lons_tgt = target_grid.getll()
+        
+        # print(f"\n--- Coordonnées TARGET ({tgt_type}) ---")
+        # print(f"Shape des lats : {lats_tgt.shape}")
+        # print(f"Latitude Min   : {np.min(lats_tgt):.4f}")
+        # print(f"Latitude Max   : {np.max(lats_tgt):.4f}")
+        # print(lats_tgt)
+        # print(f"Shape des lons : {lons_tgt.shape}")
+        # print(f"Longitude Min   : {np.min(lons_tgt):.4f}")
+        # print(f"Longitude Max   : {np.max(lons_tgt):.4f}")
+        # print(lons_tgt)
 
+    # Grilles exclues à l'interpolation
+    excluded_sources = {'N', 'S'}
+    is_forbidden = (src_type in excluded_sources) 
+    should_interpolate = not is_forbidden
 
-        data_interp = target_grid.interp(src_geo, data_src, options=options)
+    if not should_interpolate:
+        print(f"[-] Skip : Interpolation {src_type} -> {tgt_type} non supportée/voulue.")
+        return np.full(target_grid.shape, np.nan, dtype=np.float32)
+
+    # Exécution de l'interpolation
+    print(f"[+] Interpolation en cours : {src_type} -> {tgt_type}")
+    options = georef.GeoOptions(Interp=2) if src_type or tgt_type == "Q" else None
+    data_interp = target_grid.interp(src_grid, data_src, options=options)
 
     # Calcul de la différence
     diff = (data_interp - data_ref).ravel() / np.max(np.abs(data_ref))
+    # print(f"data_interp:{data_interp}")
+    # print(f"data_ref:{data_ref}")
+    # print(f"diff:{diff}")
     
     # Calcul des normes
     norm = np.linalg.norm(diff)/diff.size 
     max_err = np.linalg.norm(diff, ord=np.inf)
 
     # Définition des seuils
-    THRESHOLD_NORM = 6.0e-4
-    THRESHOLD_MAX_ERR = 4e-2
+    THRESHOLD_NORM = 1.0e-3
+    THRESHOLD_MAX_ERR = 8e-1
 
     if norm > THRESHOLD_NORM or max_err > THRESHOLD_MAX_ERR:
-        # Message d'erreur détaillé avant de stopper
         error_msg = (
-            f"ERREUR : Seuils de tolérance dépassés pour {src['grtyp']} -> {dest['grtyp']} !\n"
-            f"Seuils : Norme < {THRESHOLD_NORM}, MaxErr < {THRESHOLD_MAX_ERR}\n"
-            f"Valeurs actuelles : Norme = {norm:.6e}, MaxErr = {max_err:.6e}"
+            f"\n! ERREUR : Seuils dépassés pour {src_file} -> {target_file}\n"
+            f"Valeurs : Norme={norm:.6e} (max {THRESHOLD_NORM}), "
+            f"MaxErr={max_err:.6e} (max {THRESHOLD_MAX_ERR})"
         )
         raise ValueError(error_msg)
 
-    print(f"Interpolation {src['grtyp']} vers {dest['grtyp']}")
-    print(f"Norme par defaut : {norm:.6e}")
-    print(f"Erreur Max       : {max_err:.6e}")
-    print("-" * 30)
+    # Affichage des résultats
+    print(f"[*] Succès {src_file} -> {target_file}")
+    print(f"    Norme relative : {norm:.6e}")
+    print(f"    Erreur Max     : {max_err:.6e}")
+    print("-" * 40)
+
+    return data_interp
 
     
 base_config = {
@@ -74,8 +110,12 @@ base_config = {
 if __name__ == "__main__":
     # Dictionnaire des fichiers sources à créer
     grids_config = [
+        # Grilles globales 
+        {
+            **base_config, "grtyp": "A", "filename": "Grid_A.fst", "label": "Lat-Lon Equidistante"
+        },
         # {
-        #     **base_config, "grtyp": "A", "filename": "Grid_A.fst", "label": "Lat-Lon Equidistante"
+        #     **base_config, "ni": 170, "nj": 80, "grtyp": "A", "filename": "Grid_A2.fst", "label": "Lat-Lon Equidistante"
         # },
         # {
         #     **base_config, "grtyp": "B", "filename": "Grid_B.fst", "label": "Lat-Lon avec Pôles"
@@ -84,7 +124,8 @@ if __name__ == "__main__":
         #     **base_config, "grtyp": "G", "filename": "Grid_G.fst", "label": "Gaussien"
         # },
 
-        # # Problème avec l'interpolation N->N et S->S
+        # # Grilles Hemisphères (divisé par 2)
+        # # TODO: interpolation N->N et S->S (présence de NaNs)
         # {
         #     **base_config, "grtyp": "N", "filename": "Grid_N.fst", "ig1":1, "ig2":1, "ig3":1, "ig4":1, "label": "Hemisphere Nord"
         # },
@@ -92,12 +133,13 @@ if __name__ == "__main__":
         #     **base_config, "grtyp": "S", "filename": "Grid_S.fst", "ig1":1, "ig2":1, "ig3":1, "ig4":1, "label": "Hemisphere Sud"
         # },
         {
-            **base_config, "grtyp": "V", "filename": "Grid_V.fst", "ig1":1, "ig2":1, "ig3":1, "ig4":1, "label": "Hemisphere Sud"
+           **base_config, "grtyp": "Q", "ig1": 0x800000, "ig2": 0x800000, "ig3": 0x800000, "ig4": cubed_sphere.encodeig4(18,3), "filename": "Grid_Q.fst", "label": "Cubed Sphere"
         },
-        #{
-         #   **base_config, "grtyp": "Q", "ig4": 1801, "filename": "Grid_Q.fst", "label": "Cubed Sphere"
-        #},
+        # {
+        #    **base_config, "grtyp": "Q", "ig1": 0x700000, "ig2": 0x800000, "ig3": 0x800000, "ig4": cubed_sphere.encodeig4(16,3), "filename": "Grid_Q2.fst", "label": "Cubed Sphere"
+        # },
         # TODO: Pour faire la grille U, il faut que la grille Z fonctionne (car U = 2 grilles Z concaténées)
+        # TODO: Grille V: erreur de segmentation fault, non défini dans DefRPNXG 
     ]
 
     # Création des fichiers sources

@@ -14,7 +14,12 @@ def angular_dist_0(lon, lat):
 def generate_grid(lons, lats, filename, ni, nj, grtyp="Q", ig1=0, ig2=0, ig3=0, ig4=0, nomvar="DIST", etiket="TEST"):
     """
     Génère un fichier FST : grille + champ
-    """        
+    """   
+    SUPPORTED_GRIDS = {'A', 'B', 'E', 'G', 'H', 'L', 'N', 'Q', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '!', '#'}     
+
+    if grtyp.upper() not in SUPPORTED_GRIDS:
+        available = ", ".join(sorted(SUPPORTED_GRIDS))
+        raise ValueError(f"Type de grille '{grtyp}' inconnu. Types supportés : {available}")
     
     if os.path.exists(filename):
         os.remove(filename)
