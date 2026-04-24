@@ -38,17 +38,14 @@ const int MAX_NB_WEIGHTS = 20;
 #define I16_dest_t int32_t // dty: I 16 gets read into 32 bit
 #define I1_dest_t  int32_t // dty: I 1  gets read into 32 bit
 
-int count_weights(fst_file *f)
-{
+int GetNbWeight(fst_file *f) {
    fst_record crit = default_fst_record;
-   fst_record rec = default_fst_record;
-   fst_query *q = fst24_new_query(f, &crit, NULL);
    int nb_weights = 0;
-   while(fst24_find_next(q, &rec)){
-      if(rec.nomvar[0] == 'W'){
-         nb_weights++;
-      }
-   }
+
+   strncpy(crit.nomvar,"W~~~",FST_NOMVAR_LEN);
+   fst_query *q = fst24_new_query(f, &crit, NULL);
+   nb_weights = fst24_find_count(q);
+   fst24_query_free(q);
 
    return nb_weights;
 }
@@ -83,21 +80,21 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    float      *ang_in;
 
    if (!(fout=fst24_open(Out,"R/W"))) {
-      App_Log(APP_ERROR,"Problems opening output file %s\n",Out);
+      App_Log(APP_ERROR,"Problems opening output file '%s'\n",Out);
       return(FALSE);
    }
 
    for(int sg = 0; sg < nsubgrid; sg++){
       if (!(fin[sg]=fst24_open(In[sg],"R/O"))) {
-         App_Log(APP_ERROR,"Problems opening input file %s\n",In[sg]);
+         App_Log(APP_ERROR,"Problems opening input file '%s'\n",In[sg]);
          return(FALSE);
       }
-      nb_weights[sg] = count_weights(fin[sg]);
+      nb_weights[sg] = GetNbWeight(fin[sg]);
       if(nb_weights[sg] == 0){
-         App_Log(APP_WARNING, "The file '%s' has zero weight (W001, W002,...) records\n", In[sg]);
+         App_Log(APP_WARNING, "No weight records (W001, W002,...) found in file '%s'\n", In[sg]);
       }
       if(nb_weights[sg] > MAX_NB_WEIGHTS){
-         App_Log(APP_ERROR, "The file '%s' has more than %d weights: %d\n", In[sg], MAX_NB_WEIGHTS, nb_weights[sg]);
+         App_Log(APP_ERROR, "Too many weight found (%d>%d) found in file '%s'\n", nb_weights[sg], MAX_NB_WEIGHTS, In[sg]);
          return FALSE;
       }
 
@@ -106,7 +103,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
             snprintf(crit.nomvar, FST_NOMVAR_LEN, FMT[t], n+1);
             rec[sg][n][t] = default_fst_record;
             if(!fst24_read(fin[sg], &crit, NULL, &rec[sg][n][t])){
-               App_Log(APP_ERROR,"Could not read %s from %s\n", crit.nomvar,In[sg]);
+               App_Log(APP_ERROR,"Could not read %s from '%s'\n", crit.nomvar,In[sg]);
                return(FALSE);
             }
          }
@@ -120,7 +117,7 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
          strncpy(crit.nomvar, OtherStr[n],FST_NOMVAR_LEN);
          others[sg][n] = default_fst_record;
          if(!fst24_read(fin[sg], &crit, NULL, &others[sg][n])){
-            App_Log(APP_ERROR,"Could not read %s from %s\n", crit.nomvar,In[sg]);
+            App_Log(APP_ERROR,"Could not read %s from '%s'\n", crit.nomvar,In[sg]);
             return(FALSE);
          }
       }
@@ -143,18 +140,18 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    // adding 1*divisor to account for the A = QB + r thing we're doing later.
    size_t data_out_alloc_size = sz[0]*nsubgrid * data_per_point *sizeof(*data_out) + 1 + divisor; // + 1 for REF_INDEX_END
    if(!(data_out=(float*)malloc(data_out_alloc_size))){
-         App_Log(APP_ERROR, "malloc(%lu): %s\n", data_out_alloc_size, strerror(errno));
+         App_Log(APP_SYSTEM, "malloc(%lu): %s\n", data_out_alloc_size, strerror(errno));
          return FALSE;
    }
 
    int angle_data_per_point = 3; // cos, sin, separator
    size_t angle_out_alloc_size = sz[0]*nsubgrid*angle_data_per_point*sizeof(float) + 1; // +1 for REF_INDEX_END;
    if(!(angle_data_out=(float*)malloc(angle_out_alloc_size))){
-         App_Log(APP_ERROR, "malloc(%lu): %s\n", angle_out_alloc_size, strerror(errno));
+         App_Log(APP_SYSTEM, "malloc(%lu): %s\n", angle_out_alloc_size, strerror(errno));
          return FALSE;
    }
 
-   //Yin
+   // Yin
    navg_in = navg_data[0];
    ang_in = ang_data[0];
    mask_in = mask_data[0];

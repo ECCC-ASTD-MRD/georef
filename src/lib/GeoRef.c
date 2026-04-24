@@ -1068,34 +1068,33 @@ TGeoRef* GeoRef_Create(int32_t NI,int32_t NJ,char *GRTYP,int32_t IG1,int32_t IG2
 //     using a cyclic redundancy check that uniquely define all output grids.
 extern uint32_t f_crc32(uint32_t *crc, const unsigned char *buf, uint32_t *len);
 
-static inline float roundto(float var, float prec) {
-    int value = (int)(var * prec + .5);
-    return (float)value / prec;
+static inline int32_t hashvalue(double var, double prec) {
+    return((int32_t)(var * prec + .5));
 }
 
 uint32_t GeoRef_RPNHash (TGeoRef *Ref, int32_t *IG1, int32_t *IG2, int32_t *IG3) {
 
-   float *identity_vec=NULL,x;
+   int32_t *identity_vec=NULL;
    uint32_t crc,n=0,i=0;
 
    GeoRef_CalcLL(Ref);
 
-   if (!(identity_vec=(float*)malloc(10+Ref->NX*Ref->NY * 2 * sizeof(float)))) {
-      Lib_Log(APP_LIBGEOREF,APP_SYSTEM, "%s: Cannot allocate buffer of sie %lu\n",__func__,Ref->NX*Ref->NY * 2 * sizeof(double));
+   if (!(identity_vec=(int32_t*)malloc(10+Ref->NX*Ref->NY * 2 * sizeof(int32_t)))) {
+      Lib_Log(APP_LIBGEOREF,APP_SYSTEM, "%s: Cannot allocate buffer of sie %lu\n",__func__,Ref->NX*Ref->NY * 2 * sizeof(int32_t));
       return(0);
    }
 
    for(n=0,i=0;i<Ref->NX*Ref->NY;n+=2,i++) {
-      identity_vec[n]=roundto(Ref->Lat[i],1000);
-      identity_vec[n+1]=roundto(Ref->Lon[i],1000);
+      identity_vec[n]=hashvalue(Ref->Lat[i],1000.0);
+      identity_vec[n+1]=hashvalue(Ref->Lon[i],1000.0);
    }
-   identity_vec[n++] = Ref->RPNHeadExt.xg1;
-   identity_vec[n++] = Ref->RPNHeadExt.xg2;
-   identity_vec[n++] = Ref->RPNHeadExt.xg3;
-   identity_vec[n]   = Ref->RPNHeadExt.xg4;
+   identity_vec[++n] = Ref->RPNHeadExt.xg1;
+   identity_vec[++n] = Ref->RPNHeadExt.xg2;
+   identity_vec[++n] = Ref->RPNHeadExt.xg3;
+   identity_vec[++n] = Ref->RPNHeadExt.xg4;
 
-   n*=4;
-   crc=0;
+   n  *= 4;
+   crc = 0;
    crc = f_crc32 (&crc, (const unsigned char *)identity_vec, &n);
 
    // Before rmn_011 convip was bugged for 3200 < ip1 < 32768, we therefore add 32768 for now
@@ -1110,6 +1109,13 @@ uint32_t GeoRef_RPNHash (TGeoRef *Ref, int32_t *IG1, int32_t *IG2, int32_t *IG3)
    return(crc);
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Create new geo reference from a record
+ * @date   Janvier 2015
+ *
+ *    @param[in]  Ref     Record pointer
+ *    @return             New geo reference pointer
+*/
 TGeoRef* GeoRef_CreateFromRecord(fst_record *Rec) {
 
    TGeoRef *ref;
