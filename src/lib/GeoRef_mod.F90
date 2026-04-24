@@ -229,7 +229,6 @@ contains
         integer(C_INT32_T):: res                  !< calculated crc32
 
         res=georef_rpnhash(this%ptr,ig1,ig2,ig3)
-
     end function georef_rpnhash_f
 
     function georef_valid_f(this) result(res)
