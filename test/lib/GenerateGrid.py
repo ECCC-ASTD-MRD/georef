@@ -31,7 +31,7 @@ def generate_grid(lons, lats, filename, ni, nj, grtyp="Q", ig1=0, ig2=0, ig3=0, 
         geo = georef.GeoRef(ni, nj, grtyp, ig1, ig2, ig3, ig4, f_fst)
         lats, lons = geo.getll()
         
-        print("GRID générée")
+        print(f"GRID générée {grtyp}")
 
         # Calcul des données
         data = angular_dist_0(np.radians(lons), np.radians(lats)).astype(np.float32)
@@ -48,8 +48,8 @@ def generate_grid(lons, lats, filename, ni, nj, grtyp="Q", ig1=0, ig2=0, ig3=0, 
         rec.npas  = 0      
         rec.datev = 0      
         rec.data = data 
-        rec.ni = ni 
-        rec.nj = nj
+        rec.ni = geo.shape[0] 
+        rec.nj = geo.shape[1] 
         rec.nk = 1
         rec.nomvar = nomvar
         rec.etiket = etiket

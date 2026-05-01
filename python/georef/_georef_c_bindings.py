@@ -248,6 +248,13 @@ _getll.argtypes = [ctypes.c_void_p,
                    numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
 _getll.restype = ctypes.c_int32
 
+_getgridshape = libgeoref.GeoRef_GetGridShape
+_getgridshape.argtypes = [
+                   ctypes.c_void_p,
+                   ctypes.POINTER(ctypes.c_int32),
+                   ctypes.POINTER(ctypes.c_int32)]
+_getgridshape.restype = ctypes.c_void_p
+
 _def_create = libgeoref.Def_Create
 _def_create.argtypes = [
     ctypes.c_int32,                  # NI

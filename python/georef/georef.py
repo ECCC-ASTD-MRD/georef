@@ -39,6 +39,7 @@ from ._georef_c_bindings import (
     _xydistance,
     _lldistance,
     _getll,
+    _getgridshape,
     _def_create,
     _geoset_writefst,
     _geoset_readfst,
@@ -76,8 +77,8 @@ class GeoRef:
         ptr = _georef_create(ni, nj, grtyp.encode('UTF-8'), ig1, ig2, ig3, ig4, fst_file._c_ref)
         if ptr is None:
             raise GeoRefError("Failure in C function GeoRef_Create")
-        self.shape = (ni, nj)
         self._ptr = ptr
+        self.shape = self.get_grid_shape()
 
     def limits(self) -> Tuple[float, float, float, float]:
         """Get the geographical limits of the GeoRef.
@@ -312,6 +313,7 @@ class GeoRef:
 
         new_ref = GeoRef.__new__(GeoRef)
         new_ref._ptr = ptr
+        new_ref.shape = new_ref.get_grid_shape()
         return new_ref
 
     # INT32_T GeoRef_InterpUV(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt,
@@ -903,6 +905,26 @@ class GeoRef:
         if n == -1:
             raise GeoRefError("Failed to get lat/lon coordinates: Missing descriptors")
         return lat, lon
+    
+    # void GeoRef_GetGridShape(const TGeoRef *Ref, int32_t *NI, int32_t *NJ)
+    def get_grid_shape(self) -> int:
+        """Get the shape (ni/nj) of the grid.
+
+        Args:
+            ni: Horizontal size of the grid
+            nj: Vertical size of the grid
+
+        Returns:
+            int: tuple (ni, nj)
+
+        Note:
+            This wraps GeoRef_GetGridShape from src/GeoRef.c
+        """
+        ni = ctypes.c_int32(0)
+        nj = ctypes.c_int32(0)
+        _getgridshape(self._ptr, ctypes.byref(ni), ctypes.byref(nj))
+
+        return ni.value, nj.value
 
 
 class GeoDef:

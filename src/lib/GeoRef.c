@@ -988,13 +988,13 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    ref->Extension=0;
    ref->Type=GRID_NONE;
 
+   GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
+
    if (GRTYP[0] == 'Q') {
       if(GeoRef_DefineQ(ref) == NULL){
          return NULL;
       }      
    }
-
-   GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
 
    if ((fref=GeoRef_Find(ref))) {
       // This georef already exists
@@ -2222,6 +2222,8 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
          break;
 
       case 'H':
+      case 'M':
+      case 'O':
       case 'Y':
       case '!':
          break;
@@ -2554,3 +2556,14 @@ TGeoOptions get_default_GeoOptions(void) {
     return default_GeoOptions;
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Get the shape of the grid
+ * @date   April 2026
+ *    @param Ref   Georeference 
+ *    @param NI    Horizontal size of the grid
+ *    @param NJ    Vertical size of the grid
+ */
+void GeoRef_GetGridShape(const TGeoRef *Ref, int32_t *NI, int32_t *NJ) { 
+   *NI = Ref->NX; 
+   *NJ = Ref->NY; 
+}
