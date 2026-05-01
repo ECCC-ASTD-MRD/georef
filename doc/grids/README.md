@@ -12,14 +12,17 @@ The actual convention supports the following grids:
 * [G: Global/Hemispheric 'Gaussian'](#G)
 * [L: Cylindrical Equidistant (alias lat-lon)](#L)
 * [N: North Polar stereographic](#N-and-S)
-* [Q: Cubed Sphere](#Q)
 * [S: South Polar stereographic](#N-and-S)
 * [U: Universal](#U)
 * [X: Unstructured](#X)
 * [Y: Latlon Clouds](#Y)
 * [Z: Irregular Cartesian](#Z)
+* [O: Unstructured referenced](#O)
+* [W: GIS grid definition (Using WTK nomenclature)](#W)
+* [M: Meshes](#M)
+* [Q: Cubed Sphere](#Q)
 * ['#': Local Area (Tiled)](#\#)
-* [Unlisted Grids](#Unlisted Grids)
+* [Unlisted Grids](#Unlisted-Grids)
 
 One can also define, in a polar stereographic or lat-lon projection, and within certain limits, a cartesian grid with an irregular mesh (like the one used in the Finite Element model).
 
@@ -163,15 +166,7 @@ Otherwise, the lat-lon coordinates of the southwestern corner of the grid are ke
 ![Example of an N type grid](n.gif)
 ![Example of an S type grid](s.gif)
 
-## Q
-The 'Q' grid is a Cubed Sphere grid providing a quasi-uniform tiling of the sphere by projecting it onto the six faces of an inscribed cube. This geometry is specifically designed to avoid the numerical singularities at the poles typically found in 'A' or 'B' grids. It consists of six identical panels (faces) connected topologically to cover the entire globe. Unlike Lat-Lon grids, the resolution remains relatively constant across the domain, including the polar regions.
 
-* IG1 usually represents the grid domain or a specific projection identifier (often set to 0x800000 for global applications).
-* IG2 defines the orientation or the reference coordinate system of the cubed sphere projection.
-* IG3 is typically reserved or set to a constant identifier for the panel indexing system.
-* IG4 is a critical parameter that encodes the grid resolution:
-    * It contains the encoded value representing the number of points along one edge of a panel.
-    * It also specifies the staggering type (e.g., cell-centered vs. node-centered) and the specific layout of the six faces.
 
 # U
 
@@ -185,7 +180,6 @@ In the 'U' grid, it represents the universal grid which can store any type of gr
 # X
 
 In the 'X' grid, the contents of the grid are not related to any geographical location on the earth. The parameters IG1 through IG4 should be set to 0. A typical application would be a theoretical experiment, like the evolution of a bubble in a cylinder.
-
 
 
 # Y
@@ -231,7 +225,32 @@ This grid is a cartesian grid with a non-constant mesh. As for the 'Y' grid, the
 
 ![Example of a Z type grid](z.gif)
 
+# O
 
+The 'O' grid is similar to the Z grid, but represent a grid that cannot be represented analytically. Each grid point has to be located by it's X and Y coordinate. As for the 'Y' grid, the deformation of the mesh is described with the help of the positional records "^^" and ">>". The positional records are 2-dimensional in each direction for this type of grid. The record containing the deformation of the grid should contain NI by NJ coordinates. The GRTYP parameter of the positional records has to be 'E', 'L', 'N' or 'S', and values have to be stored in units relevant to the reference projection (degrees or meters).
+
+![Example of an O type grid](o.png)
+
+# W
+
+The 'W' grid description allows to define a geo-reference using the Well-Known-Text(WKT) nomenclature, an [Open Geospatial Consortium (OGC)]( https://www.ogc.org/standards/wkt-crs) standard used by projects like [PROJ](https://proj.org/en/stable) and [GDAL](https://gdal.org/en/stable/). For an extensive list of CRS consult https://spatialreference.org/. [EPSG](https://en.wikipedia.org/wiki/EPSG_Geodetic_Parameter_Dataset) codes can also be used. This grid uses 2 records "PROJ" in which is the WKT string definition in ascii and an "MTRX" record containing 6 values representing the [transformation matrix](https://gdal.org/en/stable/tutorials/geotransforms_tut.html) (Translation, Scaling and Rotation) : Tx,Sx,Rx,Ty,Ry,Sy
+
+Exemple for WGS84 Cylindrical (LatLon):
+```GEOGCS["WGS 84",
+    DATUM["WGS_1984",
+        SPHEROID["WGS 84",6378137,298.257223563,
+            AUTHORITY["EPSG","7030"]],
+        AUTHORITY["EPSG","6326"]],
+    PRIMEM["Greenwich",0,
+        AUTHORITY["EPSG","8901"]],
+    UNIT["degree",0.0174532925199433,
+        AUTHORITY["EPSG","9122"]],
+    AUTHORITY["EPSG","4326"]]
+```
+# M
+Meshes are defined as as series of polygon, that have 3 or more vertices. It usually is triangles but could theoritically be other polygons, as long as they are all the same type throughout the mesh. As for the Y grid, the "^^" and ">>" records defining the vertices position can only be defined on 'L', 'N' and 'S' grids. These vertices constituting the polygons should be stored in units relevant to the reference projection (degrees or meters). A third record "##" provides the list of indices to the vertices that define the polygons. The number of vertices per polygon is defined by th IG4 value of this record. if IG4=3, these would be triangles and the record contains a stream of triplets. **Only triangles are currently supported** 
+
+![Example of an M meshe](m.png)
 
 ## \#
 
@@ -249,6 +268,20 @@ The records mapped on a '#' grid use the following conventions:
 * IG4 is the starting point in the Y direction on the master grid.
 * IP1 and IP2 take the normal values.
 * IP3 is the tile number (See the tile numbering scheme below)
+
+## Q
+The 'Q' grid is a Cubed Sphere grid providing a quasi-uniform tiling of the sphere by projecting it onto the six faces of an inscribed cube. This geometry is specifically designed to avoid the numerical singularities at the poles typically found in 'A' or 'B' grids. It consists of six identical panels (faces) connected topologically to cover the entire globe. Unlike Lat-Lon grids, the resolution remains relatively constant across the domain, including the polar regions.
+
+* IG1 usually represents the grid domain or a specific projection identifier (often set to 0x800000 for global applications).
+* IG2 defines the orientation or the reference coordinate system of the cubed sphere projection.
+* IG3 is typically reserved or set to a constant identifier for the panel indexing system.
+* IG4 is a critical parameter that encodes the grid resolution:
+    * It contains the encoded value representing the number of points along one edge of a panel.
+    * It also specifies the staggering type (e.g., cell-centered vs. node-centered) and the specific layout of the six faces.
+
+## Unlisted Grids
+
+Undocumented grids currently in use: R, T, V, !.
 
 ### Tile numbering scheme
 Here is an example for a 3 X 3 tile set
@@ -271,7 +304,4 @@ It is of dimensions (118,138) and starts at point (119,277) on the master grid, 
 | :--------: | :------------: | :-------------------------------------------------------- |
 | 2004-10-24 |  Yves Chartier | Content updated                                           |
 | 2025-10-22 | Samuel Gilbert | Converted to Markdown to be included with the source code |
-
-## Unlisted Grids
-
-Undocumented grids currently in use: M, O, R, T, V, W, !.
+| 2026-05-01 | Raimoemoea Boyer | Added Q grid |
