@@ -14,6 +14,9 @@ Georef builds on the ezscint package by adding:
 * Many levels of internal caches to speed-up transformations
 * Functions are re-entrant (thread safety)
 
+## Documentation 
+* Grid documentation can be found in the following directory: [Grids](doc/grids/README.md)
+
 ## Environment variables
 
 * GEOREF_PRESERVE       : How many of the first georef created will be kept preserved in cache (default: 10)
