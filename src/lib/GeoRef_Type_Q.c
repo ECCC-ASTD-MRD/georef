@@ -6,10 +6,11 @@
 static const double AXIS_MIN = -M_PI4;
 static const double AXIS_MAX = M_PI4;
 static const double AXIS_RANGE = M_PI2;
+static const int MAX_DEGREE = 7;
 
 //!> Coordinates of Gauss-Legendre quadrature points of degree 1-8, in the interval [-1, 1]
 //!> These positions describe angular coordinates
-static const double QUAD_POINTS[8][8] = {
+static const double QUAD_POINTS[MAX_DEGREE + 1][MAX_DEGREE + 1] = {
     { 0.0, NAN, NAN, NAN,  NAN, NAN, NAN, NAN},
     {-0.5773502691896257,  0.5773502691896257,  NAN, NAN, NAN, NAN,  NAN, NAN},
     {-0.7745966692414834,  0.0               ,  0.7745966692414834,  NAN, NAN, NAN, NAN, NAN},
@@ -742,9 +743,14 @@ TGeoRef *GeoRef_DefineQ(TGeoRef *Ref) {
     param->Yaw0 = decode_cs_angle(Ref->RPNHead.ig3);
     decode_cs_ig4(Ref->RPNHead.ig4, &(param->NumElem), &(param->Degree));
 
-    Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: ig1-3 = %d (%g), %d (%g), %d (%g), num elem %d, degree %d\n",
+    Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: ig1-3 = %d (%g), %d (%g), %d (%g), num elem %d, degree %d\n",
             __func__, Ref->RPNHead.ig1, param->Lon0, Ref->RPNHead.ig2, param->Lat0,
             Ref->RPNHead.ig3, param->Yaw0, param->NumElem, param->Degree);
+
+    if(param->Degree > MAX_DEGREE){
+        Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Degree is too large: %d, MAX_DEGREE=%d\n",__func__, param->Degree, MAX_DEGREE);
+        return NULL;
+    }
 
     param->LocalToGlobal = make_cs_rotation(param->Lon0, param->Lat0, param->Yaw0);
     param->GlobalToLocal = invert_cs_rotation(param->LocalToGlobal);

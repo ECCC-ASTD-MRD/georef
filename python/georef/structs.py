@@ -11,7 +11,6 @@ class GeoOptions(ctypes.Structure):
         ("Extrap", ctypes.c_int32),         # Extrapolation method
         ("Combine", ctypes.c_int32),        # Aggregation type
         ("Transform", ctypes.c_int32),      # Apply transformation or stay within master referential
-        ("CIndex", ctypes.c_int32),         # C Indexing (starts at 0)
         ("Symmetric", ctypes.c_int32),      #
         ("Segment", ctypes.c_int32),        # How much segmentation (Conservatives/Geometric modes)
         ("Sampling", ctypes.c_int32),       # Sampling interval
@@ -64,8 +63,6 @@ class GeoOptions(ctypes.Structure):
 _get_default_GeoOptions = libgeoref.get_default_GeoOptions
 _get_default_GeoOptions.argtypes = tuple()
 _get_default_GeoOptions.restype = GeoOptions
-
-
 
 
 class GeoRefError(Exception):

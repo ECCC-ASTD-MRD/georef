@@ -988,11 +988,13 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
    ref->Extension=0;
    ref->Type=GRID_NONE;
 
-   if (GRTYP[0] == 'Q') {
-      GeoRef_DefineQ(ref);
-   }
-
    GeoRef_Size(ref,0,0,NI-1,NJ-1,0);
+
+   if (GRTYP[0] == 'Q') {
+      if(GeoRef_DefineQ(ref) == NULL){
+         return NULL;
+      }      
+   }
 
    if ((fref=GeoRef_Find(ref))) {
       // This georef already exists
@@ -1029,8 +1031,10 @@ TGeoRef* GeoRef_Define(TGeoRef *Ref,int32_t NI,int32_t NJ,char* GRTYP,char* grre
       GeoRef_AxisDefine(ref,ref->AX,ref->AY);
    }
 
-   GeoRef_DefRPNXG(ref);
-   GeoRef_CalcLL(ref);
+
+
+   if (GeoRef_DefRPNXG(ref) != 0) return(NULL);
+   if (GeoRef_CalcLL(ref) <= 0) return(NULL);
    GeoRef_Qualify(ref);
 
    return(ref);
@@ -2218,6 +2222,7 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
          Ref->RPNHeadExt.xg3 = decode_cs_angle(Ref->RPNHead.ig3);
          // TODO What do we do with the 4th one?
          Ref->RPNHeadExt.xg4 = 0.0;
+         break;
 
       case 'E':
          f77name(cigaxg)(Ref->GRTYP,&Ref->RPNHeadExt.xg1,&Ref->RPNHeadExt.xg2,&Ref->RPNHeadExt.xg3,&Ref->RPNHeadExt.xg4,&Ref->RPNHead.ig1,&Ref->RPNHead.ig2,&Ref->RPNHead.ig3,&Ref->RPNHead.ig4,1);
@@ -2229,6 +2234,8 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
          break;
 
       case 'H':
+      case 'M':
+      case 'O':
       case 'Y':
       case '!':
          break;
@@ -2265,7 +2272,7 @@ int32_t GeoRef_DefRPNXG(TGeoRef* Ref) {
          break;
 
       default:
-	      Lib_Log(APP_LIBGEOREF,APP_DEBUG,"%s: Grid type not supported %c\n",__func__,Ref->GRTYP[0]);
+	      Lib_Log(APP_LIBGEOREF,APP_ERROR,"%s: Grid type not supported %c\n",__func__,Ref->GRTYP[0]);
          return(-1);
     }
 
@@ -2533,10 +2540,10 @@ int32_t GeoRef_CopyDesc(fst_file *FileTo,fst_record* Rec) {
          // Does it already exists in the destination file
          strncpy(srec.nomvar,desc,FST_NOMVAR_LEN);
          query = fst24_new_query(FileTo,&srec,NULL);
-         if (!fst24_find_next(query,&rec)) {
+         if (fst24_find_next(query,&rec) != TRUE) {
             // If not already existing in destination
             if (fst24_read(Rec->file,&srec,NULL,&rec)) {
-               if (!fst24_write(FileTo,&rec,TRUE)) {
+               if (fst24_write(FileTo,&rec,FST_YES) != TRUE) {
                   return(FALSE);
                }
             }
@@ -2561,3 +2568,14 @@ TGeoOptions get_default_GeoOptions(void) {
     return default_GeoOptions;
 }
 
+/**----------------------------------------------------------------------------
+ * @brief  Get the shape of the grid
+ * @date   April 2026
+ *    @param Ref   Georeference 
+ *    @param NI    Horizontal size of the grid
+ *    @param NJ    Vertical size of the grid
+ */
+void GeoRef_GetGridShape(const TGeoRef *Ref, int32_t *NI, int32_t *NJ) { 
+   *NI = Ref->NX; 
+   *NJ = Ref->NY; 
+}
