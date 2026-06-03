@@ -6,7 +6,11 @@
 static const double AXIS_MIN = -M_PI4;
 static const double AXIS_MAX = M_PI4;
 static const double AXIS_RANGE = M_PI2;
-static const int MAX_DEGREE = 7;
+
+// NOTE: For GNU this needs to be a compile time integral constant
+// since it is used as a size for an array that is at file scope.
+// (`const int MAX_DEGREE = 7;` does not fit this requirement)
+#define MAX_DEGREE 7
 
 //!> Coordinates of Gauss-Legendre quadrature points of degree 1-8, in the interval [-1, 1]
 //!> These positions describe angular coordinates
