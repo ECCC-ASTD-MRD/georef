@@ -220,14 +220,22 @@ _xyval.restype = ctypes.c_int32
 
 _ll2xy = libgeoref.GeoRef_LL2XY
 _ll2xy.argtypes = [ctypes.c_void_p,
-                   ctypes.c_double, ctypes.c_double,
-                   ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+                   numpy.ctypeslib.ndpointer(dtype=numpy.float64),
+                   numpy.ctypeslib.ndpointer(dtype=numpy.float64),
+                   numpy.ctypeslib.ndpointer(dtype=numpy.float64),
+                   numpy.ctypeslib.ndpointer(dtype=numpy.float64),
+                   ctypes.c_int32,
+                   ctypes.c_int32]
 _ll2xy.restype = ctypes.c_int32
 
 _xy2ll = libgeoref.GeoRef_XY2LL
 _xy2ll.argtypes = [ctypes.c_void_p,
-                   ctypes.c_double, ctypes.c_double,
-                   ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+                   numpy.ctypeslib.ndpointer(dtype=numpy.float64),
+                   numpy.ctypeslib.ndpointer(dtype=numpy.float64),
+                   numpy.ctypeslib.ndpointer(dtype=numpy.float64),
+                   numpy.ctypeslib.ndpointer(dtype=numpy.float64),
+                   ctypes.c_int32,
+                   ctypes.c_int32]
 _xy2ll.restype = ctypes.c_int32
 
 _xydistance = libgeoref.GeoRef_XYDistance

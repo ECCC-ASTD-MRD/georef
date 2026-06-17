@@ -88,7 +88,8 @@ if (EC_INIT_DONE LESS 2)
         set_property(
             TEST ComparaisonGrids PROPERTY
             ENVIRONMENT "PYTHONPATH=${rmn_PYTHONPATH}:${CMAKE_BINARY_DIR}/python"
-                        "LD_LIBRARY_PATH=${rmn_LIBRARY_PATH}")
+                        "LD_LIBRARY_PATH=${rmn_LIBRARY_PATH}"
+                        "APP_VERBOSE=DEBUG")
 
     endif()
 endif()

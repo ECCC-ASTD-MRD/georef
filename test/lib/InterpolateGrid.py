@@ -13,8 +13,8 @@ def validate_interpolation(src_file, target_file):
 
     with fst24_file(src_file, "R") as f_src, fst24_file(target_file, "R") as f_target:
         # Lecture du fichier source
-        src_record = next(iter(f_src.new_query(nomvar="GRID")), None)
-        q_src = next(iter(f_src.new_query(nomvar="DIST")), None)
+        src_record = next(f_src.new_query(nomvar="GRID"), None)
+        q_src = next(f_src.new_query(nomvar="DIST"), None)
         if not src_record or not q_src:
             return None
         src_grid = georef.GeoRef.fromrecord(src_record)
@@ -22,8 +22,8 @@ def validate_interpolation(src_file, target_file):
         src_type = src_record.grtyp.strip()
 
         # Lecture du fichier cible
-        grid_record = next(iter(f_target.new_query(nomvar="GRID")), None)
-        rec_ref_data = next(iter(f_target.new_query(nomvar="DIST")), None)
+        grid_record = next(f_target.new_query(nomvar="GRID"), None)
+        rec_ref_data = next(f_target.new_query(nomvar="DIST"), None)
         if not grid_record or not rec_ref_data:
             return None
         target_grid = georef.GeoRef.fromrecord(grid_record)
@@ -36,7 +36,7 @@ def validate_interpolation(src_file, target_file):
             options.Interp = 2
 
         # Interpolation
-        data_interp = target_grid.interp(src_grid, data_src, options=options)
+        data_interp = src_grid.interpolate(data_src, target_grid, options=options)
 
         # Calcul de la différence
         diff = (data_interp.ravel() - data_ref.ravel()) / np.max(np.abs(data_ref))
@@ -95,7 +95,7 @@ if __name__ == "__main__":
             "ig1": 0x800000,
             "ig2": 0x800000,
             "ig3": 0x800000,
-            "ig4": cubed_sphere.encodeig4(18, 3),
+            "ig4": cubed_sphere.encode_ig4(18, 3),
             "filename": "Grid_Q.fst",
             "label": "Cubed Sphere",
         },
@@ -105,7 +105,7 @@ if __name__ == "__main__":
             "ig1": 0x800000,
             "ig2": 0x800000,
             "ig3": 0x800000,
-            "ig4": cubed_sphere.encodeig4(16, 3),
+            "ig4": cubed_sphere.encode_ig4(16, 3),
             "filename": "Grid_Q2.fst",
             "label": "Cubed Sphere",
         },

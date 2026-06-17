@@ -85,12 +85,8 @@ typedef struct {
     RotationParam GlobalToLocal; //!< Rotation matrix to transform global cartesian coordinates into local ones
 } CubedSphereParams;
 
-//! Decode an angle stored as an integer (IG, 24 bits) into its real value, in the range [-pi, pi[
-static inline double decode_cs_angle(const int32_t angle24) {
-    const double interval = M_2PI / 0x1000000;
-    return ((angle24 & 0xffffff) - 0x800000) * interval;
-}
-
+double decode_cs_angle(const int32_t angle24);
+int32_t encode_cs_angle(const double angle);
 void decode_cs_ig4(const int32_t ig4, int32_t* num_elements, int32_t* num_solpts);
 int32_t encode_cs_ig4(const int32_t num_elements, const int32_t num_solpts); 
 

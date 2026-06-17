@@ -2,6 +2,7 @@ import georef
 import numpy as np
 import os
 from rmn import fst24_file, fst_record, FstDataType
+from georef.cubed_sphere import decode_angle, decode_ig4
 
 
 # Fonction Angular Distance
@@ -28,7 +29,11 @@ def generate_grid(lons, lats, filename, ni, nj, grtyp="Q", ig1=0, ig2=0, ig3=0, 
     with fst24_file(filename, "RSF+R/W")  as f_fst:
 
         # Grille
-        geo = georef.GeoRef(ni, nj, grtyp, ig1, ig2, ig3, ig4, f_fst)
+        if grtyp == "Q":
+            num_elem, num_solpts = decode_ig4(ig4)
+            geo = georef.CubedSphereRef(decode_angle(ig1), decode_angle(ig2), decode_angle(ig3), num_elem, num_solpts, f_fst)
+        else:
+            geo = georef.GeoRef(ni, nj, grtyp, ig1, ig2, ig3, ig4, f_fst)
         lats, lons = geo.getll()
         
         print(f"GRID générée {grtyp}")

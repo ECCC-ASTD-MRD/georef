@@ -1,55 +1,58 @@
+from __future__ import annotations
 import ctypes
+import logging
+from typing import Tuple, Union
+
 import numpy
 import numpy.ctypeslib
-import logging
-
 from rmn import fst24_file
-from typing import Tuple, Union
-from .constants import *
-from .structs import GeoOptions, GeoRefError
+import rmn
 
 from ._georef_c_bindings import (
-    _valid,
+    _boundingbox,
+    _copy,
+    _createfromrecord,
+    _def_create,
+    _equal,
+    _free,
     _georef_create,
     _georef_limits,
-    _interp,
-    _free,
-    _copy,
+    _geoset_readfst,
+    _geoset_writefst,
+    _getgridshape,
+    _getll,
     _hardcopy,
-    _equal,
-    _within,
-    _withinrange,
-    _intersect,
-    _boundingbox,
-    _write_fst,
-    _createfromrecord,
+    _interp,
     _interpuv,
     _interpwd,
-    _ud2wd,
-    _wd2uv,
-    _uv2uv,
-    _llwdval,
+    _intersect,
+    _ll2xy,
+    _lldistance,
     _lluvval,
     _llval,
-    _xywdval,
-    _xyuvval,
-    _xyval,
-    _ll2xy,
+    _llwdval,
+    _new,
+    _ud2wd,
+    _uv2uv,
+    _valid,
+    _wd2uv,
+    _within,
+    _withinrange,
+    _write_fst,
     _xy2ll,
     _xydistance,
-    _lldistance,
-    _getll,
-    _getgridshape,
-    _def_create,
-    _geoset_writefst,
-    _geoset_readfst,
-    _new
+    _xyuvval,
+    _xyval,
+    _xywdval,
 )
+from .constants import *
+from .cubed_sphere import encode_angle, encode_ig4
+from .structs import GeoOptions, GeoRefError
 
 GEOREF_SUCCESS = 1
 GEOREF_FAILURE = 0
 
-__all__ = ('GeoRef', 'GeoDef', 'GeoSet')
+__all__ = ("CubedSphereRef", "GeoDef", "GeoRef", "GeoSet")
 
 def ensure_fortran_order_and_dtype(arr, dtype):
     if not arr.flags['F_CONTIGUOUS']:
@@ -64,7 +67,7 @@ class GeoRef:
     """Wrapper for the C GeoRef structure providing geographic reference functionality."""
 
     def __init__(self, ni: int, nj: int, grtyp: str, ig1: int, ig2: int,
-                 ig3: int, ig4: int, fst_file) -> None:
+                 ig3: int, ig4: int, fst_file: fst24_file | None = None) -> None:
         """Initialize a new geographic reference.
 
         Args:
@@ -74,7 +77,8 @@ class GeoRef:
             ig1-ig4: Grid parameters
             fst_file: FST file reference
         """
-        ptr = _georef_create(ni, nj, grtyp.encode('UTF-8'), ig1, ig2, ig3, ig4, fst_file._c_ref)
+        file_ref = None if fst_file is None else fst_file._c_ref
+        ptr = _georef_create(ni, nj, grtyp.encode('UTF-8'), ig1, ig2, ig3, ig4, file_ref)
         if ptr is None:
             raise GeoRefError("Failure in C function GeoRef_Create")
         self._ptr = ptr
@@ -114,34 +118,35 @@ class GeoRef:
             _free(self._ptr)
 
     # INT32_T GeoRef_Interp(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt, float *zout, float *zin)
-    def interp(self, reffrom, zin, options=None) -> numpy.ndarray:
-        """ Interpolates data from source grid (reffrom) to destination grid (self).
+    def interpolate(self, source_field: numpy.ndarray, target_ref: GeoRef, options: GeoOptions | None = None) -> numpy.ndarray:
+        """ Interpolates field data from source grid (self) to destination grid (target_ref).
 
         Args:
-            reffrom (GeoRef): Source georef object
-            zin (numpy.ndarray): Input array with source values (float32)
+            source_field (numpy.ndarray): Input array with source values (float32)
+            target_ref (GeoRef): Reference containing the target grid
             options (GeoOptions, optional): Interpolation options. Uses default if None.
 
         Returns:
-            numpy array of values interpolated to this georef's grid
+            numpy array of values interpolated to the target reference grid
         """
-        if not isinstance(zin, numpy.ndarray):
+        if not isinstance(source_field, numpy.ndarray):
             raise TypeError("Input and output must be numpy arrays")
-        if zin.dtype != numpy.float32:
+        if source_field.dtype != numpy.float32:
             raise TypeError("Arrays must be float32")
-        # Add shape validation here
+        if source_field.shape != self.shape:
+            raise ValueError(f"Source array shape {source_field.shape} does not match grid shape {self.shape}")
 
         opt_ptr = None
         if options is not None:
             opt_ptr = ctypes.byref(options)
 
-        zout = numpy.empty(self.shape, dtype=numpy.float32, order='F')
+        target_field = numpy.empty(target_ref.shape, dtype=numpy.float32, order='F')
 
-        result = _interp(self._ptr, reffrom._ptr, opt_ptr, zout, ensure_fortran_order_and_dtype(zin, numpy.float32))
+        result = _interp(target_ref._ptr, self._ptr, opt_ptr, target_field, source_field)
         if result != GEOREF_SUCCESS:
             raise GeoRefError("Failed to interpolate")
 
-        return zout
+        return target_field
 
 
     def copy(self, hard=False):
@@ -298,7 +303,7 @@ class GeoRef:
 
     # TGeoRef* GeoRef_CreateFromRecord(fst_record_t *Rec)
     @classmethod
-    def fromrecord(cls, record): # -> GeoRef (but it's not defined)
+    def fromrecord(cls, record: rmn.fst_record): # -> GeoRef (but it's not defined)
         """Create a georef object from an FST record.
 
         Args:
@@ -926,6 +931,26 @@ class GeoRef:
 
         return ni.value, nj.value
 
+class CubedSphereRef(GeoRef):
+    def __init__(self, longitude0: float, latitude0: float, alpha: float, num_elements: int, num_solpts: int, fst_file: fst24_file | None = None) -> None:
+        """Cubed-sphere (type Q) specific constructor
+        
+        Args:
+            longitude0:   Longitude in radians of the centre of panel 0
+            latitude0:    Latitude in radians of the centre of panel 0
+            alpha:        Rotation in radians along the vertical at the centre of panel 0
+            num_elements: Number of square elements along the side of a panel
+            num_solpts:   Number of grid points along the side of an element
+        """
+        super().__init__(
+            0,
+            0,
+            "Q",
+            encode_angle(longitude0),
+            encode_angle(latitude0),
+            encode_angle(alpha),
+            encode_ig4(num_elements, num_solpts),
+            fst_file)
 
 class GeoDef:
     """Wrapper for the C GeoDef structure providing geographic definition functionality."""
@@ -960,7 +985,7 @@ class GeoSet:
 
     @staticmethod
     # int32_t GeoRef_SetReadFST(const TGeoRef * const RefTo, const TGeoRef * const RefFrom, const int32_t InterpType, const fst_file * const File)
-    def read_fst(cls, ref_to: GeoRef, ref_from: GeoRef, interp: int, file: fst24_file): # -> GeoSet: (but not defined)
+    def read_fst(cls, ref_to: GeoRef, ref_from: GeoRef, interp_type: int, file: fst24_file): # -> GeoSet: (but not defined)
         """ Read a gridset definition and index from a file
 
         This method wraps the libgeoref function GeoRef_SetReadFST found in src/GeoRef_Set.c.
@@ -968,7 +993,7 @@ class GeoSet:
         Args:
             ref_to (GeoRef): Target reference
             ref_from (GeoRef): Source reference
-            interp (int): Interpolation type
+            interp_type (int): Interpolation type
             file (FSTFile): FST file to read from
 
         Returns:
@@ -982,7 +1007,7 @@ class GeoSet:
             - NULL pointer (0) for failure
             - Valid pointer for successful read operation
         """
-        result = _geoset_readfst(ref_to._ptr, ref_from._ptr, interp, file._c_ref)
+        result = _geoset_readfst(ref_to._ptr, ref_from._ptr, interp_type, file._c_ref)
         if result is None:
             raise GeoRefError("Failed to read GeoSet from FST file")
         new = cls.__new__(cls)

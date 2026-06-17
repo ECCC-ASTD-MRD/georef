@@ -74,6 +74,30 @@ typedef struct {
 //     while (small_angle >= M_PI2) 
 // }
 
+//! Decode an angle stored as an integer (IG, 24 bits) into its real value, in the range [-pi, pi[
+//! \return The angle as a real value (in radians)
+double decode_cs_angle(const int32_t angle24) {
+    const double interval = M_2PI / 0x1000000;
+    return ((angle24 & 0xffffff) - 0x800000) * interval;
+}
+
+//! Encode the given real value into a 24-bit integer.
+//! Input value must be in the range [-pi, pi[, otherwise they will be shifted by a multiple of `2 * pi` to fit
+//! in that range.
+int32_t encode_cs_angle(
+    const double angle //!< Angle we want to encode (radians)
+) {
+    const double INTERVAL = M_2PI / 0x1000000;
+
+    // Keep in [-pi, pi[ range
+    double adjusted = angle;
+    while (adjusted >= M_PI) adjusted -= M_2PI;
+    while (adjusted < -M_PI) adjusted += M_2PI;
+
+    // Scale, then shift, then truncate to 24 bits
+    return ((int32_t)round(adjusted / INTERVAL) + 0x800000) & 0xFFFFFF;
+}
+
 //! Decode the IG4 parameter into its 2 components
 void decode_cs_ig4(
     const int32_t ig4,      //!< Value of the IG4 parameters
@@ -753,6 +777,12 @@ TGeoRef *GeoRef_DefineQ(TGeoRef *Ref) {
 
     if(param->Degree > MAX_DEGREE){
         Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Degree is too large: %d, MAX_DEGREE=%d\n",__func__, param->Degree, MAX_DEGREE);
+        return NULL;
+    }
+
+    if (param->Degree < 1 || param->NumElem < 1) {
+        Lib_Log(APP_LIBGEOREF, APP_ERROR, "%s: Not enough points in grid: %d element(s), %d point(s) per element\n",
+            __func__, param->NumElem, param->Degree);
         return NULL;
     }
 
