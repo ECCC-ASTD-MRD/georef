@@ -62,7 +62,7 @@ link_libraries("-Wl,--disable-new-dtags")
 add_subdirectory(src/lib)
 add_subdirectory(src/utils)
 add_subdirectory(test/lib)
-add_subdirectory(python/georef)
+add_subdirectory(python)
 
 configure_file(config.in ${CMAKE_BINARY_DIR}/${NAME}-config @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/${NAME}-config DESTINATION bin)
