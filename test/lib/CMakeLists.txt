@@ -7,6 +7,22 @@ if (EC_INIT_DONE LESS 2)
     add_dependencies(test_execs georef_interp)
 
     if(BUILD_TESTING)
+        set(PYTHON_TEST_FILES
+            GenerateGrid.py
+            InterpolateGrid.py
+        )
+        list(TRANSFORM PYTHON_TEST_FILES REPLACE "^(.*)\.py" "${CMAKE_CURRENT_SOURCE_DIR}/\\1.py")
+        set(PYTHON_TEST_FILES_BUILD ${PYTHON_TEST_FILES})
+        list(TRANSFORM PYTHON_TEST_FILES_BUILD REPLACE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
+
+        add_custom_command(
+            OUTPUT ${PYTHON_TEST_FILES_BUILD}
+            COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_TEST_FILES} ${CMAKE_CURRENT_BINARY_DIR}/
+            DEPENDS ${PYTHON_TEST_FILES}
+            COMMENT "Copying test python files to test build directory")
+        add_custom_target(test-python-files DEPENDS ${PYTHON_TEST_FILES_BUILD})
+        add_dependencies(test_execs test-python-files)
+
         if ("$ENV{ECCI_DATA_DIR}" STREQUAL "")
             message(FATAL_ERROR "The ECCI_DATA_DIR environment variable isn't defined!\nTests won't be able to find the required data files.\nPlease define that variable or set BUILD_TESTING=NO.")
         endif()
