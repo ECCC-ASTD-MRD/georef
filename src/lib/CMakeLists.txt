@@ -45,9 +45,7 @@ foreach(LINK_TYPE static shared)
             endif()
         endif()
 
-        if(rmn_FOUND)
-            target_link_libraries(georef${OMPI}-${LINK_TYPE} PUBLIC rmn::rmn${OMPI}-${LINK_TYPE})
-        endif()
+        target_link_libraries(georef${OMPI}-${LINK_TYPE} PUBLIC rmn::rmn${OMPI}-${LINK_TYPE})
 
         if(vgrid_FOUND)
             target_link_libraries(georef${OMPI}-${LINK_TYPE} PUBLIC vgrid::vgrid-${LINK_TYPE})
@@ -68,7 +66,7 @@ install(TARGETS ${shared_targets} EXPORT ${PROJECT_NAME}-shared-targets
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(TARGETS ${static_targets} EXPORT ${PROJECT_NAME}-static-targets
-   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}

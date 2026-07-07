@@ -48,9 +48,7 @@ endif()
 set(MODULE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 find_package(OpenMP)
-if (NOT rmn_FOUND)
-  find_package(rmn)
-endif()
+find_package(rmn REQUIRED)
 
 if (NOT vgrid_FOUND)
   find_package(vgrid)
