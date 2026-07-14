@@ -308,6 +308,9 @@ int ReIndex(char **In,char *Out,char* FromTo,int *OtherDims,int BDW, int Orca) {
    
    // Write grids records
    // Read grid descriptors from file 0
+   if (*others[0][MASK].grtyp == 'X') {
+      strncpy(others[0][MASK].grtyp, "O", FST_GTYP_LEN);
+   }
    if (!(yinref=GeoRef_CreateFromRecord(&others[0][MASK])))
       return(false);
 
