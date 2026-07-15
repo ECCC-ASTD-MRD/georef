@@ -36,7 +36,7 @@ subroutine ez8_vllfxy(dlat, dlon, x, y, ni, nj, d60, dgrw, pi, pj, nhem)
     re = 1.866025d0 * 6.371e+6 / d60
     re2 = re**2
 
-    !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, j, x1, y1, rlat, rlon, r2) SHARED(ni, nj, x, y, rdtodg, re, re2, nhem, dlat, dlon, pi, pj, dgrw)
+    !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, j, x1, y1, rlat, rlon, r2) SHARED(ni, nj, x, y, re, re2, nhem, dlat, dlon, pi, pj, dgrw)
     do j = 1, nj
         do i = 1, ni
             x1 = x(i, j) - pi

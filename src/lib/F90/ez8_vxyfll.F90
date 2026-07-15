@@ -34,7 +34,7 @@ subroutine ez8_vxyfll(x, y, dlat, dlon, npts, d60, dgrw, pi, pj, nhem)
 
     re = 1.866025d0 * 6.371d+6 / d60
     if (nhem == NORD) then
-        !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, rlat, rlon, sinlat, r) SHARED(npts, x, y, dgtord, re, dlat, dlon, pi, pj, dgrw)
+        !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, rlat, rlon, sinlat, r) SHARED(npts, x, y, re, dlat, dlon, pi, pj, dgrw)
         do i = 1, npts
             rlon = dgtord * (dlon(i) + dgrw)
             rlat = dgtord * dlat(i)
@@ -44,7 +44,7 @@ subroutine ez8_vxyfll(x, y, dlat, dlon, npts, d60, dgrw, pi, pj, nhem)
             y(i) = r * sin(rlon) + pj
         enddo
     elseif (nhem == SUD) then
-        !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, rlat, rlon, sinlat, r) SHARED(npts, x, y, dgtord, re, dlat, dlon, pi, pj, dgrw)
+        !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, rlat, rlon, sinlat, r) SHARED(npts, x, y, re, dlat, dlon, pi, pj, dgrw)
         do i = 1, npts
             rlon = dlon(i)
             if (rlon > 180.0d0) rlon = rlon - 360.0d0

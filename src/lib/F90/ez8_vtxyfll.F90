@@ -65,7 +65,7 @@ subroutine ez8_vtxyfll(x, y, lat, lon, clat, clon, d60, dgrw, ni, nj, n)
     offsetx = (-ni-1) * 0.5
     offsety = (-nj-1) * 0.5
 
-    !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, k) SHARED(n, x, y, r, dgtord, sinclat, cosclat, lat, lon, clon, offsetx, offsety, d60)
+    !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, k) SHARED(n, x, y, r, sinclat, cosclat, lat, lon, clon, offsetx, offsety, d60)
     do i=1, n
         k = 2.0 / (1.0 + sinclat*sin(lat(i) * dgtord)+ cosclat* cos(lat(i)*dgtord)*cos(dgtord*(lon(i)-clon)))
         x(i) = r * k * cos(lat(i)*dgtord) * sin(dgtord*(lon(i)-clon))
@@ -97,7 +97,7 @@ subroutine ez8_vtllfxy(lat, lon, x, y, clat, clon, d60, dgrw, ni, nj, n)
     offsetx = (-ni-1) * 0.5
     offsety = (-nj-1) * 0.5
 
-    !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, rho, temp, a, b) SHARED(n, x, y, r, rdtodg, c, sinclat, cosclat, lat, lon, clat, clon, offsetx, offsety, d60)
+    !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i, rho, temp, a, b) SHARED(n, x, y, r, c, sinclat, cosclat, lat, lon, clat, clon, offsetx, offsety, d60)
     do i=1, n
         x(i) = (x(i) + offsetx) * d60
         y(i) = (y(i) + offsety) * d60
