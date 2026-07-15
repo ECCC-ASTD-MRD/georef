@@ -45,7 +45,7 @@ if(GDAL_FOUND)
     target_compile_definitions(GDAL::GDAL INTERFACE HAVE_GDAL)
 endif()
 
-set(MODULE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
+set(MODULE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include/fmod)
 
 find_package(OpenMP)
 find_package(rmn REQUIRED)

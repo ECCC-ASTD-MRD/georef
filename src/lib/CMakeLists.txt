@@ -22,8 +22,7 @@ foreach(LINK_TYPE static shared)
             VERSION ${PROJECT_VERSION}
             PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/include/GeoRef.h
             INTERFACE_COMPILE_DEFINITIONS HAVE_GEOREF="${PROJECT_VERSION}"
-            Fortran_MODULE_DIRECTORY ${MODULE_DIR}
-            INTERFACE_INCLUDE_DIRECTORIES $<BUILD_INTERFACE:${MODULE_DIR}>
+            Fortran_MODULE_DIRECTORY ${MODULE_DIR}${OMPI}
             OUTPUT_NAME georef${OMPI}
             POSITION_INDEPENDENT_CODE ON)
 
@@ -32,8 +31,11 @@ foreach(LINK_TYPE static shared)
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/georef>)
         target_include_directories(georef${OMPI}-${LINK_TYPE} INTERFACE
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${MODULE_DIR}${OMPI}>
             $<INSTALL_INTERFACE:include>
-            $<INSTALL_INTERFACE:include/georef>)
+            $<INSTALL_INTERFACE:include/georef>
+            $<INSTALL_INTERFACE:include/fmod${OMPI}>
+        )
 
         target_compile_definitions(georef${OMPI}-${LINK_TYPE} PRIVATE HAVE_GPC)
         add_dependencies(georef${OMPI}-${LINK_TYPE} ${PROJECT_NAME}_build_info)
@@ -74,7 +76,10 @@ install(TARGETS ${static_targets} EXPORT ${PROJECT_NAME}-static-targets
 
 install(DIRECTORY include/georef DESTINATION include)
 install(FILES include/GeoRef.inc TYPE INCLUDE)
-install(FILES ${MODULE_DIR}/georef_mod.mod TYPE INCLUDE)
+
+foreach(OMPI "" -ompi)
+    install(FILES ${MODULE_DIR}${OMPI}/georef_mod.mod TYPE INCLUDE)
+endforeach()
 
 # Symbolic link for archive numbered version
 add_custom_command(TARGET ${PROJECT_NAME}-static POST_BUILD
