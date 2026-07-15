@@ -10,8 +10,8 @@ set(targets ${static_targets} ${shared_targets})
 
 add_library(georef-static STATIC ${PROJECT_INCLUDE_FILES} ${PROJECT_C_FILES} ${PROJECT_F_FILES})
 add_library(georef-shared SHARED $<TARGET_OBJECTS:georef-static>)
-add_library(georef-ompi-static STATIC $<TARGET_OBJECTS:georef-static>)
-add_library(georef-ompi-shared SHARED $<TARGET_OBJECTS:georef-static>)
+add_library(georef-ompi-static STATIC ${PROJECT_INCLUDE_FILES} ${PROJECT_C_FILES} ${PROJECT_F_FILES})
+add_library(georef-ompi-shared SHARED $<TARGET_OBJECTS:georef-ompi-static>)
 
 add_library(georef::georef ALIAS georef-static)
 add_library(georef::georef-ompi ALIAS georef-ompi-static)
@@ -48,7 +48,7 @@ foreach(LINK_TYPE static shared)
         target_link_libraries(georef${OMPI}-${LINK_TYPE} PUBLIC rmn::rmn${OMPI}-${LINK_TYPE})
 
         if(vgrid_FOUND)
-            target_link_libraries(georef${OMPI}-${LINK_TYPE} PUBLIC vgrid::vgrid-${LINK_TYPE})
+            target_link_libraries(georef${OMPI}-${LINK_TYPE} PUBLIC vgrid::vgrid${OMPI}-${LINK_TYPE})
         endif()
 
         if(GDAL_FOUND)

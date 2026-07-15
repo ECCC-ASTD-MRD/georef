@@ -28,7 +28,7 @@ if (EC_INIT_DONE LESS 2)
         endif()
 
         add_executable(test_cubed_sphere EXCLUDE_FROM_ALL CubedSphere.c)
-        target_link_libraries(test_cubed_sphere georef-shared rmn::rmn m)
+        target_link_libraries(test_cubed_sphere georef-shared m)
         add_test(NAME TestCubedSphere COMMAND $<TARGET_FILE:test_cubed_sphere>)
         add_dependencies(test_execs test_cubed_sphere)
 
