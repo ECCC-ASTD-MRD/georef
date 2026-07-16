@@ -1793,7 +1793,11 @@ int32_t GeoRef_InterpConservative(TGeoRef *ToRef, TDef *ToDef, TGeoRef *FromRef,
          ip = gset->Index;
       }
 
-      #pragma omp parallel for collapse(2) firstprivate(cell, ring, pick, poly) private(i, j, nidx, intersect, cnt, p, x, y, z, lp, area, val1, env, n, na) shared(k, isize, FromRef, FromDef, ToRef, ToDef, Opt, error, index, ip) reduction(+ : nt)
+      #pragma omp parallel for collapse(2) \
+         firstprivate(cell, ring, pick, poly) \
+         private(i, j, nidx, intersect, p, x, y, z, lp, area, val1, env, n, na) \
+         shared(isize, FromRef, FromDef, ToRef, ToDef, Opt, error, index, ip) \
+         reduction(+ : nt)
       for(j = 0; j < FromDef->NJ; j++) {
          for(i = 0; i < FromDef->NI; i++) {
 
