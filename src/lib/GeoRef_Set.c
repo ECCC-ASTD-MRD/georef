@@ -645,13 +645,13 @@ TGeoSet* GeoRef_SetGet(
     }
 
     RefTo->NbSet++;
-    pthread_mutex_unlock(&RefTo->Mutex);
 
     // If we get here, we have'nt found any sets, create a new one
     RefTo->Sets[i].RefFrom = RefFrom;
     RefTo->Sets[i].RefTo = RefTo;
 
     if (Opt) RefTo->Sets[i].Opt = *Opt;
+    pthread_mutex_unlock(&RefTo->Mutex);
 
     Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: RefFrom : %p RefTo: %p\n", __func__, RefFrom, RefTo);
 
