@@ -242,6 +242,7 @@ int32_t GeoRef_SetCalcXY(
 ) {
     //! \return Always 0
     if (GSet) {
+        pthread_mutex_lock(&GeoSet_Mutex);
         const int32_t size = GSet->RefTo->NX * GSet->RefTo->NY;
         if (!GSet->X) {
             GSet->X = (double*)calloc(size * 2, sizeof(double));
@@ -251,6 +252,7 @@ int32_t GeoRef_SetCalcXY(
         }
 
         GeoRef_SetIndexInit(GSet);
+        pthread_mutex_unlock(&GeoSet_Mutex);
     }
     return 0;
 }
