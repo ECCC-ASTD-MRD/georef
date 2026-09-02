@@ -20,7 +20,7 @@ _georef_create = libgeoref.GeoRef_Create
 _georef_create.argtypes = (
     ctypes.c_int, ctypes.c_int, ctypes.c_char_p,
     ctypes.c_int, ctypes.c_int,
-    ctypes.c_int, ctypes.c_int, ctypes.c_int
+    ctypes.c_int, ctypes.c_int, ctypes.c_void_p
     )
 _georef_create.restype = ctypes.c_void_p
 
@@ -45,7 +45,7 @@ _interp.restype = ctypes.c_int
 
 _free = libgeoref.GeoRef_Free
 _free.argtypes = [ctypes.c_void_p]
-_free.restype = None
+_free.restype = ctypes.c_int32
 
 _copy = libgeoref.GeoRef_Copy
 _copy.argtypes = [ctypes.c_void_p]
@@ -261,7 +261,7 @@ _getgridshape.argtypes = [
                    ctypes.c_void_p,
                    ctypes.POINTER(ctypes.c_int32),
                    ctypes.POINTER(ctypes.c_int32)]
-_getgridshape.restype = ctypes.c_void_p
+_getgridshape.restype = None
 
 _def_create = libgeoref.Def_Create
 _def_create.argtypes = [
@@ -279,9 +279,15 @@ _geoset_writefst = libgeoref.GeoRef_SetWriteFST
 _geoset_writefst.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 _geoset_writefst.restype = ctypes.c_int32
 
+# TGeoSet* GeoRef_SetGet(TGeoRef *RefTo, TGeoRef *RefFrom, const TGeoOptions *Opt)
+_geoset_get = libgeoref.GeoRef_SetGet
+_geoset_get.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(GeoOptions)]
+_geoset_get.restype = ctypes.c_void_p
+
+# TGeoSet* GeoRef_SetReadFST(TGeoSet *GSet, const int32_t InterpType, const fst_file *File)
 _geoset_readfst = libgeoref.GeoRef_SetReadFST
-_geoset_readfst.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int32, ctypes.c_void_p]
-_geoset_readfst.restype = ctypes.c_int32
+_geoset_readfst.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_void_p]
+_geoset_readfst.restype = ctypes.c_void_p
 
 # _grid_value = libgeoref.GeoRef_GridValue
 # _grid_value.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double]

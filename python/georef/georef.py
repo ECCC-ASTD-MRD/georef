@@ -81,7 +81,7 @@ class GeoRef:
             ig1-ig4: Grid parameters
             fst_file: FST file reference
         """
-        file_ref = None if fst_file is None else fst_file._c_ref
+        file_ref = ctypes.c_void_p(0) if fst_file is None else fst_file._c_ref
         ptr = _georef_create(ni, nj, grtyp.encode("UTF-8"), ig1, ig2, ig3, ig4, file_ref)
         if ptr is None:
             raise GeoRefError("Failure in C function GeoRef_Create")
@@ -373,7 +373,7 @@ class GeoRef:
         val = _interpwd(
             self._ptr,
             ref_from._ptr,
-            ctypes.byref(opt),
+            opt_ptr,
             uu_out,
             vv_out,
             ensure_fortran_order_and_dtype(uu_in, numpy.float32),
