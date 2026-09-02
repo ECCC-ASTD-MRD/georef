@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import ctypes
 import logging
-from typing import Tuple, Union
 
 import numpy
 import numpy.ctypeslib
@@ -18,6 +17,7 @@ from ._georef_c_bindings import (
     _free,
     _georef_create,
     _georef_limits,
+    _geoset_get,
     _geoset_readfst,
     _geoset_writefst,
     _getgridshape,
@@ -88,7 +88,7 @@ class GeoRef:
         self._ptr = ptr
         self.shape = self.get_grid_shape()
 
-    def limits(self) -> Tuple[float, float, float, float]:
+    def limits(self) -> tuple[float, float, float, float]:
         """Get the geographical limits of the GeoRef.
         Returns:
             tuple: (lat0, lon0, lat1, lon1) geographical limits
@@ -101,7 +101,7 @@ class GeoRef:
             self._ptr, ctypes.byref(lat0), ctypes.byref(lon0), ctypes.byref(lat1), ctypes.byref(lon1)
         )
         if result == GEOREF_FAILURE:
-            raise GeoRefError(f"Failure in C function GeoRef_Limits")
+            raise GeoRefError("Failure in C function GeoRef_Limits")
         return lat0.value, lon0.value, lat1.value, lon1.value
 
     # INT32_T GeoRef_Valid(TGeoRef *Ref)
@@ -222,7 +222,7 @@ class GeoRef:
         return bool(_withinrange(self._ptr, lat0, lon0, lat1, lon1, inside))
 
     # INT32_T GeoRef_Intersect(const GeoRef_t *ref1, const GeoRef_t *ref2, INT32_T *x0, INT32_T *y0, INT32_T *x1, INT32_T *y1, INT32_T bd)
-    def intersect(self, other, boundary=False) -> Union[None, Tuple[int, int, int, int]]:
+    def intersect(self, other, boundary=False) -> None | tuple[int, int, int, int]:
         """Check if two georef objects intersect and get intersection
         coordinates.
 
@@ -252,7 +252,7 @@ class GeoRef:
         return x0.value, y0.value, x1.value, y1.value
 
     # INT32_T GeoRef_BoundingBox(const GeoRef_t *ref, double lat0, double lon0, double lat1, double lon1, double *i0, double *j0, double *i1, double *j1)
-    def boundingbox(self, lat0: float, lon0: float, lat1: float, lon1: float) -> Tuple[float, float, float, float]:
+    def boundingbox(self, lat0: float, lon0: float, lat1: float, lon1: float) -> tuple[float, float, float, float]:
         """Calculate the bounding box coordinates for a given lat/lon range.
 
         Args:
@@ -318,7 +318,7 @@ class GeoRef:
 
     # INT32_T GeoRef_InterpUV(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt,
     #                         float *uuout, float *vvout, const float *uuin, const float *vvin)
-    def interpuv(self, ref_from, uu_in, vv_in, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    def interpuv(self, ref_from, uu_in, vv_in, options=None) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate UV (vector) data from one georef to another.
 
         Args:
@@ -352,7 +352,7 @@ class GeoRef:
 
     # INT32_T GeoRef_InterpWD(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt,
     #                         float *uuout, float *vvout, const float *uuin, const float *vvin)
-    def interpwd(self, ref_from, uu_in, vv_in, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    def interpwd(self, ref_from, uu_in, vv_in, options=None) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate wind speed and direction between 2 georeferences.
 
         Args:
@@ -387,7 +387,7 @@ class GeoRef:
     # INT32_T GeoRef_UV2WD(TGeoRef *Ref, float *spd_out, float *wd_out,
     #                      const float *uuin, const float *vvin,
     #                      const double *Lat, const double *Lon, INT32_T Nb)
-    def uv2wd(self, uu_in, vv_in, lat, lon) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    def uv2wd(self, uu_in, vv_in, lat, lon) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Convert grid winds (UU/VV) to meteorological winds (speed/direction).
 
         This method wraps the libgeoref function GeoRef_UV2WD() found in src/GeoRef_InterpUV.c.
@@ -434,7 +434,7 @@ class GeoRef:
     # INT32_T GeoRef_WD2UV(TGeoRef *Ref, float *uugdout, float *vvgdout,
     #                      const float *uullin, const float *vvllin,
     #                      const double *Lat, const double *Lon, INT32_T Nb)
-    def wd2uv(self, spd_in, dir_in, lat, lon) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    def wd2uv(self, spd_in, dir_in, lat, lon) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Convert meteorological winds (speed/direction) to grid winds (UU/VV).
 
         This method wraps the libgeoref function GeoRef_WD2UV() found in src/GeoRef_InterpUV.c.
@@ -480,7 +480,7 @@ class GeoRef:
     # INT32_T GeoRef_UV2UV(TGeoRef *Ref, float *uullout, float *vvllout,
     #                      const float *uuin, const float *vvin,
     #                      const double *Lat, const double *Lon, INT32_T Nb)
-    def uv2uv(self, uu_in, vv_in, lat, lon) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    def uv2uv(self, uu_in, vv_in, lat, lon) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Convert grid winds (UU/VV) between coordinate systems.
 
         This method wraps the libgeoref function GeoRef_UV2UV() found in src/GeoRef_InterpUV.c.
@@ -528,7 +528,7 @@ class GeoRef:
     # INT32_T GeoRef_LLWDVal(TGeoRef *Ref, TGeoOptions *Opt, float *uuout, float *vvout,
     #                        const float *uuin, const float *vvin,
     #                        const double *Lat, const double *Lon, INT32_T Nb)
-    def llwdval(self, uu_in, vv_in, lat, lon, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    def llwdval(self, uu_in, vv_in, lat, lon, options=None) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate vector values as speed and directions at lat/lon positions.
 
         This method wraps the libgeoref function GeoRef_LLWDVal() found in src/GeoRef_InterpLL.c.
@@ -579,7 +579,7 @@ class GeoRef:
     # INT32_T GeoRef_LLUVVal(TGeoRef *Ref, TGeoOptions *Opt, float *uuout, float *vvout,
     #                        const float *uuin, const float *vvin,
     #                        const double *Lat, const double *Lon, INT32_T Nb)
-    def lluvval(self, uu_in, vv_in, lat, lon, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    def lluvval(self, uu_in, vv_in, lat, lon, options=None) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate vector values at lat/lon positions.
 
         This method wraps the libgeoref function GeoRef_LLUVVal() found in src/GeoRef_InterpLL.c.
@@ -673,7 +673,7 @@ class GeoRef:
     # INT32_T GeoRef_XYWDVal(TGeoRef *Ref, TGeoOptions *Opt, float *uuout, float *vvout,
     #                        const float *uuin, const float *vvin,
     #                        const double *X, const double *Y, INT32_T n)
-    def xywdval(self, uu_in, vv_in, x, y, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    def xywdval(self, uu_in, vv_in, x, y, options=None) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate vector values as speed and direction at X/Y positions.
 
         This method wraps the libgeoref function GeoRef_XYWDVal() found in src/GeoRef_InterpXY.c.
@@ -720,7 +720,7 @@ class GeoRef:
     # INT32_T GeoRef_XYUVVal(TGeoRef *Ref, TGeoOptions *Opt, float *uuout, float *vvout,
     #                        const float *uuin, const float *vvin,
     #                        const double *X, const double *Y, INT32_T n)
-    def xyuvval(self, uu_in, vv_in, x, y, options=None) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    def xyuvval(self, uu_in, vv_in, x, y, options=None) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Interpolate vector values at X/Y positions.
 
         This method wraps the libgeoref function GeoRef_XYUVVal() found in src/GeoRef_InterpXY.c.
@@ -802,7 +802,7 @@ class GeoRef:
 
     # INT32_T GeoRef_LL2XY(TGeoRef *Ref, double *X, double *Y, double *Lat, double *Lon,
     #                      INT32_T Nb, INT32_T Extrap)
-    def ll2xy(self, lat, lon, extrapolate=False) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    def ll2xy(self, lat, lon, extrapolate=False) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Transform lat/lon coordinates to grid X/Y coordinates.
 
         This method wraps the libgeoref function GeoRef_LL2XY() found in src/GeoRef_InterpCoords.c.
@@ -847,7 +847,7 @@ class GeoRef:
 
     # INT32_T GeoRef_XY2LL(TGeoRef *Ref, double *Lat, double *Lon, double *X, double *Y,
     #                      INT32_T Nb, INT32_T Extrap)
-    def xy2ll(self, x, y, extrapolate=False) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    def xy2ll(self, x, y, extrapolate=False) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Transform grid X/Y coordinates to lat/lon coordinates.
 
         This method wraps the libgeoref function GeoRef_XY2LL() found in src/GeoRef_InterpCoords.c.
@@ -928,7 +928,7 @@ class GeoRef:
         return _lldistance(self._ptr, lat0, lon0, lat1, lon1)
 
     # INT32_T GeoRef_GetLL(TGeoRef *Ref, double *Lat, double *Lon)
-    def getll(self) -> int:
+    def getll(self) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Get lat/lon positions for all grid points.
 
         Args:
@@ -949,7 +949,7 @@ class GeoRef:
         return lat, lon
 
     # void GeoRef_GetGridShape(const TGeoRef *Ref, int32_t *NI, int32_t *NJ)
-    def get_grid_shape(self) -> int:
+    def get_grid_shape(self) -> tuple[int, ...]:
         """Get the shape (ni/nj) of the grid.
 
         Args:
