@@ -439,7 +439,9 @@ TGeoSet* GeoRef_SetReadFST(
         pthread_mutex_lock(&GeoSet_Mutex);
 
         if (GSet->Index) {
-           Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: GeoSet already contains an index (type %i)\n", __func__,GSet->IndexMethod);
+           Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: GeoSet already contains an index (type %i)\n", __func__,GSet->IndexMethod);
+           pthread_mutex_unlock(&GeoSet_Mutex);
+           return GSet;
         }
  
          // Rechercher et lire l'information de l'enregistrement specifie
