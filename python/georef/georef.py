@@ -118,37 +118,73 @@ class GeoRef:
             _free(self._ptr)
 
     # INT32_T GeoRef_Interp(TGeoRef *RefTo, TGeoRef *RefFrom, TGeoOptions *Opt, float *zout, float *zin)
+    # INT32_T GeoRef_LLVal(TGeoRef *Ref, TGeoOptions *Opt, float *zout, float *zin,
+    #                      const double *Lat, const double *Lon, INT32_T Nb)
     def interpolate(
-        self, source_field: numpy.ndarray, target_ref: GeoRef, options: GeoOptions | None = None
+        self,
+        source_field: numpy.ndarray,
+        target: GeoRef | tuple[numpy.ndarray, numpy.ndarray],
+        options: GeoOptions | None = None,
     ) -> numpy.ndarray:
-        """Interpolates field data from source grid (self) to destination grid (target_ref).
+        """Interpolates field data from source grid (self) to a destination grid or a set of points.
 
         Args:
             source_field (numpy.ndarray): Input array with source values (float32)
-            target_ref (GeoRef): Reference containing the target grid
+            target: Either a GeoRef instance (grid-to-grid interpolation via
+                GeoRef_Interp) or a tuple of (lat, lon) numpy arrays (float64) to
+                interpolate onto a set of lat/lon points (via GeoRef_LLVal).
             options (GeoOptions, optional): Interpolation options. Uses default if None.
 
         Returns:
-            numpy array of values interpolated to the target reference grid
+            numpy array of interpolated values. Shape matches the target grid when a
+            GeoRef is given, or is 1-D with one value per point when lat/lon arrays
+            are given.
         """
-        if not isinstance(source_field, numpy.ndarray):
-            raise TypeError("Input and output must be numpy arrays")
-        if source_field.dtype != numpy.float32:
-            raise TypeError("Arrays must be float32")
+        if not isinstance(source_field, numpy.ndarray) or source_field.dtype != numpy.float32:
+            raise TypeError("source_field must be a float32 numpy array")
         if source_field.shape != self.shape:
             raise ValueError(f"Source array shape {source_field.shape} does not match grid shape {self.shape}")
 
-        opt_ptr = None
-        if options is not None:
-            opt_ptr = ctypes.byref(options)
+        opt_ptr = ctypes.byref(options) if options is not None else None
 
-        target_field = numpy.empty(target_ref.shape, dtype=numpy.float32, order="F")
+        # Point sampling: target given as (lat, lon) arrays -> GeoRef_LLVal
+        if isinstance(target, tuple):
+            if len(target) != 2 or not all(isinstance(a, numpy.ndarray) for a in target):
+                raise TypeError("Point target must be a (lat, lon) tuple of numpy arrays")
+            lat, lon = target
+            if lat.shape != lon.shape:
+                raise ValueError(f"lat shape {lat.shape} does not match lon shape {lon.shape}")
 
-        result = _interp(target_ref._ptr, self._ptr, opt_ptr, target_field, source_field)
-        if result != GEOREF_SUCCESS:
-            raise GeoRefError("Failed to interpolate")
+            target_field = numpy.empty(lat.size, dtype=numpy.float32, order="F")
+            result = _llval(
+                self._ptr,
+                opt_ptr,
+                target_field,
+                ensure_fortran_order_and_dtype(source_field, numpy.float32),
+                ensure_fortran_order_and_dtype(lat.reshape(-1), numpy.float64),
+                ensure_fortran_order_and_dtype(lon.reshape(-1), numpy.float64),
+                lat.size,
+            )
+            if result != 0:
+                raise GeoRefError("Failed to interpolate values at lat/lon positions")
+            return target_field
 
-        return target_field
+        # Grid-to-grid interpolation
+        elif isinstance(target, GeoRef):
+            target_field = numpy.empty(target.shape, dtype=numpy.float32, order="F")
+            result = _interp(
+                target._ptr,
+                self._ptr,
+                opt_ptr,
+                target_field,
+                ensure_fortran_order_and_dtype(source_field, numpy.float32),
+            )
+            if result != GEOREF_SUCCESS:
+                raise GeoRefError("Failed to interpolate")
+
+            return target_field
+
+        raise TypeError("target must be a GeoRef or a (lat, lon) tuple of numpy arrays")
 
     def copy(self, hard=False):
         """Create a copy of the current georef object.
@@ -931,12 +967,8 @@ class GeoRef:
     def getll(self) -> tuple[numpy.ndarray, numpy.ndarray]:
         """Get lat/lon positions for all grid points.
 
-        Args:
-            lat: Output array for latitude values
-            lon: Output array for longitude values
-
         Returns:
-            int: Number of coordinates
+            tuple[numpy.ndarray, numpy.ndarray]: The two arrays of latitude and longitude values coordinates (float64)
 
         Note:
             This wraps GeoRef_GetLL from src/GeoRef_InterpLL.c

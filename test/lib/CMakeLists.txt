@@ -10,6 +10,8 @@ if (EC_INIT_DONE LESS 2)
         set(PYTHON_TEST_FILES
             GenerateGrid.py
             InterpolateGrid.py
+            InterpolatePoints.py
+            TestGeoOptions.py
         )
         list(TRANSFORM PYTHON_TEST_FILES REPLACE "^(.*)\.py" "${CMAKE_CURRENT_SOURCE_DIR}/\\1.py")
         set(PYTHON_TEST_FILES_BUILD ${PYTHON_TEST_FILES})
@@ -85,8 +87,12 @@ if (EC_INIT_DONE LESS 2)
 
         find_package(Python3 REQUIRED COMPONENTS Interpreter)
         add_test(NAME ComparaisonGrids COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/InterpolateGrid.py)
+        # Self-contained unit tests (no data files required)
+        add_test(NAME InterpolatePoints COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/InterpolatePoints.py)
+        add_test(NAME TestGeoOptions COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/TestGeoOptions.py)
+
         set_property(
-            TEST ComparaisonGrids PROPERTY
+            TEST ComparaisonGrids InterpolatePoints TestGeoOptions PROPERTY
             ENVIRONMENT "PYTHONPATH=${rmn_PYTHONPATH}:${CMAKE_BINARY_DIR}/python"
                         "LD_LIBRARY_PATH=${rmn_LIBRARY_PATH}"
                         "APP_VERBOSE=DEBUG")
