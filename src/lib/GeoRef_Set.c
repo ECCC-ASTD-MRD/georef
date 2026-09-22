@@ -242,6 +242,7 @@ int32_t GeoRef_SetCalcXY(
 ) {
     //! \return Always 0
     if (GSet) {
+        pthread_mutex_lock(&GeoSet_Mutex);
         const int32_t size = GSet->RefTo->NX * GSet->RefTo->NY;
         if (!GSet->X) {
             GSet->X = (double*)calloc(size * 2, sizeof(double));
@@ -251,6 +252,7 @@ int32_t GeoRef_SetCalcXY(
         }
 
         GeoRef_SetIndexInit(GSet);
+        pthread_mutex_unlock(&GeoSet_Mutex);
     }
     return 0;
 }
@@ -437,7 +439,9 @@ TGeoSet* GeoRef_SetReadFST(
         pthread_mutex_lock(&GeoSet_Mutex);
 
         if (GSet->Index) {
-           Lib_Log(APP_LIBGEOREF, APP_WARNING, "%s: GeoSet already contains an index (type %i)\n", __func__,GSet->IndexMethod);
+           Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: GeoSet already contains an index (type %i)\n", __func__,GSet->IndexMethod);
+           pthread_mutex_unlock(&GeoSet_Mutex);
+           return GSet;
         }
  
          // Rechercher et lire l'information de l'enregistrement specifie
@@ -643,13 +647,13 @@ TGeoSet* GeoRef_SetGet(
     }
 
     RefTo->NbSet++;
-    pthread_mutex_unlock(&RefTo->Mutex);
 
     // If we get here, we have'nt found any sets, create a new one
     RefTo->Sets[i].RefFrom = RefFrom;
     RefTo->Sets[i].RefTo = RefTo;
 
     if (Opt) RefTo->Sets[i].Opt = *Opt;
+    pthread_mutex_unlock(&RefTo->Mutex);
 
     Lib_Log(APP_LIBGEOREF, APP_DEBUG, "%s: RefFrom : %p RefTo: %p\n", __func__, RefFrom, RefTo);
 
