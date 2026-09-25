@@ -78,7 +78,7 @@ install(DIRECTORY include/georef DESTINATION include)
 install(FILES include/GeoRef.inc TYPE INCLUDE)
 
 foreach(OMPI "" -ompi)
-    install(FILES ${MODULE_DIR}${OMPI}/georef_mod.mod TYPE INCLUDE)
+    install(FILES ${MODULE_DIR}${OMPI}/georef_mod.mod DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fmod${OMPI})
 endforeach()
 
 # Symbolic link for archive numbered version
